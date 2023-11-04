@@ -1,1 +1,1 @@
-Sitemap: https://www.flaneurs.cafe/sitemap.xml
+Sitemap: https://flaneurs.cafe/sitemap.xml
