@@ -2,15 +2,19 @@
 <urlset xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.sitemaps.org/schemas/sitemap/0.9 http://www.sitemaps.org/schemas/sitemap/0.9/sitemap.xsd" xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
 <url>
 <loc>https://flaneurs.cafe/authors/budgerigar-perruche/</loc>
-<lastmod>2024-01-16T22:10:14+01:00</lastmod>
+<lastmod>2024-01-20T22:53:27+01:00</lastmod>
 </url>
 <url>
 <loc>https://flaneurs.cafe/category/essay/</loc>
-<lastmod>2024-01-16T22:10:14+01:00</lastmod>
+<lastmod>2024-01-20T22:53:27+01:00</lastmod>
 </url>
 <url>
 <loc>https://flaneurs.cafe/category/history/</loc>
-<lastmod>2024-01-16T22:10:14+01:00</lastmod>
+<lastmod>2024-01-20T22:53:27+01:00</lastmod>
+</url>
+<url>
+<loc>https://flaneurs.cafe/category/letters/</loc>
+<lastmod>2024-01-20T22:53:27+01:00</lastmod>
 </url>
 <url>
 <loc>https://flaneurs.cafe/art-of-flanerie/</loc>
@@ -23,6 +27,10 @@
 <url>
 <loc>https://flaneurs.cafe/2024-01-16-letter-poznan/</loc>
 <lastmod>2024-01-16T00:00:00+01:00</lastmod>
+</url>
+<url>
+<loc>https://flaneurs.cafe/2024-01-20-letter-cracow-plock/</loc>
+<lastmod>2024-01-20T00:00:00+01:00</lastmod>
 </url>
 <url>
 <loc>https://flaneurs.cafe/about/</loc>
@@ -51,5 +59,9 @@
 <url>
 <loc>https://flaneurs.cafe/uploads/2024-01-16-letter-poznan/list_secesja_poznan.pdf</loc>
 <lastmod>2024-01-16T20:06:14+01:00</lastmod>
+</url>
+<url>
+<loc>https://flaneurs.cafe/uploads/2024-01-20-letter-cracow-plock/List_Secesja_Muzea-censored.pdf</loc>
+<lastmod>2024-01-19T11:33:00+01:00</lastmod>
 </url>
 </urlset>
