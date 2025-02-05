@@ -7,8 +7,10 @@ email:          budgerigarperruche@gmail.com
 mastodon:       https://mstdn.social/@bperruche
 ---
 
-I was born in Poland not long before the Communist government was dismissed. I currently live in Côte d’Azur, France. Shortly before that, I was based in Haifa, which is one of my favorite cities – full of hidden gems that are hard to come by while visiting the city for a short period. Moreover, I have lived for a few years in the suburbs of Paris and have spent a short time in other cities around the world.
+I was born in Poland not long before the fall of the Communist government. I currently live in Paris, France. Before that, I was based on the Côte d’Azur, and prior to that, in Haifa—one of my favorite cities, full of hidden gems that are easy to miss on a short visit.
 
-I plan to write here mainly about exploring the concept of flânerie, e.g., historical and social changes that led to differences in how we experience cities and, more importantly, strolling in the cities. I will also try to share some of my flâneries.
+I have also spent a few years living in the suburbs of Paris (before returning here a year ago) and have briefly stayed in other cities around the world.
 
-Please note that I am not a native English speaker and am not a writer by training, yet I am more than open to suggestions and corrections.
+Here, I plan to write mainly about exploring the concept of *flânerie*—the historical and social changes that have shaped the way we experience cities and, more importantly, the act of strolling through them. I will also share some of my own *flâneries*. Additionally, I will write about Art Nouveau, as well as art and architecture in general.
+
+Please note that I am not a native English speaker and not a writer by training, but I welcome any suggestions and corrections.
