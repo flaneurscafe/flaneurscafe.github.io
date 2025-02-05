@@ -1,10 +1,10 @@
 ---
 title:          Budgie Perruche
 username:       bperruche
-image:          budgerigar_perruche.png
+image:          kopimi_mastodon.jpg
 bio:            Flânuer by nature, classic men fashion enthusiast, and a flower lover.
 email:          budgerigarperruche@gmail.com
-mastodon:       https://mstdn.social/@bperruche
+mastodon:       https://mstdn.social/@kopimi
 ---
 
 I was born in Poland not long before the fall of the Communist government. I currently live in Paris, France. Before that, I was based on the Côte d’Azur, and prior to that, in Haifa—one of my favorite cities, full of hidden gems that are easy to miss on a short visit.
