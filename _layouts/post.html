@@ -13,7 +13,7 @@ layout: default
   {% if page.image %}
   <div class="uk-container uk-container-small uk-margin-large-bottom">
     <div class="uk-cover-container">
-      <img src="{% if page.image contains 'http' %}{{ page.image }}{% else %}{{ site.uploads | absolute_url }}{{ page.image }}{% endif %}" alt="{{ page.title }}" data-uk-cover>
+      <img src="{% if page.image contains 'http' %}{{ page.image }}{% elsif page.image contains '/uploads/' %}{{ page.image | relative_url }}{% else %}{{ site.uploads | absolute_url }}{{ page.image }}{% endif %}" alt="{{ page.title }}" data-uk-cover>
       <canvas width="1000" height="500"></canvas>
     </div>
   </div>
@@ -72,7 +72,7 @@ layout: default
 
 </article>
 
-<!-- 
+{% comment %}
 {% if page.related %}
   <div class="uk-container uk-container-small uk-margin-bottom">
     {% include related.html %}
@@ -88,4 +88,4 @@ layout: default
   {% include disqus-comments.html %}
 </div>
 {% endif %}
--->
+{% endcomment %}

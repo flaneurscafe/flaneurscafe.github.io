@@ -6,7 +6,7 @@ layout: default
     <article class="uk-article uk-margin-medium-bottom">
         {% if page.image %}
         <div class="uk-text-center">
-            <img alt="{{ page.title | escape }}" class="uk-border-circle avatar uk-width-medium" src="{% if page.image contains 'http' %}{{ page.image }}{% else %}{{ site.uploads | absolute_url }}{{ page.image }}{% endif %}">
+            <img alt="{{ page.title | escape }}" class="uk-border-circle avatar uk-width-medium" src="{% if page.image contains 'http' %}{{ page.image }}{% elsif page.image contains '/uploads/' %}{{ page.image | relative_url }}{% else %}{{ site.uploads | absolute_url }}{{ page.image }}{% endif %}">
         </div>
         {% endif %}
         <h1 class="uk-article-title article-title-font uk-text-center uk-margin-medium-bottom">{{ page.title | escape }}</h1>

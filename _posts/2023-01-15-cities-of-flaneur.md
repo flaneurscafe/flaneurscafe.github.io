@@ -1,7 +1,7 @@
 ---
 title: Flâneur’s cities – what makes a city suitable for flânerie?
 permalink: /cities-of-flaneur/
-image: post-haussmann-paris/seine-04859u-colorized-low-res.jpg
+image: /uploads/post-haussmann-paris/seine-04859u-colorized-low-res.jpg
 date: 2023-01-24
 categories: [essay]
 tag: [spotlight, featured, history, flânerie]
@@ -11,7 +11,7 @@ author: bperruche
 > The streets are narrow: “a maze of passages and streets which blur into each other and only become distinct near the quays of wood and lime.” The pavement is awful, leaving you having to negotiate puddles and mud: “Mud up to the ankles, sheets of water on the pavements poorly protected by asphalt.” In the evening the streets are badly lit and there is hardly anything to see and to do—**Daniel Acke**
 
 
-When discussing cities and flânerie, we quickly arrive at a question: what makes a city suitable for a flâneur to thrive? In this essay, I will try to answer this question by analyzing “The Flâneur in Brussels: French and Belgian Literary Perspectives in Counterpoint” by Daniel Acke [[*2 (Chapter XIV)*]](#refWrigley2014). In his analysis, Acke examines literary texts about flânerie in Brussels. The first part of Acke’s analysis comprises works written by experienced Parisian flâneurs: Baudelaire, Narval, and Huysmans, who visited Brussels around the end of the XIX century. These authors are pessimistic in their tone, with Baudelaire being significantly negative, if not insulting. From these three accounts, one could conclude that flânerie in the Belgium capital was an impossible task. I agree with Daniel Acke that the principal reason why these texts show Brussels as the opposition to Paris of the time is that these authors were Parisian flâneurs. Indeed, they looked at the Belgium capital from the point of view of what they already knew and were used to, namely, Haussmannian Paris – a city with which, at the time, not many other cities could match.
+When discussing cities and flânerie, we quickly arrive at a question: what makes a city suitable for a flâneur to thrive? In this essay, I will try to answer this question by analyzing “The Flâneur in Brussels: French and Belgian Literary Perspectives in Counterpoint” by Daniel Acke [[*2 (Chapter XIV)*]](#refWrigley2014). In his analysis, Acke examines literary texts about flânerie in Brussels. The first part of Acke’s analysis comprises works written by experienced Parisian flâneurs: Baudelaire, Nerval, and Huysmans, who visited Brussels around the end of the XIX century. These authors are pessimistic in their tone, with Baudelaire being significantly negative, if not insulting. From these three accounts, one could conclude that flânerie in the Belgian capital was an impossible task. I agree with Daniel Acke that the principal reason why these texts show Brussels as the opposition to Paris of the time is that these authors were Parisian flâneurs. Indeed, they looked at the Belgian capital from the point of view of what they already knew and were used to, namely, Haussmannian Paris – a city with which, at the time, not many other cities could match.
 
 Nevertheless, I think some of the points made by these authors are interesting and allow for a more general discussion about the characteristics that make a city suitable for practicing flânerie. Some of these are rather not obvious at first sight, and the reason for that is mainly rooted in changes that happened between when the texts were written and now.
 
@@ -21,7 +21,7 @@ I have divided these characteristics into geographic, urban, and social classes.
 | Characteristic | Class | Description |
 |-------|--------|---------|
 | topography | geographic | how hilly is the city |
-| location | geographic | access to, e.g., rives, climate, etc. |
+| location | geographic | access to, e.g., rivers, climate, etc. |
 | sociability | social | population engagement in social activities  |
 | space | urban | size, crowdedness, but also view distance to architectural elements |
 | amenities | urban | for example, existence and state of pavements, parks, squares, etc. |
@@ -35,7 +35,7 @@ In “The Flâneur in Brussels: French and Belgian Literary Perspectives in Coun
 In the accounts of the Parisian flâneurs, Brussels is described as a city not suitable for enjoyable strolling. This argument stems from an assumption made by the flâneurs of the past that walking should not be burdened with a physical effort. At least one of these authors admits that there are lovely views from the hills, but in his opinion, that cannot compensate for the effort needed to walk the streets in Brussels. In my opinion and experience as someone who lived in a very hilly city – Haifa, the topographic argument alone does not rule out a flânerie in a hilly city. Walking in a flat city may be effortless, but the hills add to the experience. Yet, it is true that a hilly city may make flânerie difficult for some people, e.g., the elderly or disabled. It is also quite clear that this characteristic is strongly connected to *amenities* available in the city, such as sidewalks, shortcuts such as over hill stairs, cable cars, etc.
 
 ## Sociability encouraging landmarks
-The following and somewhat cryptic argument against flânerie in Brussels is that the city is not located around any major waterway. Narval wrote [[*2 (Chapter XIV)*]](#refWrigley2014):
+The following and somewhat cryptic argument against flânerie in Brussels is that the city is not located around any major waterway. Nerval wrote [[*2 (Chapter XIV)*]](#refWrigley2014):
 
 > there is no great city without a river
 
@@ -55,7 +55,7 @@ Another vital part of the flânerie relates to how social aspects of the city’
 
 > The square is black, the avenues deserted, all the life of Brussels retreats to the place de la Monnaie and in the Galeries Saint-Hubert. ... with the help of what potions, what opiated balms, could one succeed in putting an end to the interminable evening?
 
-Let me also quote here an account of Narval:
+Let me also quote here an account of Nerval:
 
 > No shop window displays.
 >

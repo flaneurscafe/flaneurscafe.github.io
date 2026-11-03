@@ -14,4 +14,7 @@
   {% if site.social_share.reddit %}
       <button class="sharer uk-icon-button uk-margin-small-bottom" data-sharer="reddit" data-url="{{ page.url | absolute_url }}"><span data-uk-icon="reddit"></span></button>
   {% endif %}
+  {% if site.social_share.mastodon %}
+      <a class="uk-icon-button uk-margin-small-bottom" target="_blank" rel="noopener" title="Share on Mastodon" href="https://mastodonshare.com/?text={{ page.title | url_encode }}&amp;url={{ page.url | absolute_url | url_encode }}"><span data-uk-icon="commenting"></span></a>
+  {% endif %}
 </div>

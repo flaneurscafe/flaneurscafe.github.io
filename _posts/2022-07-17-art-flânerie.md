@@ -1,7 +1,7 @@
 ---
 title: The Art of Flânerie
 permalink: /art-of-flanerie/
-image: art-of-flanerie/HIGH_ST_SOUTHEND_WITH_GARONS_CINEMA_&_SHOPS_postcard_ESSEX.jpg
+image: /uploads/art-of-flanerie/HIGH_ST_SOUTHEND_WITH_GARONS_CINEMA_&_SHOPS_postcard_ESSEX.jpg
 date: 2023-01-06
 categories: [history]
 tag: [spotlight, featured, history, flânerie]
@@ -11,14 +11,14 @@ author: bperruche
 > Never have I thought or experienced, been more myself than when walking alone. There is something about walking which animates and enlivens my ideas; when immobile I am hardly capable of thought, to set my mind in motion I must first get my body moving. Country views, a succession of pleasant prospects, good air, the good appetite and good health that I gain by walking, the ease of the outdoor cabaret, far away from everything which makes me feel my dependence—**Jean-Jacques Rousseau**
 
 
-The social and urban changes of the late XVIII and throughout the XIX century emerged a new class of city dwellers who enjoyed exploratory strolls through cities. This new type of city beings had been named flâneur, from the French verb flâner, which itself is of Nordic origin [[1]](#refDefFlaner). Providing a precise translation is rather complicated, if not impossible, as many have already argued. Still, the closest English equivalent is the word stroller – a person who is enjoying a slow, relaxed walk [[2]](#refDefStroller). As we will see later, flâneur is an explorer, a philosopher of the streets – someone who observes and notices what others seem to overlook. Therefore, the world stroller does not consist of a one-to-one replacement as it strips the flâneur of a deeper meaning.
+The social and urban changes of the late XVIII and throughout the XIX century emerged a new class of city dwellers who enjoyed exploratory strolls through cities. This new type of city beings had been named flâneur, from the French verb flâner, which itself is of Nordic origin [[1]](#refDefFlaner). Providing a precise translation is rather complicated, if not impossible, as many have already argued. Still, the closest English equivalent is the word stroller – a person who is enjoying a slow, relaxed walk [[2]](#refDefStroller). As we will see later, flâneur is an explorer, a philosopher of the streets – someone who observes and notices what others seem to overlook. Therefore, the word stroller does not consist of a one-to-one replacement as it strips the flâneur of a deeper meaning.
 
 With time the meaning of the word flâneur obtained extensions appropriate to the social, urban, and technological changes. These are, for example, digital flâneur. In this article, I will not focus on these more contemporary concepts. In this post, I will focus on the past and the art of walking. Indeed, in this first article, I will touch on the idea of flânerie – the art of city exploration. In the following articles, I will then try to answer whether the classical art of flânerie is a dead concept in modern cities that tend to be polluted with cars and uncontrolled tourism.
 
 
 # A pinch of history
 
-The primary motivation behind the way the city has been explored and walked through has been connected to the urban arrangement of the cities. The medieval like-cities, such as Paris before the Haussmannian restoration (which started in the 1850s and was finally concluded in 1927), were often places where one would not find any pleasure wandering about. Indeed, the pre-Hausmannian Paris was a maze of shady, narrow, crowded streets, often filled with litter. The old, sometimes medieval buildings were not adapted to the ever-growing population. In short, Paris before the 1850s was not a city where living was enjoyable. Let me use for an illustration of the situation the following quote from Victor Considerant [[5]](#refdeMoncan2002)
+The primary motivation behind the way the city has been explored and walked through has been connected to the urban arrangement of the cities. The medieval like-cities, such as Paris before the Haussmannian restoration (which started in the 1850s and was finally concluded in 1927), were often places where one would not find any pleasure wandering about. Indeed, the pre-Haussmannian Paris was a maze of shady, narrow, crowded streets, often filled with litter. The old, sometimes medieval buildings were not adapted to the ever-growing population. In short, Paris before the 1850s was not a city where living was enjoyable. Let me use for an illustration of the situation the following quote from Victor Considerant [[5]](#refdeMoncan2002)
 
 > Paris is an immense workshop of putrefaction, where misery, pestilence and sickness work in concert, where sunlight and air rarely penetrate. Paris is a terrible place where plants shrivel and perish, and where, of seven small infants, four die during the course of the year.
 

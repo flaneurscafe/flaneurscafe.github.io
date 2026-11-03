@@ -6,7 +6,7 @@
 
 # Site settings
 title:              Flâneurs’ Café
-description:        Blog about the the art of flânerie.
+description:        Blog about the art of flânerie.
 url:                https://flaneurs.cafe
 baseurl:            "" # Site subpath, e.g. /blog
 logo_image:
@@ -40,11 +40,10 @@ social_share:
   pinterest:        false
   reddit:           false
   mastodon:         true
-  pixelfed:         true
 
 # Social networks
 social_networks:
-  email: budgerigarperruche@gmail.com
+  email:
   website:        
   facebook:         
   flickr:         
@@ -58,7 +57,6 @@ social_networks:
   vimeo:          
   youtube:              
   mastodon: https://mstdn.social/@flaneurscafe
-  pixelfed: https://pixey.org/@flaneurscafe 
 
 # Strings
 strings:
@@ -70,6 +68,7 @@ highlighter:        rouge
 
 plugins:
   - jekyll-feed
+  - jekyll-paginate
   - jekyll-seo-tag
   - jekyll-gist
   - jekyll-avatar
@@ -83,6 +82,9 @@ exclude:
   - CHANGELOG
   - LICENSE
   - README
+  - README.md
+  - package-lock.json
+  - vendor
   - /docs
 
 sass:
@@ -112,6 +114,7 @@ defaults:
     values:
       layout: page
       sidebar: left
+      image: /uploads/antibes_walls.jpg
   # _authors
   - scope:
       path: ""

@@ -10,12 +10,6 @@
 </div>
 {% endif %}
 
-{% if site.social_networks.pixelfed %}
-<div class="uk-first-column">
-    <a href="{{ site.social_networks.pixelfed }}" data-uk-icon="icon: camera; ratio: {{ include.icon_ratio }}" class="uk-icon-link uk-icon" target="_blank"></a>
-</div>
-{% endif %}
-
 {% if site.social_networks.facebook %}
 <div>
     <a href="{{ site.social_networks.facebook }}" data-uk-icon="icon: facebook; ratio: {{ include.icon_ratio }}" class="uk-icon-link uk-icon" target="_blank"></a>
@@ -68,7 +62,7 @@
 {% endif %}
 {% if site.social_networks.email %}
 <div>
-    <a href="mailto:{{ site.social_networks.email }}" data-uk-icon="icon: mail; ratio: {{ include.icon_ratio }}" class="uk-icon-link uk-icon" target="_blank"></a>
+    <a href="mailto:{{ site.social_networks.email }}" data-uk-icon="icon: mail; ratio: {{ include.icon_ratio }}" class="uk-icon-link uk-icon"></a>
 </div>
 {% endif %}
 {% if site.social_networks.website %}
