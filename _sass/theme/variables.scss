@@ -3,7 +3,8 @@ $global-primary-background: #de7a93;
 // Modify body font
 $global-font-family: 'Lora', serif; 
 // Modify article title font
-$aticle-title-font-family: 'ZCOOL XiaoWei', serif;
+// 'Title Quotes' supplies narrow quote marks; ZCOOL XiaoWei's are full-width (see theme/fonts)
+$aticle-title-font-family: 'Title Quotes', 'ZCOOL XiaoWei', serif;
 
 // Theme variables
 $global-secondary-background: #121212;

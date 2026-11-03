@@ -1,0 +1,13 @@
+// Narrow quote marks for post titles.
+// ZCOOL XiaoWei (the title font) draws ’ “ ” ‘ as full-width CJK punctuation,
+// which leaves a wide gap, e.g. in "Flâneur’s". This tiny font contains only
+// those characters, cut from Lora (SIL Open Font License 1.1,
+// https://scripts.sil.org/OFL) and renamed as the license requires.
+@font-face {
+  font-family: 'Title Quotes';
+  src: url('/assets/fonts/title-quotes.woff2') format('woff2');
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+  unicode-range: U+2018-201F, U+2032-2033;
+}
