@@ -4,7 +4,7 @@ permalink: /contribute/
 sidebar: none
 ---
 
-This web page is open for publication from anyone. If you would like your article to appear here, please reach us. The contact information can be found [*here*](/contact/). An explanation of our publication process can be found below.
+This website is open to contributions from anyone. If you would like your article to appear here, please contact us. The contact information can be found [*here*](/contact/). An explanation of our publication process can be found below.
 
 
 # Formatting
@@ -27,7 +27,7 @@ author: <author name>
 
 ## References
 
-Contrary to other web pages, here, we value academic standards. Therefore, your article needs to contain references correctly cited in the text. The preferred style is APA, but any other will do. To introduce references in the text, you can use the below example.
+Unlike many other websites, we value academic standards here. Therefore, your article needs to contain references correctly cited in the text. The preferred style is APA, but any other will do. To introduce references in the text, you can use the below example.
 
 The citation is inserted in the text:
 ```
@@ -42,4 +42,4 @@ and the source appears in the reference list as
 
 ## Images
 
-The images used in the publication need to have resolved copyrights, i.e., they cannot be used without the written permission of their authors (such permission needs to be attached to the article). Suppose an image is in the public domain or under a less restrictive license, such as a license from the Creative Common family. In the later case, this needs to be correctly addressed in the text.
+The images used in an article must have a clear copyright status, i.e., they cannot be used without the written permission of their authors (such permission needs to be attached to the article), unless an image is in the public domain or under a less restrictive license, such as one from the Creative Commons family. In the latter case, the license needs to be correctly credited in the text.

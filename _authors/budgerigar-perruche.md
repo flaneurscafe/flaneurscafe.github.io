@@ -2,7 +2,7 @@
 title:          Budgie Perruche
 username:       bperruche
 image:          /uploads/kopimi_mastodon.jpg
-bio:            Flâneur by nature, classic men fashion enthusiast, and a flower lover.
+bio:            Flâneur by nature, classic menswear enthusiast, and flower lover.
 mastodon:       https://mstdn.social/@kopimi
 ---
 
