@@ -65,7 +65,7 @@ Let me also quote here an account of Nerval:
 
 ## Role of climate on sociability
 Among many possible explanations of the different behaviors in the inter-human interaction may play the climate.
-A study from 2017 by Wei et al. [[*4*]](refTempPersonality) found that the average ambient temperature closer to the psychological comfort temperature of 22°C contributes to personality threats that are associated with outdoor explorations:
+A study from 2017 by Wei et al. [[*4*]](#refTempPersonality) found that the average ambient temperature closer to the psychological comfort temperature of 22°C contributes to personality threats that are associated with outdoor explorations:
 
 > It is particularly telling that our large datasets from two geographically large yet culturally distinct countries [China and the US] provided converging evidence. Taken together, these findings are consistent with our temperature clemency perspective of personality: growing up in temperatures that are close to the psychophysiological comfort optimum encourages individuals to explore the outside environment, thereby influencing their personalities.
 
@@ -75,7 +75,7 @@ The authors also mention an intriguing social thermoregulation theory:
 
 In this place, we can compare the climate between Paris and Brussels to see how different the weather is and whether such a difference can account for the social differences. Here I will include not only the temperatures but also two other factors that seem to me as plausible for being related to social behaviors.
 
-**Average temperatures (Celsius) in Brussels and Paris [[*5*]](refWikiTemp):**
+**Average temperatures (Celsius) in Brussels and Paris [[*5*]](#refWikiTemp):**
 
 | | Jan | Feb | Mar | Apr | May | Jun | Jul | Aug | Sep | Oct | Nov | Dec | Year |
 | ------------------- | --- | --- | --- | ---- | ---- | ---- | ---- | ---- | ---- | ---- | --- | --- | ---- |
@@ -83,7 +83,7 @@ In this place, we can compare the climate between Paris and Brussels to see how 
 | Paris | 4.9 | 5.6 | 8.8 | 11.4 | 15.1 | 18.2 | 20.4 | 20.2 | 16.9 | 12.9 | 8.1 | 5.4 | 12.3 |
 | Absolute difference | 1.6 | 1.9 | 2 | 1.6 | 1.5 | 2 | 2 | 2.2 | 2 | 1.8 | 1.3 | 1.5 | 1.8 |
 
-**Average monthly precipitation (in mm) for Brussels and Paris [[*6*]](refWikiPerci):**
+**Average monthly precipitation (in mm) for Brussels and Paris [[*6*]](#refWikiPerci):**
 
 | | Jan | Feb | Mar | Apr | May | Jun | Jul | Aug | Sep | Oct | Nov | Dec | Year |
 | ------------------- | ---- | ---- | ---- | ---- | ---- | ---- | ---- | ---- | ---- | ---- | ---- | ---- | ----- |
@@ -91,7 +91,7 @@ In this place, we can compare the climate between Paris and Brussels to see how 
 | Paris | 51 | 41.2 | 47.6 | 51.8 | 63.2 | 49.6 | 62.3 | 52.7 | 47.6 | 61.5 | 51.1 | 57.8 | 637.4 |
 | Absolute difference | 24.2 | 20.4 | 21.9 | 0.8 | 1.9 | 22.5 | 11.3 | 24.1 | 22 | 13.5 | 25.9 | 23.6 | 210.6 |
 
-**Sunshine hours for Paris and Brussels [[*7*]](refWikiSunshine):**
+**Sunshine hours for Paris and Brussels [[*7*]](#refWikiSunshine):**
 
 | | Jan | Feb | Mar | Apr | May | Jun | Jul | Aug | Sep | Oct | Nov | Dec | Year |
 | ------------------- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | ---- |
@@ -99,7 +99,7 @@ In this place, we can compare the climate between Paris and Brussels to see how 
 | Paris | 63 | 79 | 129 | 166 | 194 | 202 | 212 | 212 | 168 | 118 | 68 | 51 | 1662 |
 | Absolute difference | 4 | 2 | 15 | 7 | 3 | 14 | 11 | 22 | 25 | 5 | 2 | 6 | 116 |
 
-As we can see, the climate in Paris is slightly different than in Brussels; not only does Brussels have lower average temperatures and higher rainfall during the year, but more importantly receives significantly less sunshine. Unfortunately, the publication by Wei et al. [[*4*]](refTempPersonality) does not include enough data for us to make any reasonable guesses about the impact of the above climate-related factors on the sociability of the populations living in Paris and Brussels. Generally speaking, such impacts are a fact, yet, we should remember that sociability is far more complex and does not solely depend on climate.
+As we can see, the climate in Paris is slightly different than in Brussels; not only does Brussels have lower average temperatures and higher rainfall during the year, but more importantly receives significantly less sunshine. Unfortunately, the publication by Wei et al. [[*4*]](#refTempPersonality) does not include enough data for us to make any reasonable guesses about the impact of the above climate-related factors on the sociability of the populations living in Paris and Brussels. Generally speaking, such impacts are a fact, yet, we should remember that sociability is far more complex and does not solely depend on climate.
 
 # Urbanization 
 

@@ -127,3 +127,4 @@ defaults:
       type: category
     values:
       layout: category
+      image: /uploads/antibes_walls.jpg

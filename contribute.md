@@ -4,7 +4,7 @@ permalink: /contribute/
 sidebar: none
 ---
 
-This web page is open for publication from anyone. If you would like your article to appear here, please reach us. The contact information can be found [*here*](../contact). An explanation of our publication process can be found below.
+This web page is open for publication from anyone. If you would like your article to appear here, please reach us. The contact information can be found [*here*](/contact/). An explanation of our publication process can be found below.
 
 
 # Formatting
