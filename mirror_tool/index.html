@@ -205,8 +205,12 @@
     <figcaption><b>As a tiled surface</b><span id="tileLbl"></span></figcaption>
     <canvas id="tiles" class="view" width="1000" height="560"></canvas>
     <div class="tilebar">
-      <span class="seg" id="tileSeg"><button data-t="tri">Triangles</button><button data-t="square">Squares</button><button data-t="hex" class="on">Hexagons</button></span>
-      <label class="small">Tile size <input type="range" id="tileCrop" min="0.3" max="1" step="0.01" value="0.9"></label>
+      <span class="seg" id="tileSeg"><button data-t="tri">Triangles</button><button data-t="square">Squares</button><button data-t="hex" class="on">Hexagons</button><button data-t="rect">Strips</button></span>
+      <label class="small" id="cropLbl">Tile size <input type="range" id="tileCrop" min="0.3" max="1" step="0.01" value="0.9"></label>
+      <span class="seg" id="stripDir" hidden><button data-o="h" class="on">Horizontal</button><button data-o="v">Vertical</button></span>
+      <label class="small" id="ratioLbl" hidden>Height <input type="range" id="tileRatio" min="0.06" max="1" step="0.01" value="0.3"></label>
+      <label class="small" id="shiftLbl" hidden>Position <input type="range" id="tileShift" min="-1" max="1" step="0.01" value="0"></label>
+      <label class="cb" id="borderLbl" hidden><input type="checkbox" id="tileBorder"> One strip only</label>
       <label class="small">Tiles across <input type="range" id="tileN" min="2" max="9" step="1" value="4"></label>
       <label class="cb"><input type="checkbox" id="tileJoints" checked> Joints</label>
     </div>
@@ -297,6 +301,7 @@
         <tr><td>22.5°</td><td>8</td><td class="yes">seamless</td><td class="no">breaks</td><td class="no">breaks</td></tr>
         <tr><td>15°</td><td>12</td><td class="yes">seamless</td><td class="yes">seamless</td><td class="yes">seamless</td></tr></table>
       <p>Squares need n even, triangles and hexagons need n divisible by 3. Five-fold rosettes (36°) never tile seamlessly: no regular tiling has five-fold symmetry. “Seamless” means the lines meet; a curve crossing a joint at a slant still makes a corner there (it meets its own reflection), so the smoothest tiles come from motifs whose lines cross the mirror lines at right angles. The tile size slider moves the cut, which changes where the joints fall in the design.</p>
+      <p><b>Strips (narrow rectangles)</b> suit the parallel pair. The border it makes repeats every two mirror spacings, so a strip running from one mirror line to the next-but-one, centred on the mirror line between, is one full repeat: strips laid end to end continue each other. Turned 180°, such a strip is the same as its reflection in its long edge, so rows stacked with every other row turned also meet seamlessly. Unlike rosette tiles, this works for <i>any</i> motif and any spacing. Strips can also be cut from a rosette when n is even.</p>
 
       <h4>Further reading</h4>
       <p class="small">D. Brewster, <i>A Treatise on the Kaleidoscope</i> (1819; 2nd ed. 1858). H. S. M. Coxeter, <i>Introduction to Geometry</i> (1961), ch. on reflection groups. D. Washburn &amp; D. Crowe, <i>Symmetries of Culture</i> (1988). J. H. Conway, H. Burgiel, C. Goodman-Strauss, <i>The Symmetries of Things</i> (2008).</p>
@@ -639,6 +644,8 @@ document.querySelectorAll('#modeSeg button').forEach(b => b.onclick = () => {
   const prev = S.mode; S.mode = b.dataset.m;
   if (prev === 'hinge' && S.mode !== 'hinge') S.theta = S.beta - S.alpha / 2;
   if (prev !== 'hinge' && S.mode === 'hinge') S.beta = S.theta + S.alpha / 2;
+  if (S.mode === 'parallel' && T.shape !== 'rect') { T.before = T.shape; setTileShape('rect'); }
+  else if (S.mode === 'hinge' && T.shape === 'rect' && T.before) { setTileShape(T.before); T.before = null; }
   redraw();
 });
 for (const { v, n } of N_ANG) {
@@ -656,13 +663,15 @@ for (const { v, k } of K_ANG) {
    with copies turned 180°. Neighbours continue each other across a joint exactly when the rosette is
    symmetric about the perpendicular bisector of that joint, i.e. when the edge normals are mirror axes
    of the rosette: n even for squares, n a multiple of 3 for triangles and hexagons (α = 180°/n). */
-const T = { shape: 'hex', crop: 0.9, across: 4, joints: true };
+const T = { shape: 'hex', crop: 0.9, across: 4, joints: true, ratio: 0.3, border: false, before: null, shift: 0, vertical: false };
 const SHAPES = {
   tri:    { k: 3, maxA: 220, label: 'triangles', show: 90 },   // show: screen direction given to one edge normal, so tiles sit level
   square: { k: 4, maxA: 445, label: 'squares', show: 0 },
   hex:    { k: 6, maxA: 385, label: 'hexagons', show: 90 },
+  rect:   { k: 4, maxA: 445, label: 'strips', show: 0 },      // narrow rectangles: long side across the mirror lines
 };
 function tileGeom() {
+  if (T.shape === 'rect') return rectGeom();
   const sh = SHAPES[T.shape], a = sh.maxA * T.crop;            // a = apothem (centre to edge), in mirror-view px
   const m = S.mode === 'hinge' ? S.beta - S.alpha / 2 : S.mode === 'single' ? S.theta + 90 : S.theta + 90;   // a mirror axis direction
   const C = { x: RES / 2, y: RES / 2 }, R = a / Math.cos(Math.PI / sh.k);
@@ -674,7 +683,35 @@ function tileGeom() {
   else { const sd = 2 * Math.sqrt(3) * a; u = dir(m + 90); v = dir(m + 150); u = { x: sd * u.x, y: sd * u.y }; v = { x: sd * v.x, y: sd * v.y }; width = sd; }
   return { a, m, C, verts, u, v, width, n0: dir(m) };
 }
+/* Strips. Parallel pair: the tile runs from one mirror line to the next-but-one (length 2d, one full repeat)
+   and is centred on the middle mirror line. Shifting it by 2d along the row is a symmetry of the border, and a
+   copy turned 180° about the middle of a long edge equals its reflection in that edge (the tile is symmetric
+   about its middle mirror line), so stacked rows, every other one turned, are seamless for any motif.
+   Hinged pair: a rectangle with both axes along mirror lines of the rosette, which needs n even. */
+function rectGeom() {
+  const C = { x: RES / 2, y: RES / 2 };
+  let tAng, L;
+  if (S.mode === 'hinge') { tAng = S.beta - S.alpha / 2; L = 2 * SHAPES.rect.maxA * T.crop; }
+  else { tAng = S.theta + 90; L = Math.min(2 * S.d * S.zoom, 2 * 445); }
+  const h = Math.min(T.ratio * L, 880), t = dir(tAng), nn = dir(tAng + 90);
+  if (S.mode !== 'hinge') {
+    // slide the band along the mirrors (this keeps it centred on a mirror line): start where the ornaments are
+    let sw = 0, sp = 0;
+    for (const o of S.orn) { const w = o.cw * o.ch * o.s * o.s; sw += w; sp += w * ((o.x - S.O.x) * nn.x + (o.y - S.O.y) * nn.y); }
+    const lim = Math.max(0, RES / 2 - h / 2 - 4);
+    const off = Math.max(-lim, Math.min(lim, (sw ? sp / sw : 0) * S.zoom + T.shift * lim));
+    C.x += off * nn.x; C.y += off * nn.y;
+  }
+  const verts = [[-1, -1], [1, -1], [1, 1], [-1, 1]].map(([p, q]) => ({ x: C.x + p * L / 2 * t.x + q * h / 2 * nn.x, y: C.y + p * L / 2 * t.y + q * h / 2 * nn.y }));
+  return { rect: true, a: Math.min(L, h) / 2, m: tAng, C, verts, L, h, t, nn, width: L };
+}
 function tilesCompatible() {
+  if (T.shape === 'rect') {
+    if (S.mode === 'parallel') return 2 * S.d * S.zoom > 890 ? { ok: false, why: 'zoom' } : { ok: true, why: 'par' };
+    if (S.mode === 'single') return { ok: false, why: 'single' };
+    const r = analyse(S.alpha); if (!r.closed) return { ok: false, why: 'seam' };
+    return { ok: r.n % 2 === 0, n: r.n, need: 2 };
+  }
   if (S.mode !== 'hinge') return { ok: false, why: 'mode' };
   const r = analyse(S.alpha);
   if (!r.closed) return { ok: false, why: 'seam' };
@@ -683,15 +720,24 @@ function tilesCompatible() {
 }
 function renderTiles() {
   const W = tilesC.width, H = tilesC.height, g0 = tileGeom(), { a, C, verts, u, v } = g0;
-  const k = W / (T.across * g0.width);
+  const vert = g0.rect && T.vertical;
+  const k = (vert ? H : W) / (T.across * g0.width);
   const ctx = tctx;
   ctx.setTransform(1, 0, 0, 1, 0, 0); ctx.fillStyle = '#fff'; ctx.fillRect(0, 0, W, H);
-  const rho = rad(SHAPES[T.shape].show - g0.m);                // turn the whole floor so the tiles are level on screen
+  const rho = rad((vert ? 90 : SHAPES[T.shape].show) - g0.m);                // turn the whole floor so the tiles are level on screen
   const setView = () => { ctx.setTransform(1, 0, 0, 1, W / 2, H / 2); ctx.rotate(rho); ctx.scale(k, k); ctx.translate(-C.x, -C.y); };
-  const grow = 1 + 0.9 / (k * a);                               // overlap by about a pixel: no hairline gaps
+  const grow = 1 + 0.9 / (k * (g0.rect ? Math.min(g0.L, g0.h) / 2 : a));                               // overlap by about a pixel: no hairline gaps
   const poly = verts.map(p => ({ x: C.x + (p.x - C.x) * grow, y: C.y + (p.y - C.y) * grow }));
   const cells = [];
-  const N = Math.ceil(Math.max(W, H) / k / Math.min(Math.hypot(u.x, u.y), Math.hypot(v.x, v.y))) + 2;
+  if (g0.rect) {
+    const { L, h, t, nn } = g0, NI = Math.ceil(Math.max(W, H) / k / L / 2) + 2, NR = T.border ? 0 : Math.ceil(Math.max(W, H) / k / h / 2) + 2;
+    for (let r = -NR; r <= NR; r++) for (let i = -NI; i <= NI; i++) {
+      const ox = i * L * t.x, oy = i * L * t.y;
+      if (r % 2 === 0) cells.push([1, 0, 0, 1, r * h * nn.x + ox, r * h * nn.y + oy]);
+      else cells.push([-1, 0, 0, -1, 2 * C.x + r * h * nn.x + ox, 2 * C.y + r * h * nn.y + oy]);   // turned 180°
+    }
+  }
+  const N = g0.rect ? -1 : Math.ceil(Math.max(W, H) / k / Math.min(Math.hypot(u.x, u.y), Math.hypot(v.x, v.y))) + 2;
   const reach = Math.hypot(W, H) / 2 / k + 2 * a;
   const inView = (x, y) => Math.hypot(x - C.x, y - C.y) < reach;
   for (let i = -N; i <= N; i++) for (let j = -N; j <= N; j++) {
@@ -715,15 +761,28 @@ function renderTiles() {
   // note
   const c = tilesCompatible(), note = $('tileNote'), name = SHAPES[T.shape].label;
   let txt;
-  if (c.why === 'mode') txt = `The tiles are cut from the mirror view around the hinge point; joints match only for a hinged-pair rosette.`;
+  if (c.why === 'par') txt = `Seamless for any motif: each strip runs from one mirror line to the next-but-one (one full repeat of the border) and is centred on a mirror line, so strips continue each other end to end, and stacked rows, every other one turned 180°, meet in mirror images.`;
+  else if (c.why === 'zoom') txt = `The repeat (twice the mirror spacing) is larger than the mirror view: zoom out the mirror view or bring the mirrors closer.`;
+  else if (c.why === 'single') txt = `A single mirror gives only one reflection, with no repeat to tile. Use the parallel pair for strips.`;
+  else if (c.why === 'mode') txt = `These tiles are cut around the hinge of a hinged-pair rosette. With parallel mirrors use <b>Strips</b>.`;
   else if (c.why === 'seam') txt = `This opening has a seam, so the tile itself is broken. Choose an angle 180°/n from the first row of chips.`;
   else if (c.ok) txt = `Seamless: every tile is identical, and because each joint lies across a mirror axis of the D<sub>${c.n}</sub> rosette, neighbouring tiles continue each other${T.shape === 'tri' ? ' (every other triangle is turned 180°, as when laying real tiles)' : ''}.`;
+  else if (T.shape === 'rect') txt = `Strips cut from a rosette need n even (90°, 45°, 30°, 22.5°); with D<sub>${c.n}</sub> they break at the joints. Parallel mirrors make strips that always fit.`;
   else txt = `Identical ${name} need a rosette whose symmetry number n is ${c.need === 2 ? 'even' : 'a multiple of 3'}; with D<sub>${c.n}</sub> the patterns break at the joints. Try ${c.need === 2 ? '90°, 45°, 30° or 22.5°' : '60°, 30° or 15°'}.`;
   note.innerHTML = txt + ' <a data-help="h-tiles">Why?</a>'; note.classList.toggle('warn', !c.ok);
   $('tileLbl').textContent = c.ok ? `${name} · seamless` : `${name}`;
+  $('ratioLbl').hidden = $('borderLbl').hidden = T.shape !== 'rect';
+  $('shiftLbl').hidden = T.shape !== 'rect' || S.mode === 'hinge';
+  $('stripDir').hidden = T.shape !== 'rect';
+  $('cropLbl').hidden = T.shape === 'rect' && S.mode !== 'hinge';
 }
-document.querySelectorAll('#tileSeg button').forEach(b => b.onclick = () => {
-  T.shape = b.dataset.t; document.querySelectorAll('#tileSeg button').forEach(x => x.classList.toggle('on', x === b)); redraw(); });
+function setTileShape(sh) { T.shape = sh; document.querySelectorAll('#tileSeg button').forEach(x => x.classList.toggle('on', x.dataset.t === sh)); }
+document.querySelectorAll('#tileSeg button').forEach(b => b.onclick = () => { T.before = null; setTileShape(b.dataset.t); redraw(); });
+document.querySelectorAll('#stripDir button').forEach(b => b.onclick = () => {
+  T.vertical = b.dataset.o === 'v'; document.querySelectorAll('#stripDir button').forEach(x => x.classList.toggle('on', x === b)); redraw(); });
+$('tileShift').addEventListener('input', e => { T.shift = +e.target.value; redraw(); });
+$('tileRatio').addEventListener('input', e => { T.ratio = +e.target.value; redraw(); });
+$('tileBorder').onchange = e => { T.border = e.target.checked; redraw(); };
 $('tileCrop').addEventListener('input', e => { T.crop = +e.target.value; redraw(); });
 $('tileN').addEventListener('input', e => { T.across = +e.target.value; redraw(); });
 $('tileJoints').onchange = e => { T.joints = e.target.checked; redraw(); };
