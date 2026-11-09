@@ -1,0 +1,848 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow, noimageindex, noarchive">
+<meta name="googlebot" content="noindex, nofollow, noimageindex">
+<link rel="icon" href="data:,">
+<title>Hinged mirrors · Combinaisons ornementales (1901)</title>
+<style>
+  :root{
+    --paper:#f6f1e6; --paper2:#efe7d6; --ink:#33291f; --muted:#7a6a55;
+    --ochre:#b07a2a; --teal:#2f5d5a; --rose:#a3434f; --line:#d9ccb3;
+  }
+  *{box-sizing:border-box}
+  [hidden]{display:none!important}
+  html,body{margin:0;background:var(--paper);color:var(--ink);
+    font:14px/1.45 "Iowan Old Style","Palatino Linotype",Palatino,Georgia,serif}
+  header{padding:14px 22px 10px;border-bottom:1px solid var(--line);display:flex;align-items:baseline;gap:18px;flex-wrap:wrap}
+  header h1{font-size:21px;margin:0;font-weight:normal;letter-spacing:.02em}
+  header h1 i{color:var(--teal)}
+  header .sub{color:var(--muted);font-size:13px}
+  main{display:grid;grid-template-columns:clamp(270px,24vw,330px) minmax(0,1fr);gap:0;min-height:calc(100vh - 56px)}
+  aside{border-right:1px solid var(--line);padding:14px 18px 30px;background:var(--paper2);overflow-x:hidden;overflow-y:auto;min-width:0}
+  aside h2{font-size:12px;text-transform:uppercase;letter-spacing:.12em;color:var(--muted);margin:18px 0 8px;font-weight:normal}
+  aside h2:first-child{margin-top:2px}
+  .stage{padding:18px 22px 28px;min-width:0;display:grid;grid-template-columns:minmax(0,1.15fr) minmax(0,1fr);gap:18px;align-content:start}
+  @media (max-width:980px){.stage{grid-template-columns:1fr}}
+  @media (max-width:760px){main{grid-template-columns:1fr} aside{border-right:0;border-bottom:1px solid var(--line)}}
+  figure{margin:0}
+  figcaption{font-size:12px;color:var(--muted);margin:0 0 6px;display:flex;justify-content:space-between;gap:10px}
+  figcaption b{color:var(--ink);font-weight:normal;letter-spacing:.06em;text-transform:uppercase;font-size:11.5px}
+  canvas.view{width:100%;height:auto;display:block;background:#fff;border:1px solid var(--line);
+    box-shadow:0 1px 0 #fff inset, 0 6px 18px -12px rgba(60,40,10,.35);touch-action:none}
+  #sheet{cursor:default}
+  .seg{display:flex;border:1px solid var(--line);border-radius:6px;overflow:hidden}
+  .seg button{flex:1;border:0;border-right:1px solid var(--line);border-radius:0;background:#fbf8f1;margin:0}
+  .seg button:last-child{border-right:0}
+  .seg button.on{background:var(--teal);color:#fff}
+  button{font:inherit;font-size:13px;color:var(--ink);background:#fbf8f1;border:1px solid var(--line);border-radius:5px;padding:5px 9px;cursor:pointer}
+  button:hover{border-color:var(--ochre)}
+  button.primary{background:var(--teal);border-color:var(--teal);color:#fff}
+  .row{display:grid;grid-template-columns:76px minmax(0,1fr) 50px;align-items:center;gap:8px;margin:7px 0}
+  .row label{color:var(--muted);font-size:12.5px;line-height:1.2}
+  .row input[type=range]{width:100%;min-width:0;margin:0;accent-color:var(--teal)}
+  .row output{text-align:right;font-variant-numeric:tabular-nums;font-size:12.5px;white-space:nowrap}
+  .btnrow{display:flex;flex-wrap:wrap;gap:6px;margin:8px 0}
+  .btnrow button{flex:1 1 auto}
+  .chips{display:flex;flex-wrap:wrap;gap:4px;margin:4px 0 2px}
+  .chips button{padding:2px 7px;font-size:12px}
+  .chips .k{color:var(--rose);border-color:#e3c3c3}
+  .small{font-size:12px;color:var(--muted)}
+  .slots{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:8px}
+  .slot{border:1px solid var(--line);border-radius:6px;padding:6px;background:#fbf8f1;cursor:pointer;min-height:118px;display:flex;flex-direction:column;gap:5px}
+  .slot.sel{border-color:var(--teal);box-shadow:0 0 0 2px rgba(47,93,90,.18)}
+  .slot.add{align-items:center;justify-content:center;border-style:dashed;color:var(--teal);min-height:90px;text-align:center}
+  .slots{max-height:46vh;overflow-y:auto;padding-right:2px}
+  .slot canvas{width:100%;height:64px;background:#fff;border:1px solid #eee5d3}
+  .slot .t{font-size:12px;display:flex;justify-content:space-between;gap:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .slot .b{display:flex;gap:4px}
+  .slot .b button{flex:1;padding:2px 4px;font-size:11.5px}
+  #status{border-left:3px solid var(--teal);padding:6px 9px;background:#fbf8f1;font-size:12.5px;margin-top:8px}
+  #status.warn{border-color:var(--rose)}
+  label.cb{display:flex;gap:6px;align-items:center;font-size:12.5px;margin:3px 0}
+  dialog{border:1px solid var(--line);border-radius:8px;padding:0;background:var(--paper);color:var(--ink);width:min(1100px,94vw);max-height:92vh}
+  dialog::backdrop{background:rgba(40,30,15,.45)}
+  .dlg-h{display:flex;justify-content:space-between;align-items:center;padding:10px 14px;border-bottom:1px solid var(--line)}
+  .dlg-h h3{margin:0;font-weight:normal;font-size:17px}
+  .dlg-b{padding:12px 14px;overflow:auto;max-height:calc(92vh - 110px)}
+  .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:10px}
+  .grid figure{cursor:pointer;border:1px solid var(--line);background:#fff;padding:4px;border-radius:4px}
+  .grid figure:hover{border-color:var(--ochre)}
+  .grid img{width:100%;display:block}
+  .grid figcaption{justify-content:center;margin:3px 0 0}
+  .tabs{display:flex;gap:4px}
+  .tabs button.on{background:var(--teal);border-color:var(--teal);color:#fff}
+  .libbar{display:flex;gap:12px;align-items:center;margin:0 0 10px;flex-wrap:wrap}
+  .libbar select{font:inherit;font-size:13px;padding:3px 6px;border:1px solid var(--line);border-radius:5px;background:#fff}
+  .lib h4{margin:14px 0 6px;font-weight:normal;font-size:13px;color:var(--muted);letter-spacing:.06em;text-transform:uppercase}
+  .lib h4:first-child{margin-top:0}
+  .lib .og{display:grid;grid-template-columns:repeat(auto-fill,minmax(110px,1fr));gap:8px}
+  .lib .og div{background:#fff;border:1px solid var(--line);border-radius:4px;height:110px;display:flex;align-items:center;justify-content:center;cursor:pointer;padding:5px;position:relative}
+  .lib .og div:hover{border-color:var(--ochre)}
+  .lib .og img{max-width:100%;max-height:100%}
+  .lib .og i{flex:none;transform:scale(.82)}
+  .lib .og span{position:absolute;bottom:2px;right:4px;font-size:10px;color:var(--muted)}
+  .ov{position:fixed;inset:0;background:rgba(40,30,15,.48);z-index:50;display:flex;justify-content:center;align-items:flex-start;padding:3vh 2vw}
+  .ovp{background:var(--paper);border:1px solid var(--line);border-radius:8px;width:min(1080px,100%);max-height:94vh;display:flex;flex-direction:column;box-shadow:0 20px 50px -20px rgba(40,30,15,.5)}
+  .ovh{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;padding:10px 16px;border-bottom:1px solid var(--line)}
+  .ovh h3{margin:0;font-weight:normal;font-size:18px}
+  .ovtools{display:flex;gap:8px;align-items:center}
+  .ovb{overflow:auto;padding:14px 22px 26px}
+  .ovintro{margin:0 0 14px;line-height:1.5}
+  .ovintro a,.notes a{color:var(--teal)}
+  .ptab{display:grid;grid-template-columns:1fr 1fr;column-gap:32px}
+  .ptab.fr .en,.ptab.en .fr{display:none}
+  .ptab.fr,.ptab.en{grid-template-columns:minmax(0,680px);justify-content:center}
+  .ptab .h{font-size:11.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);border-bottom:1px solid var(--line);padding-bottom:4px;margin-bottom:6px}
+  .ptab p{margin:0 0 12px;line-height:1.6;font-size:15px}
+  .ptab .fr p{font-style:normal}
+  .ptab .sec{font-size:12px;letter-spacing:.1em;text-transform:uppercase;color:var(--ochre);margin:10px 0 6px}
+  .ptab .fig{font-size:13px;color:var(--muted);border-left:3px solid var(--line);padding-left:10px;font-style:italic}
+  .ptab .sign{text-align:right}
+  .sic{text-decoration:underline dotted var(--rose);text-underline-offset:3px}
+  .sicnote{color:var(--rose);font-size:12px}
+  sup.n a{color:var(--teal);text-decoration:none;font-size:11px;padding:0 1px}
+  .notes{padding-left:20px;margin:6px 0}.notes li{margin:0 0 8px;line-height:1.5;font-size:13.5px}
+  .ovb h4{font-weight:normal;font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);margin:18px 0 4px;border-top:1px solid var(--line);padding-top:12px}
+  @media (max-width:760px){.ptab{grid-template-columns:1fr}.ptab.both .h,.ptab.both .sec.en{display:none}.ptab.both div.en{border-left:2px solid var(--line);padding-left:10px;color:#4a3f33}.ovb{padding:12px 14px 22px}}
+  #langSeg button{white-space:nowrap}
+  #cropCanvas{max-width:100%;display:block;margin:0 auto;cursor:crosshair;touch-action:none;background:#fff}
+  .dlg-f{display:flex;gap:8px;justify-content:space-between;align-items:center;padding:10px 14px;border-top:1px solid var(--line)}
+  kbd{font:11px ui-monospace,monospace;background:#fff;border:1px solid var(--line);border-radius:3px;padding:0 3px}
+</style>
+</head>
+<body>
+<header>
+  <h1><i>Combinaisons ornementales</i> — the hinged mirror</h1>
+  <span class="sub">Verneuil, Auriol &amp; Mucha, 1901 · place any number of the book's ornaments, then set the mirrors as the preface describes</span>
+  <button id="openPreface" style="margin-left:auto">Read the original text (FR / EN)</button>
+</header>
+<main>
+<aside>
+  <h2>Ornaments</h2>
+  <div class="row" style="display:flex;justify-content:space-between;margin:0 0 6px"><span class="small" id="ornCount" style="align-self:center"></span><span style="display:flex;gap:6px"><button id="addOrn" class="primary" style="padding:3px 10px;font-size:12.5px">+ Add ornament</button><button id="clearAll" style="padding:2px 8px;font-size:12px">Clear all</button></span></div>
+  <div class="slots" id="slots"></div>
+  <div id="ornCtl" style="margin-top:8px">
+    <div class="row"><label>Scale</label><input type="range" id="oScale" min="0.1" max="3" step="0.01"><output id="oScaleV"></output></div>
+    <div class="row"><label>Rotation</label><input type="range" id="oRot" min="-180" max="180" step="0.5"><output id="oRotV"></output></div>
+    <div class="row"><label>Contrast</label><input type="range" id="clean" min="0" max="1" step="0.05" value="0"><output id="cleanV"></output></div>
+    <div class="btnrow"><button id="oFlip">Flip</button><button id="oFront">To front</button><button id="oCenter">Centre on hinge</button></div>
+  </div>
+
+  <h2>Mirrors</h2>
+  <div class="seg" id="modeSeg">
+    <button data-m="hinge" class="on">Hinged pair</button>
+    <button data-m="parallel">Parallel pair</button>
+    <button data-m="single">Single</button>
+  </div>
+
+  <div id="hingeCtl">
+    <div class="row"><label>Opening α</label><input type="range" id="alpha" min="3" max="180" step="0.1"><output id="alphaV"></output></div>
+    <div class="small">Correct angles, 180°/n:</div>
+    <div class="chips" id="chipsN"></div>
+    <div class="small">Verneuil's dial marks, 360°/k:</div>
+    <div class="chips" id="chipsK"></div>
+    <label class="cb"><input type="checkbox" id="snap" checked> Snap opening to listed angles</label>
+    <div class="row"><label>Bisector β</label><input type="range" id="beta" min="-180" max="180" step="0.5"><output id="betaV"></output></div>
+  </div>
+  <div id="parCtl" hidden>
+    <div class="row"><label>Spacing</label><input type="range" id="dist" min="10" max="600" step="1"><output id="distV"></output></div>
+  </div>
+  <div id="lineCtl" hidden>
+    <div class="row"><label>Direction</label><input type="range" id="theta" min="-180" max="180" step="0.5"><output id="thetaV"></output></div>
+  </div>
+  <div id="status"></div>
+
+  <h2>Mirror view</h2>
+  <div class="row"><label>Zoom</label><input type="range" id="zoom" min="0.25" max="3" step="0.01"><output id="zoomV"></output></div>
+  <label class="cb"><input type="checkbox" id="showLines" checked> Show mirror lines</label>
+  <label class="cb"><input type="checkbox" id="showSeam" checked> Mark the seam</label>
+  <div class="btnrow">
+    <button id="demo">Verneuil's dial demo</button>
+    <button id="shuffle" title="Add a random ornament from the library">Random ornament</button>
+    <button id="export">Save PNG</button>
+  </div>
+  <p class="small" style="margin-top:14px">
+    On the sheet: drag an ornament to move it; <kbd>wheel</kbd> scales it, <kbd>Shift</kbd>+<kbd>wheel</kbd> rotates.
+    Mirror handles: <b style="color:var(--teal)">●</b> hinge, <b style="color:var(--ochre)">◆</b> turn, <b style="color:var(--rose)">▲</b> open / spacing.
+  </p>
+  <p class="small">The mirror view is a planar unfolding: each image wedge (or strip) is the sheet rotated or reflected into place. With two hinged mirrors the two chains of images meet behind the hinge; unless α = 180°/n they disagree there (the red seam).</p>
+</aside>
+
+<section class="stage">
+  <figure>
+    <figcaption><b>The sheet</b><span id="sheetHint">what lies in front of the mirrors is unshaded</span></figcaption>
+    <canvas id="sheet" class="view" width="1000" height="750"></canvas>
+  </figure>
+  <figure>
+    <figcaption><b>Seen in the mirrors</b><span id="groupLbl"></span></figcaption>
+    <canvas id="result" class="view" width="900" height="900"></canvas>
+  </figure>
+</section>
+</main>
+
+<div class="ov" id="prefOv" hidden role="dialog" aria-modal="true" aria-labelledby="prefTitle">
+  <div class="ovp">
+    <div class="ovh">
+      <h3 id="prefTitle">The original text · <i>De l'emploi du miroir</i> (1901)</h3>
+      <span class="ovtools">
+        <span class="seg" id="langSeg"><button data-l="both" class="on">Side by side</button><button data-l="fr">Français</button><button data-l="en">English</button></span>
+        <button id="prefClose" aria-label="Close">Close ✕</button>
+      </span>
+    </div>
+    <div class="ovb" id="prefBody">
+      <p class="small ovintro">Transcribed from the first edition (Librairie Centrale des Beaux-Arts, c. 1901), checked against the New York Public Library scan. Spelling and punctuation follow the print; on the cover and title page, “ / ” marks a line break in the lettering. <span class="sicnote">[sic]</span> marks departures from standard usage in the original; numbered notes explain them and flag statements that the mathematics does not support. English translation: ours.
+      · <a href="https://digitalcollections.nypl.org/collections/0160f0f0-c6ec-012f-5675-3c075448cc4b" target="_blank" rel="noopener">View the page images at NYPL Digital Collections ↗</a></p>
+      <div id="prefText"></div>
+      <h4>Notes</h4>
+      <ol id="prefNotes" class="notes"></ol>
+    </div>
+  </div>
+</div>
+
+<dialog id="dlg">
+  <div class="dlg-h"><h3 id="dlgTitle">Choose a plate</h3>
+    <span class="tabs"><button id="tabLib" class="on">Ornament library</button><button id="tabPlates">Whole plates / crop</button><button id="dlgClose">Close</button></span></div>
+  <div class="dlg-b">
+    <div id="libWrap" class="lib">
+      <div class="libbar">
+        <label class="small">Plate <select id="libPlate"><option value="0">All plates</option></select></label>
+        <label class="cb"><input type="checkbox" id="libFrames"> Include plate frames</label>
+        <span class="small" id="libCount"></span>
+      </div>
+      <div id="libList"></div>
+    </div>
+    <div class="grid" id="plateGrid"></div>
+    <div id="cropWrap" hidden>
+      <canvas id="cropCanvas"></canvas>
+    </div>
+  </div>
+  <div class="dlg-f" id="cropFoot" hidden>
+    <button id="cropBack">← All plates</button>
+    <span class="small">Drag a rectangle around the ornament you want.</span>
+    <span style="display:flex;gap:6px"><button id="cropWhole">Use whole plate</button><button class="primary" id="cropUse" disabled>Use selection</button></span>
+  </div>
+</dialog>
+
+<script>
+(() => {
+'use strict';
+const FIRST_PLATE = 3; // plates 1–2 are the title page and the preface: not offered as ornaments
+const SW = 1000, SH = 750, RES = 900, NPLATES = 60;
+const rad = d => d * Math.PI / 180, deg = r => r * 180 / Math.PI;
+const wrap180 = a => ((a + 180) % 360 + 360) % 360 - 180;
+const dir = a => ({ x: Math.cos(rad(a)), y: Math.sin(rad(a)) });
+const $ = id => document.getElementById(id);
+const plateLabel = n => n === 1 ? 'Title page' : n === 2 ? 'Preface figures' : 'Plate ' + n;
+const pad = n => String(n).padStart(2, '0');
+
+const sheet = $('sheet'), sctx = sheet.getContext('2d');
+const result = $('result'), rctx = result.getContext('2d');
+const src = document.createElement('canvas'); src.width = SW; src.height = SH;
+const g = src.getContext('2d');
+
+const S = {
+  orn: [], sel: -1,
+  mode: 'hinge', O: { x: 500, y: 375 }, beta: -90, alpha: 120, theta: 0, d: 160,
+  zoom: 1, snap: true, showLines: true, showSeam: true, clean: 0
+};
+
+const imgCache = {};
+function loadPlate(n) {
+  if (!imgCache[n]) imgCache[n] = new Promise((res, rej) => {
+    const im = new Image(); im.onload = () => res(im); im.onerror = rej;
+    im.src = 'plates/plate_' + pad(n) + '.jpg';
+  });
+  return imgCache[n];
+}
+
+/* ---------- angle bookkeeping ---------- */
+const N_ANG = [2, 3, 4, 5, 6, 8, 10, 12].map(n => ({ v: 180 / n, n }));
+const K_ANG = [3, 4, 5, 6, 7, 8].map(k => ({ v: 360 / k, k }));
+function near(a, b, tol) { return Math.abs(a - b) < tol; }
+function analyse(a) {
+  const n = Math.round(180 / a);
+  if (n >= 1 && near(a, 180 / n, 0.05)) return { closed: true, n };
+  const k = Math.round(360 / a);
+  if (k >= 2 && near(a, 360 / k, 0.05)) return { closed: false, k };
+  return { closed: false };
+}
+function snapAlpha(a) {
+  if (!S.snap) return a;
+  const n = Math.round(180 / a);
+  for (let m = Math.max(1, n - 1); m <= n + 1; m++) if (near(a, 180 / m, 1.2)) return 180 / m;
+  const k = Math.round(360 / a);
+  if (k >= 3 && k <= 8 && near(a, 360 / k, 1.2)) return 360 / k;
+  return a;
+}
+
+/* ---------- source sheet ---------- */
+function cleanFilter() {
+  const c = S.clean;
+  return c ? `contrast(${1 + 0.5 * c}) saturate(${1 + 0.3 * c})` : 'none';
+}
+function renderSource() {
+  g.setTransform(1, 0, 0, 1, 0, 0);
+  g.globalCompositeOperation = 'source-over'; g.filter = 'none';
+  g.fillStyle = '#fff'; g.fillRect(0, 0, SW, SH);
+  for (const o of S.orn) {
+    g.save();
+    g.globalCompositeOperation = 'multiply';
+    g.filter = cleanFilter();
+    g.translate(o.x, o.y); g.rotate(rad(o.rot)); g.scale(o.s * (o.flip ? -1 : 1), o.s);
+    g.drawImage(o.img, o.cx, o.cy, o.cw, o.ch, -o.cw / 2, -o.ch / 2, o.cw, o.ch);
+    g.restore();
+  }
+}
+
+/* ---------- handles ---------- */
+function handles() {
+  const O = S.O, h = [{ id: 'O', x: O.x, y: O.y, c: '#2f5d5a', shape: 'dot' }];
+  if (S.mode === 'hinge') {
+    const r = dir(S.beta), a = dir(S.beta + S.alpha / 2);
+    h.push({ id: 'rot', x: O.x + 130 * r.x, y: O.y + 130 * r.y, c: '#b07a2a', shape: 'dia' });
+    h.push({ id: 'open', x: O.x + 220 * a.x, y: O.y + 220 * a.y, c: '#a3434f', shape: 'tri' });
+  } else {
+    const t = dir(S.theta);
+    h.push({ id: 'rot', x: O.x + 170 * t.x, y: O.y + 170 * t.y, c: '#b07a2a', shape: 'dia' });
+    if (S.mode === 'parallel') {
+      const n = dir(S.theta + 90);
+      h.push({ id: 'dist', x: O.x + S.d * n.x - 90 * t.x, y: O.y + S.d * n.y - 90 * t.y, c: '#a3434f', shape: 'tri' });
+    }
+  }
+  return h;
+}
+function drawHandle(ctx, h) {
+  ctx.save(); ctx.translate(h.x, h.y);
+  ctx.fillStyle = h.c; ctx.strokeStyle = '#fff'; ctx.lineWidth = 2.5;
+  ctx.beginPath();
+  if (h.shape === 'dot') ctx.arc(0, 0, 10, 0, 7);
+  else if (h.shape === 'dia') { ctx.moveTo(0, -12); ctx.lineTo(12, 0); ctx.lineTo(0, 12); ctx.lineTo(-12, 0); ctx.closePath(); }
+  else { ctx.moveTo(0, -12); ctx.lineTo(11, 9); ctx.lineTo(-11, 9); ctx.closePath(); }
+  ctx.stroke(); ctx.fill(); ctx.restore();
+}
+
+/* mirror line with a hatched silvered back, drawn from p along direction a, length L; back side toward normal sgn */
+function mirrorLine(ctx, p, a, L, backSign, from = 0) {
+  const d = dir(a), n = dir(a + 90 * backSign);
+  ctx.save();
+  ctx.strokeStyle = 'rgba(176,122,42,.55)'; ctx.lineWidth = 1.2;
+  ctx.beginPath();
+  for (let s = from + 6; s < L; s += 11) {
+    const x = p.x + d.x * s, y = p.y + d.y * s;
+    ctx.moveTo(x, y); ctx.lineTo(x + n.x * 7 + d.x * 4, y + n.y * 7 + d.y * 4);
+  }
+  ctx.stroke();
+  ctx.strokeStyle = '#8a5a17'; ctx.lineWidth = 3;
+  ctx.beginPath(); ctx.moveTo(p.x + d.x * from, p.y + d.y * from); ctx.lineTo(p.x + d.x * L, p.y + d.y * L); ctx.stroke();
+  ctx.restore();
+}
+
+function renderSheet() {
+  sctx.setTransform(1, 0, 0, 1, 0, 0);
+  sctx.drawImage(src, 0, 0);
+  const O = S.O, L = 3000;
+  // shade what is behind the mirrors
+  sctx.save();
+  sctx.beginPath(); sctx.rect(-L, -L, 2 * L, 2 * L);
+  sctx.translate(O.x, O.y);
+  if (S.mode === 'hinge') {
+    sctx.rotate(rad(S.beta));
+    sctx.moveTo(0, 0); sctx.arc(0, 0, L, rad(-S.alpha / 2), rad(S.alpha / 2)); sctx.closePath();
+  } else {
+    sctx.rotate(rad(S.theta));
+    sctx.rect(-L, 0, 2 * L, S.mode === 'parallel' ? S.d : L);
+  }
+  sctx.fillStyle = 'rgba(60,45,25,.22)'; sctx.fill('evenodd');
+  sctx.restore();
+  // mirror lines
+  if (S.mode === 'hinge') {
+    mirrorLine(sctx, O, S.beta - S.alpha / 2, L, -1);
+    mirrorLine(sctx, O, S.beta + S.alpha / 2, L, +1);
+    // bisector
+    const b = dir(S.beta);
+    sctx.save(); sctx.setLineDash([4, 6]); sctx.strokeStyle = 'rgba(47,93,90,.6)'; sctx.lineWidth = 1.2;
+    sctx.beginPath(); sctx.moveTo(O.x, O.y); sctx.lineTo(O.x + b.x * 130, O.y + b.y * 130); sctx.stroke(); sctx.restore();
+  } else {
+    const t = dir(S.theta), p0 = { x: O.x - t.x * L, y: O.y - t.y * L };
+    mirrorLine(sctx, p0, S.theta, 2 * L, -1);
+    if (S.mode === 'parallel') {
+      const n = dir(S.theta + 90);
+      mirrorLine(sctx, { x: p0.x + n.x * S.d, y: p0.y + n.y * S.d }, S.theta, 2 * L, +1);
+    }
+  }
+  // selected ornament outline
+  const o = S.orn[S.sel];
+  if (o) {
+    sctx.save(); sctx.translate(o.x, o.y); sctx.rotate(rad(o.rot));
+    sctx.setLineDash([5, 5]); sctx.strokeStyle = 'rgba(47,93,90,.7)'; sctx.lineWidth = 1.2;
+    sctx.strokeRect(-o.cw * o.s / 2, -o.ch * o.s / 2, o.cw * o.s, o.ch * o.s);
+    sctx.restore();
+  }
+  for (const h of handles()) drawHandle(sctx, h);
+}
+
+/* ---------- mirror view (planar unfolding) ---------- */
+function setView(ctx) {
+  ctx.setTransform(1, 0, 0, 1, 0, 0);
+  ctx.translate(RES / 2, RES / 2); ctx.scale(S.zoom, S.zoom); ctx.translate(-S.O.x, -S.O.y);
+}
+function renderResult() {
+  const ctx = rctx, O = S.O, L = 4000 / S.zoom + 2000;
+  ctx.setTransform(1, 0, 0, 1, 0, 0); ctx.fillStyle = '#fff'; ctx.fillRect(0, 0, RES, RES);
+  const lines = []; let seam = null;
+  if (S.mode === 'hinge') {
+    const a = S.alpha, N = Math.ceil(180 / a) + 1;
+    for (let j = -N; j <= N; j++) {
+      const lo = Math.max(j * a - a / 2, -180), hi = Math.min(j * a + a / 2, 180);
+      if (hi - lo < 1e-9) continue;
+      ctx.save(); setView(ctx);
+      ctx.translate(O.x, O.y); ctx.rotate(rad(S.beta));
+      ctx.beginPath(); ctx.moveTo(0, 0); ctx.arc(0, 0, L, rad(lo), rad(hi)); ctx.closePath(); ctx.clip();
+      if (j % 2 === 0) ctx.rotate(rad(j * a));
+      else { const g2 = rad(j * a); ctx.transform(Math.cos(g2), Math.sin(g2), Math.sin(g2), -Math.cos(g2), 0, 0); }
+      ctx.rotate(-rad(S.beta)); ctx.translate(-O.x, -O.y);
+      ctx.drawImage(src, 0, 0);
+      ctx.restore();
+      const b = j * a + a / 2;
+      if (b > -180 + 1e-6 && b < 180 - 1e-6) lines.push({ ang: S.beta + b, real: j === 0 || j === -1 });
+    }
+    if (!analyse(a).closed) seam = S.beta + 180;
+  } else {
+    const d = S.mode === 'parallel' ? S.d : 1e9;
+    const reach = (RES / 2) / S.zoom * 1.5;
+    const N = S.mode === 'parallel' ? Math.ceil(reach / d) + 1 : 1;
+    for (let j = -N; j <= N; j++) {
+      if (S.mode === 'single' && j > 0) break;
+      ctx.save(); setView(ctx);
+      ctx.translate(O.x, O.y); ctx.rotate(rad(S.theta));
+      ctx.beginPath();
+      if (S.mode === 'single') ctx.rect(-L, j === 0 ? 0 : -L, 2 * L, L);
+      else ctx.rect(-L, j * d, 2 * L, d);
+      ctx.clip();
+      if (S.mode === 'single') { if (j === -1) ctx.transform(1, 0, 0, -1, 0, 0); }
+      else if (j % 2 === 0) ctx.translate(0, j * d);
+      else ctx.transform(1, 0, 0, -1, 0, (j + 1) * d);
+      ctx.rotate(-rad(S.theta)); ctx.translate(-O.x, -O.y);
+      ctx.drawImage(src, 0, 0);
+      ctx.restore();
+      if (S.mode === 'parallel') lines.push({ off: j * d, real: j === 0 || j === 1 });
+    }
+    if (S.mode === 'single') lines.push({ off: 0, real: true });
+  }
+  // overlays
+  if (S.showLines) {
+    ctx.save(); setView(ctx); ctx.lineWidth = 1.4 / S.zoom;
+    for (const l of lines) {
+      ctx.strokeStyle = l.real ? 'rgba(138,90,23,.75)' : 'rgba(138,90,23,.28)';
+      ctx.setLineDash(l.real ? [] : [6 / S.zoom, 6 / S.zoom]);
+      ctx.beginPath();
+      if (l.ang !== undefined) { const v = dir(l.ang); ctx.moveTo(O.x, O.y); ctx.lineTo(O.x + v.x * L, O.y + v.y * L); }
+      else { const t = dir(S.theta), n = dir(S.theta + 90);
+        const px = O.x + n.x * l.off, py = O.y + n.y * l.off;
+        ctx.moveTo(px - t.x * L, py - t.y * L); ctx.lineTo(px + t.x * L, py + t.y * L); }
+      ctx.stroke();
+    }
+    ctx.restore();
+  }
+  if (seam !== null && S.showSeam) {
+    ctx.save(); setView(ctx); const v = dir(seam);
+    ctx.strokeStyle = 'rgba(200,30,40,.85)'; ctx.lineWidth = 2.2 / S.zoom; ctx.setLineDash([9 / S.zoom, 6 / S.zoom]);
+    ctx.beginPath(); ctx.moveTo(O.x, O.y); ctx.lineTo(O.x + v.x * L, O.y + v.y * L); ctx.stroke();
+    ctx.restore();
+  }
+  if (S.mode === 'hinge') { ctx.save(); setView(ctx); ctx.fillStyle = '#2f5d5a';
+    ctx.beginPath(); ctx.arc(O.x, O.y, 4 / S.zoom, 0, 7); ctx.fill(); ctx.restore(); }
+}
+
+/* ---------- status ---------- */
+function updateStatus() {
+  const st = $('status'); let html, warn = false, grp = '';
+  if (S.mode === 'hinge') {
+    const a = S.alpha, r = analyse(a);
+    if (r.closed) {
+      html = `α = 180°/${r.n} = ${fmt(a)}°. The two chains of images agree behind the hinge: a rosette with symmetry D<sub>${r.n}</sub>, ${2 * r.n} copies of the wedge.`;
+      grp = `D${sub(r.n)} · ${2 * r.n} images`;
+      const k = Math.round(360 / a); if (k <= 8 && k >= 3 && near(a, 360 / k, 0.05)) html += ` (This is also Verneuil's dial mark ${k}.)`;
+    } else if (r.k) {
+      warn = true;
+      html = `α = 360°/${r.k} = ${fmt(a)}° — Verneuil's dial mark ${r.k}. Since 360/α is odd, the image chains meet behind the hinge with opposite handedness: a seam (red) unless the motif is symmetric about the bisector, in which case the true group is D<sub>${r.k}</sub>.`;
+      grp = 'seam behind the hinge';
+    } else {
+      warn = true;
+      html = `α = ${fmt(a)}° is not an aliquot part of 180°: the images do not close up (Brewster's "want of symmetry"). Seam marked in red.`;
+      grp = 'seam behind the hinge';
+    }
+  } else if (S.mode === 'parallel') {
+    html = `Two parallel mirrors ${Math.round(S.d)} px apart: an endless border with vertical mirror lines only (frieze <i>∗∞∞</i>). Period ${Math.round(2 * S.d)} px.`;
+    grp = 'frieze ∗∞∞';
+  } else {
+    html = 'One mirror: the sheet and its reflection, bilateral symmetry D<sub>1</sub>. At 45° to a border it turns the border through a right angle (Verneuil\'s CC).';
+    grp = 'D₁';
+  }
+  st.innerHTML = html; st.classList.toggle('warn', warn); $('groupLbl').textContent = grp;
+}
+const fmt = v => (Math.round(v * 100) / 100).toString();
+const sub = n => String(n).split('').map(c => '₀₁₂₃₄₅₆₇₈₉'[c]).join('');
+
+/* ---------- render loop ---------- */
+let pending = false, srcDirty = true;
+function redraw(srcChanged) {
+  if (srcChanged) srcDirty = true;
+  if (pending) return; pending = true;
+  requestAnimationFrame(() => {
+    pending = false;
+    if (srcDirty) { renderSource(); srcDirty = false; }
+    renderSheet(); renderResult(); updateStatus(); syncControls();
+  });
+}
+
+/* ---------- controls ---------- */
+function syncControls() {
+  $('alpha').value = S.alpha; $('alphaV').textContent = fmt(S.alpha) + '°';
+  $('beta').value = wrap180(S.beta); $('betaV').textContent = Math.round(wrap180(S.beta)) + '°';
+  $('theta').value = wrap180(S.theta); $('thetaV').textContent = Math.round(wrap180(S.theta)) + '°';
+  $('dist').value = S.d; $('distV').textContent = Math.round(S.d);
+  $('zoom').value = S.zoom; $('zoomV').textContent = S.zoom.toFixed(2) + '×';
+  $('cleanV').textContent = Math.round(S.clean * 100) + '%';
+  const o = S.orn[S.sel];
+  for (const id of ['oScale', 'oRot', 'oFlip', 'oFront', 'oCenter']) $(id).disabled = !o;
+  if (o) { $('oScale').value = o.s; $('oScaleV').textContent = o.s.toFixed(2) + '×';
+    $('oRot').value = o.rot; $('oRotV').textContent = Math.round(o.rot) + '°'; }
+  else { $('oScaleV').textContent = '–'; $('oRotV').textContent = '–'; }
+  document.querySelectorAll('#modeSeg button').forEach(b => b.classList.toggle('on', b.dataset.m === S.mode));
+  $('hingeCtl').hidden = S.mode !== 'hinge'; $('parCtl').hidden = S.mode !== 'parallel'; $('lineCtl').hidden = S.mode === 'hinge';
+}
+function bindRange(id, fn, src) { $(id).addEventListener('input', e => { fn(+e.target.value); redraw(src); }); }
+bindRange('alpha', v => S.alpha = snapAlpha(v));
+bindRange('beta', v => S.beta = v);
+bindRange('theta', v => S.theta = v);
+bindRange('dist', v => S.d = v);
+bindRange('zoom', v => S.zoom = v);
+bindRange('clean', v => S.clean = v, true);
+bindRange('oScale', v => { if (S.orn[S.sel]) S.orn[S.sel].s = v; }, true);
+bindRange('oRot', v => { if (S.orn[S.sel]) S.orn[S.sel].rot = v; }, true);
+$('oFlip').onclick = () => { const o = S.orn[S.sel]; if (o) { o.flip = !o.flip; redraw(true); } };
+$('oFront').onclick = () => { const o = S.orn[S.sel]; if (!o) return; S.orn.splice(S.sel, 1); S.orn.push(o); S.sel = S.orn.length - 1; renderSlots(); redraw(true); };
+$('oCenter').onclick = () => { const o = S.orn[S.sel]; if (o) { o.x = S.O.x; o.y = S.O.y; redraw(true); } };
+$('snap').onchange = e => S.snap = e.target.checked;
+$('showLines').onchange = e => { S.showLines = e.target.checked; redraw(); };
+$('showSeam').onchange = e => { S.showSeam = e.target.checked; redraw(); };
+document.querySelectorAll('#modeSeg button').forEach(b => b.onclick = () => {
+  const prev = S.mode; S.mode = b.dataset.m;
+  if (prev === 'hinge' && S.mode !== 'hinge') S.theta = S.beta - S.alpha / 2;
+  if (prev !== 'hinge' && S.mode === 'hinge') S.beta = S.theta + S.alpha / 2;
+  redraw();
+});
+for (const { v, n } of N_ANG) {
+  const b = document.createElement('button'); b.textContent = fmt(v) + '°'; b.title = '180°/' + n + ' → D' + n;
+  b.onclick = () => { S.alpha = v; redraw(); }; $('chipsN').appendChild(b);
+}
+for (const { v, k } of K_ANG) {
+  const b = document.createElement('button'); b.className = 'k'; b.textContent = k + ': ' + fmt(Math.round(v * 10) / 10) + '°';
+  b.title = 'Dial mark ' + k + ' = 360°/' + k; b.onclick = () => { S.alpha = v; redraw(); }; $('chipsK').appendChild(b);
+}
+
+/* ---------- slots ---------- */
+const MAX_ORN = 60;
+function ornLabel(o) { return o.lib ? o.lib.replace(/^p0?(\d+)_0?(\d+)$/, 'pl. $1 · #$2') : plateLabel(o.n).replace('Plate ', 'pl. '); }
+function renderSlots() {
+  const wrap = $('slots'); wrap.innerHTML = '';
+  S.orn.forEach((o, i) => {
+    const d = document.createElement('div');
+    d.className = 'slot' + (S.sel === i ? ' sel' : '');
+    d.innerHTML = `<div class="t"><span>#${i + 1}</span><span class="small">${ornLabel(o)}</span></div>`;
+    const c = document.createElement('canvas'); c.width = 220; c.height = 128; d.appendChild(c);
+    const x = c.getContext('2d'), k = Math.min(c.width / o.cw, c.height / o.ch);
+    x.drawImage(o.img, o.cx, o.cy, o.cw, o.ch, (c.width - o.cw * k) / 2, (c.height - o.ch * k) / 2, o.cw * k, o.ch * k);
+    const bb = document.createElement('div'); bb.className = 'b';
+    const rp = document.createElement('button'); rp.textContent = 'Replace';
+    rp.onclick = e => { e.stopPropagation(); openPicker(i); };
+    const du = document.createElement('button'); du.textContent = 'Copy'; du.title = 'Duplicate this ornament';
+    du.onclick = e => { e.stopPropagation(); if (S.orn.length >= MAX_ORN) return; S.orn.push({ ...o, x: o.x + 30, y: o.y + 30 }); S.sel = S.orn.length - 1; renderSlots(); redraw(true); };
+    const rm = document.createElement('button'); rm.textContent = '✕'; rm.title = 'Remove';
+    rm.onclick = e => { e.stopPropagation(); S.orn.splice(i, 1); if (S.sel > i) S.sel--; else if (S.sel === i) S.sel = Math.min(i, S.orn.length - 1); renderSlots(); redraw(true); };
+    bb.append(rp, du, rm); d.appendChild(bb);
+    d.onclick = () => { S.sel = i; renderSlots(); redraw(); };
+    wrap.appendChild(d);
+  });
+  $('addOrn').disabled = S.orn.length >= MAX_ORN;
+  if (!S.orn.length) wrap.innerHTML = '<p class="small" style="grid-column:1/-1;margin:4px 0">No ornaments yet. Use “+ Add ornament” to pick from the library (plates 3–60).</p>';
+  $('ornCount').textContent = S.orn.length ? `${S.orn.length} on the sheet` : '';
+}
+
+/* ---------- ornament library (auto-segmented from all plates) ---------- */
+// [id, plate, width, height, isFrame]
+const LIB = [["p01_01",1,820,305,0],["p01_02",1,284,195,0],["p01_03",1,107,409,0],["p01_04",1,820,99,0],["p01_05",1,820,67,0],["p01_06",1,820,228,0],["p01_07",1,820,188,0],["p01_08",1,112,340,0],["p02_01",2,820,690,0],["p02_02",2,820,202,0],["p02_03",2,820,134,0],["p02_04",2,820,366,0],["p03_01",3,387,243,0],["p03_02",3,233,168,0],["p03_03",3,820,151,0],["p03_04",3,820,223,0],["p03_05",3,447,448,0],["p03_06",3,307,820,0],["p03_07",3,306,820,0],["p03_08",3,820,634,0],["p03_09",3,820,688,1],["p04_01",4,303,820,0],["p04_02",4,213,754,0],["p04_03",4,684,820,0],["p04_04",4,529,820,0],["p04_05",4,592,606,0],["p04_06",4,508,531,0],["p04_07",4,240,190,0],["p04_08",4,820,699,1],["p05_01",5,748,820,0],["p05_02",5,130,236,0],["p05_03",5,219,820,0],["p05_04",5,820,700,1],["p06_01",6,820,703,0],["p06_02",6,804,358,0],["p06_03",6,57,820,0],["p06_04",6,363,533,0],["p07_01",7,820,721,0],["p07_02",7,215,156,0],["p07_03",7,210,151,0],["p07_04",7,816,820,0],["p07_05",7,805,820,0],["p07_06",7,820,704,1],["p08_01",8,820,663,0],["p08_02",8,820,665,0],["p08_03",8,820,388,0],["p08_04",8,820,705,1],["p09_01",9,585,820,0],["p09_02",9,820,763,0],["p09_03",9,625,820,0],["p09_04",9,390,607,0],["p09_05",9,216,165,0],["p09_06",9,820,700,1],["p10_01",10,658,820,0],["p10_02",10,385,820,0],["p10_03",10,539,820,0],["p10_04",10,787,755,0],["p10_05",10,820,698,1],["p11_01",11,820,700,0],["p11_02",11,369,797,0],["p11_03",11,734,820,0],["p11_04",11,339,820,0],["p11_05",11,709,820,0],["p11_06",11,820,677,0],["p11_07",11,820,710,1],["p12_01",12,206,206,0],["p12_02",12,820,672,0],["p12_03",12,571,501,0],["p12_04",12,773,156,0],["p12_05",12,820,526,1],["p12_06",12,413,820,1],["p13_01",13,725,820,0],["p13_02",13,452,820,0],["p13_03",13,814,820,0],["p13_04",13,820,729,0],["p13_05",13,820,705,1],["p14_01",14,820,719,0],["p14_02",14,229,230,0],["p15_01",15,795,820,0],["p15_02",15,570,657,0],["p15_03",15,820,795,0],["p15_04",15,271,276,0],["p15_05",15,492,395,0],["p15_06",15,221,184,0],["p15_07",15,820,658,1],["p16_01",16,820,699,0],["p16_02",16,820,683,1],["p17_01",17,766,780,0],["p17_02",17,820,596,0],["p17_03",17,752,766,0],["p17_04",17,820,466,0],["p17_05",17,820,688,1],["p18_01",18,366,820,0],["p18_02",18,522,100,0],["p18_03",18,820,96,0],["p18_04",18,820,686,0],["p18_05",18,786,820,0],["p18_06",18,196,197,0],["p18_07",18,820,94,0],["p18_08",18,197,201,0],["p18_09",18,820,710,1],["p19_01",19,820,538,0],["p19_02",19,820,686,0],["p19_03",19,820,684,1],["p20_01",20,820,719,0],["p20_02",20,820,706,1],["p21_01",21,820,602,0],["p21_02",21,820,707,0],["p21_03",21,806,820,0],["p21_04",21,226,188,0],["p21_05",21,778,778,0],["p21_06",21,796,810,0],["p21_07",21,244,653,0],["p21_08",21,820,703,1],["p22_01",22,820,176,0],["p22_02",22,124,820,0],["p22_03",22,820,522,0],["p22_04",22,820,698,1],["p23_01",23,820,820,0],["p23_02",23,322,820,0],["p23_03",23,794,820,0],["p23_04",23,820,801,0],["p23_05",23,805,820,0],["p23_06",23,820,703,1],["p24_01",24,820,692,0],["p24_02",24,598,820,0],["p24_03",24,282,277,0],["p24_04",24,820,749,1],["p25_01",25,820,657,0],["p25_02",25,820,661,1],["p26_01",26,820,501,0],["p26_02",26,181,820,0],["p26_03",26,189,820,0],["p26_04",26,468,467,0],["p26_05",26,463,471,0],["p26_06",26,820,506,0],["p26_07",26,820,704,1],["p27_01",27,820,700,0],["p27_02",27,388,310,0],["p27_03",27,188,191,0],["p27_04",27,820,687,1],["p28_01",28,233,820,0],["p28_02",28,820,378,0],["p28_03",28,820,450,0],["p28_04",28,820,705,1],["p29_01",29,820,700,0],["p29_02",29,786,820,0],["p30_01",30,806,820,0],["p30_02",30,492,474,0],["p30_03",30,409,820,0],["p30_04",30,76,726,0],["p30_05",30,820,484,1],["p31_01",31,820,706,0],["p31_02",31,820,534,0],["p31_03",31,820,689,1],["p32_01",32,820,197,0],["p32_02",32,820,200,0],["p32_03",32,820,513,0],["p32_04",32,820,482,0],["p32_05",32,356,820,0],["p32_06",32,820,726,1],["p33_01",33,719,820,0],["p33_02",33,572,820,0],["p33_03",33,208,172,0],["p33_04",33,140,820,0],["p33_05",33,783,746,0],["p33_06",33,606,820,0],["p33_07",33,820,705,1],["p34_01",34,653,820,0],["p34_02",34,610,632,0],["p34_03",34,352,820,0],["p34_04",34,820,725,1],["p35_01",35,567,820,0],["p35_02",35,337,820,0],["p35_03",35,362,820,0],["p35_04",35,605,788,0],["p35_05",35,770,798,0],["p35_06",35,820,695,1],["p36_01",36,269,268,0],["p36_02",36,393,820,0],["p36_03",36,364,820,0],["p36_04",36,442,820,0],["p36_05",36,820,708,1],["p37_01",37,820,699,0],["p37_02",37,421,820,0],["p37_03",37,820,306,0],["p37_04",37,198,229,0],["p37_05",37,203,220,0],["p37_06",37,202,238,0],["p37_07",37,202,239,0],["p37_08",37,820,737,1],["p38_01",38,820,573,0],["p38_02",38,542,820,0],["p38_03",38,262,820,0],["p38_04",38,820,433,0],["p38_05",38,820,681,1],["p39_01",39,137,820,0],["p39_02",39,435,396,0],["p39_03",39,820,804,0],["p39_04",39,820,737,0],["p39_05",39,820,499,0],["p39_06",39,220,171,0],["p39_07",39,820,625,0],["p39_08",39,820,554,0],["p39_09",39,820,682,1],["p40_01",40,772,820,0],["p40_02",40,820,255,0],["p40_03",40,808,820,0],["p40_04",40,742,279,0],["p40_05",40,820,499,0],["p40_06",40,820,304,0],["p40_07",40,820,383,0],["p40_08",40,820,315,0],["p40_09",40,742,334,0],["p40_10",40,820,342,0],["p40_11",40,820,471,0],["p40_12",40,742,314,0],["p40_13",40,820,704,1],["p41_01",41,820,280,0],["p41_02",41,820,575,0],["p41_03",41,820,210,0],["p41_04",41,820,709,1],["p42_01",42,820,737,0],["p43_01",43,359,373,0],["p43_02",43,820,336,0],["p43_03",43,820,796,0],["p43_04",43,498,820,0],["p43_05",43,820,685,1],["p44_01",44,376,303,0],["p44_02",44,381,299,0],["p44_03",44,820,617,0],["p44_04",44,820,530,0],["p44_05",44,820,641,1],["p45_01",45,563,820,0],["p45_02",45,741,685,0],["p45_03",45,663,557,0],["p45_04",45,498,352,0],["p45_05",45,820,611,0],["p45_06",45,544,549,0],["p45_07",45,791,796,0],["p45_08",45,820,457,1],["p45_09",45,820,688,1],["p46_01",46,297,820,0],["p46_02",46,820,182,0],["p46_03",46,236,820,0],["p46_04",46,738,820,0],["p46_05",46,820,689,1],["p47_01",47,707,820,0],["p47_02",47,820,776,0],["p47_03",47,249,820,0],["p47_04",47,820,685,1],["p48_01",48,820,783,0],["p48_02",48,475,389,0],["p48_03",48,515,820,0],["p48_04",48,565,660,0],["p48_05",48,820,462,0],["p48_06",48,820,715,1],["p49_01",49,443,820,0],["p49_02",49,421,820,0],["p49_03",49,817,820,0],["p49_04",49,820,710,1],["p50_01",50,105,820,0],["p50_02",50,285,294,0],["p50_03",50,820,597,0],["p50_04",50,535,820,0],["p50_05",50,592,820,0],["p50_06",50,820,375,0],["p50_07",50,820,714,1],["p51_01",51,820,585,0],["p51_02",51,820,575,0],["p51_03",51,820,421,0],["p51_04",51,557,820,0],["p51_05",51,751,820,0],["p51_06",51,226,176,0],["p52_01",52,765,820,0],["p52_02",52,450,820,0],["p52_03",52,516,820,0],["p52_04",52,618,820,0],["p52_05",52,820,688,1],["p53_01",53,320,239,0],["p53_02",53,311,234,0],["p53_03",53,820,620,0],["p53_04",53,788,820,0],["p53_05",53,370,402,0],["p53_06",53,560,401,0],["p53_07",53,407,776,0],["p53_08",53,479,685,0],["p53_09",53,667,807,0],["p53_10",53,478,483,0],["p53_11",53,230,194,0],["p53_12",53,820,651,1],["p54_01",54,820,690,0],["p54_02",54,820,197,0],["p54_03",54,78,564,0],["p54_04",54,151,408,0],["p54_05",54,57,820,0],["p54_06",54,820,699,1],["p55_01",55,263,820,0],["p55_02",55,322,820,0],["p55_03",55,820,673,0],["p55_04",55,820,269,0],["p55_05",55,550,560,0],["p55_06",55,820,724,1],["p56_01",56,820,519,0],["p56_02",56,658,358,0],["p56_03",56,576,327,0],["p56_04",56,644,495,0],["p56_05",56,820,185,0],["p56_06",56,820,683,1],["p57_01",57,657,820,0],["p57_02",57,820,656,0],["p57_03",57,658,672,0],["p57_04",57,766,820,0],["p57_05",57,445,820,0],["p57_06",57,817,820,0],["p57_07",57,242,197,0],["p58_01",58,820,678,0],["p58_02",58,820,548,0],["p58_03",58,760,769,0],["p58_04",58,820,700,1],["p59_01",59,820,674,0],["p59_02",59,249,249,0],["p59_03",59,820,689,1],["p59_04",59,820,445,1],["p60_01",60,820,675,0]];
+const libImg = {}, ATLAS_C = 120, ATLAS_COLS = 18;
+function loadLib(id) {
+  if (!libImg[id]) libImg[id] = new Promise((res, rej) => { const im = new Image(); im.onload = () => res(im); im.onerror = rej; im.src = 'ornaments/' + id + '.webp'; });
+  return libImg[id];
+}
+async function placeLib(e) {
+  const [id, n] = e; let img;
+  try { img = await loadLib(id); } catch (err) { delete libImg[id]; const st = $('status'); st.classList.add('warn'); st.textContent = 'Could not load ornament ' + id + '. Check your connection and try again.'; return; }
+  place(n, img, 0, 0, img.width, img.height, { lib: id });
+}
+(() => {
+  const sel = $('libPlate');
+  for (let n = FIRST_PLATE; n <= NPLATES; n++) if (LIB.some(e => e[1] === n)) { const o = document.createElement('option'); o.value = n; o.textContent = plateLabel(n); sel.appendChild(o); }
+  sel.onchange = renderLib; $('libFrames').onchange = renderLib;
+})();
+function renderLib() {
+  const pf = +$('libPlate').value, fr = $('libFrames').checked, list = $('libList'); list.innerHTML = '';
+  const items = LIB.filter(e => e[1] >= FIRST_PLATE && (!pf || e[1] === pf) && (fr || !e[4]));
+  $('libCount').textContent = items.length + ' ornaments';
+  let cur = 0, grid = null;
+  for (const e of items) {
+    if (e[1] !== cur) { cur = e[1]; const h = document.createElement('h4'); h.textContent = plateLabel(cur); list.appendChild(h);
+      grid = document.createElement('div'); grid.className = 'og'; list.appendChild(grid); }
+    const d = document.createElement('div'); d.title = e[0] + (e[4] ? ' (frame)' : '');
+    const k = LIB.indexOf(e);
+    d.innerHTML = `<i style="display:block;width:${ATLAS_C}px;height:${ATLAS_C}px;background:url(othumbs_atlas.webp) -${(k % ATLAS_COLS) * ATLAS_C}px -${Math.floor(k / ATLAS_COLS) * ATLAS_C}px"></i><span>${e[4] ? 'frame' : ''}</span>`;
+    d.onclick = () => placeLib(e); grid.appendChild(d);
+  }
+}
+$('shuffle').onclick = () => { const pool = LIB.filter(e => !e[4] && e[1] >= FIRST_PLATE); targetSlot = -1; placeLib(pool[Math.floor(Math.random() * pool.length)]); };
+$('addOrn').onclick = () => openPicker(-1);
+$('clearAll').onclick = () => { S.orn = []; S.sel = -1; renderSlots(); redraw(true); };
+
+/* ---------- plate picker & crop ---------- */
+const dlg = $('dlg'); let targetSlot = 0, cropImg = null, cropN = 0, cropK = 1, sel = null;
+const grid = $('plateGrid');
+for (let n = FIRST_PLATE; n <= NPLATES; n++) {
+  const f = document.createElement('figure');
+  f.innerHTML = `<img loading="lazy" src="thumbs/plate_${pad(n)}.jpg" alt="${plateLabel(n)}"><figcaption>${plateLabel(n)}</figcaption>`;
+  f.onclick = () => openCrop(n);
+  grid.appendChild(f);
+}
+function openPicker(slot) {
+  targetSlot = slot; showLib(); dlg.showModal();
+}
+function showLib() {
+  $('libWrap').hidden = false; grid.hidden = true; $('cropWrap').hidden = true; $('cropFoot').hidden = true;
+  $('tabLib').classList.add('on'); $('tabPlates').classList.remove('on');
+  $('dlgTitle').textContent = targetSlot < 0 ? 'Add an ornament' : `Replace ornament #${targetSlot + 1}`; if (!$('libList').childElementCount) renderLib();
+}
+function showGrid() {
+  $('libWrap').hidden = true; grid.hidden = false; $('cropWrap').hidden = true; $('cropFoot').hidden = true;
+  $('tabLib').classList.remove('on'); $('tabPlates').classList.add('on');
+  $('dlgTitle').textContent = targetSlot < 0 ? 'Add an ornament' : `Replace ornament #${targetSlot + 1}`;
+}
+$('tabLib').onclick = showLib; $('tabPlates').onclick = showGrid;
+$('dlgClose').onclick = () => dlg.close();
+$('cropBack').onclick = showGrid;
+const cc = $('cropCanvas'), cx = cc.getContext('2d');
+async function openCrop(n) {
+  cropN = n; try { cropImg = await loadPlate(n); } catch (err) { delete imgCache[n]; return; } sel = null; $('cropUse').disabled = true;
+  grid.hidden = true; $('libWrap').hidden = true; $('cropWrap').hidden = false; $('cropFoot').hidden = false;
+  $('dlgTitle').textContent = `${plateLabel(n)} — select an ornament`;
+  const maxW = Math.min(1060, window.innerWidth * 0.9), maxH = window.innerHeight * 0.92 - 140;
+  cropK = Math.min(maxW / cropImg.width, maxH / cropImg.height);
+  cc.width = Math.round(cropImg.width * cropK); cc.height = Math.round(cropImg.height * cropK);
+  drawCrop();
+}
+function drawCrop() {
+  cx.drawImage(cropImg, 0, 0, cc.width, cc.height);
+  if (!sel) return;
+  const r = normRect(sel);
+  cx.save(); cx.fillStyle = 'rgba(40,30,15,.45)';
+  cx.beginPath(); cx.rect(0, 0, cc.width, cc.height); cx.rect(r.x, r.y, r.w, r.h); cx.fill('evenodd');
+  cx.strokeStyle = '#2f5d5a'; cx.lineWidth = 2; cx.setLineDash([6, 4]); cx.strokeRect(r.x, r.y, r.w, r.h); cx.restore();
+}
+const normRect = s => ({ x: Math.min(s.x0, s.x1), y: Math.min(s.y0, s.y1), w: Math.abs(s.x1 - s.x0), h: Math.abs(s.y1 - s.y0) });
+function canvasPt(c, e) { const b = c.getBoundingClientRect(); return { x: (e.clientX - b.left) * c.width / b.width, y: (e.clientY - b.top) * c.height / b.height }; }
+cc.addEventListener('pointerdown', e => { cc.setPointerCapture(e.pointerId); const p = canvasPt(cc, e); sel = { x0: p.x, y0: p.y, x1: p.x, y1: p.y }; drawCrop(); });
+cc.addEventListener('pointermove', e => { if (!sel || !cc.hasPointerCapture(e.pointerId)) return; const p = canvasPt(cc, e); sel.x1 = p.x; sel.y1 = p.y; drawCrop();
+  const r = normRect(sel); $('cropUse').disabled = r.w < 8 || r.h < 8; });
+$('cropUse').onclick = () => { const r = normRect(sel); place(cropN, cropImg, r.x / cropK, r.y / cropK, r.w / cropK, r.h / cropK); };
+$('cropWhole').onclick = () => place(cropN, cropImg, 0, 0, cropImg.width, cropImg.height);
+function place(n, img, x, y, w, h, opts = {}) {
+  const replacing = targetSlot >= 0 && targetSlot < S.orn.length;
+  const prev = replacing ? S.orn[targetSlot] : null;
+  const s = opts.s ?? Math.min(1.2, 440 / w, 440 / h);
+  const k = S.orn.length;
+  const o = { n, img, cx: x, cy: y, cw: w, ch: h,
+    x: opts.x ?? (prev ? prev.x : SW / 2 + ((k * 67) % 300) - 150),
+    y: opts.y ?? (prev ? prev.y : SH / 2 + ((k * 41) % 200) - 100),
+    s: prev && !opts.s ? prev.s : s, rot: opts.rot ?? (prev ? prev.rot : 0), flip: false, lib: opts.lib || null };
+  if (replacing) { S.orn[targetSlot] = o; S.sel = targetSlot; }
+  else { if (S.orn.length >= MAX_ORN) return; S.orn.push(o); S.sel = S.orn.length - 1; }
+  if (dlg.open) dlg.close(); renderSlots(); redraw(true);
+}
+
+/* ---------- sheet interaction ---------- */
+let drag = null;
+function hitOrn(p) {
+  for (let i = S.orn.length - 1; i >= 0; i--) {
+    const o = S.orn[i];
+    const dx = p.x - o.x, dy = p.y - o.y, c = Math.cos(-rad(o.rot)), s = Math.sin(-rad(o.rot));
+    const qx = (dx * c - dy * s) / o.s, qy = (dx * s + dy * c) / o.s;
+    if (Math.abs(qx) <= o.cw / 2 && Math.abs(qy) <= o.ch / 2) return i;
+  }
+  return -1;
+}
+function hitHandle(p) {
+  const tol = 20 * sheet.width / sheet.getBoundingClientRect().width;
+  let best = null, bd = Math.max(tol, 16);
+  for (const h of handles()) { const d = Math.hypot(h.x - p.x, h.y - p.y); if (d < bd) { bd = d; best = h; } }
+  return best;
+}
+sheet.addEventListener('pointerdown', e => {
+  const p = canvasPt(sheet, e), h = hitHandle(p);
+  if (h) drag = { kind: h.id };
+  else { const i = hitOrn(p); if (i < 0) return;
+    S.sel = i; renderSlots(); const o = S.orn[i]; drag = { kind: 'orn', i, ox: o.x - p.x, oy: o.y - p.y }; }
+  sheet.setPointerCapture(e.pointerId); redraw();
+});
+sheet.addEventListener('pointermove', e => {
+  const p = canvasPt(sheet, e);
+  if (!drag) { sheet.style.cursor = hitHandle(p) ? 'grab' : hitOrn(p) >= 0 ? 'move' : 'default'; return; }
+  const O = S.O, ang = deg(Math.atan2(p.y - O.y, p.x - O.x));
+  switch (drag.kind) {
+    case 'O': S.O = { x: p.x, y: p.y }; break;
+    case 'rot': if (S.mode === 'hinge') S.beta = ang; else S.theta = ang; break;
+    case 'open': S.alpha = snapAlpha(Math.min(180, Math.max(3, 2 * Math.abs(wrap180(ang - S.beta))))); break;
+    case 'dist': { const n = dir(S.theta + 90); S.d = Math.min(600, Math.max(10, (p.x - O.x) * n.x + (p.y - O.y) * n.y)); break; }
+    case 'orn': { const o = S.orn[drag.i]; o.x = p.x + drag.ox; o.y = p.y + drag.oy; redraw(true); return; }
+  }
+  redraw();
+});
+const endDrag = () => { drag = null; };
+sheet.addEventListener('pointerup', endDrag); sheet.addEventListener('pointercancel', endDrag);
+sheet.addEventListener('wheel', e => {
+  const i = hitOrn(canvasPt(sheet, e)); if (i < 0) return;
+  e.preventDefault(); const o = S.orn[i]; S.sel = i;
+  if (e.shiftKey) o.rot = wrap180(o.rot + (e.deltaY || e.deltaX) * 0.1);
+  else o.s = Math.min(3, Math.max(0.1, o.s * Math.exp(-e.deltaY * 0.0012)));
+  renderSlots(); redraw(true);
+}, { passive: false });
+result.addEventListener('wheel', e => { e.preventDefault(); S.zoom = Math.min(3, Math.max(0.25, S.zoom * Math.exp(-e.deltaY * 0.0012))); redraw(); }, { passive: false });
+
+/* ---------- export ---------- */
+$('export').onclick = () => {
+  try {
+    result.toBlob(b => { const a = document.createElement('a'); a.href = URL.createObjectURL(b);
+      a.download = `mirror_${S.mode}_${fmt(S.mode === 'hinge' ? S.alpha : S.d)}.png`; a.click(); setTimeout(() => URL.revokeObjectURL(a.href), 2000); });
+  } catch (err) {
+    const st = $('status'); st.classList.add('warn');
+    st.textContent = 'Your browser blocks saving canvases built from local files (file://). Serve the folder instead: run "python3 -m http.server" in it and open http://localhost:8000.';
+  }
+};
+
+/* ---------- Verneuil's own dial (preface figure, plate 2) ---------- */
+async function demo() {
+  const img = await loadPlate(2);
+  // hinge O of the dial measured at (2889,1189) on the 3698 px scan → scale to this image
+  const k = img.width / 3698, Ox = 2889 * k, Oy = 1189 * k;
+  const half = 225 * img.width / 1600;
+  S.orn = []; targetSlot = -1;
+  place(2, img, Ox - half, Oy - half, 2 * half, 2 * half, { x: SW / 2, y: SH / 2, s: 1.4 });
+  S.mode = 'hinge'; S.O = { x: SW / 2, y: SH / 2 }; S.beta = -90; S.alpha = 120; S.zoom = 1;
+  renderSlots(); redraw(true);
+}
+$('demo').onclick = demo;
+/* ---------- the original text (cover, title page, preface) ---------- */
+(() => {
+  const S_ = (w, n) => `<span class="sic">${w}</span> <span class="sicnote">[sic]</span><sup class="n"><a href="#pn${n}">${n}</a></sup>`;
+  const N = n => `<sup class="n"><a href="#pn${n}">${n}</a></sup>`;
+  const rows = [
+    ['sec', 'Couverture', 'Cover'],
+    ['p', `Librairie / Centrale des Beaux-Arts / 13, Rue La Fayette / Paris / <i>Combinaisons ornementales</i> / par ${S_('M.M.', 1)} / M.P. Verneuil / G. Auriol / et / Mucha`,
+          `Librairie Centrale des Beaux-Arts, 13 rue La Fayette, Paris. <i>Ornamental Combinations</i>, by Messrs M. P. Verneuil, G. Auriol and Mucha.`],
+    ['sec', 'Page de titre (planche 1)', 'Title page (plate 1)'],
+    ['p', `<i>Combinaisons ornementales</i> / se multipliant à l'infini${N(2)} à l'aide du miroir / Dessins de / ${S_('M.M.', 1)} P. Verneuil – G. Auriol et A. Mucha. / Paris / Librairie Centrale des Beaux Arts / 13. ${S_('Rue de Lafayette', 3)}`,
+          `<i>Ornamental Combinations</i>, multiplying to infinity${N(2)} with the help of the mirror. Designs by Messrs P. Verneuil, G. Auriol and A. Mucha. Paris, Librairie Centrale des Beaux-Arts, 13 rue La Fayette.`],
+    ['sec', 'Préface (planche 2 et page suivante) : <i>De l’emploi du miroir</i>', 'Preface (plate 2 and the following page): <i>On the use of the mirror</i>'],
+    ['p', `La nécessité où se trouve le décorateur de varier à l'infini les motifs des ornementations qui lui sont demandées, a conduit les esprits curieux à rechercher un moyen pratique, simple et rapide d'arriver à ce résultat.`,
+          `The decorator constantly has to vary, without end, the motifs of the ornament he is asked for. This need has led curious minds to look for a practical, simple and quick way of doing it.`],
+    ['p', `Les jeux de glaces${N(4)} sont en ce cas d'un secours inappréciable, ${S_("soit que l'on veuille se rendre compte de l'effet d'un motif redoublé, soit pour trouver", 5)} rapidement des coins de bordures, soit enfin pour chercher des motifs d'ornementation plus ou moins compliqués.`,
+          `For this, arrangements of mirrors${N(4)} are an invaluable help: to judge the effect of a repeated motif, to find the corners of borders quickly, or to search for ornamental motifs, simple or complicated.`],
+    ['p', `Chacun verra du reste rapidement tout ce que l'on peut tirer de ce procédé ingénieux, que nous n'avons certes pas la prétention d'avoir inventé.`,
+          `Everyone will soon see how much can be drawn from this ingenious process, which we certainly do not claim to have invented.`],
+    ['p', `Le kaléidoscope, dont s'émerveillent les enfants, ne repose pas sur un autre principe. Nous avons encore simplifié celui-ci.${N(6)}`,
+          `The kaleidoscope, which children marvel at, works on exactly the same principle, and we have simplified it further.${N(6)}`],
+    ['p', `Alors que le kaléidoscope est composé de trois glaces fixes réunies en triangle, nous nous servons simplement de deux glaces réunies par une charnière nous permettant de faire varier l'angle formé par les deux surfaces réfléchissantes.`,
+          `A kaleidoscope has three fixed mirrors joined in a triangle. We simply use two mirrors joined by a hinge, which lets us change the angle between the two reflecting surfaces.`],
+    ['p', `Suivant le cas et le résultat à obtenir, nous promenons${N(7)} nos glaces à la surface des dessins dont les éléments doivent nous servir à en reconstituer d'autres différents.`,
+          `Depending on the case and the result we want, we move${N(7)} our mirrors over the surface of drawings, whose elements then serve to build up new and different ones.`],
+    ['fig', `[Figure 1 : le cadran — cercle, lignes B A B, charnière O, rayons numérotés 1, 3, 4, 5, 6, 7, 8.] <button class="tryfig" data-fig="dial">Essayer dans l'outil</button>`,
+            `[Figure 1: the dial — circle, lines B A B, hinge O, rays numbered 1, 3, 4, 5, 6, 7, 8.] <button class="tryfig" data-fig="dial">Try it in the tool</button>`],
+    ['p', `Quelques exemples, mieux que tout, nous fixeront sur les résultats obtenus. Voyons la circonférence ci-contre, dans laquelle deux lignes B A B ont été tracées. Plaçons notre charnière en O. ${S_("Nous voyons qu'alors nos glaces prennent", 8)} les positions 1.O.1, 3.O.3, 4.O.4, etc., nous obtenons des figures basées sur le triangle, le carré, le pentagone, l'hexagone, etc.${N(9)} Remplaçons les simples lignes par des motifs ornementaux, et les rosaces les plus inattendues vont nous apparaître.${N(10)}`,
+          `A few examples will show the results better than any explanation. Take the circle shown opposite, in which two lines B A B have been drawn, and place the hinge at O. When the mirrors are set to the positions 1.O.1, 3.O.3, 4.O.4 and so on, we get figures based on the triangle, the square, the pentagon, the hexagon, etc.${N(9)} Replace the plain lines with ornamental motifs, and the most unexpected rosettes appear.${N(10)}`],
+    ['fig', `[Figure 2 : une bordure de rinceaux et de grappes, traversée de lignes de miroir lettrées AA, BB, CC, DED, GHG, IKI.]`,
+            `[Figure 2: a border of scrolls and berry clusters, crossed by lettered mirror lines AA, BB, CC, DED, GHG, IKI.]`],
+    ['p', `La seconde figure nous montrera quelques combinaisons simples. Plaçons deux glaces en AA et BB, et nous aurons une bordure indéfinie, pour laquelle nous obtenons un coin à angle droit en plaçant une glace en CC.${N(11)}`,
+          `The second figure shows some simple combinations. Place two mirrors at AA and BB, and we get an endless border. A mirror placed at CC gives it a right-angled corner.${N(11)}`],
+    ['p', `De même DED, GHG, IKI, nous donnent quelques figures, prises entre mille.`,
+          `In the same way, DED, GHG and IKI give us a few figures, chosen from a thousand.`],
+    ['p', `Les lignes les plus baroques${N(12)} et les moins décoratives, par l'effet de la réflexion et de la répétition prennent ainsi une valeur ornementale inattendue.`,
+          `Through reflection and repetition, the most bizarre${N(12)} and least decorative lines take on an unexpected ornamental value.`],
+    ['p', `Tout peut nous servir d'éléments : lignes, formes, végétaux, animaux. Avouons cependant que les ornementations linéaires ou conventionnelles${N(13)} sont les plus riches et les plus variées. Et cela est facilement compréhensible, les végétaux et surtout les animaux devant suivre la loi qui préside à leur constitution même. On voit peu le parti que l'on pourrait tirer d'un oiseau à trois têtes ou d'un chien à huit pattes?${N(14)}`,
+          `Anything can serve as an element: lines, shapes, plants, animals. We must admit, though, that linear or stylized${N(13)} ornament gives the richest and most varied results. That is easy to understand: plants, and animals even more, must obey the law that governs their own structure. It is hard to see what use one could make of a three-headed bird or an eight-legged dog!${N(14)}`],
+    ['p', `Mais lorsque le décorateur se servira avec tact de ce procédé, il y découvrira une facilité incomparable dans la composition et le groupement des motifs ornementaux les plus variés.`,
+          `But a decorator who uses this process with tact will find it makes composing and grouping the most varied ornamental motifs incomparably easy.`],
+    ['sign', `M.-P. V.`, `M.-P. V. [Maurice Pillard Verneuil]`],
+  ];
+  const notes = [
+    `<b>M.M.</b> The standard French abbreviation of <i>Messieurs</i> is <i>MM.</i>; both the cover and the title page letter it <i>M.M.</i>, a variant common in display lettering of the period.`,
+    `<b>à l'infini.</b> Only true of borders (two parallel mirrors). Hinged mirrors give finite rosettes; filling the plane needs at least three mirrors — the very kaleidoscope the preface sets aside.`,
+    `<b>Rue de Lafayette.</b> The cover gives the street's official name, <i>Rue La Fayette</i>; the title page letters <i>Rue de Lafayette</i>. (The title page also writes <i>Beaux Arts</i> without the hyphen, and its capitals carry no accents: <i>A L'INFINI A L'AIDE</i>, normal for capitals.)`,
+    `<b>glaces.</b> Plate-glass looking-glasses, i.e. flat mirrors; <i>jeux de glaces</i> = arrangements of mirrors.`,
+    `<b>soit que … soit pour … soit enfin pour.</b> The coordinated clauses are not parallel: <i>soit que</i> + subjunctive is followed by <i>soit pour</i> + infinitive (expected <i>soit que l'on veuille…, soit que l'on cherche…</i>, or <i>pour</i> throughout). The translation smooths this.`,
+    `<b>"We have simplified it."</b> Historically the order is reversed: Brewster's basic kaleidoscope (patented 1817) already used two mirrors, and hinged mirrors at a variable angle were described long before, e.g. by Kircher (<i>Ars magna lucis et umbrae</i>, 1646).`,
+    `<b>nous promenons.</b> Compare Grasset, <i>Méthode de composition ornementale</i> (1905), who rejects composition left to chance, such as ink blots folded in a sheet of paper or "ces miroirs que l'on promène sur des paquets de ficelle jetés à terre".`,
+    `<b>Nous voyons qu'alors nos glaces prennent …, nous obtenons …</b> The sentence has two main clauses joined without a conjunction; <i>qu'alors</i> is printed as such (not a transcription error). The sense is clearly "we see that when our mirrors take … we obtain …" (i.e. <i>que lorsque</i>).`,
+    `<b>Positions 1, 3, 4 … and "triangle, square, pentagon, hexagon".</b> Measured on this edition, the rays sit at mirror angles of about 118°, 88°, 71°, 57°, 51°, 44° — i.e. 360°/k for k = 3…8 (ray 1 is the flat, 180° position). With the apex A on the bisector, 360°/k does yield a k-gon, so the dial is right for this figure. Position 1 (mirrors opened flat, 180°) gives no polygon: the list of positions starts at 1, the list of figures at the triangle (3).`,
+    `<b>"Replace the lines by ornamental motifs."</b> This generalisation fails: at 360°/k with k odd, the two chains of images meet behind the hinge showing opposite edges of the wedge, so a general motif shows a seam. It works only for motifs symmetric about the bisector. The correct rule for arbitrary motifs is α = 180°/n (Brewster's "even aliquot part").`,
+    `<b>Corner at CC.</b> A single mirror turns a straight border through a right angle only if it crosses the border at 45°.`,
+    `<b>baroques.</b> In the period sense: odd, irregular, bizarre — not the art-historical style.`,
+    `<b>conventionnelles.</b> In 1900 design vocabulary, <i>conventionnel</i> means stylized (as opposed to naturalistic), not "conventional".`,
+    `<b>pattes?</b> The question mark closes what is grammatically a statement (<i>On voit peu le parti…</i>); it reads as an exclamation. The print sets no space before "?" here, although it does before ":" a few lines earlier.`,
+  ];
+  let html = `<div class="ptab both" id="ptab"><div class="h fr">Texte original (français)</div><div class="h en">English translation</div>`;
+  for (const [k, fr, en] of rows) {
+    if (k === 'sec') html += `<div class="sec fr">${fr}</div><div class="sec en">${en}</div>`;
+    else html += `<div class="fr"><p class="${k}">${fr}</p></div><div class="en"><p class="${k}">${en}</p></div>`;
+  }
+  html += `</div>`;
+  $('prefText').innerHTML = html;
+  $('prefNotes').innerHTML = notes.map((t, i) => `<li id="pn${i + 1}">${t}</li>`).join('');
+  const ov = $('prefOv');
+  const open = () => { ov.hidden = false; document.body.style.overflow = 'hidden'; $('prefClose').focus(); };
+  const close = () => { ov.hidden = true; document.body.style.overflow = ''; $('openPreface').focus(); };
+  $('openPreface').onclick = open; $('prefClose').onclick = close;
+  ov.addEventListener('click', e => { if (e.target === ov) close(); });
+  document.addEventListener('keydown', e => { if (e.key === 'Escape' && !ov.hidden) close(); });
+  document.querySelectorAll('#langSeg button').forEach(b => b.onclick = () => {
+    document.querySelectorAll('#langSeg button').forEach(x => x.classList.toggle('on', x === b));
+    $('ptab').className = 'ptab ' + b.dataset.l;
+  });
+  ov.addEventListener('click', e => { const t = e.target.closest('.tryfig'); if (t) { close(); demo(); } });
+})();
+
+let framed = true; try { framed = window.top !== window; } catch (e) {}
+if (framed) $('export').hidden = true;
+
+renderSlots(); syncControls();
+/* ---------- opening composition: two ornaments from plates 57 and 58, hinged at 30° (D6) ---------- */
+const OPENING = {"mode": "hinge", "alpha": 30, "beta": -90, "zoom": 1.1, "orn": [{"id": "p57_04", "x": 500, "y": 150, "s": 0.28, "rot": 180}, {"id": "p58_03", "x": 500, "y": 330, "s": 0.07, "rot": 0}]};
+async function opening(cfg) {
+  try {
+    const imgs = await Promise.all(cfg.orn.map(o => loadLib(o.id)));
+    S.orn = cfg.orn.map((o, i) => ({ n: +o.id.slice(1, 3), img: imgs[i], cx: 0, cy: 0, cw: imgs[i].width, ch: imgs[i].height,
+      x: o.x, y: o.y, s: o.s, rot: o.rot || 0, flip: !!o.flip, lib: o.id }));
+    S.sel = S.orn.length - 1;
+  } catch (e) { S.orn = []; S.sel = -1; }
+  Object.assign(S, { mode: cfg.mode, alpha: cfg.alpha, beta: cfg.beta, zoom: cfg.zoom, O: { x: SW / 2, y: SH / 2 } });
+  if (cfg.theta !== undefined) S.theta = cfg.theta;
+  if (cfg.d !== undefined) S.d = cfg.d;
+  renderSlots(); redraw(true);
+}
+opening(OPENING);
+})();
+</script>
+</body>
+</html>
