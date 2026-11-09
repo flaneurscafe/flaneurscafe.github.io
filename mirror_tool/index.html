@@ -124,6 +124,13 @@
   .help .cap{font-size:12px;color:var(--muted);max-width:230px;margin-top:3px}
   .help .try{font-size:12.5px;padding:1px 8px;margin-left:4px}
   #tileNote a{color:var(--teal);cursor:pointer}
+  .meth{margin-top:8px}.meth button{flex:1}
+  .seg5{flex-wrap:wrap}.seg5 button{flex:1 1 30%;font-size:12px}
+  .cite{font-size:12px;line-height:1.45;border-left:3px solid var(--mc,#2f5d5a);background:#fbf8f1;padding:6px 9px;margin:8px 0 10px}
+  .cite .src{color:var(--muted);display:block;margin-top:3px}
+  .cite a{color:var(--teal);cursor:pointer}
+  .mbadge{display:inline-block;font-size:10.5px;line-height:16px;padding:0 7px;border-radius:9px;color:#fff;background:var(--mc);white-space:nowrap;cursor:pointer;letter-spacing:.02em;vertical-align:middle;margin:1px 2px 1px 0}
+  .sel{min-width:0;width:100%;font:inherit;font-size:12.5px;border:1px solid var(--line);border-radius:5px;background:#fff;padding:2px 4px}
   .tilebar{display:flex;flex-wrap:wrap;gap:8px 14px;align-items:center;margin:8px 0 4px}
   .tilebar .seg button{flex:none;padding:3px 10px}
   .tilebar label.small{display:flex;align-items:center;gap:6px}
@@ -141,6 +148,10 @@
   .cpal .it{border:1px solid var(--line);border-radius:5px;background:#fff;padding:4px;cursor:grab;position:relative;touch-action:none;user-select:none}
   .cpal .it:hover{border-color:var(--ochre)}
   .cpal .it img{width:100%;height:70px;object-fit:contain;display:block;pointer-events:none}
+  .cpal .it .mm{line-height:1}.cpal .it .mm .mbadge{font-size:9px;line-height:13px;padding:0 5px}
+  #cLegend{display:flex;flex-wrap:wrap;gap:4px 10px;align-items:center;min-height:1.4em}
+  #cLegend .lg{display:inline-flex;align-items:center;gap:4px}
+  .caside h2 .mbadge{text-transform:none;letter-spacing:.02em;margin-left:6px}
   .cpal .it .nm{font-size:10.5px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:2px}
   .cpal .it .ac{position:absolute;top:2px;right:2px;display:flex;gap:2px}
   .cpal .it .ac button{padding:0 4px;font-size:11px;line-height:16px;background:rgba(251,248,241,.9)}
@@ -171,7 +182,10 @@
     <div class="btnrow"><button id="oFlip">Flip</button><button id="oFront">To front</button><button id="oCenter">Centre on hinge</button></div>
   </div>
 
-  <h2>Mirrors</h2>
+  <h2>Method</h2>
+  <div class="seg meth" id="methSeg"><button data-k="verneuil" class="on">Verneuil 1901</button><button data-k="brewster">Brewster 1819</button></div>
+  <div id="methCite" class="cite"></div>
+  <div id="verneuilCtl">
   <div class="seg" id="modeSeg">
     <button data-m="hinge" class="on">Hinged pair</button>
     <button data-m="parallel">Parallel pair</button>
@@ -193,12 +207,21 @@
   <div id="lineCtl" hidden>
     <div class="row"><label>Direction</label><input type="range" id="theta" min="-180" max="180" step="0.5"><output id="thetaV"></output></div>
   </div>
+  </div>
+  <div id="brewsterCtl" hidden>
+    <div class="seg seg5" id="cellSeg"><button data-c="square">Square</button><button data-c="rect">Rectangle</button><button data-c="t60" class="on">60°·60°·60°</button><button data-c="t45">90°·45°·45°</button><button data-c="t30">90°·60°·30°</button></div>
+  </div>
+  <div id="latCtl" hidden>
+    <div class="row"><label>Cell size</label><input type="range" id="cellSize" min="40" max="600" step="1"><output id="cellSizeV"></output></div>
+    <div class="row"><label>Direction</label><input type="range" id="latTheta" min="-180" max="180" step="0.5"><output id="latThetaV"></output></div>
+    <div class="row" id="aspectRow"><label>Aspect</label><input type="range" id="aspect" min="0.3" max="1.6" step="0.01"><output id="aspectV"></output></div>
+  </div>
   <div id="status"></div>
 
   <h2>Mirror view</h2>
   <div class="row"><label>Zoom</label><input type="range" id="zoom" min="0.25" max="3" step="0.01"><output id="zoomV"></output></div>
-  <label class="cb"><input type="checkbox" id="showLines" checked> Show mirror lines</label>
-  <label class="cb"><input type="checkbox" id="showSeam" checked> Mark the seam</label>
+  <label class="cb"><input type="checkbox" id="showLines" checked> Show mirror lines and symmetry elements</label>
+  <label class="cb" id="seamLbl"><input type="checkbox" id="showSeam" checked> Mark the seam</label>
   <div class="btnrow">
     <button id="demo">Verneuil's dial demo</button>
     <button id="shuffle" title="Add a random ornament from the library">Random ornament</button>
@@ -217,7 +240,7 @@
     <canvas id="sheet" class="view" width="1000" height="750"></canvas>
   </figure>
   <figure>
-    <figcaption><b>Seen in the mirrors</b><span id="groupLbl"></span></figcaption>
+    <figcaption><b id="resTitle">Seen in the mirrors</b><span><span id="methBadge"></span> <span id="groupLbl"></span></span></figcaption>
     <canvas id="result" class="view" width="900" height="900"></canvas>
   </figure>
   <figure id="tileFig">
@@ -243,6 +266,7 @@
 <aside class="caside">
   <h2>Saved tiles</h2>
   <div class="btnrow"><button id="cSaveCur" class="primary">+ Save current tile</button></div>
+  <div class="row"><label>Show</label><select id="cFilter" class="sel"><option value="all">All methods</option><option value="verneuil">Verneuil 1901 only</option><option value="brewster">Brewster 1819 only</option></select><span></span></div>
   <div id="cPalette" class="cpal"></div>
   <p class="small" style="margin:6px 0 0">Drag a tile onto the board, or click it to drop it in the middle. Save tiles from the <b>Mirrors</b> tab (under the tiled surface).</p>
   <div class="row"><label>New tile edge</label><input type="range" id="cUnit" min="20" max="240" step="1" value="80"><output id="cUnitV"></output></div>
@@ -266,6 +290,7 @@
   <div class="btnrow"><button id="cUndo">Undo</button><button id="cRedo">Redo</button><button id="cAll">Select all</button><button id="cFit">Fit view</button><button id="cClear">Clear board</button></div>
 
   <h2>Files</h2>
+  <label class="cb"><input type="checkbox" id="cCaption" checked> Add the methods and sources to the exported PNG</label>
   <div class="btnrow"><button id="cExpPng">Tiling PNG</button><button id="cExpSvg">Tiling SVG</button><button id="cExpSheet">Tile sheet PNG</button></div>
   <div class="btnrow"><button id="cSaveProj">Save project (.json)</button><button id="cOpenProj">Open project</button><button id="cAddTiles">Add tiles from file</button></div>
   <input type="file" id="cFile" accept=".json,application/json" hidden>
@@ -274,6 +299,7 @@
 </aside>
 <section class="cstage">
   <canvas id="board"></canvas>
+  <div id="cLegend" class="small"></div>
   <div id="cStatus" class="small"></div>
 </section>
 </main>
@@ -369,6 +395,15 @@
       <h4 id="h-compose">7 · Composing with saved tiles</h4>
       <p>“Save tile” (under the tiled surface) keeps the current tile, cut exactly as shown, for the <b>Compose</b> tab. There you drag tiles onto a board and combine shapes: snapping brings a corner of the piece you move onto a nearby corner and lines up the edges. Pieces of equal edge length then fit edge to edge: squares beside triangles, hexagons ringed by squares and triangles, or a band of squares, then hexagons cut in half through their corners (whose long edge covers two squares) alternating with whole hexagons standing on a flat side, then whole hexagons. Each piece can be cut (half, diagonal), resized, turned and flipped. Duplicate a piece, move the copy into place, and Duplicate again repeats the same step, which builds rows quickly. Projects are saved as a single JSON file containing the tile images, so they reopen exactly; the finished surface exports as PNG, or as SVG with the joints as vector lines.</p>
 
+      <h4 id="h-methods">8 · Methods and sources: what is what</h4>
+      <p>Every pattern in the tool is labelled with the method that made it, and the label travels with saved tiles, pieces on the board, project files and exports, so a design can stay within one historical practice or mix the two knowingly.</p>
+      <table>
+        <tr><th>Label</th><th>What it is</th><th>Source</th></tr>
+        <tr><td><span class="mbadge" style="--mc:#2f5d5a">Verneuil 1901</span></td><td>Two mirrors hinged at an angle, two parallel mirrors, or one mirror, moved over a drawing. Rosettes D<sub>n</sub>, borders, corners.</td><td>Verneuil, Auriol &amp; Mucha, <i>Combinaisons ornementales</i> (c. 1901), preface.</td></tr>
+        <tr><td><span class="mbadge" style="--mc:#a8691c">Brewster 1819</span></td><td>Three or four mirrors closing a cell (“polycentral kaleidoscopes”): square, rectangle, 60°-60°-60°, 90°-45°-45°, 90°-60°-30°. They fill the plane; in modern terms the wallpaper groups pmm, p3m1, p4m and p6m, the only ones mirrors alone can make. In the mirror view, mirror lines are drawn solid and rotation centres marked ◆ (2-fold), ▲ (3), ■ (4), ⬢ (6).</td><td>D. Brewster, <i>A Treatise on the Kaleidoscope</i> (1819); 2nd ed. 1858, ch. XIII, §§1–5.</td></tr>
+      </table>
+      <p>Both are physical instruments described by their authors: Verneuil’s open pair of mirrors moved over a drawing, and Brewster’s closed cells of three or four mirrors. Tiles saved before methods were recorded, or with a method no longer offered, are marked “method not recorded”.</p>
+
       <h4>Further reading</h4>
       <p class="small">D. Brewster, <i>A Treatise on the Kaleidoscope</i> (1819; 2nd ed. 1858). H. S. M. Coxeter, <i>Introduction to Geometry</i> (1961), ch. on reflection groups. D. Washburn &amp; D. Crowe, <i>Symmetries of Culture</i> (1988). J. H. Conway, H. Burgiel, C. Goodman-Strauss, <i>The Symmetries of Things</i> (2008).</p>
     </div>
@@ -421,7 +456,8 @@ const g = src.getContext('2d');
 const S = {
   orn: [], sel: -1,
   mode: 'hinge', O: { x: 500, y: 375 }, beta: -90, alpha: 120, theta: 0, d: 160,
-  zoom: 1, snap: true, showLines: true, showSeam: true, clean: 0
+  zoom: 1, snap: true, showLines: true, showSeam: true, clean: 0,
+  method: 'verneuil', vmode: 'hinge', bcell: 't60', cell: 220, lt: 0, aspect: 0.62
 };
 
 const imgCache = {};
@@ -475,6 +511,7 @@ function renderSource() {
 /* ---------- handles ---------- */
 function handles() {
   const O = S.O, h = [{ id: 'O', x: O.x, y: O.y, c: '#2f5d5a', shape: 'dot' }];
+  if (S.mode === 'lattice') { const a = dir(S.lt); h.push({ id: 'cell', x: O.x + S.cell * a.x, y: O.y + S.cell * a.y, c: '#a3434f', shape: 'tri' }); return h; }
   if (S.mode === 'hinge') {
     const r = dir(S.beta), a = dir(S.beta + S.alpha / 2);
     h.push({ id: 'rot', x: O.x + 130 * r.x, y: O.y + 130 * r.y, c: '#b07a2a', shape: 'dia' });
@@ -519,6 +556,21 @@ function renderSheet() {
   sctx.setTransform(1, 0, 0, 1, 0, 0);
   sctx.drawImage(src, 0, 0);
   const O = S.O, L = 3000;
+  if (S.mode === 'lattice') {
+    const G = latGeom(), poly = G.asym;
+    sctx.save(); sctx.beginPath(); sctx.rect(-L, -L, 2 * L, 2 * L);
+    poly.forEach((q, i) => i ? sctx.lineTo(q.x, q.y) : sctx.moveTo(q.x, q.y)); sctx.closePath();
+    sctx.fillStyle = 'rgba(60,45,25,.22)'; sctx.fill('evenodd'); sctx.restore();
+    sctx.save(); sctx.beginPath(); poly.forEach((q, i) => i ? sctx.lineTo(q.x, q.y) : sctx.moveTo(q.x, q.y)); sctx.closePath();
+    if (S.method === 'brewster') { sctx.strokeStyle = '#8a5a17'; sctx.lineWidth = 3; }
+    else { sctx.strokeStyle = '#7a4a8c'; sctx.lineWidth = 1.6; sctx.setLineDash([6, 4]); }
+    sctx.stroke(); sctx.restore();
+    const o = S.orn[S.sel];
+    if (o) { sctx.save(); sctx.translate(o.x, o.y); sctx.rotate(rad(o.rot)); sctx.setLineDash([5, 5]); sctx.strokeStyle = 'rgba(47,93,90,.7)'; sctx.lineWidth = 1.2;
+      sctx.strokeRect(-o.cw * o.s / 2, -o.ch * o.s / 2, o.cw * o.s, o.ch * o.s); sctx.restore(); }
+    for (const h of handles()) drawHandle(sctx, h);
+    return;
+  }
   // shade what is behind the mirrors
   sctx.save();
   sctx.beginPath(); sctx.rect(-L, -L, 2 * L, 2 * L);
@@ -567,6 +619,15 @@ function setView(ctx) {
 function renderResult() {
   let ctx = cctx; const O = S.O, L = 4000 / S.zoom + 2000;
   ctx.setTransform(1, 0, 0, 1, 0, 0); ctx.fillStyle = '#fff'; ctx.fillRect(0, 0, RES, RES);
+  if (S.mode === 'lattice') {
+    const G = renderLattice(ctx);
+    rctx.setTransform(1, 0, 0, 1, 0, 0); rctx.drawImage(clean, 0, 0); PIX = null;
+    if (S.showLines) drawSymOverlay(rctx, G);
+    rctx.save(); setView(rctx); rctx.strokeStyle = S.method === 'brewster' ? '#8a5a17' : '#7a4a8c'; rctx.lineWidth = 2 / S.zoom;
+    rctx.setLineDash(S.method === 'brewster' ? [] : [6 / S.zoom, 4 / S.zoom]);
+    rctx.beginPath(); G.asym.forEach((q, i) => i ? rctx.lineTo(q.x, q.y) : rctx.moveTo(q.x, q.y)); rctx.closePath(); if (S.showLines) rctx.stroke(); rctx.restore();
+    return;
+  }
   const lines = []; let seam = null;
   if (S.mode === 'hinge') {
     const a = S.alpha, N = Math.ceil(180 / a) + 1;
@@ -633,9 +694,179 @@ function renderResult() {
     ctx.beginPath(); ctx.arc(O.x, O.y, 4 / S.zoom, 0, 7); ctx.fill(); ctx.restore(); }
 }
 
+/* =====================================================================================
+   METHODS AND SOURCES. Every way of making a pattern is labelled with where it comes from,
+   so a design can be kept to one historical method or knowingly mix several.
+   ===================================================================================== */
+const METHODS = {
+  verneuil: { label: 'Verneuil 1901', color: '#2f5d5a', short: 'two mirrors, hinged or parallel, or a single mirror, moved over a drawing',
+    cite: 'M. P. Verneuil, G. Auriol &amp; A. Mucha, <i>Combinaisons ornementales se multipliant à l’infini à l’aide du miroir</i> (Paris, Librairie Centrale des Beaux-Arts, c. 1901), preface “De l’emploi du miroir”.' },
+  brewster: { label: 'Brewster 1819', color: '#a8691c', short: 'three or four mirrors closing a cell: Brewster’s “polycentral kaleidoscopes”',
+    cite: 'D. Brewster, <i>A Treatise on the Kaleidoscope</i> (Edinburgh, 1819; 2nd ed. <i>The Kaleidoscope, its History, Theory and Construction</i>, 1858, ch. XIII “On the construction and use of polycentral kaleidoscopes”): four mirrors forming a square or a rectangle; three reflectors at 60°, at 90°, 45°, 45° and at 90°, 60°, 30°.' },
+  unknown: { label: 'method not recorded', color: '#9a8f80', short: 'saved before methods were recorded', cite: '' },
+};
+const chip = (k, extra = '') => { const m = METHODS[k] || METHODS.unknown;
+  return `<span class="mbadge" style="--mc:${m.color}" data-help="h-methods" title="${m.label}: ${m.short}">${m.label}${extra}</span>`; };
+const plain = h => h.replace(/<[^>]+>/g, '').replace(/&amp;/g, '&');
+
+/* ---------- Brewster's cells as plane groups: operations in fractional coordinates (International Tables,
+   Vol. A) and the mirror cell (asymmetric unit); the group's images of the cell fill one lattice cell ---------- */
+const P4 = ['x,y', '-x,-y', '-y,x', 'y,-x'], P3 = ['x,y', '-y,x-y', '-x+y,-x'], P6 = [...P3, '-x,-y', 'y,-x+y', 'x-y,x'];
+const GROUPS = {
+  pmm:  { orb: '∗2222', lat: 'rect', ops: ['x,y', '-x,-y', '-x,y', 'x,-y'], asym: [[0, 0], [.5, 0], [.5, .5], [0, .5]] },
+  p4m:  { orb: '∗442', lat: 'sq',   ops: [...P4, '-x,y', 'x,-y', 'y,x', '-y,-x'], asym: [[0, 0], [.5, .5], [0, .5]] },
+  p3m1: { orb: '∗333', lat: 'hex',  ops: [...P3, '-y,-x', '-x+y,y', 'x,x-y'], asym: [[0, 0], [2 / 3, 1 / 3], [1 / 3, 2 / 3]] },
+  p6m:  { orb: '∗632', lat: 'hex',  ops: [...P6, '-y,-x', '-x+y,y', 'x,x-y', 'y,x', 'x-y,-y', '-x,-x+y'], asym: [[0, 0], [2 / 3, 1 / 3], [.5, .5]] },
+};
+const LATNAME = { obl: 'oblique', rect: 'rectangular', sq: 'square', hex: 'hexagonal' };
+// Brewster's polycentral kaleidoscopes (1858 ed., ch. XIII, §§1–5) are exactly the mirror-only groups
+const BCELLS = {
+  square: { g: 'pmm', lat: 'sq', name: 'four mirrors forming a square', sec: '§1' },
+  rect:   { g: 'pmm', lat: 'rect', name: 'four mirrors forming a rectangle', sec: '§2' },
+  t60:    { g: 'p3m1', name: 'three reflectors at 60°', sec: '§3' },
+  t45:    { g: 'p4m', name: 'three reflectors at 90°, 45° and 45°', sec: '§4' },
+  t30:    { g: 'p6m', name: 'three reflectors at 90°, 60° and 30°', sec: '§5' },
+};
+function parseOp(str) {
+  const rows = str.split(',').map(e => { let cx = 0, cy = 0, t = 0;
+    e.replace(/\s/g, '').replace(/([+-]?)(\d+\/\d+|x|y|\d+)/g, (m, sg, term) => { const k = sg === '-' ? -1 : 1;
+      if (term === 'x') cx += k; else if (term === 'y') cy += k; else { const [p, q] = term.split('/'); t += k * (+p) / (q ? +q : 1); } return ''; });
+    return [cx, cy, t]; });
+  return { M: [[rows[0][0], rows[0][1]], [rows[1][0], rows[1][1]]], t: [rows[0][2], rows[1][2]] };
+}
+const mul2 = (A, B) => [[A[0][0] * B[0][0] + A[0][1] * B[1][0], A[0][0] * B[0][1] + A[0][1] * B[1][1]],
+                         [A[1][0] * B[0][0] + A[1][1] * B[1][0], A[1][0] * B[0][1] + A[1][1] * B[1][1]]];
+function effGroup() { const bc = BCELLS[S.bcell], g = GROUPS[bc.g]; return { key: bc.g, g, lat: bc.lat || g.lat, bc }; }
+function latBasis(lat) {
+  switch (lat) {
+    case 'sq': return [[1, 0], [0, 1]];
+    case 'rect': return [[1, 0], [0, S.aspect]];
+    case 'hex': return [[1, 0], [-0.5, Math.sqrt(3) / 2]];
+    default: return [[1, 0], [0.28, 0.86]];
+  }
+}
+function latGeom() {
+  const E = effGroup(), B = latBasis(E.lat), c = Math.cos(rad(S.lt)), s = Math.sin(rad(S.lt)), k = S.cell;
+  const av = { x: k * (c * B[0][0] - s * B[0][1]), y: k * (s * B[0][0] + c * B[0][1]) };
+  const bv = { x: k * (c * B[1][0] - s * B[1][1]), y: k * (s * B[1][0] + c * B[1][1]) };
+  const A = [[av.x, bv.x], [av.y, bv.y]], det = A[0][0] * A[1][1] - A[0][1] * A[1][0];
+  const Ai = [[A[1][1] / det, -A[0][1] / det], [-A[1][0] / det, A[0][0] / det]];
+  const O = S.O, toS = f => ({ x: O.x + A[0][0] * f[0] + A[0][1] * f[1], y: O.y + A[1][0] * f[0] + A[1][1] * f[1] });
+  let ops = E.g.ops.map(parseOp);
+  if (E.g.c) ops = ops.concat(ops.map(o => ({ M: o.M, t: [o.t[0] + .5, o.t[1] + .5] })));
+  ops = ops.map(o => {
+    const L = mul2(mul2(A, o.M), Ai), At = [A[0][0] * o.t[0] + A[0][1] * o.t[1], A[1][0] * o.t[0] + A[1][1] * o.t[1]];
+    const e = O.x - (L[0][0] * O.x + L[0][1] * O.y) + At[0], f = O.y - (L[1][0] * O.x + L[1][1] * O.y) + At[1];
+    const poly = E.g.asym.map(p => toS([o.M[0][0] * p[0] + o.M[0][1] * p[1] + o.t[0], o.M[1][0] * p[0] + o.M[1][1] * p[1] + o.t[1]]));
+    return { L, e, f, poly };
+  });
+  return { ...E, A, Ai, av, bv, toS, ops, asym: E.g.asym.map(toS) };
+}
+/* symmetry elements of the group, in sheet coordinates: mirror lines, glide lines, rotation centres */
+function symElements(G) {
+  const m = [], gl = [], cs = [], frac = v => [G.Ai[0][0] * v.x + G.Ai[0][1] * v.y, G.Ai[1][0] * v.x + G.Ai[1][1] * v.y];
+  const isLat = f => { const ok = (a, b) => Math.abs(a - Math.round(a)) < 1e-6 && Math.abs(b - Math.round(b)) < 1e-6;
+    return ok(f[0], f[1]) || (G.g.c && ok(f[0] - .5, f[1] - .5)); };
+  for (const o of G.ops) for (let i = -1; i <= 1; i++) for (let j = -1; j <= 1; j++) {
+    const L = o.L, e = o.e + G.A[0][0] * i + G.A[0][1] * j, f = o.f + G.A[1][0] * i + G.A[1][1] * j;
+    const det = L[0][0] * L[1][1] - L[0][1] * L[1][0], tr = L[0][0] + L[1][1];
+    if (det < 0) {
+      let u = { x: L[0][0] + 1, y: L[1][0] }; if (Math.hypot(u.x, u.y) < 1e-6) u = { x: L[0][1], y: L[1][1] + 1 };
+      const nu = Math.hypot(u.x, u.y); u = { x: u.x / nu, y: u.y / nu };
+      const bp = e * u.x + f * u.y, p = { x: (e - bp * u.x) / 2, y: (f - bp * u.y) / 2 };
+      (isLat(frac({ x: bp * u.x, y: bp * u.y })) ? m : gl).push({ p, u });
+    } else if (Math.abs(tr - 2) > 1e-6) {
+      const a11 = 1 - L[0][0], a12 = -L[0][1], a21 = -L[1][0], a22 = 1 - L[1][1], dd = a11 * a22 - a12 * a21;
+      const ang = Math.abs(deg(Math.atan2(L[1][0], L[0][0])));
+      cs.push({ p: { x: (e * a22 - a12 * f) / dd, y: (a11 * f - a21 * e) / dd }, n: Math.round(360 / ang) });
+    }
+  }
+  return { m, gl, cs };
+}
+let BLK = document.createElement('canvas'), blkx = BLK.getContext('2d');
+function renderLattice(ctx) {
+  const G = latGeom(), z = S.zoom, O = S.O;
+  const vx = p => RES / 2 + z * (p.x - O.x), vy = p => RES / 2 + z * (p.y - O.y);
+  let x0 = 1e9, y0 = 1e9, x1 = -1e9, y1 = -1e9;
+  for (const o of G.ops) for (const p of o.poly) { x0 = Math.min(x0, vx(p)); y0 = Math.min(y0, vy(p)); x1 = Math.max(x1, vx(p)); y1 = Math.max(y1, vy(p)); }
+  x0 = Math.floor(x0) - 2; y0 = Math.floor(y0) - 2; x1 = Math.ceil(x1) + 2; y1 = Math.ceil(y1) + 2;
+  const bw = x1 - x0, bh = y1 - y0, direct = bw * bh > 4.5e6;
+  const drawOps = (c2, ox, oy) => {
+    for (const o of G.ops) {
+      c2.save(); c2.setTransform(z, 0, 0, z, RES / 2 - z * O.x - ox, RES / 2 - z * O.y - oy);
+      const cx = o.poly.reduce((s, p) => s + p.x, 0) / o.poly.length, cy = o.poly.reduce((s, p) => s + p.y, 0) / o.poly.length;
+      c2.beginPath(); o.poly.forEach((p, i) => { const dx = p.x - cx, dy = p.y - cy, dl = Math.hypot(dx, dy) || 1, gq = 0.7 / z;
+        const X = p.x + dx / dl * gq, Y = p.y + dy / dl * gq; i ? c2.lineTo(X, Y) : c2.moveTo(X, Y); }); c2.closePath(); c2.clip();
+      c2.transform(o.L[0][0], o.L[1][0], o.L[0][1], o.L[1][1], o.e, o.f); c2.drawImage(src, 0, 0); c2.restore();
+    }
+  };
+  // lattice translations that bring the block over the view
+  const corners = [[0, 0], [RES, 0], [0, RES], [RES, RES]], bc = [[x0, y0], [x1, y0], [x0, y1], [x1, y1]];
+  let i0 = 1e9, i1 = -1e9, j0 = 1e9, j1 = -1e9;
+  for (const [cx, cy] of corners) for (const [bx, by] of bc) {
+    const vxs = (cx - bx) / z, vys = (cy - by) / z, fi = G.Ai[0][0] * vxs + G.Ai[0][1] * vys, fj = G.Ai[1][0] * vxs + G.Ai[1][1] * vys;
+    i0 = Math.min(i0, fi); i1 = Math.max(i1, fi); j0 = Math.min(j0, fj); j1 = Math.max(j1, fj);
+  }
+  i0 = Math.floor(i0) - 1; i1 = Math.ceil(i1) + 1; j0 = Math.floor(j0) - 1; j1 = Math.ceil(j1) + 1;
+  if ((i1 - i0) * (j1 - j0) > 4000) { i0 = Math.max(i0, -30); i1 = Math.min(i1, 30); j0 = Math.max(j0, -30); j1 = Math.min(j1, 30); }
+  if (!direct) {
+    if (BLK.width !== bw || BLK.height !== bh) { BLK.width = bw; BLK.height = bh; } else blkx.clearRect(0, 0, bw, bh);
+    drawOps(blkx, x0, y0);
+  }
+  for (let i = i0; i <= i1; i++) for (let j = j0; j <= j1; j++) {
+    const tx = z * (i * G.av.x + j * G.bv.x), ty = z * (i * G.av.y + j * G.bv.y);
+    if (direct) drawOps(ctx, -tx, -ty); else { ctx.setTransform(1, 0, 0, 1, 0, 0); ctx.drawImage(BLK, x0 + tx, y0 + ty); }
+  }
+  ctx.setTransform(1, 0, 0, 1, 0, 0);
+  return G;
+}
+/* overlay: mirrors solid, glide lines dashed, rotation centres as ◆ ▲ ■ ⬢ (as in the International Tables) */
+function drawSymOverlay(ctx, G) {
+  const z = S.zoom, O = S.O, E = symElements(G), half = RES / 2 / z + 40;
+  const lines = new Map(), pts = new Map();
+  const R = Math.ceil(half / Math.min(Math.hypot(G.av.x, G.av.y), Math.hypot(G.bv.x, G.bv.y))) + 2;
+  for (let i = -R; i <= R; i++) for (let j = -R; j <= R; j++) {
+    const tx = i * G.av.x + j * G.bv.x, ty = i * G.av.y + j * G.bv.y;
+    for (const [list, kind] of [[E.m, 'm'], [E.gl, 'g']]) for (const l of list) {
+      const px = l.p.x + tx, py = l.p.y + ty;
+      const aR = Math.round((((deg(Math.atan2(l.u.y, l.u.x)) % 180) + 180) % 180) * 10) / 10 % 180, nn = dir(aR + 90);
+      const off = (px - O.x) * nn.x + (py - O.y) * nn.y; if (Math.abs(off) > half * 1.5) continue;
+      const key = aR + ':' + Math.round(off * 4), prev = lines.get(key);
+      if (!prev || (prev.kind === 'g' && kind === 'm')) lines.set(key, { kind, px, py, u: l.u });
+    }
+    for (const c of E.cs) { const x = c.p.x + tx, y = c.p.y + ty;
+      if (Math.abs(x - O.x) > half || Math.abs(y - O.y) > half) continue;
+      const key = Math.round(x * 10) + ',' + Math.round(y * 10); const prev = pts.get(key); if (!prev || prev.n < c.n) pts.set(key, { x, y, n: c.n }); }
+  }
+  ctx.save(); setView(ctx); const Lg = 1.6 * half;
+  for (const l of lines.values()) {
+    ctx.strokeStyle = l.kind === 'm' ? 'rgba(138,90,23,.6)' : 'rgba(47,93,90,.55)';
+    ctx.lineWidth = (l.kind === 'm' ? 1.5 : 1.2) / z; ctx.setLineDash(l.kind === 'm' ? [] : [7 / z, 5 / z]);
+    const s0 = (O.x - l.px) * l.u.x + (O.y - l.py) * l.u.y, fx = l.px + s0 * l.u.x, fy = l.py + s0 * l.u.y;   // foot of O on the line
+    ctx.beginPath(); ctx.moveTo(fx - l.u.x * Lg, fy - l.u.y * Lg); ctx.lineTo(fx + l.u.x * Lg, fy + l.u.y * Lg); ctx.stroke();
+  }
+  ctx.setLineDash([]);
+  for (const c of pts.values()) {
+    const r = 5.5 / z; ctx.fillStyle = '#7a4a8c'; ctx.strokeStyle = '#fff'; ctx.lineWidth = 1.4 / z; ctx.beginPath();
+    if (c.n === 2) ctx.ellipse(c.x, c.y, r * 0.75, r * 1.25, rad(S.lt), 0, 7);
+    else { const k = c.n === 6 ? 6 : c.n === 4 ? 4 : 3; for (let q = 0; q < k; q++) { const a = rad(S.lt - 90 + 360 * q / k + (k === 4 ? 45 : 0));
+      const X = c.x + r * 1.25 * Math.cos(a), Y = c.y + r * 1.25 * Math.sin(a); q ? ctx.lineTo(X, Y) : ctx.moveTo(X, Y); } ctx.closePath(); }
+    ctx.fill(); ctx.stroke();
+  }
+  ctx.restore();
+}
+function latStatus() {
+  const E = effGroup();
+  return { html: `<b>Brewster’s polycentral kaleidoscope</b>, ${E.bc.name} (${E.bc.sec}). Every edge of the cell is a mirror, so the reflections fill the plane without a seam, whatever the drawing. In today’s terms: wallpaper group <b>${E.key}</b> (${E.g.orb}), ${LATNAME[E.lat]} lattice.`, grp: `${E.key} · ${E.g.orb}` };
+}
+
 /* ---------- status ---------- */
 function updateStatus() {
   const st = $('status'); let html, warn = false, grp = '', r_anchor = 'h-seam';
+  if (S.mode === 'lattice') {
+    const r = latStatus(); st.innerHTML = r.html + ` <a data-help="h-methods" style="color:var(--teal);cursor:pointer">Sources</a>`;
+    st.classList.remove('warn'); $('groupLbl').textContent = r.grp; return;
+  }
   if (S.mode === 'hinge') {
     const a = S.alpha, r = analyse(a);
     if (r.closed) {
@@ -689,7 +920,23 @@ function syncControls() {
     $('oRot').value = o.rot; $('oRotV').textContent = Math.round(o.rot) + '°'; }
   else { $('oScaleV').textContent = '–'; $('oRotV').textContent = '–'; }
   document.querySelectorAll('#modeSeg button').forEach(b => b.classList.toggle('on', b.dataset.m === S.mode));
-  $('hingeCtl').hidden = S.mode !== 'hinge'; $('parCtl').hidden = S.mode !== 'parallel'; $('lineCtl').hidden = S.mode === 'hinge';
+  $('hingeCtl').hidden = S.mode !== 'hinge'; $('parCtl').hidden = S.mode !== 'parallel'; $('lineCtl').hidden = S.mode === 'hinge' || S.mode === 'lattice';
+  const lat = S.mode === 'lattice';
+  document.querySelectorAll('#methSeg button').forEach(b => b.classList.toggle('on', b.dataset.k === S.method));
+  document.querySelectorAll('#cellSeg button').forEach(b => b.classList.toggle('on', b.dataset.c === S.bcell));
+  $('verneuilCtl').hidden = S.method !== 'verneuil'; $('brewsterCtl').hidden = S.method !== 'brewster';
+  $('latCtl').hidden = !lat; $('seamLbl').hidden = lat;
+  if (lat) { const E = effGroup(); $('aspectRow').hidden = E.lat !== 'rect';
+    $('cellSize').value = S.cell; $('cellSizeV').textContent = Math.round(S.cell);
+    $('latTheta').value = wrap180(S.lt); $('latThetaV').textContent = Math.round(wrap180(S.lt)) + '°';
+    $('aspect').value = S.aspect; $('aspectV').textContent = S.aspect.toFixed(2); }
+  const M = METHODS[S.method], sub2 = S.method === 'verneuil' ? { hinge: 'hinged pair', parallel: 'parallel pair', single: 'single mirror' }[S.mode]
+    : BCELLS[S.bcell].name;
+  const mc = $('methCite'); mc.style.setProperty('--mc', M.color);
+  mc.innerHTML = `<b style="color:${M.color}">${M.label}</b> — ${M.short}.<span class="src">${M.cite}</span>` +
+    ` <a data-help="h-methods">All sources</a>`;
+  $('methBadge').innerHTML = chip(S.method, ' · ' + sub2);
+  $('resTitle').textContent = S.method === 'brewster' ? 'Seen in the kaleidoscope' : 'Seen in the mirrors';
 }
 function bindRange(id, fn, src) { $(id).addEventListener('input', e => { fn(+e.target.value); redraw(src); }); }
 bindRange('alpha', v => S.alpha = snapAlpha(v));
@@ -697,6 +944,27 @@ bindRange('beta', v => S.beta = v);
 bindRange('theta', v => S.theta = v);
 bindRange('dist', v => S.d = v);
 bindRange('zoom', v => S.zoom = v);
+bindRange('cellSize', v => S.cell = v);
+bindRange('latTheta', v => S.lt = v);
+bindRange('aspect', v => S.aspect = v);
+document.querySelectorAll('#cellSeg button').forEach(b => b.onclick = () => { S.bcell = b.dataset.c; fitRegionToOrnament(); redraw(); });
+function fitRegionToOrnament() {     // put the fundamental region over the selected ornament
+  const o = S.orn[S.sel] || S.orn[0]; if (!o || S.mode !== 'lattice') return;
+  const G = latGeom(), cx = G.asym.reduce((t, q) => t + q.x, 0) / G.asym.length, cy = G.asym.reduce((t, q) => t + q.y, 0) / G.asym.length;
+  S.O = { x: S.O.x + o.x - cx, y: S.O.y + o.y - cy };
+}
+function setMethod(k) {
+  if (k === S.method) return;
+  if (S.mode !== 'lattice') S.vmode = S.mode;
+  S.method = k;
+  if (k === 'verneuil') { S.mode = S.vmode || 'hinge'; if (T.before && S.mode === 'hinge') { setTileShape(T.before); T.before = null; } }
+  else { S.mode = 'lattice'; fitRegionToOrnament(); }
+  redraw();
+}
+document.querySelectorAll('#methSeg button').forEach(b => b.onclick = () => setMethod(b.dataset.k));
+document.addEventListener('click', e => { const a = e.target.closest && e.target.closest('#methCite a[data-help], #methBadge [data-help], #cLegend [data-help], #cPalette [data-help]');
+  if (a) { e.preventDefault(); openHelp(a.dataset.help); } });
+
 bindRange('clean', v => S.clean = v, true);
 bindRange('oScale', v => { if (S.orn[S.sel]) S.orn[S.sel].s = v; }, true);
 bindRange('oRot', v => { if (S.orn[S.sel]) S.orn[S.sel].rot = v; }, true);
@@ -707,7 +975,7 @@ $('snap').onchange = e => S.snap = e.target.checked;
 $('showLines').onchange = e => { S.showLines = e.target.checked; redraw(); };
 $('showSeam').onchange = e => { S.showSeam = e.target.checked; redraw(); };
 document.querySelectorAll('#modeSeg button').forEach(b => b.onclick = () => {
-  const prev = S.mode; S.mode = b.dataset.m;
+  const prev = S.mode; S.mode = b.dataset.m; S.vmode = S.mode;
   if (prev === 'hinge' && S.mode !== 'hinge') S.theta = S.beta - S.alpha / 2;
   if (prev !== 'hinge' && S.mode === 'hinge') S.beta = S.theta + S.alpha / 2;
   if (S.mode === 'parallel' && T.shape !== 'rect') { T.before = T.shape; setTileShape('rect'); }
@@ -736,7 +1004,20 @@ const SHAPES = {
   hex:    { k: 6, maxA: 385, label: 'hexagons', show: 90 },
   rect:   { k: 4, maxA: 445, label: 'strips', show: 0 },      // narrow rectangles: long side across the mirror lines
 };
+/* Brewster's cells: the pattern is periodic, so one lattice cell is a tile that
+   repeats by translation without a seam, whatever the drawing */
+function latTileGeom() {
+  const G = latGeom(), z = S.zoom, C = { x: RES / 2, y: RES / 2 };
+  const u = { x: z * G.av.x, y: z * G.av.y }, v = { x: z * G.bv.x, y: z * G.bv.y }, lu = Math.hypot(u.x, u.y), lv = Math.hypot(v.x, v.y);
+  let verts, shape;
+  if (G.lat === 'hex') { shape = 'hex'; const R = lu / 2 / Math.cos(Math.PI / 6);
+    verts = [0, 1, 2, 3, 4, 5].map(i => { const d = dir(S.lt + 30 + 60 * i); return { x: C.x + R * d.x, y: C.y + R * d.y }; }); }
+  else { shape = G.lat === 'sq' ? 'square' : G.lat === 'rect' ? 'rect' : 'para';
+    verts = [[-1, -1], [1, -1], [1, 1], [-1, 1]].map(([p, q]) => ({ x: C.x + (p * u.x + q * v.x) / 2, y: C.y + (p * u.y + q * v.y) / 2 })); }
+  return { lat: true, latShape: shape, verts, C, m: S.lt, a: (lu + lv) / 2, u, v, width: lu, L: lu, h: lv, G };
+}
 function tileGeom() {
+  if (S.mode === 'lattice') return latTileGeom();
   if (T.shape === 'rect') return rectGeom();
   const sh = SHAPES[T.shape], a = sh.maxA * T.crop;            // a = apothem (centre to edge), in mirror-view px
   const m = S.mode === 'hinge' ? S.beta - S.alpha / 2 : S.mode === 'single' ? S.theta + 90 : S.theta + 90;   // a mirror axis direction
@@ -803,6 +1084,7 @@ function repeatsEveryD() {          // does the border inside the strip repeat a
   return n > 50 && inkPts > 0 && diff / inkPts < 0.06;
 }
 function tilesCompatible() {
+  if (S.mode === 'lattice') return { ok: true, why: 'lat' };
   if (T.shape === 'rect') {
     if (S.mode === 'parallel') {
       if (2 * S.d * S.zoom > 890) return { ok: false, why: 'zoom' };
@@ -826,7 +1108,7 @@ function renderTiles() {
   const k = (vert ? H : W) / (T.across * g0.width);
   const ctx = tctx;
   ctx.setTransform(1, 0, 0, 1, 0, 0); ctx.fillStyle = '#fff'; ctx.fillRect(0, 0, W, H);
-  const rho = rad((vert ? 90 : SHAPES[T.shape].show) - g0.m);                // turn the whole floor so the tiles are level on screen
+  const rho = rad((g0.lat ? (g0.latShape === 'hex' ? 90 : 0) : vert ? 90 : SHAPES[T.shape].show) - g0.m);   // turn the whole floor so the tiles are level on screen
   const setView = () => { ctx.setTransform(1, 0, 0, 1, W / 2, H / 2); ctx.rotate(rho); ctx.scale(k, k); ctx.translate(-C.x, -C.y); };
   const grow = 1 + 0.9 / (k * (g0.rect ? Math.min(g0.L, g0.h) / 2 : a));                               // overlap by about a pixel: no hairline gaps
   const poly = verts.map(p => ({ x: C.x + (p.x - C.x) * grow, y: C.y + (p.y - C.y) * grow }));
@@ -846,7 +1128,7 @@ function renderTiles() {
   for (let i = -N; i <= N; i++) for (let j = -N; j <= N; j++) {
     const tx = i * u.x + j * v.x, ty = i * u.y + j * v.y;
     if (inView(C.x + tx, C.y + ty)) cells.push([1, 0, 0, 1, tx, ty]);
-    if (T.shape === 'tri') {                                     // the 180°-turned neighbour across the edge with normal n0
+    if (T.shape === 'tri' && !g0.lat) {                          // the 180°-turned neighbour across the edge with normal n0
       const mx = C.x + tx + a * g0.n0.x, my = C.y + ty + a * g0.n0.y;
       if (inView(2 * mx - C.x - tx, 2 * my - C.y - ty)) cells.push([-1, 0, 0, -1, 2 * mx - tx, 2 * my - ty]);
     }
@@ -862,9 +1144,11 @@ function renderTiles() {
     ctx.restore();
   }
   // note
-  const c = tilesCompatible(), note = $('tileNote'), name = SHAPES[T.shape].label;
+  const c = tilesCompatible(), note = $('tileNote');
+  const name = g0.lat ? { hex: 'hexagonal cells', square: 'square cells', rect: 'rectangular cells', para: 'parallelogram cells' }[g0.latShape] : SHAPES[T.shape].label;
   let txt;
-  if (c.why === 'bricksym') txt = `Brick bond is seamless here: the motif between the mirrors is itself symmetric, so the border repeats after every spacing and a half-strip shift changes nothing.`;
+  if (c.why === 'lat') txt = `Seamless for any drawing: the pattern repeats on its ${LATNAME[g0.G.lat]} lattice, so one lattice cell is a tile and identical tiles are simply laid side by side${g0.latShape === 'hex' ? ' (the hexagon is the cell of points nearer this centre than any other lattice point)' : ''}.${g0.latShape === 'para' ? ' Parallelogram tiles cannot be taken to Compose; choose a group on another lattice.' : ''}`;
+  else if (c.why === 'bricksym') txt = `Brick bond is seamless here: the motif between the mirrors is itself symmetric, so the border repeats after every spacing and a half-strip shift changes nothing.`;
   else if (c.why === 'brickclear') txt = `Brick bond works here only because nothing in the design touches the long edges of the strip. In general a half-strip shift puts the two halves of the repeat side by side in the wrong order, so the row joints break unless the motif between the mirrors is itself symmetric.`;
   else if (c.why === 'brickpar') txt = `Brick bond breaks along the row joints: a half-strip shift puts the two halves of the border's repeat in the wrong order. It works only if the motif between the mirrors is itself symmetric, or if the design stays clear of the long edges (lower the Height or move the Position). Stacked rows are always seamless.`;
   else if (c.why === 'par') txt = `Seamless for any motif: each strip runs from one mirror line to the next-but-one (one full repeat of the border) and is centred on a mirror line, so strips continue each other end to end, and stacked rows, every other one turned 180°, meet in mirror images.`;
@@ -878,11 +1162,13 @@ function renderTiles() {
   else txt = `Identical ${name} need a rosette whose symmetry number n is ${c.need === 2 ? 'even' : 'a multiple of 3'}; with D<sub>${c.n}</sub> the patterns break at the joints. Try ${c.need === 2 ? '90°, 45°, 30° or 22.5°' : '60°, 30° or 15°'}.`;
   note.innerHTML = txt + ' <a data-help="h-tiles">Why?</a>'; note.classList.toggle('warn', !c.ok);
   $('tileLbl').textContent = c.ok ? `${name} · seamless` : `${name}`;
-  $('ratioLbl').hidden = $('borderLbl').hidden = T.shape !== 'rect';
-  $('shiftLbl').hidden = T.shape !== 'rect' || S.mode === 'hinge';
-  $('stripDir').hidden = T.shape !== 'rect';
-  $('stripBond').hidden = T.shape !== 'rect' || T.border;
-  $('cropLbl').hidden = T.shape === 'rect' && S.mode !== 'hinge';
+  const latM = S.mode === 'lattice';
+  $('ratioLbl').hidden = $('borderLbl').hidden = T.shape !== 'rect' || latM;
+  $('shiftLbl').hidden = T.shape !== 'rect' || S.mode === 'hinge' || latM;
+  $('stripDir').hidden = T.shape !== 'rect' || latM;
+  $('stripBond').hidden = T.shape !== 'rect' || T.border || latM;
+  $('cropLbl').hidden = (T.shape === 'rect' && S.mode !== 'hinge') || latM;
+  $('tileSeg').hidden = latM;
 }
 function setTileShape(sh) { T.shape = sh; document.querySelectorAll('#tileSeg button').forEach(x => x.classList.toggle('on', x.dataset.t === sh)); }
 document.querySelectorAll('#tileSeg button').forEach(b => b.onclick = () => { T.before = null; setTileShape(b.dataset.t); redraw(); });
@@ -946,8 +1232,9 @@ function inPoly(pt, poly) {
 
 /* ---------- capture the current tile from the mirror view ---------- */
 function captureTile() {
-  const g0 = tileGeom(), shape = T.shape;
-  const rho = rad((g0.rect ? 0 : SHAPES[shape].show) - g0.m);
+  const g0 = tileGeom(), shape = g0.lat ? g0.latShape : T.shape;
+  if (shape === 'para') return null;
+  const rho = rad((g0.rect || shape === 'rect' ? 0 : SHAPES[shape].show) - g0.m);
   const cs = Math.cos(rho), sn = Math.sin(rho);
   const dv = g0.verts.map(v => ({ x: (v.x - g0.C.x) * cs - (v.y - g0.C.y) * sn, y: (v.x - g0.C.x) * sn + (v.y - g0.C.y) * cs }));
   const minx = Math.min(...dv.map(p => p.x)), maxx = Math.max(...dv.map(p => p.x)), miny = Math.min(...dv.map(p => p.y)), maxy = Math.max(...dv.map(p => p.y));
@@ -960,10 +1247,21 @@ function captureTile() {
   x.drawImage(clean, 0, 0);
   let src = c.toDataURL('image/webp', 0.92); if (!src.startsWith('data:image/webp')) src = c.toDataURL('image/png');
   const edge = shape === 'square' ? W : shape === 'tri' ? W : W / 2;      // hexagon: width = 2 edges; strip: long side = 2 units
-  const r = S.mode === 'hinge' ? analyse(S.alpha) : null;
-  const sym = S.mode === 'hinge' ? (r.closed ? `D${r.n}` : `${fmt(S.alpha)}°`) : S.mode === 'parallel' ? `border` : 'mirror';
+  const mi = methodInfo();
   const count = DESIGNS.filter(d => d.shape === shape).length + 1;
-  return addDesign({ id: 'd' + Date.now().toString(36) + (uid++), name: `${SHAPES[shape].label.replace(/s$/, '')} ${count} · ${sym}`, shape, w: W, h: H, src, edge });
+  return addDesign({ id: 'd' + Date.now().toString(36) + (uid++), name: `${SHAPES[shape].label.replace(/s$/, '')} ${count} · ${mi.sym}`, shape, w: W, h: H, src, edge, method: mi });
+}
+/* what made the current tile: method keys (with their sources) and a precise description */
+function methodInfo() {
+  const keys = [S.method]; let detail, sym;
+  if (S.mode === 'lattice') {
+    const E = effGroup(); detail = `${E.bc.name} (Brewster, ch. XIII ${E.bc.sec}); group ${E.key}, ${E.g.orb}`; sym = E.key;
+  } else if (S.mode === 'hinge') { const r = analyse(S.alpha);
+    detail = `hinged pair at ${fmt(S.alpha)}°` + (r.closed ? ` (D${r.n})` : r.k ? ` (dial mark ${r.k}, seam)` : ' (seam)'); sym = r.closed ? `D${r.n}` : `${fmt(S.alpha)}°`; }
+  else if (S.mode === 'parallel') { detail = `parallel pair, spacing ${Math.round(S.d)}`; sym = 'border'; }
+  else { detail = 'single mirror'; sym = 'mirror'; }
+  if (T.shape === 'rect' && S.mode !== 'lattice') detail += `; strip tile, ${T.bond === 'brick' ? 'brick' : 'stacked'} bond in the preview`;
+  return { keys, detail, sym };
 }
 function addDesign(d) {
   if (DESIGNS.some(x => x.id === d.id)) return dById(d.id);
@@ -975,15 +1273,38 @@ function saveDesigns() {
   if (!ok && DESIGNS.length) cMsg('Your browser would not store the tile library (storage full or blocked). Use “Save project” to keep it.', true);
 }
 let saveT = 0;
+$('cFilter').onchange = renderPalette;
+/* methods actually present on the board, for the legend and the exports */
+function methodSummary() {
+  const m = new Map();
+  for (const p of PIECES) {
+    const d = dById(p.did), keys = dKeys(d);
+    for (const k of new Set(keys)) { const e = m.get(k) || { n: 0, details: new Set() }; e.n++;
+      if (d && d.method && d.method.detail && k !== 'unknown') e.details.add(d.method.detail);
+      m.set(k, e); }
+  }
+  return m;
+}
+function renderLegend() {
+  const m = methodSummary(), el = $('cLegend');
+  if (!m.size) { el.innerHTML = ''; return; }
+  el.innerHTML = '<span>Methods on the board:</span>' + [...m.entries()].map(([k, e]) =>
+    `<span class="lg" title="${[...e.details].join('\n')}">${chip(k)} ${e.n} piece${e.n > 1 ? 's' : ''}</span>`).join('') +
+    (m.size > 1 ? ' <span style="color:var(--rose)">· mixed methods</span>' : ' <span style="color:var(--teal)">· one method</span>');
+}
 function saveBoard() { clearTimeout(saveT); saveT = setTimeout(() => LS.set('mt.board', JSON.stringify({ pieces: PIECES, cb: CB })), 300); }
 
 /* ---------- palette ---------- */
+const dKeys = d => (d && d.method && Array.isArray(d.method.keys) && d.method.keys.length ? d.method.keys.filter(k => METHODS[k]) : ['unknown']);
 function renderPalette() {
   const pal = $('cPalette'); pal.innerHTML = '';
   if (!DESIGNS.length) { pal.innerHTML = '<div class="empty">No saved tiles yet. Press “+ Save current tile”, or save one under the tiled surface in the Mirrors tab.</div>'; return; }
-  for (const d of DESIGNS) {
-    const it = document.createElement('div'); it.className = 'it'; it.title = d.name + ' — drag onto the board';
-    it.innerHTML = `<img src="${d.src}" alt=""><div class="nm">${d.name}</div><div class="ac"><button title="Download this tile (PNG)" data-a="dl">⤓</button><button title="Remove from library" data-a="rm">✕</button></div>`;
+  const flt = $('cFilter').value, shown = DESIGNS.filter(d => flt === 'all' || dKeys(d).includes(flt));
+  if (!shown.length) { pal.innerHTML = '<div class="empty">No saved tiles made with this method.</div>'; return; }
+  for (const d of shown) {
+    const it = document.createElement('div'); it.className = 'it';
+    it.title = `${d.name}\nMade with: ${dKeys(d).map(k => METHODS[k].label).join(' + ')}${d.method && d.method.detail ? ' — ' + d.method.detail : ''}\n${dKeys(d).map(k => plain(METHODS[k].cite)).filter(Boolean).join('\n')}\nDrag onto the board.`;
+    it.innerHTML = `<img src="${d.src}" alt=""><div class="mm">${dKeys(d).map(k => chip(k)).join('')}</div><div class="nm">${d.name}</div><div class="ac"><button title="Download this tile (PNG)" data-a="dl">⤓</button><button title="Remove from library" data-a="rm">✕</button></div>`;
     it.querySelector('[data-a=dl]').onclick = e => { e.stopPropagation(); downloadTile(d); };
     it.querySelector('[data-a=rm]').onclick = e => { e.stopPropagation();
       const n = PIECES.filter(p => p.did === d.id).length;
@@ -1123,9 +1444,9 @@ let lastSnap = '[]';
 function commit() {
   const s = JSON.stringify(PIECES);
   if (s !== lastSnap) { UNDO.push(lastSnap); if (UNDO.length > 80) UNDO.shift(); REDO.length = 0; lastSnap = s; saveBoard(); }
-  syncSel(); cRender();
+  syncSel(); cRender(); renderLegend();
 }
-function restore(s) { PIECES = JSON.parse(s); lastSnap = s; for (const id of [...SEL]) if (!PIECES.some(p => p.id === id)) SEL.delete(id); saveBoard(); syncSel(); cRender(); }
+function restore(s) { PIECES = JSON.parse(s); lastSnap = s; for (const id of [...SEL]) if (!PIECES.some(p => p.id === id)) SEL.delete(id); saveBoard(); syncSel(); cRender(); renderLegend(); }
 $('cUndo').onclick = () => { if (UNDO.length) { REDO.push(lastSnap); restore(UNDO.pop()); } };
 $('cRedo').onclick = () => { if (REDO.length) { UNDO.push(lastSnap); restore(REDO.pop()); } };
 
@@ -1302,6 +1623,12 @@ function downloadTile(d) {
   const c = document.createElement('canvas'); c.width = d.w; c.height = d.h; c.getContext('2d').drawImage(d.img, 0, 0, d.w, d.h);
   c.toBlob(b => download(b, safe(d.name) + '.png'), 'image/png');
 }
+function captionLines() {
+  const m = methodSummary(), out = [];
+  for (const [k, e] of m) out.push(`${METHODS[k].label} (${e.n} piece${e.n > 1 ? 's' : ''})${e.details.size ? ': ' + [...e.details].join('; ') : ''}. ${plain(METHODS[k].cite)}`);
+  if (out.length) out.unshift(m.size > 1 ? 'Methods (mixed):' : 'Method:');
+  return out;
+}
 function boardBounds() {
   let x0 = Infinity, y0 = Infinity, x1 = -Infinity, y1 = -Infinity;
   for (const p of PIECES) for (const q of worldPoly(p)) { x0 = Math.min(x0, q.x); y0 = Math.min(y0, q.y); x1 = Math.max(x1, q.x); y1 = Math.max(y1, q.y); }
@@ -1310,10 +1637,17 @@ function boardBounds() {
 $('cExpPng').onclick = () => {
   if (!PIECES.length) { cMsg('The board is empty.', true); return; }
   const b = boardBounds(), bw = b.x1 - b.x0, bh = b.y1 - b.y0, q = Math.min(4, 5000 / Math.max(bw, bh));
-  const c = document.createElement('canvas'); c.width = Math.ceil(bw * q); c.height = Math.ceil(bh * q); const x = c.getContext('2d');
+  const lines = $('cCaption').checked ? captionLines() : [];
+  const W = Math.ceil(bw * q), fs = Math.max(13, Math.round(W / 90)), lh = Math.round(fs * 1.4);
+  const wrapped = []; { const t = document.createElement('canvas').getContext('2d'); t.font = `${fs}px Georgia, serif`;
+    for (const ln of lines) { let cur = ''; for (const w of ln.split(' ')) { const tryS = cur ? cur + ' ' + w : w; if (t.measureText(tryS).width > W - 2 * fs && cur) { wrapped.push(cur); cur = w; } else cur = tryS; } wrapped.push(cur); } }
+  const capH = wrapped.length ? wrapped.length * lh + 2 * fs : 0;
+  const c = document.createElement('canvas'); c.width = W; c.height = Math.ceil(bh * q) + capH; const x = c.getContext('2d');
   x.fillStyle = CB.bg; x.fillRect(0, 0, c.width, c.height); x.setTransform(q, 0, 0, q, -b.x0 * q, -b.y0 * q);
   for (const p of PIECES) drawPiece(x, p);
   if (CB.joints && CB.groutW > 0) for (const p of PIECES) strokePoly(x, worldPoly(p), CB.grout, CB.groutW);
+  if (capH) { x.setTransform(1, 0, 0, 1, 0, 0); x.fillStyle = '#fbf8f1'; x.fillRect(0, c.height - capH, W, capH);
+    x.fillStyle = '#4a3f33'; x.font = `${fs}px Georgia, serif`; wrapped.forEach((ln, i) => x.fillText(ln, fs, c.height - capH + fs + (i + 0.8) * lh)); }
   c.toBlob(bl => download(bl, 'tiling.png'), 'image/png'); cMsg(`Exported ${c.width} × ${c.height} px.`);
 };
 $('cExpSvg').onclick = () => {
@@ -1329,7 +1663,10 @@ $('cExpSvg').onclick = () => {
     body += `<g transform="${tr}"><use xlink:href="#img_${d.id}" href="#img_${d.id}" clip-path="url(#clip_${key})"/>` +
       (CB.joints && CB.groutW > 0 ? `<polygon points="${pts}" fill="none" stroke="${CB.grout}" stroke-width="${CB.groutW}" vector-effect="non-scaling-stroke" stroke-linejoin="round"/>` : '') + `</g>\n`;
   }
-  const svg = `<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="${b.x0.toFixed(2)} ${b.y0.toFixed(2)} ${(b.x1 - b.x0).toFixed(2)} ${(b.y1 - b.y0).toFixed(2)}" width="${Math.round(b.x1 - b.x0)}" height="${Math.round(b.y1 - b.y0)}">\n<rect x="${b.x0}" y="${b.y0}" width="${b.x1 - b.x0}" height="${b.y1 - b.y0}" fill="${CB.bg}"/>\n<defs>\n${defs}\n</defs>\n${body}</svg>`;
+  const esc = t => t.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+  const meta = `<title>Tiling composed with the Combinaisons ornementales mirror tool</title>\n<desc>${esc(captionLines().join('\n'))}</desc>\n<metadata>${esc(JSON.stringify(provenance()))}</metadata>\n`;
+  const svg0 = `<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="${b.x0.toFixed(2)} ${b.y0.toFixed(2)} ${(b.x1 - b.x0).toFixed(2)} ${(b.y1 - b.y0).toFixed(2)}" width="${Math.round(b.x1 - b.x0)}" height="${Math.round(b.y1 - b.y0)}">\n<rect x="${b.x0}" y="${b.y0}" width="${b.x1 - b.x0}" height="${b.y1 - b.y0}" fill="${CB.bg}"/>\n<defs>\n${defs}\n</defs>\n${body}</svg>`;
+  const svg = svg0.replace('>\n<rect', '>\n' + meta + '<rect');
   download(new Blob([svg], { type: 'image/svg+xml' }), 'tiling.svg'); cMsg('SVG exported: tiles as images, joints as vector outlines (useful as cutting lines).');
 };
 $('cExpSheet').onclick = () => {
@@ -1343,10 +1680,15 @@ $('cExpSheet').onclick = () => {
 };
 /* project files: JSON with the tile images embedded, so a file reopens exactly */
 $('cSaveProj').onclick = () => {
-  const data = { format: 'combinaisons-mirror-tool', version: 1, saved: new Date().toISOString(),
-    designs: DESIGNS.map(({ img, ...d }) => d), pieces: PIECES, board: CB };
+  const data = { format: 'combinaisons-mirror-tool', version: 2, saved: new Date().toISOString(),
+    provenance: provenance(), designs: DESIGNS.map(({ img, ...d }) => d), pieces: PIECES, board: CB };
   download(new Blob([JSON.stringify(data)], { type: 'application/json' }), 'mirror_tiles_project.json');
 };
+function provenance() {
+  const m = methodSummary(), out = {};
+  for (const [k, e] of m) out[k] = { label: METHODS[k].label, pieces: e.n, details: [...e.details], source: plain(METHODS[k].cite) };
+  return out;
+}
 let fileMode = 'open';
 $('cOpenProj').onclick = () => { fileMode = 'open'; $('cFile').value = ''; $('cFile').click(); };
 $('cAddTiles').onclick = () => { fileMode = 'tiles'; $('cFile').value = ''; $('cFile').click(); };
@@ -1356,7 +1698,8 @@ $('cFile').onchange = e => {
     let data; try { data = JSON.parse(rd.result); } catch (err) { cMsg('That file is not valid JSON.', true); return; }
     if (!data || data.format !== 'combinaisons-mirror-tool' || !Array.isArray(data.designs)) { cMsg('That is not a project saved by this tool.', true); return; }
     const okD = data.designs.filter(d => d && typeof d.id === 'string' && CUTS[d.shape] && typeof d.src === 'string' && /^data:image\/(png|webp|jpeg);base64,/.test(d.src) && d.w > 0 && d.h > 0 && d.edge > 0);
-    for (const d of okD) addDesign({ id: d.id, name: String(d.name || 'tile').slice(0, 80), shape: d.shape, w: +d.w, h: +d.h, src: d.src, edge: +d.edge });
+    for (const d of okD) addDesign({ id: d.id, name: String(d.name || 'tile').slice(0, 80), shape: d.shape, w: +d.w, h: +d.h, src: d.src, edge: +d.edge,
+      method: d.method && Array.isArray(d.method.keys) ? { keys: d.method.keys.filter(k => METHODS[k] && k !== 'unknown').slice(0, 4), detail: String(d.method.detail || '').slice(0, 300), sym: String(d.method.sym || '').slice(0, 40) } : undefined });
     if (fileMode === 'open') {
       const ids = new Set(DESIGNS.map(d => d.id));
       PIECES = (Array.isArray(data.pieces) ? data.pieces : []).filter(p => p && ids.has(p.did) && isFinite(p.x) && isFinite(p.y) && isFinite(p.s) && p.s > 0)
@@ -1376,12 +1719,12 @@ $('cFit').onclick = fitBoard;
 if (inFrame) { ['cExpPng', 'cExpSvg', 'cExpSheet', 'cSaveProj'].forEach(id => $(id).disabled = true); $('cFrameNote').hidden = false; }
 
 /* ---------- saving from the mirror view, switching views, restoring ---------- */
-$('cSaveCur').onclick = () => { const d = captureTile(); cMsg(`Saved “${d.name}”.`); };
-$('saveTile').onclick = () => { const d = captureTile(); $('saveTileMsg').textContent = `Saved “${d.name}”: see the Compose tab.`; };
+$('cSaveCur').onclick = () => { const d = captureTile(); cMsg(d ? `Saved “${d.name}”.` : 'Parallelogram cells (oblique lattice) cannot be used in Compose.', !d); };
+$('saveTile').onclick = () => { const d = captureTile(); $('saveTileMsg').textContent = d ? `Saved “${d.name}”: see the Compose tab.` : 'Parallelogram cells cannot be saved; choose a group on another lattice.'; };
 function showView(v) {
   document.querySelectorAll('#viewTabs button').forEach(b => b.classList.toggle('on', b.dataset.v === v));
   $('mirrorView').hidden = v !== 'mirror'; $('composeView').hidden = v !== 'compose';
-  if (v === 'compose') { if (!DESIGNS.length) { captureTile(); cMsg('Your current tile was saved to start with; save more from the Mirrors tab.'); } syncBoardCtl(); renderPalette(); cRender(); }
+  if (v === 'compose') { if (!DESIGNS.length && captureTile()) { cMsg('Your current tile was saved to start with; save more from the Mirrors tab.'); } syncBoardCtl(); renderPalette(); cRender(); }
   else redraw(true);
 }
 document.querySelectorAll('#viewTabs button').forEach(b => b.onclick = () => showView(b.dataset.v));
@@ -1393,7 +1736,7 @@ new ResizeObserver(() => cRender()).observe(board);
       for (const k of Object.keys(CB)) if (bd.cb && k in bd.cb && typeof bd.cb[k] === typeof CB[k]) CB[k] = bd.cb[k]; }
   } catch (e) {}
   for (const p of PIECES) { const n = +String(p.id).slice(1); if (n >= uid) uid = n + 1; }
-  lastSnap = JSON.stringify(PIECES); renderPalette(); syncBoardCtl();
+  lastSnap = JSON.stringify(PIECES); renderPalette(); syncBoardCtl(); renderLegend();
 })();
 
 /* ---------- slots ---------- */
@@ -1556,6 +1899,7 @@ sheet.addEventListener('pointermove', e => {
     case 'O': S.O = { x: p.x, y: p.y }; break;
     case 'rot': if (S.mode === 'hinge') S.beta = ang; else S.theta = ang; break;
     case 'open': S.alpha = snapAlpha(Math.min(180, Math.max(3, 2 * Math.abs(wrap180(ang - S.beta))))); break;
+    case 'cell': S.lt = ang; S.cell = Math.min(600, Math.max(40, Math.hypot(p.x - O.x, p.y - O.y))); break;
     case 'dist': { const n = dir(S.theta + 90); S.d = Math.min(600, Math.max(10, (p.x - O.x) * n.x + (p.y - O.y) * n.y)); break; }
     case 'orn': { const o = S.orn[drag.i]; o.x = p.x + drag.ox; o.y = p.y + drag.oy; redraw(true); return; }
   }
@@ -1591,7 +1935,7 @@ async function demo() {
   const half = 225 * img.width / 1600;
   S.orn = []; targetSlot = -1;
   place(2, img, Ox - half, Oy - half, 2 * half, 2 * half, { x: SW / 2, y: SH / 2, s: 1.4 });
-  S.mode = 'hinge'; S.O = { x: SW / 2, y: SH / 2 }; S.beta = -90; S.alpha = 120; S.zoom = 1;
+  S.method = 'verneuil'; S.mode = 'hinge'; S.vmode = 'hinge'; S.O = { x: SW / 2, y: SH / 2 }; S.beta = -90; S.alpha = 120; S.zoom = 1;
   renderSlots(); redraw(true);
 }
 $('demo').onclick = demo;
@@ -1699,7 +2043,7 @@ async function opening(cfg) {
       x: o.x, y: o.y, s: o.s, rot: o.rot || 0, flip: !!o.flip, lib: o.id }));
     S.sel = S.orn.length - 1;
   } catch (e) { S.orn = []; S.sel = -1; }
-  Object.assign(S, { mode: cfg.mode, alpha: cfg.alpha, beta: cfg.beta, zoom: cfg.zoom, O: { x: SW / 2, y: SH / 2 } });
+  Object.assign(S, { method: 'verneuil', vmode: cfg.mode, mode: cfg.mode, alpha: cfg.alpha, beta: cfg.beta, zoom: cfg.zoom, O: { x: SW / 2, y: SH / 2 } });
   if (cfg.theta !== undefined) S.theta = cfg.theta;
   if (cfg.d !== undefined) S.d = cfg.d;
   renderSlots(); redraw(true);
