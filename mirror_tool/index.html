@@ -110,6 +110,27 @@
   #langSeg button{white-space:nowrap}
   #cropCanvas{max-width:100%;display:block;margin:0 auto;cursor:crosshair;touch-action:none;background:#fff}
   .dlg-f{display:flex;gap:8px;justify-content:space-between;align-items:center;padding:10px 14px;border-top:1px solid var(--line)}
+  .stage > figure:nth-child(2){grid-row:span 2}
+  @media (max-width:980px){.stage > figure:nth-child(2){grid-row:auto}}
+  .help h4{font-weight:normal;font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:var(--ochre);margin:22px 0 6px;border:0;padding:0}
+  .help h4:first-of-type{margin-top:4px}
+  .help p,.help li{line-height:1.6;font-size:14.5px;max-width:760px}
+  .help ul{padding-left:20px;margin:4px 0 10px}
+  .help table{border-collapse:collapse;font-size:13.5px;margin:6px 0 10px}
+  .help th,.help td{border-bottom:1px solid var(--line);padding:4px 12px 4px 0;text-align:left;font-variant-numeric:tabular-nums}
+  .help th{font-weight:normal;color:var(--muted)}
+  .help .yes{color:var(--teal)} .help .no{color:#b9a98f}
+  .help .fig{display:flex;gap:18px;flex-wrap:wrap;align-items:flex-start;margin:6px 0 4px}
+  .help svg{background:#fff;border:1px solid var(--line);border-radius:4px}
+  .help .cap{font-size:12px;color:var(--muted);max-width:230px;margin-top:3px}
+  .help .try{font-size:12.5px;padding:1px 8px;margin-left:4px}
+  #tileNote a{color:var(--teal);cursor:pointer}
+  .tilebar{display:flex;flex-wrap:wrap;gap:8px 14px;align-items:center;margin:8px 0 4px}
+  .tilebar .seg button{flex:none;padding:3px 10px}
+  .tilebar label.small{display:flex;align-items:center;gap:6px}
+  .tilebar input[type=range]{width:110px;accent-color:var(--teal)}
+  #tileNote{line-height:1.45;border-left:3px solid var(--teal);padding:3px 8px;background:#fbf8f1}
+  #tileNote.warn{border-color:var(--rose)}
   kbd{font:11px ui-monospace,monospace;background:#fff;border:1px solid var(--line);border-radius:3px;padding:0 3px}
 </style>
 </head>
@@ -117,7 +138,7 @@
 <header>
   <h1><i>Combinaisons ornementales</i> — the hinged mirror</h1>
   <span class="sub">Verneuil, Auriol &amp; Mucha, 1901 · place any number of the book's ornaments, then set the mirrors as the preface describes</span>
-  <button id="openPreface" style="margin-left:auto">Read the original text (FR / EN)</button>
+  <span style="margin-left:auto;display:flex;gap:8px"><button id="openHelp">How it works</button><button id="openPreface">Read the original text (FR / EN)</button></span>
 </header>
 <main>
 <aside>
@@ -180,6 +201,17 @@
     <figcaption><b>Seen in the mirrors</b><span id="groupLbl"></span></figcaption>
     <canvas id="result" class="view" width="900" height="900"></canvas>
   </figure>
+  <figure id="tileFig">
+    <figcaption><b>As a tiled surface</b><span id="tileLbl"></span></figcaption>
+    <canvas id="tiles" class="view" width="1000" height="560"></canvas>
+    <div class="tilebar">
+      <span class="seg" id="tileSeg"><button data-t="tri">Triangles</button><button data-t="square">Squares</button><button data-t="hex" class="on">Hexagons</button></span>
+      <label class="small">Tile size <input type="range" id="tileCrop" min="0.3" max="1" step="0.01" value="0.9"></label>
+      <label class="small">Tiles across <input type="range" id="tileN" min="2" max="9" step="1" value="4"></label>
+      <label class="cb"><input type="checkbox" id="tileJoints" checked> Joints</label>
+    </div>
+    <div id="tileNote" class="small"></div>
+  </figure>
 </section>
 </main>
 
@@ -198,6 +230,76 @@
       <div id="prefText"></div>
       <h4>Notes</h4>
       <ol id="prefNotes" class="notes"></ol>
+    </div>
+  </div>
+</div>
+
+
+<div class="ov" id="helpOv" hidden role="dialog" aria-modal="true" aria-labelledby="helpTitle">
+  <div class="ovp">
+    <div class="ovh">
+      <h3 id="helpTitle">How it works · angles, seams, patterns and tiles</h3>
+      <span class="ovtools"><button id="helpClose" aria-label="Close">Close ✕</button></span>
+    </div>
+    <div class="ovb help" id="helpBody">
+
+      <h4 id="h-unfold">1 · What the mirrors show</h4>
+      <p>Two flat mirrors stand upright on the sheet, hinged at a point O and opened to an angle α. Only the wedge of the sheet between them is real; everything else you see is reflections of that wedge. A reflection of a reflection is a rotation, so the images alternate around O: wedge, mirrored wedge, wedge turned by 2α, mirrored again, and so on, in both directions. The right-hand panel draws exactly this “unfolding”: each slice is the sheet rotated or reflected into place.</p>
+
+      <h4 id="h-seam">2 · Seamless angles: <span style="text-transform:none;letter-spacing:.04em">α = 180°/n</span></h4>
+      <div class="fig">
+        <svg width="230" height="200" viewBox="-115 -100 230 200" aria-label="Seamless: 45 degrees">
+          <g stroke="#2f5d5a" stroke-width="1" fill="none">
+            <g id="hw"><path d="M0 0 L-31 -75 A81 81 0 0 1 31 -75 Z" fill="#e8f0ee"/><path d="M-6 -55 q 14 -10 10 -22" stroke="#b07a2a" stroke-width="3"/></g>
+            <use href="#hw" transform="scale(-1,1) rotate(45)"/><use href="#hw" transform="rotate(90)"/><use href="#hw" transform="scale(-1,1) rotate(135)"/>
+            <use href="#hw" transform="rotate(180)"/><use href="#hw" transform="scale(-1,1) rotate(225)"/><use href="#hw" transform="rotate(270)"/><use href="#hw" transform="scale(-1,1) rotate(315)"/>
+          </g><circle r="3" fill="#2f5d5a"/>
+        </svg>
+        <svg width="230" height="200" viewBox="-115 -100 230 200" aria-label="Seam: 72 degrees">
+          <g stroke="#2f5d5a" stroke-width="1" fill="none">
+            <g id="hw2"><path d="M0 0 L-48 -66 A81 81 0 0 1 48 -66 Z" fill="#e8f0ee"/><path d="M-10 -52 q 22 -10 16 -24" stroke="#b07a2a" stroke-width="3"/></g>
+            <use href="#hw2" transform="scale(-1,1) rotate(72)"/><use href="#hw2" transform="rotate(144)"/>
+            <use href="#hw2" transform="scale(-1,1) rotate(-72)"/><use href="#hw2" transform="rotate(-144)"/>
+          </g><line x1="0" y1="0" x2="0" y2="95" stroke="#c81e28" stroke-width="2" stroke-dasharray="5 4"/><circle r="3" fill="#2f5d5a"/>
+        </svg>
+      </div>
+      <div class="fig"><div class="cap" style="width:230px">α = 45° = 180°/4: 8 slices, the two chains meet behind the hinge and agree. Symmetry D<sub>4</sub>.</div><div class="cap" style="width:230px">α = 72° = 360°/5: 5 slices, but behind the hinge two plain (unmirrored) copies touch: the motif breaks along the red seam.</div></div>
+      <p>The two chains of images, going round from either mirror, meet again behind the hinge. They agree only if a whole number of <i>pairs</i> (slice + mirrored slice) fills the circle, i.e. if 2α divides 360°, i.e. <b>α = 180°/n</b>. Then you see 2n slices and the result has the symmetry of a regular n-gon with its mirror lines, the dihedral group D<sub>n</sub>. This was stated by Brewster for his kaleidoscope (1817): the angle must be an “even aliquot part” of the circle. For any other angle the chains disagree and the tool draws a red seam.</p>
+      <table><tr><th>α</th><th>n</th><th>slices</th><th>symmetry</th></tr>
+        <tr><td>90°</td><td>2</td><td>4</td><td>D<sub>2</sub></td></tr><tr><td>60°</td><td>3</td><td>6</td><td>D<sub>3</sub></td></tr>
+        <tr><td>45°</td><td>4</td><td>8</td><td>D<sub>4</sub></td></tr><tr><td>36°</td><td>5</td><td>10</td><td>D<sub>5</sub></td></tr>
+        <tr><td>30°</td><td>6</td><td>12</td><td>D<sub>6</sub></td></tr><tr><td>22.5°</td><td>8</td><td>16</td><td>D<sub>8</sub></td></tr>
+        <tr><td>15°</td><td>12</td><td>24</td><td>D<sub>12</sub></td></tr></table>
+
+      <h4 id="h-dial">3 · Verneuil's dial <span style="text-transform:none;letter-spacing:.04em">(360°/k)</span></h4>
+      <p>The preface's dial marks the mirror openings 360°/k for k = 3 … 8 (120°, 90°, 72°, 60°, 51.4°, 45°), promising a triangle, square, pentagon, hexagon… For even k these are seamless angles (360°/k = 180°/(k/2)). For odd k (120°, 72°, 51.4°) they leave a seam behind the hinge, unless the motif in the wedge is itself symmetric about the line bisecting the mirrors, as the lines B A B in Verneuil's own figure are. So the dial is right for his example and wrong as a general rule. Try the red chips under “Verneuil's dial marks” with any asymmetric ornament.</p>
+
+      <h4 id="h-borders">4 · Borders and corners</h4>
+      <p>Two <b>parallel</b> mirrors repeat the strip between them forever in both directions: an endless border (mirror lines across the band only). A <b>single</b> mirror placed across a border at 45° turns it through a right angle: this is the preface's corner at CC; at any other angle the corner is not square.</p>
+
+      <h4 id="h-groups">5 · What mirrors alone can make</h4>
+      <p>Mirrors generate only symmetries that are reflections and their compositions, so the possibilities are short and completely known:</p>
+      <ul>
+        <li><b>Two hinged mirrors:</b> rosettes D<sub>n</sub> (α = 180°/n).</li>
+        <li><b>Two parallel mirrors:</b> one type of border; adding a mirror along the band gives one more.</li>
+        <li><b>Three or four mirrors</b> closing a cell fill the whole plane, but only four cells work, because every corner must be 180°/n: the equilateral triangle (60-60-60), the triangles 90-45-45 and 90-60-30, and the rectangle. These give the four wallpaper patterns built purely from mirrors (p3m1, p4m, p6m, pmm). A Brewster kaleidoscope with three mirrors at 60° is the first one.</li>
+      </ul>
+      <p>Everything else in ornament (rotations without mirrors, glide reflections, the remaining 13 wallpaper types) cannot come from mirrors.</p>
+
+      <h4 id="h-tiles">6 · From rosette to tiles</h4>
+      <p>The tile in the lower panel is the mirror view cut to a regular triangle, square or hexagon centred on the hinge. All tiles are identical (squares and hexagons are shifted, every other triangle is turned 180°, as when laying real tiles). Two neighbouring tiles continue each other across their joint exactly when the rosette has a mirror line through its centre perpendicular to that joint, because then the neighbour <i>is</i> the reflection of the tile in the joint. With α = 180°/n the rosette has n mirror lines, so:</p>
+      <table><tr><th>α</th><th>n</th><th>squares</th><th>triangles</th><th>hexagons</th></tr>
+        <tr><td>90°</td><td>2</td><td class="yes">seamless</td><td class="no">breaks</td><td class="no">breaks</td></tr>
+        <tr><td>60°</td><td>3</td><td class="no">breaks</td><td class="yes">seamless</td><td class="yes">seamless</td></tr>
+        <tr><td>45°</td><td>4</td><td class="yes">seamless</td><td class="no">breaks</td><td class="no">breaks</td></tr>
+        <tr><td>36°</td><td>5</td><td class="no">breaks</td><td class="no">breaks</td><td class="no">breaks</td></tr>
+        <tr><td>30°</td><td>6</td><td class="yes">seamless</td><td class="yes">seamless</td><td class="yes">seamless</td></tr>
+        <tr><td>22.5°</td><td>8</td><td class="yes">seamless</td><td class="no">breaks</td><td class="no">breaks</td></tr>
+        <tr><td>15°</td><td>12</td><td class="yes">seamless</td><td class="yes">seamless</td><td class="yes">seamless</td></tr></table>
+      <p>Squares need n even, triangles and hexagons need n divisible by 3. Five-fold rosettes (36°) never tile seamlessly: no regular tiling has five-fold symmetry. “Seamless” means the lines meet; a curve crossing a joint at a slant still makes a corner there (it meets its own reflection), so the smoothest tiles come from motifs whose lines cross the mirror lines at right angles. The tile size slider moves the cut, which changes where the joints fall in the design.</p>
+
+      <h4>Further reading</h4>
+      <p class="small">D. Brewster, <i>A Treatise on the Kaleidoscope</i> (1819; 2nd ed. 1858). H. S. M. Coxeter, <i>Introduction to Geometry</i> (1961), ch. on reflection groups. D. Washburn &amp; D. Crowe, <i>Symmetries of Culture</i> (1988). J. H. Conway, H. Burgiel, C. Goodman-Strauss, <i>The Symmetries of Things</i> (2008).</p>
     </div>
   </div>
 </div>
@@ -240,6 +342,8 @@ const pad = n => String(n).padStart(2, '0');
 
 const sheet = $('sheet'), sctx = sheet.getContext('2d');
 const result = $('result'), rctx = result.getContext('2d');
+const clean = document.createElement('canvas'); clean.width = clean.height = 900; const cctx = clean.getContext('2d');
+const tilesC = $('tiles'), tctx = tilesC.getContext('2d');
 const src = document.createElement('canvas'); src.width = SW; src.height = SH;
 const g = src.getContext('2d');
 
@@ -390,7 +494,7 @@ function setView(ctx) {
   ctx.translate(RES / 2, RES / 2); ctx.scale(S.zoom, S.zoom); ctx.translate(-S.O.x, -S.O.y);
 }
 function renderResult() {
-  const ctx = rctx, O = S.O, L = 4000 / S.zoom + 2000;
+  let ctx = cctx; const O = S.O, L = 4000 / S.zoom + 2000;
   ctx.setTransform(1, 0, 0, 1, 0, 0); ctx.fillStyle = '#fff'; ctx.fillRect(0, 0, RES, RES);
   const lines = []; let seam = null;
   if (S.mode === 'hinge') {
@@ -432,7 +536,8 @@ function renderResult() {
     }
     if (S.mode === 'single') lines.push({ off: 0, real: true });
   }
-  // overlays
+  // copy the clean unfolding to the visible canvas, then draw overlays on top
+  rctx.setTransform(1, 0, 0, 1, 0, 0); rctx.drawImage(clean, 0, 0); ctx = rctx;
   if (S.showLines) {
     ctx.save(); setView(ctx); ctx.lineWidth = 1.4 / S.zoom;
     for (const l of lines) {
@@ -459,7 +564,7 @@ function renderResult() {
 
 /* ---------- status ---------- */
 function updateStatus() {
-  const st = $('status'); let html, warn = false, grp = '';
+  const st = $('status'); let html, warn = false, grp = '', r_anchor = 'h-seam';
   if (S.mode === 'hinge') {
     const a = S.alpha, r = analyse(a);
     if (r.closed) {
@@ -469,7 +574,7 @@ function updateStatus() {
     } else if (r.k) {
       warn = true;
       html = `α = 360°/${r.k} = ${fmt(a)}° — Verneuil's dial mark ${r.k}. Since 360/α is odd, the image chains meet behind the hinge with opposite handedness: a seam (red) unless the motif is symmetric about the bisector, in which case the true group is D<sub>${r.k}</sub>.`;
-      grp = 'seam behind the hinge';
+      grp = 'seam behind the hinge'; r_anchor = 'h-dial';
     } else {
       warn = true;
       html = `α = ${fmt(a)}° is not an aliquot part of 180°: the images do not close up (Brewster's "want of symmetry"). Seam marked in red.`;
@@ -482,7 +587,7 @@ function updateStatus() {
     html = 'One mirror: the sheet and its reflection, bilateral symmetry D<sub>1</sub>. At 45° to a border it turns the border through a right angle (Verneuil\'s CC).';
     grp = 'D₁';
   }
-  st.innerHTML = html; st.classList.toggle('warn', warn); $('groupLbl').textContent = grp;
+  st.innerHTML = html + (S.mode === 'hinge' ? ` <a data-help="${r_anchor}" style="color:var(--teal);cursor:pointer">Why?</a>` : ''); st.classList.toggle('warn', warn); $('groupLbl').textContent = grp;
 }
 const fmt = v => (Math.round(v * 100) / 100).toString();
 const sub = n => String(n).split('').map(c => '₀₁₂₃₄₅₆₇₈₉'[c]).join('');
@@ -495,7 +600,7 @@ function redraw(srcChanged) {
   requestAnimationFrame(() => {
     pending = false;
     if (srcDirty) { renderSource(); srcDirty = false; }
-    renderSheet(); renderResult(); updateStatus(); syncControls();
+    renderSheet(); renderResult(); renderTiles(); updateStatus(); syncControls();
   });
 }
 
@@ -544,6 +649,84 @@ for (const { v, k } of K_ANG) {
   const b = document.createElement('button'); b.className = 'k'; b.textContent = k + ': ' + fmt(Math.round(v * 10) / 10) + '°';
   b.title = 'Dial mark ' + k + ' = 360°/' + k; b.onclick = () => { S.alpha = v; redraw(); }; $('chipsK').appendChild(b);
 }
+
+/* ---------- tiled surface ----------
+   The tile is the mirror view cut to a regular polygon centred on the hinge, its edge normals laid
+   along mirror axes. All tiles are identical: squares and hexagons are translated, triangles alternate
+   with copies turned 180°. Neighbours continue each other across a joint exactly when the rosette is
+   symmetric about the perpendicular bisector of that joint, i.e. when the edge normals are mirror axes
+   of the rosette: n even for squares, n a multiple of 3 for triangles and hexagons (α = 180°/n). */
+const T = { shape: 'hex', crop: 0.9, across: 4, joints: true };
+const SHAPES = {
+  tri:    { k: 3, maxA: 220, label: 'triangles', show: 90 },   // show: screen direction given to one edge normal, so tiles sit level
+  square: { k: 4, maxA: 445, label: 'squares', show: 0 },
+  hex:    { k: 6, maxA: 385, label: 'hexagons', show: 90 },
+};
+function tileGeom() {
+  const sh = SHAPES[T.shape], a = sh.maxA * T.crop;            // a = apothem (centre to edge), in mirror-view px
+  const m = S.mode === 'hinge' ? S.beta - S.alpha / 2 : S.mode === 'single' ? S.theta + 90 : S.theta + 90;   // a mirror axis direction
+  const C = { x: RES / 2, y: RES / 2 }, R = a / Math.cos(Math.PI / sh.k);
+  const verts = [];
+  for (let i = 0; i < sh.k; i++) { const v = dir(m + 180 / sh.k + 360 * i / sh.k); verts.push({ x: C.x + R * v.x, y: C.y + R * v.y }); }
+  let u, v, width;
+  if (T.shape === 'square') { u = dir(m); v = dir(m + 90); u = { x: 2 * a * u.x, y: 2 * a * u.y }; v = { x: 2 * a * v.x, y: 2 * a * v.y }; width = 2 * a; }
+  else if (T.shape === 'hex') { u = dir(m); v = dir(m + 60); u = { x: 2 * a * u.x, y: 2 * a * u.y }; v = { x: 2 * a * v.x, y: 2 * a * v.y }; width = 2 * a; }
+  else { const sd = 2 * Math.sqrt(3) * a; u = dir(m + 90); v = dir(m + 150); u = { x: sd * u.x, y: sd * u.y }; v = { x: sd * v.x, y: sd * v.y }; width = sd; }
+  return { a, m, C, verts, u, v, width, n0: dir(m) };
+}
+function tilesCompatible() {
+  if (S.mode !== 'hinge') return { ok: false, why: 'mode' };
+  const r = analyse(S.alpha);
+  if (!r.closed) return { ok: false, why: 'seam' };
+  const need = T.shape === 'square' ? 2 : 3;
+  return { ok: r.n % need === 0, n: r.n, need };
+}
+function renderTiles() {
+  const W = tilesC.width, H = tilesC.height, g0 = tileGeom(), { a, C, verts, u, v } = g0;
+  const k = W / (T.across * g0.width);
+  const ctx = tctx;
+  ctx.setTransform(1, 0, 0, 1, 0, 0); ctx.fillStyle = '#fff'; ctx.fillRect(0, 0, W, H);
+  const rho = rad(SHAPES[T.shape].show - g0.m);                // turn the whole floor so the tiles are level on screen
+  const setView = () => { ctx.setTransform(1, 0, 0, 1, W / 2, H / 2); ctx.rotate(rho); ctx.scale(k, k); ctx.translate(-C.x, -C.y); };
+  const grow = 1 + 0.9 / (k * a);                               // overlap by about a pixel: no hairline gaps
+  const poly = verts.map(p => ({ x: C.x + (p.x - C.x) * grow, y: C.y + (p.y - C.y) * grow }));
+  const cells = [];
+  const N = Math.ceil(Math.max(W, H) / k / Math.min(Math.hypot(u.x, u.y), Math.hypot(v.x, v.y))) + 2;
+  const reach = Math.hypot(W, H) / 2 / k + 2 * a;
+  const inView = (x, y) => Math.hypot(x - C.x, y - C.y) < reach;
+  for (let i = -N; i <= N; i++) for (let j = -N; j <= N; j++) {
+    const tx = i * u.x + j * v.x, ty = i * u.y + j * v.y;
+    if (inView(C.x + tx, C.y + ty)) cells.push([1, 0, 0, 1, tx, ty]);
+    if (T.shape === 'tri') {                                     // the 180°-turned neighbour across the edge with normal n0
+      const mx = C.x + tx + a * g0.n0.x, my = C.y + ty + a * g0.n0.y;
+      if (inView(2 * mx - C.x - tx, 2 * my - C.y - ty)) cells.push([-1, 0, 0, -1, 2 * mx - tx, 2 * my - ty]);
+    }
+  }
+  for (const M of cells) {
+    ctx.save(); setView(); ctx.transform(...M);
+    ctx.beginPath(); poly.forEach((p, i) => i ? ctx.lineTo(p.x, p.y) : ctx.moveTo(p.x, p.y)); ctx.closePath(); ctx.clip();
+    ctx.drawImage(clean, 0, 0); ctx.restore();
+  }
+  if (T.joints) {
+    ctx.save(); setView(); ctx.strokeStyle = 'rgba(122,106,85,.45)'; ctx.lineWidth = 1 / k;
+    for (const M of cells) { ctx.save(); ctx.transform(...M); ctx.beginPath(); verts.forEach((p, i) => i ? ctx.lineTo(p.x, p.y) : ctx.moveTo(p.x, p.y)); ctx.closePath(); ctx.restore(); ctx.stroke(); }
+    ctx.restore();
+  }
+  // note
+  const c = tilesCompatible(), note = $('tileNote'), name = SHAPES[T.shape].label;
+  let txt;
+  if (c.why === 'mode') txt = `The tiles are cut from the mirror view around the hinge point; joints match only for a hinged-pair rosette.`;
+  else if (c.why === 'seam') txt = `This opening has a seam, so the tile itself is broken. Choose an angle 180°/n from the first row of chips.`;
+  else if (c.ok) txt = `Seamless: every tile is identical, and because each joint lies across a mirror axis of the D<sub>${c.n}</sub> rosette, neighbouring tiles continue each other${T.shape === 'tri' ? ' (every other triangle is turned 180°, as when laying real tiles)' : ''}.`;
+  else txt = `Identical ${name} need a rosette whose symmetry number n is ${c.need === 2 ? 'even' : 'a multiple of 3'}; with D<sub>${c.n}</sub> the patterns break at the joints. Try ${c.need === 2 ? '90°, 45°, 30° or 22.5°' : '60°, 30° or 15°'}.`;
+  note.innerHTML = txt + ' <a data-help="h-tiles">Why?</a>'; note.classList.toggle('warn', !c.ok);
+  $('tileLbl').textContent = c.ok ? `${name} · seamless` : `${name}`;
+}
+document.querySelectorAll('#tileSeg button').forEach(b => b.onclick = () => {
+  T.shape = b.dataset.t; document.querySelectorAll('#tileSeg button').forEach(x => x.classList.toggle('on', x === b)); redraw(); });
+$('tileCrop').addEventListener('input', e => { T.crop = +e.target.value; redraw(); });
+$('tileN').addEventListener('input', e => { T.across = +e.target.value; redraw(); });
+$('tileJoints').onchange = e => { T.joints = e.target.checked; redraw(); };
 
 /* ---------- slots ---------- */
 const MAX_ORN = 60;
@@ -744,6 +927,18 @@ async function demo() {
   renderSlots(); redraw(true);
 }
 $('demo').onclick = demo;
+/* ---------- explanation overlay ---------- */
+const helpOv = $('helpOv');
+function openHelp(anchor) {
+  helpOv.hidden = false; document.body.style.overflow = 'hidden'; $('helpClose').focus();
+  const t = anchor && document.getElementById(anchor); $('helpBody').scrollTop = t ? t.offsetTop - 10 : 0;
+}
+function closeHelp() { helpOv.hidden = true; document.body.style.overflow = ''; $('openHelp').focus(); }
+$('openHelp').onclick = () => openHelp(); $('helpClose').onclick = closeHelp;
+helpOv.addEventListener('click', e => { if (e.target === helpOv) closeHelp(); });
+document.addEventListener('keydown', e => { if (e.key === 'Escape' && !helpOv.hidden) closeHelp(); });
+$('tileNote').addEventListener('click', e => { if (e.target.closest('a[data-help]')) { e.preventDefault(); openHelp(e.target.closest('a').dataset.help); } });
+$('status').addEventListener('click', e => { if (e.target.closest('a[data-help]')) { e.preventDefault(); openHelp(e.target.closest('a').dataset.help); } });
 /* ---------- the original text (cover, title page, preface) ---------- */
 (() => {
   const S_ = (w, n) => `<span class="sic">${w}</span> <span class="sicnote">[sic]</span><sup class="n"><a href="#pn${n}">${n}</a></sup>`;
