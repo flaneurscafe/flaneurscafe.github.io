@@ -390,6 +390,7 @@
       <p><b>Strips (narrow rectangles)</b> suit the parallel pair. The border it makes repeats every two mirror spacings, so a strip running from one mirror line to the next-but-one, centred on the mirror line between, is one full repeat: strips laid end to end continue each other. Turned 180°, such a strip is the same as its reflection in its long edge, so rows stacked with every other row turned also meet seamlessly. Unlike rosette tiles, this works for <i>any</i> motif and any spacing. Strips can also be cut from a rosette when n is even.</p>
       <p>With stacked rows the decorated surface has mirror lines across the strips every spacing d and along every row joint: it is a rectangular mirror pattern, as if made by four mirrors standing in a rectangle (wallpaper type pmm).</p>
       <p><b>Brick bond</b> (each row shifted by half a strip) is different. The border repeats only every 2d, and over a half-shifted span it shows the two halves of the repeat in the opposite order, which neither the strip nor the strip turned 180° can supply. So the row joints break, unless the motif between the mirrors is itself symmetric (then the border repeats every d) or nothing in the design reaches the long edges. The tool checks the edges and tells you. For strips cut from a rosette, brick bond breaks as well.</p>
+      <p><b>Tiles from Brewster’s cells.</b> A closed cell of mirrors makes a pattern that repeats on a lattice, so the tile offered is one lattice cell: a square, a rectangle, or (on the hexagonal lattice) the hexagon of points nearer one lattice point than any other. Identical cells are only shifted by lattice vectors, and every lattice shift is a symmetry of the pattern, so they meet without a seam whatever the drawing. Other shapes need more: a tiling by triangles, or by strips stacked with every other row turned, places half the tiles turned 180°, and that turn must itself be a symmetry of the pattern (a half-turn centre on each joint). Three mirrors at 60° (p3m1) have no half-turns at all, and on the other cells the centres must sit exactly on the joints; a tile laid anywhere else breaks. The cell is the one shape that needs nothing but the lattice.</p>
       <p>The question of how identical decorated tiles combine has its own history: Sébastien Truchet's <i>Mémoire sur les combinaisons</i> (1704) and Dominique Douat's <i>Méthode pour faire une infinité de desseins différents</i> (1722) counted the patterns made by one two-coloured square tile in different orientations; brick bonds themselves are classified by their wallpaper groups (Coxeter, 1969).</p>
 
       <h4 id="h-compose">7 · Composing with saved tiles</h4>
@@ -925,7 +926,7 @@ function syncControls() {
   document.querySelectorAll('#methSeg button').forEach(b => b.classList.toggle('on', b.dataset.k === S.method));
   document.querySelectorAll('#cellSeg button').forEach(b => b.classList.toggle('on', b.dataset.c === S.bcell));
   $('verneuilCtl').hidden = S.method !== 'verneuil'; $('brewsterCtl').hidden = S.method !== 'brewster';
-  $('latCtl').hidden = !lat; $('seamLbl').hidden = lat;
+  $('latCtl').hidden = !lat; $('seamLbl').hidden = lat; $('demo').hidden = S.mode !== 'hinge';
   if (lat) { const E = effGroup(); $('aspectRow').hidden = E.lat !== 'rect';
     $('cellSize').value = S.cell; $('cellSizeV').textContent = Math.round(S.cell);
     $('latTheta').value = wrap180(S.lt); $('latThetaV').textContent = Math.round(wrap180(S.lt)) + '°';
@@ -1004,8 +1005,10 @@ const SHAPES = {
   hex:    { k: 6, maxA: 385, label: 'hexagons', show: 90 },
   rect:   { k: 4, maxA: 445, label: 'strips', show: 0 },      // narrow rectangles: long side across the mirror lines
 };
-/* Brewster's cells: the pattern is periodic, so one lattice cell is a tile that
-   repeats by translation without a seam, whatever the drawing */
+/* Brewster's cells: the pattern is periodic, so one lattice cell is a tile that repeats by translation
+   without a seam, whatever the drawing. Only shifts are used: no tile is turned or reflected, so nothing
+   beyond the translations of the pattern is needed. The tile is cut from the rendered mirror view
+   (RES × RES px, centred on a lattice point), so it must lie inside it. */
 function latTileGeom() {
   const G = latGeom(), z = S.zoom, C = { x: RES / 2, y: RES / 2 };
   const u = { x: z * G.av.x, y: z * G.av.y }, v = { x: z * G.bv.x, y: z * G.bv.y }, lu = Math.hypot(u.x, u.y), lv = Math.hypot(v.x, v.y);
@@ -1014,7 +1017,8 @@ function latTileGeom() {
     verts = [0, 1, 2, 3, 4, 5].map(i => { const d = dir(S.lt + 30 + 60 * i); return { x: C.x + R * d.x, y: C.y + R * d.y }; }); }
   else { shape = G.lat === 'sq' ? 'square' : G.lat === 'rect' ? 'rect' : 'para';
     verts = [[-1, -1], [1, -1], [1, 1], [-1, 1]].map(([p, q]) => ({ x: C.x + (p * u.x + q * v.x) / 2, y: C.y + (p * u.y + q * v.y) / 2 })); }
-  return { lat: true, latShape: shape, verts, C, m: S.lt, a: (lu + lv) / 2, u, v, width: lu, L: lu, h: lv, G };
+  const out = verts.some(p => p.x < 1 || p.y < 1 || p.x > RES - 1 || p.y > RES - 1);
+  return { lat: true, latShape: shape, verts, C, m: S.lt, a: (lu + lv) / 2, u, v, width: lu, L: lu, h: lv, G, out };
 }
 function tileGeom() {
   if (S.mode === 'lattice') return latTileGeom();
@@ -1084,7 +1088,7 @@ function repeatsEveryD() {          // does the border inside the strip repeat a
   return n > 50 && inkPts > 0 && diff / inkPts < 0.06;
 }
 function tilesCompatible() {
-  if (S.mode === 'lattice') return { ok: true, why: 'lat' };
+  if (S.mode === 'lattice') return latTileGeom().out ? { ok: false, why: 'latzoom' } : { ok: true, why: 'lat' };
   if (T.shape === 'rect') {
     if (S.mode === 'parallel') {
       if (2 * S.d * S.zoom > 890) return { ok: false, why: 'zoom' };
@@ -1147,7 +1151,8 @@ function renderTiles() {
   const c = tilesCompatible(), note = $('tileNote');
   const name = g0.lat ? { hex: 'hexagonal cells', square: 'square cells', rect: 'rectangular cells', para: 'parallelogram cells' }[g0.latShape] : SHAPES[T.shape].label;
   let txt;
-  if (c.why === 'lat') txt = `Seamless for any drawing: the pattern repeats on its ${LATNAME[g0.G.lat]} lattice, so one lattice cell is a tile and identical tiles are simply laid side by side${g0.latShape === 'hex' ? ' (the hexagon is the cell of points nearer this centre than any other lattice point)' : ''}.${g0.latShape === 'para' ? ' Parallelogram tiles cannot be taken to Compose; choose a group on another lattice.' : ''}`;
+  if (c.why === 'lat') txt = `Seamless for any drawing: the pattern repeats on its ${LATNAME[g0.G.lat]} lattice, so one lattice cell is a tile and identical tiles are only shifted, never turned${g0.latShape === 'hex' ? ' (the hexagon is the cell of points nearer this centre than any other lattice point)' : ''}.`;
+  else if (c.why === 'latzoom') txt = `The cell is larger than the mirror view, so the tile would be cut off. Lower the Zoom or the Cell size.`;
   else if (c.why === 'bricksym') txt = `Brick bond is seamless here: the motif between the mirrors is itself symmetric, so the border repeats after every spacing and a half-strip shift changes nothing.`;
   else if (c.why === 'brickclear') txt = `Brick bond works here only because nothing in the design touches the long edges of the strip. In general a half-strip shift puts the two halves of the repeat side by side in the wrong order, so the row joints break unless the motif between the mirrors is itself symmetric.`;
   else if (c.why === 'brickpar') txt = `Brick bond breaks along the row joints: a half-strip shift puts the two halves of the border's repeat in the wrong order. It works only if the motif between the mirrors is itself symmetric, or if the design stays clear of the long edges (lower the Height or move the Position). Stacked rows are always seamless.`;
@@ -1233,7 +1238,7 @@ function inPoly(pt, poly) {
 /* ---------- capture the current tile from the mirror view ---------- */
 function captureTile() {
   const g0 = tileGeom(), shape = g0.lat ? g0.latShape : T.shape;
-  if (shape === 'para') return null;
+  if (shape === 'para' || ['zoom', 'latzoom'].includes(tilesCompatible().why)) return null;
   const rho = rad((g0.rect || shape === 'rect' ? 0 : SHAPES[shape].show) - g0.m);
   const cs = Math.cos(rho), sn = Math.sin(rho);
   const dv = g0.verts.map(v => ({ x: (v.x - g0.C.x) * cs - (v.y - g0.C.y) * sn, y: (v.x - g0.C.x) * sn + (v.y - g0.C.y) * cs }));
@@ -1720,7 +1725,7 @@ if (inFrame) { ['cExpPng', 'cExpSvg', 'cExpSheet', 'cSaveProj'].forEach(id => $(
 
 /* ---------- saving from the mirror view, switching views, restoring ---------- */
 $('cSaveCur').onclick = () => { const d = captureTile(); cMsg(d ? `Saved “${d.name}”.` : 'Parallelogram cells (oblique lattice) cannot be used in Compose.', !d); };
-$('saveTile').onclick = () => { const d = captureTile(); $('saveTileMsg').textContent = d ? `Saved “${d.name}”: see the Compose tab.` : 'Parallelogram cells cannot be saved; choose a group on another lattice.'; };
+$('saveTile').onclick = () => { const d = captureTile(); $('saveTileMsg').textContent = d ? `Saved “${d.name}”: see the Compose tab.` : 'Not saved: the tile is larger than the mirror view. Lower the Zoom (or the Cell size, or the mirror spacing).'; };
 function showView(v) {
   document.querySelectorAll('#viewTabs button').forEach(b => b.classList.toggle('on', b.dataset.v === v));
   $('mirrorView').hidden = v !== 'mirror'; $('composeView').hidden = v !== 'compose';
