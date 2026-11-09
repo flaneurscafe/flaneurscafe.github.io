@@ -133,7 +133,7 @@
   #tileNote.warn{border-color:var(--rose)}
   .viewtabs{margin-left:6px}.viewtabs button{flex:none;padding:4px 14px}
   .cmain{display:grid;grid-template-columns:clamp(270px,24vw,330px) minmax(0,1fr);min-height:calc(100vh - 56px)}
-  .caside{border-right:1px solid var(--line);padding:14px 18px 30px;background:var(--paper2);overflow-y:auto;max-height:calc(100vh - 56px);min-width:0}
+  .caside{user-select:none;-webkit-user-select:none;border-right:1px solid var(--line);padding:14px 18px 30px;background:var(--paper2);overflow-y:auto;max-height:calc(100vh - 56px);min-width:0}
   .caside h2{font-size:12px;text-transform:uppercase;letter-spacing:.12em;color:var(--muted);margin:18px 0 8px;font-weight:normal}
   .caside h2:first-child{margin-top:2px}
   .cstage{padding:14px 18px;min-width:0;display:flex;flex-direction:column;gap:6px}
@@ -259,7 +259,7 @@
   </div>
 
   <h2>Board</h2>
-  <label class="cb"><input type="checkbox" id="cSnap" checked> Snap corners and edges</label>
+  <label class="cb"><input type="checkbox" id="cSnap" checked> Snap corners and edges (and to the guide grid)</label>
   <label class="cb"><input type="checkbox" id="cJoints" checked> Show joints</label>
   <div class="row"><label>Joint width</label><input type="range" id="cGroutW" min="0" max="8" step="0.5" value="1"><output id="cGroutWV"></output></div>
   <div class="row"><label>Colours</label><span style="display:flex;gap:8px;align-items:center"><input type="color" id="cGrout" value="#8a7a66" title="Joint colour"><input type="color" id="cBg" value="#ffffff" title="Background colour"></span><span></span></div>
@@ -609,7 +609,7 @@ function renderResult() {
     if (S.mode === 'single') lines.push({ off: 0, real: true });
   }
   // copy the clean unfolding to the visible canvas, then draw overlays on top
-  rctx.setTransform(1, 0, 0, 1, 0, 0); rctx.drawImage(clean, 0, 0); ctx = rctx;
+  rctx.setTransform(1, 0, 0, 1, 0, 0); rctx.drawImage(clean, 0, 0); ctx = rctx; PIX = null;
   if (S.showLines) {
     ctx.save(); setView(ctx); ctx.lineWidth = 1.4 / S.zoom;
     for (const l of lines) {
@@ -772,8 +772,10 @@ function rectGeom() {
   const verts = [[-1, -1], [1, -1], [1, 1], [-1, 1]].map(([p, q]) => ({ x: C.x + p * L / 2 * t.x + q * h / 2 * nn.x, y: C.y + p * L / 2 * t.y + q * h / 2 * nn.y }));
   return { rect: true, a: Math.min(L, h) / 2, m: tAng, C, verts, L, h, t, nn, width: L };
 }
+let PIX = null;                     // pixels of the clean mirror view, read at most once per frame
+const cleanPix = () => PIX || (PIX = cctx.getImageData(0, 0, RES, RES).data);
 function longEdgesClear() {
-  const g = rectGeom(), { verts } = g, img = cctx.getImageData(0, 0, RES, RES).data;
+  const g = rectGeom(), { verts } = g, img = cleanPix();
   let ink = 0, n = 0;
   for (const [A, B] of [[verts[0], verts[1]], [verts[2], verts[3]]]) {          // the two long edges
     const len = Math.hypot(B.x - A.x, B.y - A.y), steps = Math.max(2, Math.round(len));
@@ -790,7 +792,7 @@ function longEdgesClear() {
   return n ? ink / n < 0.004 : true;
 }
 function repeatsEveryD() {          // does the border inside the strip repeat after one spacing d (motif symmetric)?
-  const g = rectGeom(), img = cctx.getImageData(0, 0, RES, RES).data, D = S.d * S.zoom;
+  const g = rectGeom(), img = cleanPix(), D = S.d * S.zoom;
   const px = (x, y) => { x = Math.round(x); y = Math.round(y); if (x < 0 || y < 0 || x >= RES || y >= RES) return null; const o = (y * RES + x) * 4; return img[o] + img[o + 1] + img[o + 2]; };
   let diff = 0, inkPts = 0, n = 0;
   for (let i = 0; i < 60; i++) for (let j = 0; j < 16; j++) {
@@ -1029,11 +1031,14 @@ function drawGrid(ctx, w, h) {
     for (let x = Math.floor(a.x / U) * U; x <= b.x; x += U) { ctx.moveTo(x, a.y); ctx.lineTo(x, b.y); }
     for (let y = Math.floor(a.y / U) * U; y <= b.y; y += U) { ctx.moveTo(a.x, y); ctx.lineTo(b.x, y); }
   } else {
-    const hh = U * Math.sqrt(3) / 2;
+    // equilateral triangles of edge U; all three families pass through the lattice points (kU + mU/2, m·U√3/2)
+    const hh = U * Math.sqrt(3) / 2, r3 = Math.sqrt(3);
     for (let y = Math.floor(a.y / hh) * hh; y <= b.y; y += hh) { ctx.moveTo(a.x, y); ctx.lineTo(b.x, y); }
-    const span = b.y - a.y, k = 1 / Math.tan(Math.PI / 3);
-    for (let x = Math.floor((a.x - span) / U) * U; x <= b.x + span; x += U) {
-      ctx.moveTo(x, a.y); ctx.lineTo(x + span * k, b.y); ctx.moveTo(x, a.y); ctx.lineTo(x - span * k, b.y);
+    const ext = Math.max(Math.abs(a.y), Math.abs(b.y)) / r3;
+    for (let k = Math.floor((a.x - ext) / U) - 1; k <= Math.ceil((b.x + ext) / U) + 1; k++) {
+      const x = k * U;                        // lines x = kU ± y/√3
+      ctx.moveTo(x + a.y / r3, a.y); ctx.lineTo(x + b.y / r3, b.y);
+      ctx.moveTo(x - a.y / r3, a.y); ctx.lineTo(x - b.y / r3, b.y);
     }
   }
   ctx.stroke(); ctx.restore();
@@ -1069,24 +1074,38 @@ function snapPieces(list, allowRot) {
     const poly = worldPoly(o);
     if (poly.some(q => q.x > bx0 - tol && q.x < bx1 + tol && q.y > by0 - tol && q.y < by1 + tol)) fixed.push(poly);
   }
-  if (!fixed.length) return;
+  const gridPts = [];
+  if (CB.grid !== 'none') {
+    const U = CB.unit, hh = U * Math.sqrt(3) / 2;
+    for (const poly of mov) for (const q of poly) {
+      if (CB.grid === 'square') gridPts.push({ x: Math.round(q.x / U) * U, y: Math.round(q.y / U) * U, dirs: [0, 90], mid: false });
+      else { const m0 = Math.round(q.y / hh);
+        for (let m = m0 - 1; m <= m0 + 1; m++) { const off = m * U / 2;
+          gridPts.push({ x: Math.round((q.x - off) / U) * U + off, y: m * hh, dirs: [0, 60, 120], mid: false }); } }
+    }
+  }
+  if (!fixed.length && !gridPts.length) return;
   let best = null;
-  const dirs = (poly, i) => { const n = poly.length, a = poly[i], b = poly[(i + 1) % n], c = poly[(i - 1 + n) % n];
-    return [Math.atan2(b.y - a.y, b.x - a.x), Math.atan2(c.y - a.y, c.x - a.x)].map(deg); };
-  for (const mp of mov) for (let i = 0; i < mp.length; i++) {
-    const v = mp[i];
-    for (const fp of fixed) for (let j = 0; j < fp.length; j++) {
-      const w = fp[j], dist = Math.hypot(w.x - v.x, w.y - v.y); if (dist > tol) continue;
+  // snap points: corners (with the directions of both edges) and edge midpoints (with the edge direction)
+  const pts = poly => { const n = poly.length, out = [];
+    for (let i = 0; i < n; i++) { const a = poly[i], b = poly[(i + 1) % n], c = poly[(i - 1 + n) % n];
+      const eb = deg(Math.atan2(b.y - a.y, b.x - a.x)), ec = deg(Math.atan2(c.y - a.y, c.x - a.x));
+      out.push({ x: a.x, y: a.y, dirs: [eb, ec], mid: false }, { x: (a.x + b.x) / 2, y: (a.y + b.y) / 2, dirs: [eb], mid: true }); }
+    return out; };
+  const fixedPts = fixed.flatMap(pts).concat(gridPts);
+  for (const mp of mov) for (const v of pts(mp)) {
+    for (const w of fixedPts) {
+      const dist = Math.hypot(w.x - v.x, w.y - v.y); if (dist > tol) continue;
       let dl = 0;
       if (allowRot) {
         let bd = Infinity;
-        for (const am of dirs(mp, i)) for (const af of dirs(fp, j)) {
+        for (const am of v.dirs) for (const af of w.dirs) {
           let dd = ((af - am) % 180 + 540) % 180; if (dd > 90) dd -= 180;      // make the edges parallel (same line)
           if (Math.abs(dd) < Math.abs(bd)) bd = dd;
         }
         dl = Math.abs(bd) <= rotTol ? bd : 0;
       }
-      const score = dist + Math.abs(dl) * 0.3;
+      const score = dist + Math.abs(dl) * 0.3 + (v.mid || w.mid ? 0.35 * tol : 0);   // prefer corner-to-corner
       if (!best || score < best.score) best = { score, v, w, dl };
     }
   }
@@ -1134,7 +1153,10 @@ function syncSel() {
 }
 const centroid = L => ({ x: L.reduce((s, p) => s + p.x, 0) / L.length, y: L.reduce((s, p) => s + p.y, 0) / L.length });
 function rotateSel(dl) {
-  const L = selList(); if (!L.length) return; const c = centroid(L), cs = Math.cos(rad(dl)), sn = Math.sin(rad(dl));
+  const L = selList(); if (!L.length) return;
+  // a single piece turns about the centre of its own shape (a triangle or half-hexagon is not centred in its image)
+  const c = L.length === 1 ? (q => ({ x: q.reduce((t, v) => t + v.x, 0) / q.length, y: q.reduce((t, v) => t + v.y, 0) / q.length }))(worldPoly(L[0])) : centroid(L);
+  const cs = Math.cos(rad(dl)), sn = Math.sin(rad(dl));
   for (const p of L) { const dx = p.x - c.x, dy = p.y - c.y; p.x = c.x + dx * cs - dy * sn; p.y = c.y + dx * sn + dy * cs; p.rot = wrap180(p.rot + dl); }
 }
 $('cCut').onchange = e => { for (const p of selList()) p.cut = e.target.value; commit(); };
@@ -1229,13 +1251,15 @@ board.addEventListener('wheel', e => {
 }, { passive: false });
 document.addEventListener('keydown', e => {
   if ($('composeView').hidden || !$('helpOv').hidden || !$('prefOv').hidden) return;
-  if (e.target.closest && e.target.closest('input,select,textarea')) return;
   const mod = e.ctrlKey || e.metaKey, L = selList();
+  const t = e.target, typing = t.matches && t.matches('input[type=text],input[type=number],input[type=search],textarea,[contenteditable]');
+  const inControl = t.closest && t.closest('input,select,textarea');
+  if (typing || (inControl && !mod)) return;          // arrows on a slider move the slider; shortcuts still work
   if (mod && e.key.toLowerCase() === 'z') { e.preventDefault(); (e.shiftKey ? $('cRedo') : $('cUndo')).click(); return; }
   if (mod && e.key.toLowerCase() === 'y') { e.preventDefault(); $('cRedo').click(); return; }
   if (mod && e.key.toLowerCase() === 'd') { e.preventDefault(); duplicate(); return; }
   if (mod && e.key.toLowerCase() === 'a') { e.preventDefault(); $('cAll').click(); return; }
-  if (!L.length) return;
+  if (!L.length || mod || e.altKey) return;
   if (e.key === 'Delete' || e.key === 'Backspace') { e.preventDefault(); $('cDel').click(); }
   else if (e.key === 'r' || e.key === 'R') { rotateSel((e.shiftKey ? -1 : 1) * +$('cStep').value); commit(); }
   else if (e.key === 'f' || e.key === 'F') $('cFlip').click();
@@ -1296,13 +1320,14 @@ $('cExpPng').onclick = () => {
 $('cExpSvg').onclick = () => {
   if (!PIECES.length) { cMsg('The board is empty.', true); return; }
   const b = boardBounds(), used = [...new Set(PIECES.map(p => p.did))].map(dById), clips = new Set();
-  let defs = used.map(d => `<image id="img_${d.id}" width="${d.w}" height="${d.h}" href="${d.src}"/>`).join('\n');
+  const pngOf = d => { const c = document.createElement('canvas'); c.width = d.w; c.height = d.h; c.getContext('2d').drawImage(d.img, 0, 0, d.w, d.h); return c.toDataURL('image/png'); };
+  let defs = used.map(d => { const u = pngOf(d); return `<image id="img_${d.id}" width="${d.w}" height="${d.h}" xlink:href="${u}" href="${u}"/>`; }).join('\n');
   let body = '';
   for (const p of PIECES) {
     const d = dById(p.did), key = `${d.id}_${p.cut}`, pts = cutPoly(d, p.cut).map(([u, v]) => `${+u.toFixed(2)},${+v.toFixed(2)}`).join(' ');
     if (!clips.has(key)) { clips.add(key); defs += `\n<clipPath id="clip_${key}"><polygon points="${pts}"/></clipPath>`; }
     const tr = `translate(${p.x.toFixed(2)} ${p.y.toFixed(2)}) rotate(${p.rot.toFixed(2)}) scale(${(p.flip ? -p.s : p.s).toFixed(5)} ${p.s.toFixed(5)}) translate(${-d.w / 2} ${-d.h / 2})`;
-    body += `<g transform="${tr}"><use href="#img_${d.id}" clip-path="url(#clip_${key})"/>` +
+    body += `<g transform="${tr}"><use xlink:href="#img_${d.id}" href="#img_${d.id}" clip-path="url(#clip_${key})"/>` +
       (CB.joints && CB.groutW > 0 ? `<polygon points="${pts}" fill="none" stroke="${CB.grout}" stroke-width="${CB.groutW}" vector-effect="non-scaling-stroke" stroke-linejoin="round"/>` : '') + `</g>\n`;
   }
   const svg = `<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="${b.x0.toFixed(2)} ${b.y0.toFixed(2)} ${(b.x1 - b.x0).toFixed(2)} ${(b.y1 - b.y0).toFixed(2)}" width="${Math.round(b.x1 - b.x0)}" height="${Math.round(b.y1 - b.y0)}">\n<rect x="${b.x0}" y="${b.y0}" width="${b.x1 - b.x0}" height="${b.y1 - b.y0}" fill="${CB.bg}"/>\n<defs>\n${defs}\n</defs>\n${body}</svg>`;
