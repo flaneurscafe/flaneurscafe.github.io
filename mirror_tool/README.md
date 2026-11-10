@@ -38,4 +38,7 @@ repositories.
 Plates: New York Public Library Digital Collections,
 <https://digitalcollections.nypl.org/collections/0160f0f0-c6ec-012f-5675-3c075448cc4b>,
 and the Internet Archive scan; the book is in the public domain. The ornaments were
-segmented, deskewed and cleaned automatically (`segment_ornaments.py`).
+segmented, deskewed and cleaned automatically (`segment_ornaments_v2.py`; the first
+version, `segment_ornaments.py`, is kept for reference). The library has three kinds of
+item per plate: single ornaments (274), the whole printed frame (58) and the whole plate,
+uncut (58).

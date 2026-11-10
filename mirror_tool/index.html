@@ -161,6 +161,11 @@
   .caside select{font:inherit;font-size:12.5px;border:1px solid var(--line);border-radius:5px;background:#fff;padding:2px 4px}
   #cStatus{min-height:1.2em}
   kbd{font:11px ui-monospace,monospace;background:#fff;border:1px solid var(--line);border-radius:3px;padding:0 3px}
+  .bgpick{display:inline-flex;align-items:center;gap:6px;font-size:12.5px;color:var(--muted)}
+  .bgpick input[type=color]{width:30px;height:24px;padding:0;border:1px solid var(--line);border-radius:3px;background:none;cursor:pointer}
+  #bgSw{display:inline-flex;gap:3px}
+  #bgSw button{width:16px;height:16px;padding:0;border:1px solid rgba(60,45,30,.35);border-radius:50%;cursor:pointer}
+  #bgSw button.on{outline:2px solid var(--teal,#2f5d5a);outline-offset:1px}
 </style>
 </head>
 <body>
@@ -256,6 +261,8 @@
       <label class="cb" id="borderLbl" hidden><input type="checkbox" id="tileBorder"> One strip only</label>
       <label class="small">Tiles across <input type="range" id="tileN" min="2" max="14" step="1" value="7"></label>
       <label class="cb"><input type="checkbox" id="tileJoints" checked> Joints</label>
+      <span class="bgpick" title="Background colour of the tile, behind the ornaments; saved with the tile">Background
+        <input type="color" id="tileBg" value="#ffffff"><span id="bgSw"></span></span>
       <button id="saveTile" class="primary" title="Keep this tile for the Compose tab">Save tile</button><span id="saveTileMsg" class="small"></span>
     </div>
     <div id="tileNote" class="small"></div>
@@ -418,7 +425,7 @@
     <div id="libWrap" class="lib">
       <div class="libbar">
         <label class="small">Plate <select id="libPlate"><option value="0">All plates</option></select></label>
-        <label class="cb"><input type="checkbox" id="libFrames"> Include plate frames</label>
+        <label class="small">Show <select id="libKind"><option value="0">Ornaments</option><option value="1">Whole frames</option><option value="2">Whole plates</option><option value="all">Everything</option></select></label>
         <span class="small" id="libCount"></span>
       </div>
       <div id="libList"></div>
@@ -498,7 +505,7 @@ function cleanFilter() {
 function renderSource() {
   g.setTransform(1, 0, 0, 1, 0, 0);
   g.globalCompositeOperation = 'source-over'; g.filter = 'none';
-  g.fillStyle = '#fff'; g.fillRect(0, 0, SW, SH);
+  g.clearRect(0, 0, SW, SH);                       // transparent sheet: the paper colour is chosen where it is shown
   for (const o of S.orn) {
     g.save();
     g.globalCompositeOperation = 'multiply';
@@ -554,7 +561,7 @@ function mirrorLine(ctx, p, a, L, backSign, from = 0) {
 }
 
 function renderSheet() {
-  sctx.setTransform(1, 0, 0, 1, 0, 0);
+  sctx.setTransform(1, 0, 0, 1, 0, 0); sctx.fillStyle = '#fff'; sctx.fillRect(0, 0, SW, SH);
   sctx.drawImage(src, 0, 0);
   const O = S.O, L = 3000;
   if (S.mode === 'lattice') {
@@ -613,16 +620,17 @@ function renderSheet() {
 }
 
 /* ---------- mirror view (planar unfolding) ---------- */
+function onWhite(c) { c.setTransform(1, 0, 0, 1, 0, 0); c.fillStyle = '#fff'; c.fillRect(0, 0, RES, RES); c.drawImage(clean, 0, 0); }
 function setView(ctx) {
   ctx.setTransform(1, 0, 0, 1, 0, 0);
   ctx.translate(RES / 2, RES / 2); ctx.scale(S.zoom, S.zoom); ctx.translate(-S.O.x, -S.O.y);
 }
 function renderResult() {
   let ctx = cctx; const O = S.O, L = 4000 / S.zoom + 2000;
-  ctx.setTransform(1, 0, 0, 1, 0, 0); ctx.fillStyle = '#fff'; ctx.fillRect(0, 0, RES, RES);
+  ctx.setTransform(1, 0, 0, 1, 0, 0); ctx.clearRect(0, 0, RES, RES);
   if (S.mode === 'lattice') {
     const G = renderLattice(ctx);
-    rctx.setTransform(1, 0, 0, 1, 0, 0); rctx.drawImage(clean, 0, 0); PIX = null;
+    onWhite(rctx); PIX = null;
     if (S.showLines) drawSymOverlay(rctx, G);
     rctx.save(); setView(rctx); rctx.strokeStyle = S.method === 'brewster' ? '#8a5a17' : '#7a4a8c'; rctx.lineWidth = 2 / S.zoom;
     rctx.setLineDash(S.method === 'brewster' ? [] : [6 / S.zoom, 4 / S.zoom]);
@@ -670,7 +678,7 @@ function renderResult() {
     if (S.mode === 'single') lines.push({ off: 0, real: true });
   }
   // copy the clean unfolding to the visible canvas, then draw overlays on top
-  rctx.setTransform(1, 0, 0, 1, 0, 0); rctx.drawImage(clean, 0, 0); ctx = rctx; PIX = null;
+  onWhite(rctx); ctx = rctx; PIX = null;
   if (S.showLines) {
     ctx.save(); setView(ctx); ctx.lineWidth = 1.4 / S.zoom;
     for (const l of lines) {
@@ -998,7 +1006,7 @@ for (const { v, k } of K_ANG) {
    with copies turned 180°. Neighbours continue each other across a joint exactly when the rosette is
    symmetric about the perpendicular bisector of that joint, i.e. when the edge normals are mirror axes
    of the rosette: n even for squares, n a multiple of 3 for triangles and hexagons (α = 180°/n). */
-const T = { shape: 'hex', crop: 0.9, across: 7, joints: true, ratio: 0.3, border: false, before: null, shift: 0, vertical: false, bond: 'stack' };
+const T = { shape: 'hex', crop: 0.9, across: 7, joints: true, ratio: 0.3, border: false, before: null, shift: 0, vertical: false, bond: 'stack', bg: '#ffffff' };
 const SHAPES = {
   tri:    { k: 3, maxA: 220, label: 'triangles', show: 90 },   // show: screen direction given to one edge normal, so tiles sit level
   square: { k: 4, maxA: 445, label: 'squares', show: 0 },
@@ -1057,7 +1065,8 @@ function rectGeom() {
   return { rect: true, a: Math.min(L, h) / 2, m: tAng, C, verts, L, h, t, nn, width: L };
 }
 let PIX = null;                     // pixels of the clean mirror view, read at most once per frame
-const cleanPix = () => PIX || (PIX = cctx.getImageData(0, 0, RES, RES).data);
+const pixC = document.createElement('canvas'); pixC.width = pixC.height = RES; const pixX = pixC.getContext('2d', { willReadFrequently: true });
+const cleanPix = () => PIX || (onWhite(pixX), PIX = pixX.getImageData(0, 0, RES, RES).data);   // the mirror view on white paper
 function longEdgesClear() {
   const g = rectGeom(), { verts } = g, img = cleanPix();
   let ink = 0, n = 0;
@@ -1140,7 +1149,7 @@ function renderTiles() {
   for (const M of cells) {
     ctx.save(); setView(); ctx.transform(...M);
     ctx.beginPath(); poly.forEach((p, i) => i ? ctx.lineTo(p.x, p.y) : ctx.moveTo(p.x, p.y)); ctx.closePath(); ctx.clip();
-    ctx.drawImage(clean, 0, 0); ctx.restore();
+    ctx.fillStyle = T.bg; ctx.fill(); ctx.drawImage(clean, 0, 0); ctx.restore();
   }
   if (T.joints) {
     ctx.save(); setView(); ctx.strokeStyle = 'rgba(122,106,85,.45)'; ctx.lineWidth = 1 / k;
@@ -1187,6 +1196,11 @@ $('tileBorder').onchange = e => { T.border = e.target.checked; redraw(); };
 $('tileCrop').addEventListener('input', e => { T.crop = +e.target.value; redraw(); });
 $('tileN').addEventListener('input', e => { T.across = +e.target.value; redraw(); });
 $('tileJoints').onchange = e => { T.joints = e.target.checked; redraw(); };
+/* tile background: plain colours behind the ornaments (white, the book's papers, and its inks) */
+const BGS = [['#ffffff', 'white'], ['#f3ead6', 'cream paper'], ['#e6dcc4', 'buff paper'], ['#d7dcc6', 'pale sage'], ['#e9cfc0', 'pale rose'], ['#9fa889', 'leaf green'], ['#c9845a', 'terracotta'], ['#4f5a5c', 'slate'], ['#2f2a22', 'ink black']];
+function setTileBg(c) { T.bg = c; $('tileBg').value = c; document.querySelectorAll('#bgSw button').forEach(b => b.classList.toggle('on', b.dataset.c === c)); redraw(); }
+for (const [c, n] of BGS) { const b = document.createElement('button'); b.dataset.c = c; b.title = n; b.style.background = c; b.onclick = () => setTileBg(c); $('bgSw').appendChild(b); }
+$('tileBg').addEventListener('input', e => setTileBg(e.target.value)); setTileBg('#ffffff');
 
 /* =====================================================================================
    COMPOSER: saved tiles + a board where pieces of mixed shapes are dragged, snapped and cut
@@ -1249,12 +1263,12 @@ function captureTile() {
   x.setTransform(W / (maxx - minx), 0, 0, H / (maxy - miny), -minx * W / (maxx - minx), -miny * H / (maxy - miny));
   x.rotate(rho); x.translate(-g0.C.x, -g0.C.y);
   x.beginPath(); g0.verts.forEach((p, i) => i ? x.lineTo(p.x, p.y) : x.moveTo(p.x, p.y)); x.closePath(); x.clip();
-  x.drawImage(clean, 0, 0);
+  x.fillStyle = T.bg; x.fill(); x.drawImage(clean, 0, 0);
   let src = c.toDataURL('image/webp', 0.92); if (!src.startsWith('data:image/webp')) src = c.toDataURL('image/png');
   const edge = shape === 'square' ? W : shape === 'tri' ? W : W / 2;      // hexagon: width = 2 edges; strip: long side = 2 units
   const mi = methodInfo();
   const count = DESIGNS.filter(d => d.shape === shape).length + 1;
-  return addDesign({ id: 'd' + Date.now().toString(36) + (uid++), name: `${SHAPES[shape].label.replace(/s$/, '')} ${count} · ${mi.sym}`, shape, w: W, h: H, src, edge, method: mi });
+  return addDesign({ id: 'd' + Date.now().toString(36) + (uid++), name: `${SHAPES[shape].label.replace(/s$/, '')} ${count} · ${mi.sym}`, shape, w: W, h: H, src, edge, method: mi, bg: T.bg });
 }
 /* what made the current tile: method keys (with their sources) and a precise description */
 function methodInfo() {
@@ -1746,7 +1760,7 @@ new ResizeObserver(() => cRender()).observe(board);
 
 /* ---------- slots ---------- */
 const MAX_ORN = 60;
-function ornLabel(o) { return o.lib ? o.lib.replace(/^p0?(\d+)_0?(\d+)$/, 'pl. $1 · #$2') : plateLabel(o.n).replace('Plate ', 'pl. '); }
+function ornLabel(o) { return o.lib ? o.lib.replace(/^p0?(\d+)_0?(\d+)$/, 'pl. $1 · #$2').replace(/^p0?(\d+)_frame$/, 'pl. $1 · frame').replace(/^p0?(\d+)_panel$/, 'pl. $1 · whole') : plateLabel(o.n).replace('Plate ', 'pl. '); }
 function renderSlots() {
   const wrap = $('slots'); wrap.innerHTML = '';
   S.orn.forEach((o, i) => {
@@ -1772,9 +1786,9 @@ function renderSlots() {
   $('ornCount').textContent = S.orn.length ? `${S.orn.length} on the sheet` : '';
 }
 
-/* ---------- ornament library (auto-segmented from all plates) ---------- */
-// [id, plate, width, height, isFrame]
-const LIB = [["p01_01",1,820,305,0],["p01_02",1,284,195,0],["p01_03",1,107,409,0],["p01_04",1,820,99,0],["p01_05",1,820,67,0],["p01_06",1,820,228,0],["p01_07",1,820,188,0],["p01_08",1,112,340,0],["p02_01",2,820,690,0],["p02_02",2,820,202,0],["p02_03",2,820,134,0],["p02_04",2,820,366,0],["p03_01",3,387,243,0],["p03_02",3,233,168,0],["p03_03",3,820,151,0],["p03_04",3,820,223,0],["p03_05",3,447,448,0],["p03_06",3,307,820,0],["p03_07",3,306,820,0],["p03_08",3,820,634,0],["p03_09",3,820,688,1],["p04_01",4,303,820,0],["p04_02",4,213,754,0],["p04_03",4,684,820,0],["p04_04",4,529,820,0],["p04_05",4,592,606,0],["p04_06",4,508,531,0],["p04_07",4,240,190,0],["p04_08",4,820,699,1],["p05_01",5,748,820,0],["p05_02",5,130,236,0],["p05_03",5,219,820,0],["p05_04",5,820,700,1],["p06_01",6,820,703,0],["p06_02",6,804,358,0],["p06_03",6,57,820,0],["p06_04",6,363,533,0],["p07_01",7,820,721,0],["p07_02",7,215,156,0],["p07_03",7,210,151,0],["p07_04",7,816,820,0],["p07_05",7,805,820,0],["p07_06",7,820,704,1],["p08_01",8,820,663,0],["p08_02",8,820,665,0],["p08_03",8,820,388,0],["p08_04",8,820,705,1],["p09_01",9,585,820,0],["p09_02",9,820,763,0],["p09_03",9,625,820,0],["p09_04",9,390,607,0],["p09_05",9,216,165,0],["p09_06",9,820,700,1],["p10_01",10,658,820,0],["p10_02",10,385,820,0],["p10_03",10,539,820,0],["p10_04",10,787,755,0],["p10_05",10,820,698,1],["p11_01",11,820,700,0],["p11_02",11,369,797,0],["p11_03",11,734,820,0],["p11_04",11,339,820,0],["p11_05",11,709,820,0],["p11_06",11,820,677,0],["p11_07",11,820,710,1],["p12_01",12,206,206,0],["p12_02",12,820,672,0],["p12_03",12,571,501,0],["p12_04",12,773,156,0],["p12_05",12,820,526,1],["p12_06",12,413,820,1],["p13_01",13,725,820,0],["p13_02",13,452,820,0],["p13_03",13,814,820,0],["p13_04",13,820,729,0],["p13_05",13,820,705,1],["p14_01",14,820,719,0],["p14_02",14,229,230,0],["p15_01",15,795,820,0],["p15_02",15,570,657,0],["p15_03",15,820,795,0],["p15_04",15,271,276,0],["p15_05",15,492,395,0],["p15_06",15,221,184,0],["p15_07",15,820,658,1],["p16_01",16,820,699,0],["p16_02",16,820,683,1],["p17_01",17,766,780,0],["p17_02",17,820,596,0],["p17_03",17,752,766,0],["p17_04",17,820,466,0],["p17_05",17,820,688,1],["p18_01",18,366,820,0],["p18_02",18,522,100,0],["p18_03",18,820,96,0],["p18_04",18,820,686,0],["p18_05",18,786,820,0],["p18_06",18,196,197,0],["p18_07",18,820,94,0],["p18_08",18,197,201,0],["p18_09",18,820,710,1],["p19_01",19,820,538,0],["p19_02",19,820,686,0],["p19_03",19,820,684,1],["p20_01",20,820,719,0],["p20_02",20,820,706,1],["p21_01",21,820,602,0],["p21_02",21,820,707,0],["p21_03",21,806,820,0],["p21_04",21,226,188,0],["p21_05",21,778,778,0],["p21_06",21,796,810,0],["p21_07",21,244,653,0],["p21_08",21,820,703,1],["p22_01",22,820,176,0],["p22_02",22,124,820,0],["p22_03",22,820,522,0],["p22_04",22,820,698,1],["p23_01",23,820,820,0],["p23_02",23,322,820,0],["p23_03",23,794,820,0],["p23_04",23,820,801,0],["p23_05",23,805,820,0],["p23_06",23,820,703,1],["p24_01",24,820,692,0],["p24_02",24,598,820,0],["p24_03",24,282,277,0],["p24_04",24,820,749,1],["p25_01",25,820,657,0],["p25_02",25,820,661,1],["p26_01",26,820,501,0],["p26_02",26,181,820,0],["p26_03",26,189,820,0],["p26_04",26,468,467,0],["p26_05",26,463,471,0],["p26_06",26,820,506,0],["p26_07",26,820,704,1],["p27_01",27,820,700,0],["p27_02",27,388,310,0],["p27_03",27,188,191,0],["p27_04",27,820,687,1],["p28_01",28,233,820,0],["p28_02",28,820,378,0],["p28_03",28,820,450,0],["p28_04",28,820,705,1],["p29_01",29,820,700,0],["p29_02",29,786,820,0],["p30_01",30,806,820,0],["p30_02",30,492,474,0],["p30_03",30,409,820,0],["p30_04",30,76,726,0],["p30_05",30,820,484,1],["p31_01",31,820,706,0],["p31_02",31,820,534,0],["p31_03",31,820,689,1],["p32_01",32,820,197,0],["p32_02",32,820,200,0],["p32_03",32,820,513,0],["p32_04",32,820,482,0],["p32_05",32,356,820,0],["p32_06",32,820,726,1],["p33_01",33,719,820,0],["p33_02",33,572,820,0],["p33_03",33,208,172,0],["p33_04",33,140,820,0],["p33_05",33,783,746,0],["p33_06",33,606,820,0],["p33_07",33,820,705,1],["p34_01",34,653,820,0],["p34_02",34,610,632,0],["p34_03",34,352,820,0],["p34_04",34,820,725,1],["p35_01",35,567,820,0],["p35_02",35,337,820,0],["p35_03",35,362,820,0],["p35_04",35,605,788,0],["p35_05",35,770,798,0],["p35_06",35,820,695,1],["p36_01",36,269,268,0],["p36_02",36,393,820,0],["p36_03",36,364,820,0],["p36_04",36,442,820,0],["p36_05",36,820,708,1],["p37_01",37,820,699,0],["p37_02",37,421,820,0],["p37_03",37,820,306,0],["p37_04",37,198,229,0],["p37_05",37,203,220,0],["p37_06",37,202,238,0],["p37_07",37,202,239,0],["p37_08",37,820,737,1],["p38_01",38,820,573,0],["p38_02",38,542,820,0],["p38_03",38,262,820,0],["p38_04",38,820,433,0],["p38_05",38,820,681,1],["p39_01",39,137,820,0],["p39_02",39,435,396,0],["p39_03",39,820,804,0],["p39_04",39,820,737,0],["p39_05",39,820,499,0],["p39_06",39,220,171,0],["p39_07",39,820,625,0],["p39_08",39,820,554,0],["p39_09",39,820,682,1],["p40_01",40,772,820,0],["p40_02",40,820,255,0],["p40_03",40,808,820,0],["p40_04",40,742,279,0],["p40_05",40,820,499,0],["p40_06",40,820,304,0],["p40_07",40,820,383,0],["p40_08",40,820,315,0],["p40_09",40,742,334,0],["p40_10",40,820,342,0],["p40_11",40,820,471,0],["p40_12",40,742,314,0],["p40_13",40,820,704,1],["p41_01",41,820,280,0],["p41_02",41,820,575,0],["p41_03",41,820,210,0],["p41_04",41,820,709,1],["p42_01",42,820,737,0],["p43_01",43,359,373,0],["p43_02",43,820,336,0],["p43_03",43,820,796,0],["p43_04",43,498,820,0],["p43_05",43,820,685,1],["p44_01",44,376,303,0],["p44_02",44,381,299,0],["p44_03",44,820,617,0],["p44_04",44,820,530,0],["p44_05",44,820,641,1],["p45_01",45,563,820,0],["p45_02",45,741,685,0],["p45_03",45,663,557,0],["p45_04",45,498,352,0],["p45_05",45,820,611,0],["p45_06",45,544,549,0],["p45_07",45,791,796,0],["p45_08",45,820,457,1],["p45_09",45,820,688,1],["p46_01",46,297,820,0],["p46_02",46,820,182,0],["p46_03",46,236,820,0],["p46_04",46,738,820,0],["p46_05",46,820,689,1],["p47_01",47,707,820,0],["p47_02",47,820,776,0],["p47_03",47,249,820,0],["p47_04",47,820,685,1],["p48_01",48,820,783,0],["p48_02",48,475,389,0],["p48_03",48,515,820,0],["p48_04",48,565,660,0],["p48_05",48,820,462,0],["p48_06",48,820,715,1],["p49_01",49,443,820,0],["p49_02",49,421,820,0],["p49_03",49,817,820,0],["p49_04",49,820,710,1],["p50_01",50,105,820,0],["p50_02",50,285,294,0],["p50_03",50,820,597,0],["p50_04",50,535,820,0],["p50_05",50,592,820,0],["p50_06",50,820,375,0],["p50_07",50,820,714,1],["p51_01",51,820,585,0],["p51_02",51,820,575,0],["p51_03",51,820,421,0],["p51_04",51,557,820,0],["p51_05",51,751,820,0],["p51_06",51,226,176,0],["p52_01",52,765,820,0],["p52_02",52,450,820,0],["p52_03",52,516,820,0],["p52_04",52,618,820,0],["p52_05",52,820,688,1],["p53_01",53,320,239,0],["p53_02",53,311,234,0],["p53_03",53,820,620,0],["p53_04",53,788,820,0],["p53_05",53,370,402,0],["p53_06",53,560,401,0],["p53_07",53,407,776,0],["p53_08",53,479,685,0],["p53_09",53,667,807,0],["p53_10",53,478,483,0],["p53_11",53,230,194,0],["p53_12",53,820,651,1],["p54_01",54,820,690,0],["p54_02",54,820,197,0],["p54_03",54,78,564,0],["p54_04",54,151,408,0],["p54_05",54,57,820,0],["p54_06",54,820,699,1],["p55_01",55,263,820,0],["p55_02",55,322,820,0],["p55_03",55,820,673,0],["p55_04",55,820,269,0],["p55_05",55,550,560,0],["p55_06",55,820,724,1],["p56_01",56,820,519,0],["p56_02",56,658,358,0],["p56_03",56,576,327,0],["p56_04",56,644,495,0],["p56_05",56,820,185,0],["p56_06",56,820,683,1],["p57_01",57,657,820,0],["p57_02",57,820,656,0],["p57_03",57,658,672,0],["p57_04",57,766,820,0],["p57_05",57,445,820,0],["p57_06",57,817,820,0],["p57_07",57,242,197,0],["p58_01",58,820,678,0],["p58_02",58,820,548,0],["p58_03",58,760,769,0],["p58_04",58,820,700,1],["p59_01",59,820,674,0],["p59_02",59,249,249,0],["p59_03",59,820,689,1],["p59_04",59,820,445,1],["p60_01",60,820,675,0]];
+/* ---------- ornament library (segmented from all plates by segment_ornaments_v2.py) ---------- */
+// [id, plate, width, height, kind]: kind 0 = ornament, 1 = the whole printed frame, 2 = the whole plate, uncut
+const LIB = [["p03_01",3,820,137,0],["p03_02",3,820,211,0],["p03_03",3,410,410,0],["p03_04",3,291,820,0],["p03_05",3,291,820,0],["p03_06",3,820,630,0],["p03_07",3,186,271,0],["p03_frame",3,820,696,1],["p03_panel",3,820,696,2],["p04_01",4,289,820,0],["p04_02",4,682,820,0],["p04_03",4,552,820,0],["p04_04",4,555,569,0],["p04_05",4,472,495,0],["p04_frame",4,820,691,1],["p04_panel",4,820,691,2],["p05_01",5,820,364,0],["p05_02",5,220,820,0],["p05_03",5,820,155,0],["p05_04",5,820,384,0],["p05_frame",5,820,695,1],["p05_panel",5,820,695,2],["p06_01",6,820,719,0],["p06_02",6,820,739,0],["p06_frame",6,820,704,1],["p06_panel",6,820,704,2],["p07_01",7,371,384,0],["p07_02",7,820,390,0],["p07_03",7,820,640,0],["p07_04",7,820,553,0],["p07_05",7,816,820,0],["p07_06",7,273,820,0],["p07_07",7,805,820,0],["p07_frame",7,820,698,1],["p07_panel",7,820,698,2],["p08_01",8,820,658,0],["p08_02",8,820,661,0],["p08_03",8,820,349,0],["p08_frame",8,820,698,1],["p08_panel",8,820,698,2],["p09_01",9,754,820,0],["p09_02",9,820,761,0],["p09_03",9,363,336,0],["p09_04",9,820,794,0],["p09_05",9,618,820,0],["p09_06",9,354,569,0],["p09_frame",9,820,697,1],["p09_panel",9,820,697,2],["p10_01",10,820,820,0],["p10_02",10,281,820,0],["p10_03",10,374,820,0],["p10_04",10,531,820,0],["p10_05",10,751,719,0],["p10_frame",10,820,698,1],["p10_panel",10,820,698,2],["p11_01",11,820,696,0],["p11_02",11,333,761,0],["p11_03",11,820,685,0],["p11_04",11,820,238,0],["p11_05",11,535,545,0],["p11_06",11,820,246,0],["p11_07",11,820,706,0],["p11_08",11,820,673,0],["p11_09",11,346,792,0],["p11_frame",11,820,700,1],["p11_panel",11,820,700,2],["p12_01",12,649,820,0],["p12_02",12,475,820,0],["p12_03",12,820,781,0],["p12_04",12,435,820,0],["p12_frame",12,820,756,1],["p12_panel",12,820,756,2],["p13_01",13,722,820,0],["p13_02",13,747,820,0],["p13_03",13,813,820,0],["p13_04",13,820,733,0],["p13_05",13,820,726,0],["p13_frame",13,820,695,1],["p13_panel",13,820,695,2],["p14_01",14,820,716,0],["p14_frame",14,820,697,1],["p14_panel",14,820,697,2],["p15_01",15,793,820,0],["p15_02",15,533,620,0],["p15_03",15,820,793,0],["p15_04",15,454,359,0],["p15_05",15,234,239,0],["p15_frame",15,820,694,1],["p15_panel",15,820,694,2],["p16_01",16,820,674,0],["p16_frame",16,820,696,1],["p16_panel",16,820,696,2],["p17_01",17,729,702,0],["p17_02",17,820,545,0],["p17_03",17,716,688,0],["p17_04",17,820,266,0],["p17_05",17,342,250,0],["p17_06",17,820,242,0],["p17_07",17,820,342,0],["p17_frame",17,820,669,1],["p17_panel",17,820,669,2],["p18_01",18,628,820,0],["p18_02",18,820,684,0],["p18_03",18,786,820,0],["p18_frame",18,820,700,1],["p18_panel",18,820,700,2],["p19_01",19,820,534,0],["p19_02",19,257,820,0],["p19_03",19,808,820,0],["p19_04",19,816,820,0],["p19_frame",19,820,700,1],["p19_panel",19,820,700,2],["p20_01",20,820,690,0],["p20_frame",20,820,698,1],["p20_panel",20,820,698,2],["p21_01",21,820,568,0],["p21_02",21,820,703,0],["p21_03",21,774,787,0],["p21_04",21,760,773,0],["p21_05",21,741,741,0],["p21_06",21,207,617,0],["p21_frame",21,820,691,1],["p21_panel",21,820,691,2],["p22_01",22,820,203,0],["p22_02",22,501,505,0],["p22_03",22,820,341,0],["p22_04",22,820,235,0],["p22_05",22,506,501,0],["p22_frame",22,820,697,1],["p22_panel",22,820,697,2],["p23_01",23,820,820,0],["p23_02",23,313,820,0],["p23_03",23,793,820,0],["p23_04",23,820,800,0],["p23_05",23,803,820,0],["p23_frame",23,820,698,1],["p23_panel",23,820,698,2],["p24_01",24,820,685,0],["p24_02",24,707,820,0],["p24_frame",24,820,701,1],["p24_panel",24,820,701,2],["p25_01",25,274,820,0],["p25_02",25,820,576,0],["p25_03",25,820,340,0],["p25_frame",25,820,695,1],["p25_panel",25,820,695,2],["p26_01",26,820,495,0],["p26_02",26,166,820,0],["p26_03",26,173,820,0],["p26_04",26,430,430,0],["p26_05",26,425,435,0],["p26_06",26,820,499,0],["p26_frame",26,820,701,1],["p26_panel",26,820,701,2],["p27_01",27,820,693,0],["p27_frame",27,820,692,1],["p27_panel",27,820,692,2],["p28_01",28,222,820,0],["p28_02",28,820,369,0],["p28_03",28,820,444,0],["p28_frame",28,820,697,1],["p28_panel",28,820,697,2],["p29_01",29,699,820,0],["p29_02",29,310,820,0],["p29_03",29,820,333,0],["p29_04",29,784,820,0],["p29_frame",29,820,698,1],["p29_panel",29,820,698,2],["p30_01",30,820,366,0],["p30_02",30,485,820,0],["p30_03",30,736,820,0],["p30_04",30,432,820,0],["p30_05",30,237,820,0],["p30_06",30,525,820,0],["p30_frame",30,820,706,1],["p30_panel",30,820,706,2],["p31_01",31,820,704,0],["p31_02",31,820,525,0],["p31_frame",31,820,701,1],["p31_panel",31,820,701,2],["p32_01",32,820,175,0],["p32_02",32,820,179,0],["p32_03",32,820,507,0],["p32_04",32,820,539,0],["p32_05",32,820,477,0],["p32_06",32,343,820,0],["p32_frame",32,820,695,1],["p32_panel",32,820,695,2],["p33_01",33,434,325,0],["p33_02",33,710,820,0],["p33_03",33,818,240,0],["p33_04",33,623,820,0],["p33_05",33,208,388,0],["p33_06",33,161,820,0],["p33_07",33,746,710,0],["p33_08",33,614,820,0],["p33_frame",33,820,695,1],["p33_panel",33,820,695,2],["p34_01",34,406,820,0],["p34_02",34,574,596,0],["p34_03",34,601,623,0],["p34_04",34,339,820,0],["p34_05",34,398,820,0],["p34_frame",34,820,696,1],["p34_panel",34,820,696,2],["p35_01",35,329,820,0],["p35_02",35,560,820,0],["p35_03",35,344,820,0],["p35_04",35,568,752,0],["p35_05",35,733,760,0],["p35_frame",35,820,705,1],["p35_panel",35,820,705,2],["p36_01",36,820,693,0],["p36_02",36,356,820,0],["p36_03",36,432,820,0],["p36_04",36,650,820,0],["p36_frame",36,820,709,1],["p36_panel",36,820,709,2],["p37_01",37,415,820,0],["p37_02",37,413,820,0],["p37_03",37,820,650,0],["p37_04",37,283,724,0],["p37_05",37,292,180,0],["p37_06",37,820,356,0],["p37_07",37,162,193,0],["p37_08",37,167,184,0],["p37_09",37,166,202,0],["p37_10",37,166,203,0],["p37_11",37,252,193,0],["p37_frame",37,820,706,1],["p37_panel",37,820,706,2],["p38_01",38,820,568,0],["p38_02",38,536,820,0],["p38_03",38,247,820,0],["p38_04",38,820,425,0],["p38_frame",38,820,694,1],["p38_panel",38,820,694,2],["p39_01",39,820,803,0],["p39_02",39,818,732,0],["p39_03",39,820,486,0],["p39_04",39,820,619,0],["p39_05",39,820,545,0],["p39_frame",39,820,704,1],["p39_panel",39,820,704,2],["p40_01",40,771,820,0],["p40_02",40,801,224,0],["p40_03",40,808,820,0],["p40_04",40,706,243,0],["p40_05",40,644,820,0],["p40_06",40,820,282,0],["p40_07",40,820,296,0],["p40_08",40,820,365,0],["p40_09",40,820,294,0],["p40_10",40,706,298,0],["p40_11",40,820,323,0],["p40_12",40,820,369,0],["p40_13",40,706,278,0],["p40_frame",40,820,699,1],["p40_panel",40,820,699,2],["p41_01",41,820,79,0],["p41_02",41,690,562,0],["p41_03",41,690,576,0],["p41_04",41,820,627,0],["p41_05",41,308,820,0],["p41_06",41,820,194,0],["p41_07",41,283,274,0],["p41_frame",41,820,695,1],["p41_panel",41,820,695,2],["p42_01",42,541,820,0],["p42_02",42,820,820,0],["p42_03",42,585,820,0],["p42_04",42,820,650,0],["p42_frame",42,820,713,1],["p42_panel",42,820,713,2],["p43_01",43,820,329,0],["p43_02",43,820,796,0],["p43_03",43,486,820,0],["p43_frame",43,820,697,1],["p43_panel",43,820,697,2],["p44_01",44,820,614,0],["p44_02",44,820,799,0],["p44_03",44,615,820,0],["p44_frame",44,820,698,1],["p44_panel",44,820,698,2],["p45_01",45,555,820,0],["p45_02",45,626,521,0],["p45_03",45,704,649,0],["p45_04",45,461,315,0],["p45_05",45,820,569,0],["p45_06",45,754,758,0],["p45_frame",45,820,691,1],["p45_panel",45,820,691,2],["p46_01",46,288,820,0],["p46_02",46,820,167,0],["p46_03",46,735,820,0],["p46_04",46,223,820,0],["p46_frame",46,820,698,1],["p46_panel",46,820,698,2],["p47_01",47,706,820,0],["p47_02",47,803,758,0],["p47_03",47,240,820,0],["p47_frame",47,820,700,1],["p47_panel",47,820,700,2],["p48_01",48,383,820,0],["p48_02",48,820,782,0],["p48_03",48,506,629,0],["p48_04",48,820,449,0],["p48_frame",48,820,699,1],["p48_panel",48,820,699,2],["p49_01",49,436,820,0],["p49_02",49,414,820,0],["p49_03",49,817,820,0],["p49_frame",49,820,696,1],["p49_panel",49,820,696,2],["p50_01",50,820,591,0],["p50_02",50,526,820,0],["p50_03",50,583,820,0],["p50_04",50,820,368,0],["p50_frame",50,820,698,1],["p50_panel",50,820,698,2],["p51_01",51,820,552,0],["p51_02",51,820,534,0],["p51_03",51,599,820,0],["p51_04",51,547,820,0],["p51_05",51,745,817,0],["p51_frame",51,820,693,1],["p51_panel",51,820,693,2],["p52_01",52,764,820,0],["p52_02",52,417,806,0],["p52_03",52,773,820,0],["p52_04",52,619,503,0],["p52_05",52,820,737,0],["p52_06",52,820,761,0],["p52_frame",52,820,697,1],["p52_panel",52,820,697,2],["p53_01",53,787,820,0],["p53_02",53,820,612,0],["p53_03",53,163,163,0],["p53_04",53,524,365,0],["p53_05",53,370,740,0],["p53_06",53,443,649,0],["p53_07",53,631,771,0],["p53_08",53,442,447,0],["p53_frame",53,820,699,1],["p53_panel",53,820,699,2],["p54_01",54,820,586,0],["p54_02",54,260,820,0],["p54_03",54,820,171,0],["p54_frame",54,820,731,1],["p54_panel",54,820,731,2],["p55_01",55,249,820,0],["p55_02",55,310,820,0],["p55_03",55,820,670,0],["p55_04",55,820,257,0],["p55_05",55,514,524,0],["p55_frame",55,820,699,1],["p55_panel",55,820,699,2],["p56_01",56,820,382,0],["p56_02",56,621,322,0],["p56_03",56,540,290,0],["p56_04",56,820,267,0],["p56_05",56,608,458,0],["p56_06",56,820,174,0],["p56_frame",56,820,694,1],["p56_panel",56,820,694,2],["p57_01",57,119,92,0],["p57_02",57,622,636,0],["p57_03",57,763,820,0],["p57_04",57,435,820,0],["p57_05",57,818,820,0],["p57_06",57,610,820,0],["p57_07",57,466,416,0],["p57_frame",57,820,697,1],["p57_panel",57,820,697,2],["p58_01",58,820,536,0],["p58_02",58,820,635,0],["p58_03",58,820,535,0],["p58_04",58,728,732,0],["p58_05",58,724,732,0],["p58_frame",58,820,695,1],["p58_panel",58,820,695,2],["p59_01",59,820,481,0],["p59_02",59,820,217,0],["p59_03",59,820,664,0],["p59_04",59,820,669,0],["p59_frame",59,820,699,1],["p59_panel",59,820,699,2],["p60_01",60,820,655,0],["p60_frame",60,820,686,1],["p60_panel",60,820,686,2]];
 const libImg = {}, ATLAS_C = 120, ATLAS_COLS = 18;
 function loadLib(id) {
   if (!libImg[id]) libImg[id] = new Promise((res, rej) => { const im = new Image(); im.onload = () => res(im); im.onerror = rej; im.src = 'ornaments/' + id + '.webp'; });
@@ -1788,19 +1802,20 @@ async function placeLib(e) {
 (() => {
   const sel = $('libPlate');
   for (let n = FIRST_PLATE; n <= NPLATES; n++) if (LIB.some(e => e[1] === n)) { const o = document.createElement('option'); o.value = n; o.textContent = plateLabel(n); sel.appendChild(o); }
-  sel.onchange = renderLib; $('libFrames').onchange = renderLib;
+  sel.onchange = renderLib; $('libKind').onchange = renderLib;
 })();
 function renderLib() {
-  const pf = +$('libPlate').value, fr = $('libFrames').checked, list = $('libList'); list.innerHTML = '';
-  const items = LIB.filter(e => e[1] >= FIRST_PLATE && (!pf || e[1] === pf) && (fr || !e[4]));
-  $('libCount').textContent = items.length + ' ornaments';
+  const pf = +$('libPlate').value, kv = $('libKind').value, list = $('libList'); list.innerHTML = '';
+  const items = LIB.filter(e => e[1] >= FIRST_PLATE && (!pf || e[1] === pf) && (kv === 'all' || e[4] === +kv));
+  const KN = ['ornament', 'whole frame', 'whole plate'];
+  $('libCount').textContent = kv === 'all' ? items.length + ' items' : items.length + ' ' + KN[+kv] + (items.length === 1 ? '' : 's');
   let cur = 0, grid = null;
   for (const e of items) {
     if (e[1] !== cur) { cur = e[1]; const h = document.createElement('h4'); h.textContent = plateLabel(cur); list.appendChild(h);
       grid = document.createElement('div'); grid.className = 'og'; list.appendChild(grid); }
-    const d = document.createElement('div'); d.title = e[0] + (e[4] ? ' (frame)' : '');
+    const d = document.createElement('div'); d.title = e[0] + (e[4] ? ` (${KN[e[4]]})` : '');
     const k = LIB.indexOf(e);
-    d.innerHTML = `<i style="display:block;width:${ATLAS_C}px;height:${ATLAS_C}px;background:url(othumbs_atlas.webp) -${(k % ATLAS_COLS) * ATLAS_C}px -${Math.floor(k / ATLAS_COLS) * ATLAS_C}px"></i><span>${e[4] ? 'frame' : ''}</span>`;
+    d.innerHTML = `<i style="display:block;width:${ATLAS_C}px;height:${ATLAS_C}px;background:url(othumbs_atlas.webp) -${(k % ATLAS_COLS) * ATLAS_C}px -${Math.floor(k / ATLAS_COLS) * ATLAS_C}px"></i><span>${e[4] ? KN[e[4]] : ''}</span>`;
     d.onclick = () => placeLib(e); grid.appendChild(d);
   }
 }
@@ -2040,7 +2055,7 @@ if (framed) $('export').hidden = true;
 
 renderSlots(); syncControls();
 /* ---------- opening composition: two ornaments from plates 57 and 58, hinged at 30° (D6) ---------- */
-const OPENING = {"mode": "hinge", "alpha": 30, "beta": -90, "zoom": 1.1, "orn": [{"id": "p57_04", "x": 500, "y": 150, "s": 0.28, "rot": 180}, {"id": "p58_03", "x": 500, "y": 330, "s": 0.07, "rot": 0}]};
+const OPENING = {"mode": "hinge", "alpha": 30, "beta": -90, "zoom": 1.1, "orn": [{"id": "p57_03", "x": 500, "y": 150, "s": 0.27, "rot": 180}, {"id": "p58_05", "x": 500, "y": 330, "s": 0.07, "rot": 0}]};
 async function opening(cfg) {
   try {
     const imgs = await Promise.all(cfg.orn.map(o => loadLib(o.id)));
