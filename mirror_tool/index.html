@@ -84,6 +84,13 @@
   .lib .og img{max-width:100%;max-height:100%}
   .lib .og i{flex:none;transform:scale(.82)}
   .lib .og span{position:absolute;bottom:2px;right:4px;font-size:10px;color:var(--muted)}
+  .lib .og b.sym{position:absolute;top:3px;left:4px;font:11px Georgia,serif;color:#5d3a6c;background:#f1e9f4;border-radius:3px;padding:0 4px}
+  .lib .og b.sym.ap{color:#8a7a92;background:#f5f2f6}
+  .lib .og button.del{position:absolute;top:2px;right:2px;padding:0 6px;font-size:12px;line-height:18px;min-height:0}
+  .lib .og span.nm{left:4px;right:4px;text-align:center;overflow:hidden;white-space:nowrap;text-overflow:ellipsis}
+  #mineDrop{border:1px dashed var(--line);border-radius:4px;padding:10px;margin:0 0 10px}
+  #wpFit a{color:#2f5d5a}
+  #mineDrop.over{border-color:var(--ochre);background:#fbf6ec}
   .ov{position:fixed;inset:0;background:rgba(40,30,15,.48);z-index:50;display:flex;justify-content:center;align-items:flex-start;padding:3vh 2vw}
   .ovp{background:var(--paper);border:1px solid var(--line);border-radius:8px;width:min(1080px,100%);max-height:94vh;display:flex;flex-direction:column;box-shadow:0 20px 50px -20px rgba(40,30,15,.5)}
   .ovh{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;padding:10px 16px;border-bottom:1px solid var(--line)}
@@ -188,7 +195,7 @@
   </div>
 
   <h2>Method</h2>
-  <div class="seg meth" id="methSeg"><button data-k="verneuil" class="on">Verneuil 1901</button><button data-k="brewster">Brewster 1819</button></div>
+  <div class="seg meth" id="methSeg"><button data-k="verneuil" class="on">Verneuil 1901</button><button data-k="brewster">Brewster 1819</button><button data-k="wallpaper">Wallpaper groups</button></div>
   <div id="methCite" class="cite"></div>
   <div id="verneuilCtl">
   <div class="seg" id="modeSeg">
@@ -216,10 +223,17 @@
   <div id="brewsterCtl" hidden>
     <div class="seg seg5" id="cellSeg"><button data-c="square">Square</button><button data-c="rect">Rectangle</button><button data-c="t60" class="on">60°·60°·60°</button><button data-c="t45">90°·45°·45°</button><button data-c="t30">90°·60°·30°</button></div>
   </div>
+  <div id="wallCtl" hidden>
+    <div class="row"><label>Group</label><select id="wpGroup" class="sel"></select><span></span></div>
+    <div id="wpExample" class="small"></div>
+    <div id="wpFit" class="small" style="margin:4px 0"></div>
+    <div id="panotRow" hidden style="margin:6px 0 10px"><button id="panotBtn" class="primary" title="Draw the three figures of Gaudí's panot (starfish, ammonite, seaweed) as three separate ornaments, each on its third-turn centre">Draw Gaudí’s panot</button></div>
+  </div>
   <div id="latCtl" hidden>
     <div class="row"><label>Cell size</label><input type="range" id="cellSize" min="40" max="600" step="1"><output id="cellSizeV"></output></div>
     <div class="row"><label>Direction</label><input type="range" id="latTheta" min="-180" max="180" step="0.5"><output id="latThetaV"></output></div>
     <div class="row" id="aspectRow"><label>Aspect</label><input type="range" id="aspect" min="0.3" max="1.6" step="0.01"><output id="aspectV"></output></div>
+    <label class="cb" title="A symmetric ornament (badge D or C) is pulled onto the nearest rotation centre or mirror whose symmetry it contains, and turned so its mirror lines lie along the group's: there it repeats without seams. Hold Alt (Option) while dragging to place it freely."><input type="checkbox" id="snapSym" checked> Snap symmetric ornaments to matching centres and mirrors</label>
   </div>
   <div id="status"></div>
 
@@ -273,7 +287,7 @@
 <aside class="caside">
   <h2>Saved tiles</h2>
   <div class="btnrow"><button id="cSaveCur" class="primary">+ Save current tile</button></div>
-  <div class="row"><label>Show</label><select id="cFilter" class="sel"><option value="all">All methods</option><option value="verneuil">Verneuil 1901 only</option><option value="brewster">Brewster 1819 only</option></select><span></span></div>
+  <div class="row"><label>Show</label><select id="cFilter" class="sel"><option value="all">All methods</option><option value="verneuil">Verneuil 1901 only</option><option value="brewster">Brewster 1819 only</option><option value="wallpaper">Wallpaper groups only</option></select><span></span></div>
   <div id="cPalette" class="cpal"></div>
   <p class="small" style="margin:6px 0 0">Drag a tile onto the board, or click it to drop it in the middle. Save tiles from the <b>Mirrors</b> tab (under the tiled surface).</p>
   <div class="row"><label>New tile edge</label><input type="range" id="cUnit" min="20" max="240" step="1" value="80"><output id="cUnitV"></output></div>
@@ -383,6 +397,10 @@
       </ul>
       <p>Everything else in ornament (rotations without mirrors, glide reflections, the remaining 13 wallpaper types) cannot come from mirrors.</p>
 
+      <p id="h-sym"><b>Symmetric ornaments.</b> Each ornament in the library carries a badge for its own symmetry, in the usual notation for figures with a centre: <b>D<i>n</i></b> has <i>n</i> mirror lines and <i>n</i>-fold turns (D1 = one mirror line, a left–right figure; D3 = three lines, a trefoil), <b>C<i>n</i></b> has <i>n</i>-fold turns and no mirror (a swirl); no badge means none. The badge is measured, not taken from the book: the picture is reduced to ink, centred on its centre of mass, and compared with its own copies turned by 360°/<i>n</i> and reflected in every line through the centre; the share of ink that lands on ink, corrected for what chance overlap gives at unrelated angles, has to pass 38% (a “≈” marks results under 50%, symmetric only roughly, as hand drawing is). The labels were then checked by eye and some forty corrected, in both directions. C∞ marks a ring of like leaves, which turns into itself by any angle, roughly. Of the 274 ornaments, about 100 have at least one mirror line, a few more have turns only, and most have no symmetry at all: Verneuil drew for the mirror, which supplies the symmetry.</p>
+      <p>Why it matters for the wallpaper groups: at a rotation centre of order <i>n</i> the group lays <i>n</i> turned copies of whatever is there on top of each other, and on a mirror line a figure and its reflection. An ornament placed exactly on such a point stays whole only if its own symmetry already contains that operation, so a C4 or D4 ornament on a ■, a D3 on a meeting of three mirrors, a D1 with its axis along a mirror line. Anywhere else, away from all centres and mirrors, any ornament works and the group spreads its copies apart. Under the group menu the tool lists which sites the chosen group has and how many library ornaments fit each; the library filter “fits …” shows them. Each symmetric ornament also carries its centre and the direction of one of its mirror lines, found by searching for the best overlap; the selected ornament shows them on the sheet (a ringed dot, dashed lines). With “Snap symmetric ornaments” on (Brewster and wallpaper modes), an ornament dragged near a site it fits is pulled onto it and turned so its mirror lines lie along the group's; one added from the library goes straight to the most symmetric site it fits. Hold Alt (Option) to drag freely. Gaudí's panot is laid out the same way: its three figures are separate ornaments, each three-fold, each on its own class of third-turn centre.</p>
+      <p><b>Your own images.</b> The picker's “My images” tab takes your own drawings, scans or photos (several at once, or dropped onto it). They are reduced to at most 1600 px, given a symmetry badge in the same way, and kept only in this browser's storage on this device: nothing is uploaded. “Save library” writes all of them to one <code>.json</code> file; “Import library” adds such a file back, in another browser or on another computer (images already there are skipped). Clearing the browser's site data deletes them, so keep a saved copy.</p>
+
       <h4 id="h-tiles">6 · From rosette to tiles</h4>
       <p>The tile in the lower panel is the mirror view cut to a regular triangle, square or hexagon centred on the hinge. All tiles are identical (squares and hexagons are shifted, every other triangle is turned 180°, as when laying real tiles). Two neighbouring tiles continue each other across their joint exactly when the rosette has a mirror line through its centre perpendicular to that joint, because then the neighbour <i>is</i> the reflection of the tile in the joint. With α = 180°/n the rosette has n mirror lines, so:</p>
       <table><tr><th>α</th><th>n</th><th>squares</th><th>triangles</th><th>hexagons</th></tr>
@@ -404,13 +422,14 @@
       <p>“Save tile” (under the tiled surface) keeps the current tile, cut exactly as shown, for the <b>Compose</b> tab. There you drag tiles onto a board and combine shapes: snapping brings a corner of the piece you move onto a nearby corner and lines up the edges. Pieces of equal edge length then fit edge to edge: squares beside triangles, hexagons ringed by squares and triangles, or a band of squares, then hexagons cut in half through their corners (whose long edge covers two squares) alternating with whole hexagons standing on a flat side, then whole hexagons. Each piece can be cut (half, diagonal), resized, turned and flipped. Duplicate a piece, move the copy into place, and Duplicate again repeats the same step, which builds rows quickly. Projects are saved as a single JSON file containing the tile images, so they reopen exactly; the finished surface exports as PNG, or as SVG with the joints as vector lines.</p>
 
       <h4 id="h-methods">8 · Methods and sources: what is what</h4>
-      <p>Every pattern in the tool is labelled with the method that made it, and the label travels with saved tiles, pieces on the board, project files and exports, so a design can stay within one historical practice or mix the two knowingly.</p>
+      <p>Every pattern in the tool is labelled with the method that made it, and the label travels with saved tiles, pieces on the board, project files and exports, so a design can stay within one historical practice or mix them knowingly.</p>
       <table>
         <tr><th>Label</th><th>What it is</th><th>Source</th></tr>
         <tr><td><span class="mbadge" style="--mc:#2f5d5a">Verneuil 1901</span></td><td>Two mirrors hinged at an angle, two parallel mirrors, or one mirror, moved over a drawing. Rosettes D<sub>n</sub>, borders, corners.</td><td>Verneuil, Auriol &amp; Mucha, <i>Combinaisons ornementales</i> (c. 1901), preface.</td></tr>
         <tr><td><span class="mbadge" style="--mc:#a8691c">Brewster 1819</span></td><td>Three or four mirrors closing a cell (“polycentral kaleidoscopes”): square, rectangle, 60°-60°-60°, 90°-45°-45°, 90°-60°-30°. They fill the plane; in modern terms the wallpaper groups pmm, p3m1, p4m and p6m, the only ones mirrors alone can make. In the mirror view, mirror lines are drawn solid and rotation centres marked ◆ (2-fold), ▲ (3), ■ (4), ⬢ (6).</td><td>D. Brewster, <i>A Treatise on the Kaleidoscope</i> (1819); 2nd ed. 1858, ch. XIII, §§1–5.</td></tr>
+        <tr><td><span class="mbadge" style="--mc:#7a4a8c">Wallpaper group</span></td><td>All 17 plane symmetry groups, including rotations without mirrors and glide reflections. A mathematical classification used here to generate patterns, not a period instrument: no arrangement of plane mirrors produces p1, p2, pm, pg, cm, pmg, pgg, cmm, p4, p4g, p3, p31m or p6. Glide lines are drawn dashed. Gaudí’s hexagonal <i>panot</i> (1904), which repeats by third-turns only, is group <b>p3</b>.</td><td>E. S. Fedorov (1891); G. Pólya (1924); operations as in the <i>International Tables for Crystallography</i>, Vol. A; orbifold symbols after J. H. Conway.</td></tr>
       </table>
-      <p>Both are physical instruments described by their authors: Verneuil’s open pair of mirrors moved over a drawing, and Brewster’s closed cells of three or four mirrors. Tiles saved before methods were recorded, or with a method no longer offered, are marked “method not recorded”.</p>
+      <p>Verneuil’s open pair of mirrors moved over a drawing and Brewster’s closed cells of three or four mirrors are physical instruments described by their authors; the wallpaper groups are a classification, used here generatively. Patterns made by turning tiles rather than reflecting them belong to the groups mirrors cannot reach, for example the quarter-turn tiles of Lewis F. Day’s “turn-round” (<i>Pattern Design</i>, 1903, ch. XII), group p4, and Gaudí’s hexagonal <i>panot</i>, group p3. Tiles saved with a method no longer offered are marked “method not recorded”.</p>
 
       <h4>Further reading</h4>
       <p class="small">D. Brewster, <i>A Treatise on the Kaleidoscope</i> (1819; 2nd ed. 1858). H. S. M. Coxeter, <i>Introduction to Geometry</i> (1961), ch. on reflection groups. D. Washburn &amp; D. Crowe, <i>Symmetries of Culture</i> (1988). J. H. Conway, H. Burgiel, C. Goodman-Strauss, <i>The Symmetries of Things</i> (2008).</p>
@@ -420,15 +439,30 @@
 
 <dialog id="dlg">
   <div class="dlg-h"><h3 id="dlgTitle">Choose a plate</h3>
-    <span class="tabs"><button id="tabLib" class="on">Ornament library</button><button id="tabPlates">Whole plates / crop</button><button id="dlgClose">Close</button></span></div>
+    <span class="tabs"><button id="tabLib" class="on">Ornament library</button><button id="tabPlates">Whole plates / crop</button><button id="tabMine">My images</button><button id="dlgClose">Close</button></span></div>
   <div class="dlg-b">
     <div id="libWrap" class="lib">
       <div class="libbar">
         <label class="small">Plate <select id="libPlate"><option value="0">All plates</option></select></label>
         <label class="small">Show <select id="libKind"><option value="0">Ornaments</option><option value="1">Whole frames</option><option value="2">Whole plates</option><option value="all">Everything</option></select></label>
+        <label class="small">Symmetry <select id="libSym"><option value="">any</option><option value="sym">symmetric only</option><option value="D">with mirrors (D<i>n</i>)</option><option value="rot">with turns (n ≥ 2)</option><option value="fit" id="libSymFit">fits the wallpaper group</option></select></label>
         <span class="small" id="libCount"></span>
       </div>
       <div id="libList"></div>
+    </div>
+    <div id="mineWrap" class="lib" hidden>
+      <div id="mineDrop">
+        <div class="libbar" style="margin:0">
+          <button id="mineAdd" class="primary">Add images…</button>
+          <button id="mineExp">Save library…</button>
+          <button id="mineImp">Import library…</button>
+          <span class="small" id="mineCount"></span>
+        </div>
+        <p class="small" style="margin:8px 0 0">Your own drawings, scans or photos (or drop files here). They are kept only in this browser, on this device, never uploaded. <b>Save library</b> writes them all to one <code>.json</code> file; <b>Import library</b> adds such a file back, here or in another browser. Dark ink on a light or transparent ground works best; the symmetry badge is measured when the image is added.</p>
+      </div>
+      <input type="file" id="mineFile" accept="image/*" multiple hidden>
+      <input type="file" id="mineJson" accept=".json,application/json" hidden>
+      <div id="mineList"></div>
     </div>
     <div class="grid" id="plateGrid"></div>
     <div id="cropWrap" hidden>
@@ -465,7 +499,7 @@ const S = {
   orn: [], sel: -1,
   mode: 'hinge', O: { x: 500, y: 375 }, beta: -90, alpha: 120, theta: 0, d: 160,
   zoom: 1, snap: true, showLines: true, showSeam: true, clean: 0,
-  method: 'verneuil', vmode: 'hinge', bcell: 't60', cell: 220, lt: 0, aspect: 0.62
+  method: 'verneuil', vmode: 'hinge', bcell: 't60', group: 'p4g', cell: 220, lt: 0, aspect: 0.62
 };
 
 const imgCache = {};
@@ -575,7 +609,14 @@ function renderSheet() {
     sctx.stroke(); sctx.restore();
     const o = S.orn[S.sel];
     if (o) { sctx.save(); sctx.translate(o.x, o.y); sctx.rotate(rad(o.rot)); sctx.setLineDash([5, 5]); sctx.strokeStyle = 'rgba(47,93,90,.7)'; sctx.lineWidth = 1.2;
-      sctx.strokeRect(-o.cw * o.s / 2, -o.ch * o.s / 2, o.cw * o.s, o.ch * o.s); sctx.restore(); }
+      sctx.strokeRect(-o.cw * o.s / 2, -o.ch * o.s / 2, o.cw * o.s, o.ch * o.s); sctx.restore();
+      const os = ornSym(o);
+      if (os) { sctx.save(); sctx.strokeStyle = '#5d3a6c'; sctx.fillStyle = '#5d3a6c'; sctx.lineWidth = 1.4; sctx.setLineDash([3, 4]);
+        for (const a of os.ax) { const u = dir(a); sctx.beginPath(); sctx.moveTo(os.P.x - u.x * 60, os.P.y - u.y * 60); sctx.lineTo(os.P.x + u.x * 60, os.P.y + u.y * 60); sctx.stroke(); }
+        sctx.setLineDash([]); sctx.beginPath(); sctx.arc(os.P.x, os.P.y, 5, 0, 7); sctx.stroke(); sctx.beginPath(); sctx.arc(os.P.x, os.P.y, 1.8, 0, 7); sctx.fill(); sctx.restore(); } }
+    if (snapNote) { sctx.save(); sctx.strokeStyle = '#a8691c'; sctx.lineWidth = 2.5; sctx.beginPath(); sctx.arc(snapNote.p.x, snapNote.p.y, 11, 0, 7); sctx.stroke();
+      sctx.font = '15px Georgia, serif'; sctx.lineWidth = 4; sctx.strokeStyle = 'rgba(255,255,255,.9)'; sctx.fillStyle = '#5c3f12';
+      sctx.strokeText(snapNote.text, snapNote.p.x + 16, snapNote.p.y - 12); sctx.fillText(snapNote.text, snapNote.p.x + 16, snapNote.p.y - 12); sctx.restore(); }
     for (const h of handles()) drawHandle(sctx, h);
     return;
   }
@@ -712,20 +753,40 @@ const METHODS = {
     cite: 'M. P. Verneuil, G. Auriol &amp; A. Mucha, <i>Combinaisons ornementales se multipliant à l’infini à l’aide du miroir</i> (Paris, Librairie Centrale des Beaux-Arts, c. 1901), preface “De l’emploi du miroir”.' },
   brewster: { label: 'Brewster 1819', color: '#a8691c', short: 'three or four mirrors closing a cell: Brewster’s “polycentral kaleidoscopes”',
     cite: 'D. Brewster, <i>A Treatise on the Kaleidoscope</i> (Edinburgh, 1819; 2nd ed. <i>The Kaleidoscope, its History, Theory and Construction</i>, 1858, ch. XIII “On the construction and use of polycentral kaleidoscopes”): four mirrors forming a square or a rectangle; three reflectors at 60°, at 90°, 45°, 45° and at 90°, 60°, 30°.' },
+  wallpaper: { label: 'Wallpaper group', color: '#7a4a8c', short: 'rotations, mirrors and glide reflections of the 17 plane groups: mathematics, not a period instrument',
+    cite: 'The 17 plane symmetry groups, enumerated by E. S. Fedorov (1891) and G. Pólya (1924). Symmetry operations and notation (p4g, cmm…) as in the <i>International Tables for Crystallography</i>, Vol. A; orbifold symbols (4∗2, 2∗22…) after J. H. Conway.' },
   unknown: { label: 'method not recorded', color: '#9a8f80', short: 'saved before methods were recorded', cite: '' },
 };
 const chip = (k, extra = '') => { const m = METHODS[k] || METHODS.unknown;
   return `<span class="mbadge" style="--mc:${m.color}" data-help="h-methods" title="${m.label}: ${m.short}">${m.label}${extra}</span>`; };
 const plain = h => h.replace(/<[^>]+>/g, '').replace(/&amp;/g, '&');
 
-/* ---------- Brewster's cells as plane groups: operations in fractional coordinates (International Tables,
-   Vol. A) and the mirror cell (asymmetric unit); the group's images of the cell fill one lattice cell ---------- */
+/* ---------- the 17 plane groups: operations in fractional coordinates (International Tables, Vol. A)
+   and an asymmetric unit; the group's images of the asymmetric unit fill one lattice cell.
+   Brewster's cells are the four mirror-only groups pmm, p3m1, p4m, p6m ---------- */
 const P4 = ['x,y', '-x,-y', '-y,x', 'y,-x'], P3 = ['x,y', '-y,x-y', '-x+y,-x'], P6 = [...P3, '-x,-y', 'y,-x+y', 'x-y,x'];
 const GROUPS = {
-  pmm:  { orb: '∗2222', lat: 'rect', ops: ['x,y', '-x,-y', '-x,y', 'x,-y'], asym: [[0, 0], [.5, 0], [.5, .5], [0, .5]] },
-  p4m:  { orb: '∗442', lat: 'sq',   ops: [...P4, '-x,y', 'x,-y', 'y,x', '-y,-x'], asym: [[0, 0], [.5, .5], [0, .5]] },
-  p3m1: { orb: '∗333', lat: 'hex',  ops: [...P3, '-y,-x', '-x+y,y', 'x,x-y'], asym: [[0, 0], [2 / 3, 1 / 3], [1 / 3, 2 / 3]] },
-  p6m:  { orb: '∗632', lat: 'hex',  ops: [...P6, '-y,-x', '-x+y,y', 'x,x-y', 'y,x', 'x-y,-y', '-x,-x+y'], asym: [[0, 0], [2 / 3, 1 / 3], [.5, .5]] },
+  p1:   { orb: 'o',    lat: 'obl',  ops: ['x,y'], asym: [[0, 0], [1, 0], [1, 1], [0, 1]], desc: 'translations only' },
+  p2:   { orb: '2222', lat: 'obl',  ops: ['x,y', '-x,-y'], asym: [[0, 0], [.5, 0], [.5, 1], [0, 1]], desc: 'half-turns' },
+  pm:   { orb: '∗∗',   lat: 'rect', ops: ['x,y', '-x,y'], asym: [[0, 0], [.5, 0], [.5, 1], [0, 1]], desc: 'parallel mirrors, repeated along their own direction' },
+  pg:   { orb: '××',   lat: 'rect', ops: ['x,y', '-x,y+1/2'], asym: [[0, 0], [.5, 0], [.5, 1], [0, 1]], desc: 'parallel glide reflections' },
+  cm:   { orb: '∗×',   lat: 'rect', c: true, ops: ['x,y', '-x,y'], asym: [[0, 0], [.5, 0], [.5, .5], [0, .5]], desc: 'parallel mirrors with glide reflections between them' },
+  pmm:  { orb: '∗2222', lat: 'rect', ops: ['x,y', '-x,-y', '-x,y', 'x,-y'], asym: [[0, 0], [.5, 0], [.5, .5], [0, .5]], desc: 'mirrors in two perpendicular directions', mirrors: 'rect' },
+  pmg:  { orb: '22∗',  lat: 'rect', ops: ['x,y', '-x,-y', '-x+1/2,y', 'x+1/2,-y'], asym: [[0, 0], [.25, 0], [.25, 1], [0, 1]], desc: 'mirrors one way, glide reflections the other, half-turns between' },
+  pgg:  { orb: '22×',  lat: 'rect', ops: ['x,y', '-x,-y', '-x+1/2,y+1/2', 'x+1/2,-y+1/2'], asym: [[0, 0], [.5, 0], [.5, .5], [0, .5]], desc: 'perpendicular glide reflections and half-turns, no mirrors' },
+  cmm:  { orb: '2∗22', lat: 'rect', c: true, ops: ['x,y', '-x,-y', '-x,y', 'x,-y'], asym: [[0, 0], [.25, 0], [.25, .5], [0, .5]], desc: 'perpendicular mirrors, with further half-turns off the mirrors' },
+  p4:   { orb: '442',  lat: 'sq',   ops: P4, asym: [[0, 0], [.5, 0], [.5, .5], [0, .5]], desc: 'quarter-turns, no mirrors' },
+  p4m:  { orb: '∗442', lat: 'sq',   ops: [...P4, '-x,y', 'x,-y', 'y,x', '-y,-x'], asym: [[0, 0], [.5, .5], [0, .5]], desc: 'mirrors at 45°, quarter-turns on the mirrors', mirrors: 't45' },
+  p4g:  { orb: '4∗2',  lat: 'sq',   ops: [...P4, '-x+1/2,y+1/2', 'x+1/2,-y+1/2', 'y+1/2,x+1/2', '-y+1/2,-x+1/2'], asym: [[0, 0], [.5, 0], [0, .5]], desc: 'quarter-turns off the mirrors' },
+  p3:   { orb: '333',  lat: 'hex',  ops: P3, asym: [[0, 0], [.5, 0], [2 / 3, 1 / 3], [1 / 3, 2 / 3], [0, .5]], desc: 'third-turns, no mirrors' },
+  p3m1: { orb: '∗333', lat: 'hex',  ops: [...P3, '-y,-x', '-x+y,y', 'x,x-y'], asym: [[0, 0], [2 / 3, 1 / 3], [1 / 3, 2 / 3]], desc: 'third-turns, every centre on mirrors', mirrors: 't60' },
+  p31m: { orb: '3∗3',  lat: 'hex',  ops: [...P3, 'y,x', 'x-y,-y', '-x,-x+y'], asym: [[0, 0], [1, 0], [2 / 3, 1 / 3]], desc: 'third-turns, some centres off the mirrors' },
+  p6:   { orb: '632',  lat: 'hex',  ops: P6, asym: [[0, 0], [2 / 3, 1 / 3], [1 / 3, 2 / 3]], desc: 'sixth-turns, no mirrors' },
+  p6m:  { orb: '∗632', lat: 'hex',  ops: [...P6, '-y,-x', '-x+y,y', 'x,x-y', 'y,x', 'x-y,-y', '-x,-x+y'], asym: [[0, 0], [2 / 3, 1 / 3], [.5, .5]], desc: 'mirrors at 30°, sixth-turns on the mirrors', mirrors: 't30' },
+};
+// period examples, so a user can find a known pattern by its group
+const GROUP_EX = {
+  p3: { short: 'Gaudí’s hexagonal panot (1904)', text: 'Example: Gaudí’s hexagonal <i>panot</i> (designed 1904 for the Casa Batlló, laid in the Casa Milà; made by Escofet; since 1997 on the Passeig de Gràcia, Barcelona). Its figures, an ammonite, a starfish and a seaweed, are cut in thirds across the tiles and completed where three tiles meet (seven tiles are needed to read them), so the floor turns by thirds about three kinds of centre and has no mirrors: the ammonite and the seaweed are chiral. Mirrors cannot make it.' },
 };
 const LATNAME = { obl: 'oblique', rect: 'rectangular', sq: 'square', hex: 'hexagonal' };
 // Brewster's polycentral kaleidoscopes (1858 ed., ch. XIII, §§1–5) are exactly the mirror-only groups
@@ -745,7 +806,10 @@ function parseOp(str) {
 }
 const mul2 = (A, B) => [[A[0][0] * B[0][0] + A[0][1] * B[1][0], A[0][0] * B[0][1] + A[0][1] * B[1][1]],
                          [A[1][0] * B[0][0] + A[1][1] * B[1][0], A[1][0] * B[0][1] + A[1][1] * B[1][1]]];
-function effGroup() { const bc = BCELLS[S.bcell], g = GROUPS[bc.g]; return { key: bc.g, g, lat: bc.lat || g.lat, bc }; }
+function effGroup() {
+  if (S.method === 'brewster') { const bc = BCELLS[S.bcell], g = GROUPS[bc.g]; return { key: bc.g, g, lat: bc.lat || g.lat, bc }; }
+  const g = GROUPS[S.group]; return { key: S.group, g, lat: g.lat, bc: null };
+}
 function latBasis(lat) {
   switch (lat) {
     case 'sq': return [[1, 0], [0, 1]];
@@ -791,6 +855,66 @@ function symElements(G) {
     }
   }
   return { m, gl, cs };
+}
+/* ---------- symmetric ornaments: their centre, and snapping it onto a site of the group ----------
+   An ornament carries sym (its point group, e.g. 'D3', '≈C4') and sp = [x, y, axis]: the centre as fractions of its
+   width and height and the direction of one mirror line (degrees, image axes). On the sheet only the part inside the
+   shaded-free region (the asymmetric unit) is used; at a site of the group on that region's boundary the group
+   rebuilds the ornament from turned or mirrored copies of its slice, which close up without seams exactly when the
+   ornament's own symmetry contains the site's (see fitSites) and its centre and mirror lines lie on the site's. */
+function ornSym(o) {               // centre (sheet coords), mirror directions mod 180 (sheet degrees), label without ≈
+  const l = (o.sym || '').replace('≈', ''); if (!l || !o.sp) return null;
+  const f = o.flip ? -1 : 1, qx = (o.sp[0] - 0.5) * o.cw * o.s * f, qy = (o.sp[1] - 0.5) * o.ch * o.s;
+  const c = Math.cos(rad(o.rot)), sn = Math.sin(rad(o.rot));
+  const P = { x: o.x + qx * c - qy * sn, y: o.y + qx * sn + qy * c };
+  const n = symN(l), ax = [];
+  if (l[0] === 'D' && o.sp[2] != null) { const a0 = (o.flip ? 180 - o.sp[2] : o.sp[2]) + o.rot; for (let k = 0; k < Math.min(n, 12); k++) ax.push(((a0 + k * 180 / n) % 180 + 180) % 180); }
+  return { P, l, n, ax };
+}
+function latSites() {              // rotation centres and mirror lines lying on the asymmetric unit
+  const G = latGeom(), E = symElements(G), poly = G.asym, eps = 0.6;
+  const dSeg = (p, a, b) => { const vx = b.x - a.x, vy = b.y - a.y, t = Math.max(0, Math.min(1, ((p.x - a.x) * vx + (p.y - a.y) * vy) / (vx * vx + vy * vy)));
+    return Math.hypot(p.x - a.x - t * vx, p.y - a.y - t * vy); };
+  const onPoly = p => poly.some((a, i) => dSeg(p, a, poly[(i + 1) % poly.length]) < eps);
+  const mir = []; for (const ml of E.m) { const ang = ((deg(Math.atan2(ml.u.y, ml.u.x)) % 180) + 180) % 180;
+    if (!mir.some(q => Math.abs(q.ang - ang) < 0.01 && Math.abs((ml.p.x - q.p.x) * q.u.y - (ml.p.y - q.p.y) * q.u.x) < eps)) mir.push({ p: ml.p, u: ml.u, ang }); }
+  const onLine = (p, ml) => Math.abs((p.x - ml.p.x) * ml.u.y - (p.y - ml.p.y) * ml.u.x) < eps;
+  const pts = [];
+  for (const c of E.cs) { if (!onPoly(c.p)) continue;      // a centre of order 4 is also one of order 2: keep the highest
+    const same = pts.find(q => Math.hypot(q.p.x - c.p.x, q.p.y - c.p.y) < eps); if (same) { same.n = Math.max(same.n, c.n); continue; }
+    pts.push({ p: c.p, n: c.n }); }
+  for (const q of pts) { const ms = mir.filter(ml => onLine(q.p, ml)); q.H = (ms.length ? 'D' : 'C') + q.n; q.mirrors = ms.map(ml => ml.ang); }
+  const lines = mir.filter(ml => poly.some((a, i) => onLine(a, ml) && onLine(poly[(i + 1) % poly.length], ml)))
+    .map(ml => ({ ...ml, seg: poly.map((a, i) => [a, poly[(i + 1) % poly.length]]).filter(([a, b]) => onLine(a, ml) && onLine(b, ml)) }));
+  return { pts, lines, key: G.key };
+}
+const SITE_NAME = h => ({ C2: '◆ half-turn centre', C3: '▲ third-turn centre', C4: '■ quarter-turn centre', C6: '⬢ sixth-turn centre' }[h]
+  || (h === 'D1' ? 'mirror line' : h === 'D2' ? 'crossing of two mirrors' : `meeting of ${h.slice(1)} mirrors`));
+let snapNote = null;               // {p, text} while a drag is held on a site
+function snapOrn(o, tol) {         // move (and turn) o so its centre sits on the best fitting site within tol; returns the site
+  const os = ornSym(o); snapNote = null; if (!os) return null;
+  const sites = latSites(), cand = [];
+  for (const st of sites.pts) if (symContains(os.l, st.H)) cand.push({ st, q: st.p, d: Math.hypot(st.p.x - os.P.x, st.p.y - os.P.y), ord: symN(st.H) * (st.H[0] === 'D' ? 2 : 1) });
+  if (os.l[0] === 'D') for (const ml of sites.lines) for (const [a, b] of ml.seg) {
+    const vx = b.x - a.x, vy = b.y - a.y, t = Math.max(0.08, Math.min(0.92, ((os.P.x - a.x) * vx + (os.P.y - a.y) * vy) / (vx * vx + vy * vy)));
+    const q = { x: a.x + t * vx, y: a.y + t * vy }; cand.push({ st: { H: 'D1', mirrors: [ml.ang] }, q, d: Math.hypot(q.x - os.P.x, q.y - os.P.y), ord: 1 });
+  }
+  if (!cand.length) return null;
+  // within reach, the nearest wins; placed from the library (tol = ∞) the most symmetric site wins, then the nearest
+  const pool = cand.filter(c => c.d <= tol); if (!pool.length) return null;
+  const turn = st => {             // the nearest rotation that lays one of its mirror lines along one of the site's
+    if (!st.mirrors.length || !os.ax.length) return o.rot;
+    const step = 180 / Math.min(os.n, 12); let bestRot = o.rot, bd = 1e9;
+    for (const phi of st.mirrors) for (let k = -12; k <= 12; k++) {
+      const r = wrap180(o.rot + (phi - os.ax[0]) + k * step), dd = Math.abs(wrap180(r - o.rot)); if (dd < bd) { bd = dd; bestRot = r; } }
+    return bestRot;
+  };
+  for (const c of pool) { c.rot = turn(c.st); c.dr = Math.round(Math.abs(wrap180(c.rot - o.rot)) / 5); }
+  pool.sort((a, b) => tol === Infinity ? (b.ord - a.ord) || (a.dr - b.dr) || (a.d - b.d) : (a.d - b.d) || (a.dr - b.dr) || (b.ord - a.ord));
+  const best = pool[0]; o.rot = best.rot;
+  const P = ornSym(o).P; o.x += best.q.x - P.x; o.y += best.q.y - P.y;
+  snapNote = { p: best.q, text: `${o.sym} on a ${SITE_NAME(best.st.H)} (${best.st.H})` };
+  return best.st;
 }
 let BLK = document.createElement('canvas'), blkx = BLK.getContext('2d');
 function renderLattice(ctx) {
@@ -865,8 +989,14 @@ function drawSymOverlay(ctx, G) {
   ctx.restore();
 }
 function latStatus() {
-  const E = effGroup();
-  return { html: `<b>Brewster’s polycentral kaleidoscope</b>, ${E.bc.name} (${E.bc.sec}). Every edge of the cell is a mirror, so the reflections fill the plane without a seam, whatever the drawing. In today’s terms: wallpaper group <b>${E.key}</b> (${E.g.orb}), ${LATNAME[E.lat]} lattice.`, grp: `${E.key} · ${E.g.orb}` };
+  const E = effGroup(), g = E.g, gname = `<b>${E.key}</b> (${g.orb})`;
+  if (S.method === 'brewster') {
+    return { html: `<b>Brewster’s polycentral kaleidoscope</b>, ${E.bc.name} (${E.bc.sec}). Every edge of the cell is a mirror, so the reflections fill the plane without a seam, whatever the drawing. In today’s terms: wallpaper group ${gname}, ${LATNAME[E.lat]} lattice.`, grp: `${E.key} · ${g.orb}` };
+  }
+  const mo = g.mirrors ? `Built from mirrors alone: the same pattern as Brewster’s ${BCELLS[g.mirrors].name}.`
+    : `It needs ${/glide|turn/.test(g.desc) ? 'rotations or glide reflections' : 'translations along the mirrors'} that no arrangement of plane mirrors produces.`;
+  const ex = GROUP_EX[E.key] ? ` ${GROUP_EX[E.key].text}` : '';
+  return { html: `Wallpaper group ${gname}: ${g.desc}; ${LATNAME[E.lat]} lattice. ${mo}${ex}`, grp: `${E.key} · ${g.orb}` };
 }
 
 /* ---------- status ---------- */
@@ -916,6 +1046,15 @@ function redraw(srcChanged) {
 }
 
 /* ---------- controls ---------- */
+let wpFitKey = null;
+function wpFitHtml(grp) {
+  const st = SITES[grp] || [];
+  if (!st.length) return `Group ${grp} has no rotation centres or mirrors: any ornament, symmetric or not, repeats the same way.`;
+  const orn = LIB.filter(e => !e[4] && e[1] >= FIRST_PLATE);
+  const parts = st.map(h => { const k = orn.filter(e => fitSites(e[5], grp).includes(h)).length; return `${SITE_MARK[h]}: <b>${h}</b> (${k})`; });
+  return `To sit whole on a site, an ornament needs its symmetry: ${parts.join(' · ')}. Numbers = library ornaments that qualify. <a href="#" id="wpFitShow">Show them</a>`;
+}
+document.addEventListener('click', ev => { if (ev.target.id === 'wpFitShow') { ev.preventDefault(); targetSlot = -1; $('libSym').value = 'fit'; $('libKind').value = '0'; dlg.showModal(); showLib(); } });
 function syncControls() {
   $('alpha').value = S.alpha; $('alphaV').textContent = fmt(S.alpha) + '°';
   $('beta').value = wrap180(S.beta); $('betaV').textContent = Math.round(wrap180(S.beta)) + '°';
@@ -933,19 +1072,23 @@ function syncControls() {
   const lat = S.mode === 'lattice';
   document.querySelectorAll('#methSeg button').forEach(b => b.classList.toggle('on', b.dataset.k === S.method));
   document.querySelectorAll('#cellSeg button').forEach(b => b.classList.toggle('on', b.dataset.c === S.bcell));
-  $('verneuilCtl').hidden = S.method !== 'verneuil'; $('brewsterCtl').hidden = S.method !== 'brewster';
+  $('verneuilCtl').hidden = S.method !== 'verneuil'; $('brewsterCtl').hidden = S.method !== 'brewster'; $('wallCtl').hidden = S.method !== 'wallpaper';
   $('latCtl').hidden = !lat; $('seamLbl').hidden = lat; $('demo').hidden = S.mode !== 'hinge';
   if (lat) { const E = effGroup(); $('aspectRow').hidden = E.lat !== 'rect';
     $('cellSize').value = S.cell; $('cellSizeV').textContent = Math.round(S.cell);
     $('latTheta').value = wrap180(S.lt); $('latThetaV').textContent = Math.round(wrap180(S.lt)) + '°';
-    $('aspect').value = S.aspect; $('aspectV').textContent = S.aspect.toFixed(2); }
+    $('aspect').value = S.aspect; $('aspectV').textContent = S.aspect.toFixed(2); $('wpGroup').value = S.group;
+    $('wpExample').innerHTML = S.method === 'wallpaper' && GROUP_EX[S.group] ? GROUP_EX[S.group].short + ' belongs to this group.' : '';
+    $('panotRow').hidden = !(S.method === 'wallpaper' && S.group === 'p3');
+    if (S.method === 'wallpaper' && wpFitKey !== S.group) { wpFitKey = S.group; $('wpFit').innerHTML = wpFitHtml(S.group); } }
+  else $('panotRow').hidden = true;
   const M = METHODS[S.method], sub2 = S.method === 'verneuil' ? { hinge: 'hinged pair', parallel: 'parallel pair', single: 'single mirror' }[S.mode]
-    : BCELLS[S.bcell].name;
+    : S.method === 'brewster' ? BCELLS[S.bcell].name : S.group;
   const mc = $('methCite'); mc.style.setProperty('--mc', M.color);
   mc.innerHTML = `<b style="color:${M.color}">${M.label}</b> — ${M.short}.<span class="src">${M.cite}</span>` +
     ` <a data-help="h-methods">All sources</a>`;
   $('methBadge').innerHTML = chip(S.method, ' · ' + sub2);
-  $('resTitle').textContent = S.method === 'brewster' ? 'Seen in the kaleidoscope' : 'Seen in the mirrors';
+  $('resTitle').textContent = S.method === 'wallpaper' ? 'Generated by the group' : S.method === 'brewster' ? 'Seen in the kaleidoscope' : 'Seen in the mirrors';
 }
 function bindRange(id, fn, src) { $(id).addEventListener('input', e => { fn(+e.target.value); redraw(src); }); }
 bindRange('alpha', v => S.alpha = snapAlpha(v));
@@ -956,6 +1099,86 @@ bindRange('zoom', v => S.zoom = v);
 bindRange('cellSize', v => S.cell = v);
 bindRange('latTheta', v => S.lt = v);
 bindRange('aspect', v => S.aspect = v);
+for (const [grp, keys] of [['Oblique lattice', ['p1', 'p2']], ['Rectangular lattice', ['pm', 'pg', 'cm', 'pmm', 'pmg', 'pgg', 'cmm']],
+  ['Square lattice', ['p4', 'p4m', 'p4g']], ['Hexagonal lattice', ['p3', 'p3m1', 'p31m', 'p6', 'p6m']]]) {
+  const og = document.createElement('optgroup'); og.label = grp;
+  for (const k of keys) og.appendChild(new Option(`${k}  ·  ${GROUPS[k].orb}${GROUPS[k].mirrors ? '  · mirrors only' : ''}${GROUP_EX[k] ? '  · e.g. ' + GROUP_EX[k].short : ''}`, k));
+  $('wpGroup').appendChild(og);
+}
+/* ---------- Gaudí's panot (1904), redrawn: an ammonite, a brittle star and a seaweed, each a three-fold figure,
+   set on the three kinds of third-turn centre of p3. Drawn here from the description, not traced from the tile. ---------- */
+const PANOT = { ink: '#3d5446', mid: '#62806c', bg: '#a9bba8' };
+function tube(x, pts, wf) {           // filled band along a centre line, half-width wf(t)
+  const L = [], R = [], n = pts.length;
+  for (let i = 0; i < n; i++) {
+    const a = pts[Math.max(0, i - 1)], b = pts[Math.min(n - 1, i + 1)], dx = b.x - a.x, dy = b.y - a.y, d = Math.hypot(dx, dy) || 1, w = wf(i / (n - 1));
+    L.push({ x: pts[i].x - dy / d * w, y: pts[i].y + dx / d * w }); R.push({ x: pts[i].x + dy / d * w, y: pts[i].y - dx / d * w });
+  }
+  x.beginPath(); L.forEach((q, i) => i ? x.lineTo(q.x, q.y) : x.moveTo(q.x, q.y)); for (let i = n - 1; i >= 0; i--) x.lineTo(R[i].x, R[i].y); x.closePath(); x.fill();
+}
+function ammonite(x, r) {             // three interleaved whorls, ribbed, inside a knobbed rim
+  for (let k = 0; k < 3; k++) {
+    const pts = []; for (let i = 0; i <= 80; i++) { const t = i / 80, rho = r * (0.1 + 0.8 * t), ph = 2 * Math.PI * (1.05 * t + k / 3); pts.push({ x: rho * Math.cos(ph), y: rho * Math.sin(ph) }); }
+    x.fillStyle = PANOT.ink; tube(x, pts, t => r * 0.075 * (0.35 + t));
+    x.strokeStyle = PANOT.mid; x.lineWidth = r * 0.018;
+    for (let i = 8; i <= 80; i += 4) { const t = i / 80, rho = r * (0.1 + 0.8 * t), ph = 2 * Math.PI * (1.05 * t + k / 3), w = r * 0.075 * (0.35 + t) * 0.9;
+      x.beginPath(); x.moveTo((rho - w) * Math.cos(ph), (rho - w) * Math.sin(ph)); x.lineTo((rho + w) * Math.cos(ph + 0.05), (rho + w) * Math.sin(ph + 0.05)); x.stroke(); }
+  }
+  x.fillStyle = PANOT.ink; x.beginPath(); x.arc(0, 0, r * 0.1, 0, 7); x.fill();
+  for (let i = 0; i < 24; i++) { const a = 2 * Math.PI * i / 24; x.beginPath(); x.arc(r * 0.99 * Math.cos(a), r * 0.99 * Math.sin(a), r * (i % 2 ? 0.025 : 0.04), 0, 7); x.fill(); }
+}
+function brittleStar(x, r) {          // disc with six curling arms, long and shorter in turn (three-fold)
+  x.fillStyle = PANOT.ink;
+  for (let k = 0; k < 6; k++) {
+    const long = k % 2 === 0, len = r * (long ? 0.96 : 0.8), th = Math.PI * k / 3, bend = long ? 0.8 : 0.55, pts = [];
+    for (let i = 0; i <= 50; i++) { const t = i / 50, ph = th + bend * t * t; pts.push({ x: len * t * Math.cos(ph), y: len * t * Math.sin(ph) }); }
+    x.fillStyle = PANOT.ink; tube(x, pts, t => r * (long ? 0.105 : 0.09) * (1 - 0.8 * t));
+    x.fillStyle = PANOT.mid;
+    for (let i = 6; i < 48; i += 5) { const q = pts[i], a = pts[i + 1], dx = a.x - q.x, dy = a.y - q.y, d = Math.hypot(dx, dy), w = r * (long ? 0.105 : 0.09) * (1 - 0.8 * i / 50) + r * 0.035;
+      for (const sg of [1, -1]) { x.beginPath(); x.arc(q.x - sg * dy / d * w, q.y + sg * dx / d * w, r * 0.017, 0, 7); x.fill(); } }
+  }
+  x.fillStyle = PANOT.ink; x.beginPath(); x.arc(0, 0, r * 0.24, 0, 7); x.fill();
+  x.fillStyle = PANOT.mid; x.beginPath();
+  for (let k = 0; k < 3; k++) { const a = Math.PI / 2 + 2 * Math.PI * k / 3; x.moveTo(0, 0); x.arc(0, 0, r * 0.13, a - 0.35, a + 0.35); }
+  x.fill();
+}
+function seaweed(x, r) {              // three sargassum fronds: curved stems, alternate leaves, air bladders
+  for (let k = 0; k < 3; k++) {
+    const th = 2 * Math.PI * k / 3 + 0.4, pts = [];
+    for (let i = 0; i <= 60; i++) { const t = i / 60, ph = th + 0.9 * t; pts.push({ x: r * 0.95 * t * Math.cos(ph), y: r * 0.95 * t * Math.sin(ph) }); }
+    x.fillStyle = PANOT.ink; tube(x, pts, t => r * 0.035 * (1 - 0.6 * t));
+    for (let j = 1; j <= 7; j++) {
+      const i = Math.round(6 + j * 7), q = pts[Math.min(i, 59)], a = pts[Math.min(i + 1, 60)], dir0 = Math.atan2(a.y - q.y, a.x - q.x), sg = j % 2 ? 1 : -1, ln = r * (0.26 - 0.022 * j);
+      const ang = dir0 + sg * 0.9;
+      x.save(); x.translate(q.x, q.y); x.rotate(ang); x.fillStyle = j % 3 === 0 ? PANOT.mid : PANOT.ink;
+      x.beginPath(); x.ellipse(ln / 2, 0, ln / 2, ln * 0.2, 0, 0, 7); x.fill(); x.restore();
+    }
+    x.fillStyle = PANOT.ink; const e = pts[60];
+    for (const [dx, dy, rr] of [[0, 0, 0.06], [0.07, 0.05, 0.04], [-0.06, 0.06, 0.035]]) { x.beginPath(); x.arc(e.x + dx * r, e.y + dy * r, rr * r, 0, 7); x.fill(); }
+  }
+  x.beginPath(); x.arc(0, 0, r * 0.07, 0, 7); x.fill();
+}
+function panot() {
+  if (S.mode !== 'lattice') S.vmode = S.mode;
+  Object.assign(S, { method: 'wallpaper', mode: 'lattice', group: 'p3', lt: 0, cell: 300, zoom: 0.8, O: { x: 430, y: 270 } });
+  const k = S.cell, r = 0.28 * k, h = Math.sqrt(3) / 2;
+  // the three classes of third-turn centre of p3, relative to the lattice point O (lattice basis (k,0), (-k/2, k·√3/2))
+  // three separate ornaments, each drawn with three-fold symmetry (C3) about its own centre and set on one of the centres
+  const C = [{ f: brittleStar, x: 0, y: 0, name: 'starfish' }, { f: ammonite, x: k / 2, y: k * h / 3, name: 'ammonite' }, { f: seaweed, x: 0, y: 2 * k * h / 3, name: 'seaweed' }];
+  const Q = 2, R = Math.ceil(r * 1.12 * Q);
+  S.orn = C.map(m => {
+    const c = document.createElement('canvas'); c.width = c.height = 2 * R;
+    const x = c.getContext('2d'); x.lineCap = 'round'; x.setTransform(Q, 0, 0, Q, R, R); m.f(x, r);
+    return { n: 0, img: c, cx: 0, cy: 0, cw: c.width, ch: c.height, x: S.O.x + m.x, y: S.O.y + m.y, s: 1 / Q, rot: 0, flip: false, lib: null,
+      label: 'panot · ' + m.name, sym: 'C3', sp: [0.5, 0.5, null] };
+  });
+  S.sel = 0; targetSlot = -1; setTileBg(PANOT.bg); syncSnap();
+  renderSlots(); redraw(true);
+}
+$('panotBtn').onclick = panot;
+function syncSnap() { $('snapSym').checked = T.snapSym; }
+$('snapSym').onchange = e => { T.snapSym = e.target.checked; };
+$('wpGroup').onchange = e => { S.group = e.target.value; fitRegionToOrnament(); redraw(); };
 document.querySelectorAll('#cellSeg button').forEach(b => b.onclick = () => { S.bcell = b.dataset.c; fitRegionToOrnament(); redraw(); });
 function fitRegionToOrnament() {     // put the fundamental region over the selected ornament
   const o = S.orn[S.sel] || S.orn[0]; if (!o || S.mode !== 'lattice') return;
@@ -1006,7 +1229,7 @@ for (const { v, k } of K_ANG) {
    with copies turned 180°. Neighbours continue each other across a joint exactly when the rosette is
    symmetric about the perpendicular bisector of that joint, i.e. when the edge normals are mirror axes
    of the rosette: n even for squares, n a multiple of 3 for triangles and hexagons (α = 180°/n). */
-const T = { shape: 'hex', crop: 0.9, across: 7, joints: true, ratio: 0.3, border: false, before: null, shift: 0, vertical: false, bond: 'stack', bg: '#ffffff' };
+const T = { shape: 'hex', crop: 0.9, across: 7, joints: true, ratio: 0.3, border: false, before: null, shift: 0, vertical: false, bond: 'stack', bg: '#ffffff', snapSym: true };
 const SHAPES = {
   tri:    { k: 3, maxA: 220, label: 'triangles', show: 90 },   // show: screen direction given to one edge normal, so tiles sit level
   square: { k: 4, maxA: 445, label: 'squares', show: 0 },
@@ -1097,7 +1320,7 @@ function repeatsEveryD() {          // does the border inside the strip repeat a
   return n > 50 && inkPts > 0 && diff / inkPts < 0.06;
 }
 function tilesCompatible() {
-  if (S.mode === 'lattice') return latTileGeom().out ? { ok: false, why: 'latzoom' } : { ok: true, why: 'lat' };
+  if (S.mode === 'lattice') { const g0 = latTileGeom(); return g0.out ? { ok: false, why: 'latzoom' } : { ok: true, why: 'lat' }; }
   if (T.shape === 'rect') {
     if (S.mode === 'parallel') {
       if (2 * S.d * S.zoom > 890) return { ok: false, why: 'zoom' };
@@ -1274,7 +1497,9 @@ function captureTile() {
 function methodInfo() {
   const keys = [S.method]; let detail, sym;
   if (S.mode === 'lattice') {
-    const E = effGroup(); detail = `${E.bc.name} (Brewster, ch. XIII ${E.bc.sec}); group ${E.key}, ${E.g.orb}`; sym = E.key;
+    const E = effGroup();
+    if (S.method === 'brewster') { detail = `${E.bc.name} (Brewster, ch. XIII ${E.bc.sec}); group ${E.key}, ${E.g.orb}`; sym = E.key; }
+    else { detail = `wallpaper group ${E.key} (${E.g.orb}), ${LATNAME[E.lat]} lattice${E.g.mirrors ? '; mirrors only' : ''}`; sym = E.key; }
   } else if (S.mode === 'hinge') { const r = analyse(S.alpha);
     detail = `hinged pair at ${fmt(S.alpha)}°` + (r.closed ? ` (D${r.n})` : r.k ? ` (dial mark ${r.k}, seam)` : ' (seam)'); sym = r.closed ? `D${r.n}` : `${fmt(S.alpha)}°`; }
   else if (S.mode === 'parallel') { detail = `parallel pair, spacing ${Math.round(S.d)}`; sym = 'border'; }
@@ -1739,7 +1964,7 @@ if (inFrame) { ['cExpPng', 'cExpSvg', 'cExpSheet', 'cSaveProj'].forEach(id => $(
 
 /* ---------- saving from the mirror view, switching views, restoring ---------- */
 $('cSaveCur').onclick = () => { const d = captureTile(); cMsg(d ? `Saved “${d.name}”.` : 'Parallelogram cells (oblique lattice) cannot be used in Compose.', !d); };
-$('saveTile').onclick = () => { const d = captureTile(); $('saveTileMsg').textContent = d ? `Saved “${d.name}”: see the Compose tab.` : 'Not saved: the tile is larger than the mirror view. Lower the Zoom (or the Cell size, or the mirror spacing).'; };
+$('saveTile').onclick = () => { const d = captureTile(); $('saveTileMsg').textContent = d ? `Saved “${d.name}”: see the Compose tab.` : (latTileGeom && S.mode === 'lattice' && latTileGeom().latShape === 'para' && !latTileGeom().out ? 'Not saved: parallelogram cells (groups p1 and p2) cannot be saved as tiles in the Compose tab.' : 'Not saved: the tile is larger than the mirror view. Lower the Zoom (or the Cell size, or the mirror spacing).'); };
 function showView(v) {
   document.querySelectorAll('#viewTabs button').forEach(b => b.classList.toggle('on', b.dataset.v === v));
   $('mirrorView').hidden = v !== 'mirror'; $('composeView').hidden = v !== 'compose';
@@ -1760,7 +1985,7 @@ new ResizeObserver(() => cRender()).observe(board);
 
 /* ---------- slots ---------- */
 const MAX_ORN = 60;
-function ornLabel(o) { return o.lib ? o.lib.replace(/^p0?(\d+)_0?(\d+)$/, 'pl. $1 · #$2').replace(/^p0?(\d+)_frame$/, 'pl. $1 · frame').replace(/^p0?(\d+)_panel$/, 'pl. $1 · whole') : plateLabel(o.n).replace('Plate ', 'pl. '); }
+function ornLabel(o) { return o.label ? o.label : o.lib ? o.lib.replace(/^p0?(\d+)_0?(\d+)$/, 'pl. $1 · #$2').replace(/^p0?(\d+)_frame$/, 'pl. $1 · frame').replace(/^p0?(\d+)_panel$/, 'pl. $1 · whole') : plateLabel(o.n).replace('Plate ', 'pl. '); }
 function renderSlots() {
   const wrap = $('slots'); wrap.innerHTML = '';
   S.orn.forEach((o, i) => {
@@ -1786,36 +2011,113 @@ function renderSlots() {
   $('ornCount').textContent = S.orn.length ? `${S.orn.length} on the sheet` : '';
 }
 
+/* ---------- an ornament's own symmetry (point group), measured on its pixels ----------
+   The picture is reduced to ink (colour × opacity on white), centred on its centre of mass, and compared with
+   its own copies turned by 360°/n (n = 2…8) and reflected in lines through that centre (every 1°).
+   overlap(T) = Σ min(ink, ink∘T) / Σ ink, corrected for chance (dense all-over patterns overlap themselves at any
+   angle): s = (overlap − b)/(1 − b), b = median overlap under turns by 'meaningless' angles. Above SYM_T it counts.
+   Result: Cn (n-fold turns, no mirror) or Dn (n mirrors), C1 = no symmetry. Printed ornaments are never exact:
+   registration, hand drawing and the crop all lower the score, so the label is a measurement, not a proof. */
+const SYM_T = 0.38, SYM_CLEAR = 0.5;   // chance-corrected scale: 0 = what any turn gives, 1 = exact; between the two: approximate
+function symmetryOf(img) {
+  const M = 120, k = Math.min(1, M / Math.max(img.width, img.height)), w = Math.max(4, Math.round(img.width * k)), h = Math.max(4, Math.round(img.height * k));
+  const c = document.createElement('canvas'); c.width = w; c.height = h; const x = c.getContext('2d', { willReadFrequently: true });
+  x.drawImage(img, 0, 0, w, h); const d = x.getImageData(0, 0, w, h).data, n = w * h;
+  const A = new Float32Array(n * 3); let tot = 0, mx = 0, my = 0;
+  for (let i = 0; i < n; i++) { const a = d[4 * i + 3] / 255;
+    for (let q = 0; q < 3; q++) { const v = (255 - d[4 * i + q]) * a; A[3 * i + q] = v; tot += v; mx += v * (i % w); my += v * Math.floor(i / w); } }
+  if (tot < 1) return { label: 'C1', n: 1, m: 0, score: 0, axes: [] };
+  const cx = mx / tot, cy = my / tot;
+  const over = (a, b, c2, d2) => {          // overlap under p ↦ [a b; c d](p − centre) + centre
+    let s2 = 0;
+    for (let y = 0; y < h; y++) for (let X = 0; X < w; X++) {
+      const i = y * w + X, u = X - cx, v = y - cy, sx = Math.round(cx + a * u + b * v), sy = Math.round(cy + c2 * u + d2 * v);
+      if (sx < 0 || sy < 0 || sx >= w || sy >= h) continue;
+      const j = sy * w + sx; for (let q = 0; q < 3; q++) s2 += Math.min(A[3 * i + q], A[3 * j + q]);
+    }
+    return s2 / tot;
+  };
+  // chance level for this picture: turns by angles that no ornament symmetry uses
+  const offs = [17, 33, 79, 139, 163, 199, 241, 283].map(t => { const f = t * Math.PI / 180; return over(Math.cos(f), -Math.sin(f), Math.sin(f), Math.cos(f)); }).sort((p2, q) => p2 - q);
+  const base = offs[Math.floor(offs.length / 2)], norm = v => (v - base) / Math.max(1e-6, 1 - base);
+  const rot = {}; let nmax = 1;
+  for (const r of [2, 3, 4, 5, 6, 8]) { const t = 2 * Math.PI / r; rot[r] = norm(over(Math.cos(t), -Math.sin(t), Math.sin(t), Math.cos(t))); }
+  for (const r of [8, 6, 5, 4, 3, 2]) if (rot[r] >= SYM_T && (r % 2 || rot[2] >= SYM_T * 0.8)) { nmax = r; break; }
+  const mir = [];
+  for (let t = 0; t < 180; t++) { const f = 2 * t * Math.PI / 180; mir.push(norm(over(Math.cos(f), Math.sin(f), Math.sin(f), -Math.cos(f)))); }
+  const axes = [];
+  for (let t = 0; t < 180; t++) { const v = mir[t]; if (v >= SYM_T && v >= mir[(t + 179) % 180] && v >= mir[(t + 1) % 180] && !axes.some(a2 => Math.min(Math.abs(a2 - t), 180 - Math.abs(a2 - t)) < 12)) axes.push(t); }
+  axes.sort((p2, q) => mir[q] - mir[p2]);
+  let m = axes.length, label;
+  if (m >= 2) { m = Math.max(m, nmax); label = 'D' + m; }
+  else if (m === 1) label = nmax >= 2 ? 'D' + nmax : 'D1';
+  else label = 'C' + nmax;
+  const score = Math.max(nmax > 1 ? rot[nmax] : 0, axes.length ? mir[axes[0]] : 0);
+  const bm = Math.max(...mir);
+  const sp = [+(cx / w).toFixed(4), +(cy / h).toFixed(4), axes.length ? axes[0] : null];
+  return { label, sp, approx: label !== 'C1' && score < SYM_CLEAR, n: nmax, m: axes.length, score: +score.toFixed(3), axes: axes.map(t => (180 - t) % 180), best: { mir: bm, mirAt: (180 - mir.indexOf(bm)) % 180, rot, base } };
+}
+const SYMTXT = l0 => { const ap = l0[0] === '≈', l = ap ? l0.slice(1) : l0 || 'C1';
+  const t = l === 'C1' ? 'no symmetry' : l === 'D1' ? 'one mirror line' : l === 'C∞' ? 'a ring: turns by any angle, no mirror' : l[0] === 'D' ? `${l.slice(1)} mirror lines and ${l.slice(1)}-fold turns` : `${l.slice(1)}-fold turns, no mirror`;
+  return (ap ? 'roughly: ' : '') + t + ' (' + l + ')'; };
+/* Which ornaments sit whole on a site of a wallpaper group. At a point whose stabiliser is H (a rotation centre
+   of order n, a point of a mirror, a crossing of mirrors) the group lays |H| copies of the ornament on top of each
+   other; they coincide only if the ornament's own symmetry contains H. Anywhere else (a general position) any
+   ornament works, the copies being apart. Sites: the point groups of the special positions in the International Tables. */
+const SITES = { p1: [], p2: ['C2'], pm: ['D1'], pg: [], cm: ['D1'], pmm: ['D2', 'D1'], pmg: ['C2', 'D1'], pgg: ['C2'],
+  cmm: ['D2', 'C2', 'D1'], p4: ['C4', 'C2'], p4m: ['D4', 'D2', 'D1'], p4g: ['C4', 'D2', 'D1'], p3: ['C3'],
+  p3m1: ['D3', 'D1'], p31m: ['D3', 'C3', 'D1'], p6: ['C6', 'C3', 'C2'], p6m: ['D6', 'D3', 'D2', 'D1'] };
+const SITE_MARK = { C2: '◆ half-turn centre', C3: '▲ third-turn centre', C4: '■ quarter-turn centre', C6: '⬢ sixth-turn centre',
+  D1: 'mirror line', D2: 'crossing of two mirrors', D3: 'meeting of three mirrors', D4: 'meeting of four mirrors', D6: 'meeting of six mirrors' };
+const symN = l => l.slice(1) === '∞' ? Infinity : +l.slice(1);
+function symContains(g, h) {           // does point group g (Cn / Dn / C∞, a ring) contain h?
+  const gn = symN(g), hn = symN(h);
+  if (gn === Infinity) return h[0] === 'C' || g[0] === 'D';
+  if (h[0] === 'C') return gn % hn === 0;
+  return g[0] === 'D' && gn % hn === 0;
+}
+const fitSites = (l0, grp) => { const l = (l0 || '').replace('≈', '') || 'C1'; return l === 'C1' ? [] : (SITES[grp] || []).filter(h => symContains(l, h)); };
+
 /* ---------- ornament library (segmented from all plates by segment_ornaments_v2.py) ---------- */
-// [id, plate, width, height, kind]: kind 0 = ornament, 1 = the whole printed frame, 2 = the whole plate, uncut
-const LIB = [["p03_01",3,820,137,0],["p03_02",3,820,211,0],["p03_03",3,410,410,0],["p03_04",3,291,820,0],["p03_05",3,291,820,0],["p03_06",3,820,630,0],["p03_07",3,186,271,0],["p03_frame",3,820,696,1],["p03_panel",3,820,696,2],["p04_01",4,289,820,0],["p04_02",4,682,820,0],["p04_03",4,552,820,0],["p04_04",4,555,569,0],["p04_05",4,472,495,0],["p04_frame",4,820,691,1],["p04_panel",4,820,691,2],["p05_01",5,820,364,0],["p05_02",5,220,820,0],["p05_03",5,820,155,0],["p05_04",5,820,384,0],["p05_frame",5,820,695,1],["p05_panel",5,820,695,2],["p06_01",6,820,719,0],["p06_02",6,820,739,0],["p06_frame",6,820,704,1],["p06_panel",6,820,704,2],["p07_01",7,371,384,0],["p07_02",7,820,390,0],["p07_03",7,820,640,0],["p07_04",7,820,553,0],["p07_05",7,816,820,0],["p07_06",7,273,820,0],["p07_07",7,805,820,0],["p07_frame",7,820,698,1],["p07_panel",7,820,698,2],["p08_01",8,820,658,0],["p08_02",8,820,661,0],["p08_03",8,820,349,0],["p08_frame",8,820,698,1],["p08_panel",8,820,698,2],["p09_01",9,754,820,0],["p09_02",9,820,761,0],["p09_03",9,363,336,0],["p09_04",9,820,794,0],["p09_05",9,618,820,0],["p09_06",9,354,569,0],["p09_frame",9,820,697,1],["p09_panel",9,820,697,2],["p10_01",10,820,820,0],["p10_02",10,281,820,0],["p10_03",10,374,820,0],["p10_04",10,531,820,0],["p10_05",10,751,719,0],["p10_frame",10,820,698,1],["p10_panel",10,820,698,2],["p11_01",11,820,696,0],["p11_02",11,333,761,0],["p11_03",11,820,685,0],["p11_04",11,820,238,0],["p11_05",11,535,545,0],["p11_06",11,820,246,0],["p11_07",11,820,706,0],["p11_08",11,820,673,0],["p11_09",11,346,792,0],["p11_frame",11,820,700,1],["p11_panel",11,820,700,2],["p12_01",12,649,820,0],["p12_02",12,475,820,0],["p12_03",12,820,781,0],["p12_04",12,435,820,0],["p12_frame",12,820,756,1],["p12_panel",12,820,756,2],["p13_01",13,722,820,0],["p13_02",13,747,820,0],["p13_03",13,813,820,0],["p13_04",13,820,733,0],["p13_05",13,820,726,0],["p13_frame",13,820,695,1],["p13_panel",13,820,695,2],["p14_01",14,820,716,0],["p14_frame",14,820,697,1],["p14_panel",14,820,697,2],["p15_01",15,793,820,0],["p15_02",15,533,620,0],["p15_03",15,820,793,0],["p15_04",15,454,359,0],["p15_05",15,234,239,0],["p15_frame",15,820,694,1],["p15_panel",15,820,694,2],["p16_01",16,820,674,0],["p16_frame",16,820,696,1],["p16_panel",16,820,696,2],["p17_01",17,729,702,0],["p17_02",17,820,545,0],["p17_03",17,716,688,0],["p17_04",17,820,266,0],["p17_05",17,342,250,0],["p17_06",17,820,242,0],["p17_07",17,820,342,0],["p17_frame",17,820,669,1],["p17_panel",17,820,669,2],["p18_01",18,628,820,0],["p18_02",18,820,684,0],["p18_03",18,786,820,0],["p18_frame",18,820,700,1],["p18_panel",18,820,700,2],["p19_01",19,820,534,0],["p19_02",19,257,820,0],["p19_03",19,808,820,0],["p19_04",19,816,820,0],["p19_frame",19,820,700,1],["p19_panel",19,820,700,2],["p20_01",20,820,690,0],["p20_frame",20,820,698,1],["p20_panel",20,820,698,2],["p21_01",21,820,568,0],["p21_02",21,820,703,0],["p21_03",21,774,787,0],["p21_04",21,760,773,0],["p21_05",21,741,741,0],["p21_06",21,207,617,0],["p21_frame",21,820,691,1],["p21_panel",21,820,691,2],["p22_01",22,820,203,0],["p22_02",22,501,505,0],["p22_03",22,820,341,0],["p22_04",22,820,235,0],["p22_05",22,506,501,0],["p22_frame",22,820,697,1],["p22_panel",22,820,697,2],["p23_01",23,820,820,0],["p23_02",23,313,820,0],["p23_03",23,793,820,0],["p23_04",23,820,800,0],["p23_05",23,803,820,0],["p23_frame",23,820,698,1],["p23_panel",23,820,698,2],["p24_01",24,820,685,0],["p24_02",24,707,820,0],["p24_frame",24,820,701,1],["p24_panel",24,820,701,2],["p25_01",25,274,820,0],["p25_02",25,820,576,0],["p25_03",25,820,340,0],["p25_frame",25,820,695,1],["p25_panel",25,820,695,2],["p26_01",26,820,495,0],["p26_02",26,166,820,0],["p26_03",26,173,820,0],["p26_04",26,430,430,0],["p26_05",26,425,435,0],["p26_06",26,820,499,0],["p26_frame",26,820,701,1],["p26_panel",26,820,701,2],["p27_01",27,820,693,0],["p27_frame",27,820,692,1],["p27_panel",27,820,692,2],["p28_01",28,222,820,0],["p28_02",28,820,369,0],["p28_03",28,820,444,0],["p28_frame",28,820,697,1],["p28_panel",28,820,697,2],["p29_01",29,699,820,0],["p29_02",29,310,820,0],["p29_03",29,820,333,0],["p29_04",29,784,820,0],["p29_frame",29,820,698,1],["p29_panel",29,820,698,2],["p30_01",30,820,366,0],["p30_02",30,485,820,0],["p30_03",30,736,820,0],["p30_04",30,432,820,0],["p30_05",30,237,820,0],["p30_06",30,525,820,0],["p30_frame",30,820,706,1],["p30_panel",30,820,706,2],["p31_01",31,820,704,0],["p31_02",31,820,525,0],["p31_frame",31,820,701,1],["p31_panel",31,820,701,2],["p32_01",32,820,175,0],["p32_02",32,820,179,0],["p32_03",32,820,507,0],["p32_04",32,820,539,0],["p32_05",32,820,477,0],["p32_06",32,343,820,0],["p32_frame",32,820,695,1],["p32_panel",32,820,695,2],["p33_01",33,434,325,0],["p33_02",33,710,820,0],["p33_03",33,818,240,0],["p33_04",33,623,820,0],["p33_05",33,208,388,0],["p33_06",33,161,820,0],["p33_07",33,746,710,0],["p33_08",33,614,820,0],["p33_frame",33,820,695,1],["p33_panel",33,820,695,2],["p34_01",34,406,820,0],["p34_02",34,574,596,0],["p34_03",34,601,623,0],["p34_04",34,339,820,0],["p34_05",34,398,820,0],["p34_frame",34,820,696,1],["p34_panel",34,820,696,2],["p35_01",35,329,820,0],["p35_02",35,560,820,0],["p35_03",35,344,820,0],["p35_04",35,568,752,0],["p35_05",35,733,760,0],["p35_frame",35,820,705,1],["p35_panel",35,820,705,2],["p36_01",36,820,693,0],["p36_02",36,356,820,0],["p36_03",36,432,820,0],["p36_04",36,650,820,0],["p36_frame",36,820,709,1],["p36_panel",36,820,709,2],["p37_01",37,415,820,0],["p37_02",37,413,820,0],["p37_03",37,820,650,0],["p37_04",37,283,724,0],["p37_05",37,292,180,0],["p37_06",37,820,356,0],["p37_07",37,162,193,0],["p37_08",37,167,184,0],["p37_09",37,166,202,0],["p37_10",37,166,203,0],["p37_11",37,252,193,0],["p37_frame",37,820,706,1],["p37_panel",37,820,706,2],["p38_01",38,820,568,0],["p38_02",38,536,820,0],["p38_03",38,247,820,0],["p38_04",38,820,425,0],["p38_frame",38,820,694,1],["p38_panel",38,820,694,2],["p39_01",39,820,803,0],["p39_02",39,818,732,0],["p39_03",39,820,486,0],["p39_04",39,820,619,0],["p39_05",39,820,545,0],["p39_frame",39,820,704,1],["p39_panel",39,820,704,2],["p40_01",40,771,820,0],["p40_02",40,801,224,0],["p40_03",40,808,820,0],["p40_04",40,706,243,0],["p40_05",40,644,820,0],["p40_06",40,820,282,0],["p40_07",40,820,296,0],["p40_08",40,820,365,0],["p40_09",40,820,294,0],["p40_10",40,706,298,0],["p40_11",40,820,323,0],["p40_12",40,820,369,0],["p40_13",40,706,278,0],["p40_frame",40,820,699,1],["p40_panel",40,820,699,2],["p41_01",41,820,79,0],["p41_02",41,690,562,0],["p41_03",41,690,576,0],["p41_04",41,820,627,0],["p41_05",41,308,820,0],["p41_06",41,820,194,0],["p41_07",41,283,274,0],["p41_frame",41,820,695,1],["p41_panel",41,820,695,2],["p42_01",42,541,820,0],["p42_02",42,820,820,0],["p42_03",42,585,820,0],["p42_04",42,820,650,0],["p42_frame",42,820,713,1],["p42_panel",42,820,713,2],["p43_01",43,820,329,0],["p43_02",43,820,796,0],["p43_03",43,486,820,0],["p43_frame",43,820,697,1],["p43_panel",43,820,697,2],["p44_01",44,820,614,0],["p44_02",44,820,799,0],["p44_03",44,615,820,0],["p44_frame",44,820,698,1],["p44_panel",44,820,698,2],["p45_01",45,555,820,0],["p45_02",45,626,521,0],["p45_03",45,704,649,0],["p45_04",45,461,315,0],["p45_05",45,820,569,0],["p45_06",45,754,758,0],["p45_frame",45,820,691,1],["p45_panel",45,820,691,2],["p46_01",46,288,820,0],["p46_02",46,820,167,0],["p46_03",46,735,820,0],["p46_04",46,223,820,0],["p46_frame",46,820,698,1],["p46_panel",46,820,698,2],["p47_01",47,706,820,0],["p47_02",47,803,758,0],["p47_03",47,240,820,0],["p47_frame",47,820,700,1],["p47_panel",47,820,700,2],["p48_01",48,383,820,0],["p48_02",48,820,782,0],["p48_03",48,506,629,0],["p48_04",48,820,449,0],["p48_frame",48,820,699,1],["p48_panel",48,820,699,2],["p49_01",49,436,820,0],["p49_02",49,414,820,0],["p49_03",49,817,820,0],["p49_frame",49,820,696,1],["p49_panel",49,820,696,2],["p50_01",50,820,591,0],["p50_02",50,526,820,0],["p50_03",50,583,820,0],["p50_04",50,820,368,0],["p50_frame",50,820,698,1],["p50_panel",50,820,698,2],["p51_01",51,820,552,0],["p51_02",51,820,534,0],["p51_03",51,599,820,0],["p51_04",51,547,820,0],["p51_05",51,745,817,0],["p51_frame",51,820,693,1],["p51_panel",51,820,693,2],["p52_01",52,764,820,0],["p52_02",52,417,806,0],["p52_03",52,773,820,0],["p52_04",52,619,503,0],["p52_05",52,820,737,0],["p52_06",52,820,761,0],["p52_frame",52,820,697,1],["p52_panel",52,820,697,2],["p53_01",53,787,820,0],["p53_02",53,820,612,0],["p53_03",53,163,163,0],["p53_04",53,524,365,0],["p53_05",53,370,740,0],["p53_06",53,443,649,0],["p53_07",53,631,771,0],["p53_08",53,442,447,0],["p53_frame",53,820,699,1],["p53_panel",53,820,699,2],["p54_01",54,820,586,0],["p54_02",54,260,820,0],["p54_03",54,820,171,0],["p54_frame",54,820,731,1],["p54_panel",54,820,731,2],["p55_01",55,249,820,0],["p55_02",55,310,820,0],["p55_03",55,820,670,0],["p55_04",55,820,257,0],["p55_05",55,514,524,0],["p55_frame",55,820,699,1],["p55_panel",55,820,699,2],["p56_01",56,820,382,0],["p56_02",56,621,322,0],["p56_03",56,540,290,0],["p56_04",56,820,267,0],["p56_05",56,608,458,0],["p56_06",56,820,174,0],["p56_frame",56,820,694,1],["p56_panel",56,820,694,2],["p57_01",57,119,92,0],["p57_02",57,622,636,0],["p57_03",57,763,820,0],["p57_04",57,435,820,0],["p57_05",57,818,820,0],["p57_06",57,610,820,0],["p57_07",57,466,416,0],["p57_frame",57,820,697,1],["p57_panel",57,820,697,2],["p58_01",58,820,536,0],["p58_02",58,820,635,0],["p58_03",58,820,535,0],["p58_04",58,728,732,0],["p58_05",58,724,732,0],["p58_frame",58,820,695,1],["p58_panel",58,820,695,2],["p59_01",59,820,481,0],["p59_02",59,820,217,0],["p59_03",59,820,664,0],["p59_04",59,820,669,0],["p59_frame",59,820,699,1],["p59_panel",59,820,699,2],["p60_01",60,820,655,0],["p60_frame",60,820,686,1],["p60_panel",60,820,686,2]];
+// [id, plate, width, height, kind, symmetry]: kind 0 = ornament, 1 = the whole printed frame, 2 = the whole plate, uncut;
+// symmetry = the ornament's point group measured by symmetryOf() and then checked by eye ('' = none, '≈' = approximate);
+// labels were corrected by hand after review (wavy borders, scattered sprays, faint line drawings);
+// symmetric entries end with [x, y, axis]: the symmetry centre as fractions of width and height, and the direction of one
+// mirror line in degrees (image axes, y down; null for pure turns), each fitted by search for the best overlap
+const LIB = [["p03_01",3,820,137,0,""],["p03_02",3,820,211,0,""],["p03_03",3,410,410,0,""],["p03_04",3,291,820,0,""],["p03_05",3,291,820,0,""],["p03_06",3,820,630,0,""],["p03_07",3,186,271,0,""],["p03_frame",3,820,696,1,""],["p03_panel",3,820,696,2,""],["p04_01",4,289,820,0,"≈D1",[0.4829,0.4273,89.0]],["p04_02",4,682,820,0,""],["p04_03",4,552,820,0,""],["p04_04",4,555,569,0,""],["p04_05",4,472,495,0,"D1",[0.4776,0.4836,95.0]],["p04_frame",4,820,691,1,""],["p04_panel",4,820,691,2,""],["p05_01",5,820,364,0,""],["p05_02",5,220,820,0,""],["p05_03",5,820,155,0,""],["p05_04",5,820,384,0,"D1",[0.4974,0.5357,89.0]],["p05_frame",5,820,695,1,""],["p05_panel",5,820,695,2,""],["p06_01",6,820,719,0,""],["p06_02",6,820,739,0,"D3",[0.5044,0.6222,92.5]],["p06_frame",6,820,704,1,""],["p06_panel",6,820,704,2,""],["p07_01",7,371,384,0,""],["p07_02",7,820,390,0,""],["p07_03",7,798,531,0,"≈D1",[0.4215,0.5617,89.5]],["p07_04",7,820,553,0,"≈D1",[0.5609,0.5688,89.5]],["p07_05",7,816,820,0,""],["p07_06",7,273,820,0,""],["p07_07",7,805,820,0,""],["p07_frame",7,820,698,1,""],["p07_panel",7,820,698,2,""],["p08_01",8,820,658,0,""],["p08_02",8,820,661,0,""],["p08_03",8,754,313,0,"D2",[0.4962,0.4926,90.0]],["p08_frame",8,820,698,1,""],["p08_panel",8,820,698,2,""],["p09_01",9,754,820,0,""],["p09_02",9,820,761,0,"D3",[0.4909,0.4009,90.5]],["p09_03",9,363,336,0,"D3",[0.4903,0.5378,30.5]],["p09_04",9,820,794,0,""],["p09_05",9,618,820,0,"D1",[0.4894,0.5408,90.0]],["p09_06",9,354,569,0,""],["p09_frame",9,820,697,1,""],["p09_panel",9,820,697,2,""],["p10_01",10,820,820,0,""],["p10_02",10,281,820,0,""],["p10_03",10,374,820,0,""],["p10_04",10,531,820,0,""],["p10_05",10,751,719,0,""],["p10_frame",10,820,698,1,""],["p10_panel",10,820,698,2,""],["p11_01",11,820,696,0,"D1",[0.4917,0.5656,90.5]],["p11_02",11,333,761,0,""],["p11_03",11,820,685,0,"D1",[0.4869,0.4825,90.5]],["p11_04",11,820,238,0,""],["p11_05",11,535,545,0,"C4",[0.4887,0.4909,null]],["p11_06",11,820,246,0,"D1",[0.4801,0.4472,90.5]],["p11_07",11,820,706,0,"D1",[0.4974,0.4326,90.5]],["p11_08",11,820,673,0,"D1",[0.4924,0.4731,89.5]],["p11_09",11,346,792,0,"D1",[0.4742,0.4857,90.0]],["p11_frame",11,820,700,1,""],["p11_panel",11,820,700,2,""],["p12_01",12,649,820,0,""],["p12_02",12,475,820,0,""],["p12_03",12,820,781,0,""],["p12_04",12,435,820,0,""],["p12_frame",12,820,756,1,""],["p12_panel",12,820,756,2,""],["p13_01",13,722,820,0,""],["p13_02",13,747,820,0,""],["p13_03",13,813,820,0,"≈C4",[0.4906,0.4951,null]],["p13_04",13,820,733,0,""],["p13_05",13,820,726,0,""],["p13_frame",13,820,695,1,""],["p13_panel",13,820,695,2,""],["p14_01",14,820,716,0,""],["p14_frame",14,820,697,1,""],["p14_panel",14,820,697,2,""],["p15_01",15,793,820,0,""],["p15_02",15,533,620,0,"D1",[0.4829,0.4985,91.0]],["p15_03",15,820,793,0,""],["p15_04",15,454,359,0,""],["p15_05",15,234,239,0,""],["p15_frame",15,820,694,1,""],["p15_panel",15,820,694,2,""],["p16_01",16,820,674,0,"≈D1",[0.4972,0.5491,89.5]],["p16_frame",16,820,696,1,""],["p16_panel",16,820,696,2,""],["p17_01",17,729,702,0,""],["p17_02",17,820,545,0,"D1",[0.4842,0.5489,90.0]],["p17_03",17,716,688,0,"≈D1",[0.4856,0.4901,89.5]],["p17_04",17,820,266,0,""],["p17_05",17,342,250,0,"D1",[0.4804,0.3197,89.0]],["p17_06",17,820,242,0,""],["p17_07",17,820,342,0,""],["p17_frame",17,820,669,1,""],["p17_panel",17,820,669,2,""],["p18_01",18,628,820,0,""],["p18_02",18,820,684,0,""],["p18_03",18,786,820,0,""],["p18_frame",18,820,700,1,""],["p18_panel",18,820,700,2,""],["p19_01",19,820,534,0,""],["p19_02",19,238,800,0,"D1",[0.4813,0.4138,90.0]],["p19_03",19,808,820,0,"≈C4",[0.4905,0.4962,null]],["p19_04",19,816,820,0,"≈C4",[0.4866,0.4954,null]],["p19_frame",19,820,700,1,""],["p19_panel",19,820,700,2,""],["p20_01",20,820,690,0,""],["p20_frame",20,820,698,1,""],["p20_panel",20,820,698,2,""],["p21_01",21,820,568,0,"D1",[0.4881,0.4669,89.5]],["p21_02",21,820,703,0,""],["p21_03",21,774,787,0,""],["p21_04",21,760,773,0,""],["p21_05",21,741,741,0,"≈D1",[0.4992,0.4861,87]],["p21_06",21,207,617,0,""],["p21_frame",21,820,691,1,""],["p21_panel",21,820,691,2,""],["p22_01",22,813,194,0,""],["p22_02",22,501,505,0,""],["p22_03",22,765,309,0,"≈D1",[0.453,0.4896,0.0]],["p22_04",22,814,213,0,""],["p22_05",22,506,501,0,""],["p22_frame",22,820,697,1,""],["p22_panel",22,820,697,2,""],["p23_01",23,820,820,0,""],["p23_02",23,313,820,0,"D1",[0.484,0.4921,0.0]],["p23_03",23,793,820,0,""],["p23_04",23,820,800,0,""],["p23_05",23,803,820,0,""],["p23_frame",23,820,698,1,""],["p23_panel",23,820,698,2,""],["p24_01",24,820,685,0,""],["p24_02",24,707,820,0,""],["p24_frame",24,820,701,1,""],["p24_panel",24,820,701,2,""],["p25_01",25,274,820,0,"D1",[0.6299,0.5592,90]],["p25_02",25,820,576,0,""],["p25_03",25,820,340,0,"≈D1",[0.4757,0.4902,90.0]],["p25_frame",25,820,695,1,""],["p25_panel",25,820,695,2,""],["p26_01",26,820,495,0,"≈D1",[0.4915,0.4377,90]],["p26_02",26,166,820,0,""],["p26_03",26,173,820,0,""],["p26_04",26,430,430,0,"≈D1",[0.3587,0.6181,135.5]],["p26_05",26,425,435,0,""],["p26_06",26,820,499,0,"≈D1",[0.49,0.557,90.0]],["p26_frame",26,820,701,1,""],["p26_panel",26,820,701,2,""],["p27_01",27,820,693,0,""],["p27_frame",27,820,692,1,""],["p27_panel",27,820,692,2,""],["p28_01",28,222,820,0,"D1",[0.4632,0.484,90.0]],["p28_02",28,820,369,0,"D1",[0.49,0.4886,90.0]],["p28_03",28,820,444,0,""],["p28_frame",28,820,697,1,""],["p28_panel",28,820,697,2,""],["p29_01",29,695,817,0,""],["p29_02",29,310,820,0,"≈D1",[0.5247,0.5279,90.5]],["p29_03",29,820,333,0,""],["p29_04",29,784,820,0,""],["p29_frame",29,820,698,1,""],["p29_panel",29,820,698,2,""],["p30_01",30,820,366,0,""],["p30_02",30,485,820,0,""],["p30_03",30,736,820,0,""],["p30_04",30,432,820,0,""],["p30_05",30,237,820,0,""],["p30_06",30,525,820,0,"D1",[0.4837,0.5718,89.5]],["p30_frame",30,820,706,1,""],["p30_panel",30,820,706,2,""],["p31_01",31,820,704,0,"≈D1",[0.4962,0.5246,89.5]],["p31_02",31,820,525,0,""],["p31_frame",31,820,701,1,""],["p31_panel",31,820,701,2,""],["p32_01",32,820,175,0,""],["p32_02",32,820,179,0,"D1",[0.4888,0.4251,179.5]],["p32_03",32,820,507,0,"≈D1",[0.4943,0.4327,90.0]],["p32_04",32,820,539,0,"D1",[0.4878,0.3415,90.0]],["p32_05",32,820,477,0,""],["p32_06",32,343,820,0,""],["p32_frame",32,820,695,1,""],["p32_panel",32,820,695,2,""],["p33_01",33,434,325,0,""],["p33_02",33,710,820,0,""],["p33_03",33,818,240,0,"D1",[0.4866,0.3448,89.5]],["p33_04",33,623,820,0,""],["p33_05",33,208,388,0,"D1",[0.4774,0.4495,90.0]],["p33_06",33,161,820,0,"D1",[0.4476,0.4684,90.5]],["p33_07",33,746,710,0,""],["p33_08",33,614,820,0,"D1",[0.4893,0.3756,90.0]],["p33_frame",33,820,695,1,""],["p33_panel",33,820,695,2,""],["p34_01",34,406,820,0,"D1",[0.4836,0.5364,90.0]],["p34_02",34,574,596,0,""],["p34_03",34,601,623,0,""],["p34_04",34,339,820,0,"D1",[0.4798,0.543,90.0]],["p34_05",34,398,820,0,""],["p34_frame",34,820,696,1,""],["p34_panel",34,820,696,2,""],["p35_01",35,329,820,0,"D1",[0.4809,0.5031,90.5]],["p35_02",35,560,820,0,"D1",[0.4881,0.4677,90.5]],["p35_03",35,344,820,0,""],["p35_04",35,568,752,0,"D1",[0.5323,0.505,179.5]],["p35_05",35,733,760,0,"≈C∞",[0.4954,0.4955,null]],["p35_frame",35,820,705,1,""],["p35_panel",35,820,705,2,""],["p36_01",36,820,693,0,""],["p36_02",36,356,820,0,""],["p36_03",36,432,820,0,"≈D1",[0.4762,0.4311,90.5]],["p36_04",36,650,820,0,""],["p36_frame",36,820,709,1,""],["p36_panel",36,820,709,2,""],["p37_01",37,415,820,0,""],["p37_02",37,413,820,0,""],["p37_03",37,820,650,0,""],["p37_04",37,283,724,0,""],["p37_05",37,292,180,0,""],["p37_06",37,820,356,0,""],["p37_07",37,162,193,0,"≈D1",[0.4867,0.4063,91.5]],["p37_08",37,167,184,0,"≈D1",[0.4946,0.4227,90.5]],["p37_09",37,166,202,0,"≈D1",[0.4863,0.4054,90.0]],["p37_10",37,166,203,0,"≈D1",[0.484,0.4086,88.5]],["p37_11",37,252,193,0,""],["p37_frame",37,820,706,1,""],["p37_panel",37,820,706,2,""],["p38_01",38,820,568,0,"D1",[0.4938,0.3313,90.0]],["p38_02",38,536,820,0,""],["p38_03",38,247,820,0,""],["p38_04",38,820,425,0,"D1",[0.492,0.4831,89.5]],["p38_frame",38,820,694,1,""],["p38_panel",38,820,694,2,""],["p39_01",39,820,803,0,"D5",[0.4914,0.4954,161.5]],["p39_02",39,818,732,0,""],["p39_03",39,820,486,0,""],["p39_04",39,820,619,0,""],["p39_05",39,820,545,0,""],["p39_frame",39,820,704,1,""],["p39_panel",39,820,704,2,""],["p40_01",40,771,820,0,"D1",[0.4913,0.5584,90.5]],["p40_02",40,801,224,0,""],["p40_03",40,808,820,0,""],["p40_04",40,706,243,0,""],["p40_05",40,644,820,0,""],["p40_06",40,820,282,0,""],["p40_07",40,820,296,0,""],["p40_08",40,820,365,0,"D1",[0.4695,0.4946,89.5]],["p40_09",40,820,294,0,"D2",[0.4882,0.48,90.5]],["p40_10",40,706,298,0,"D2",[0.4945,0.4846,90.0]],["p40_11",40,820,323,0,"D1",[0.4638,0.4993,89.5]],["p40_12",40,820,369,0,"D1",[0.4932,0.4817,90.0]],["p40_13",40,706,278,0,"D1",[0.4911,0.496,90.5]],["p40_frame",40,820,699,1,""],["p40_panel",40,820,699,2,""],["p41_01",41,820,79,0,"D1",[0.4997,0.4699,0.0]],["p41_02",41,690,562,0,"D1",[0.4866,0.419,89.5]],["p41_03",41,690,576,0,"D1",[0.4891,0.4229,89.0]],["p41_04",41,820,627,0,""],["p41_05",41,308,820,0,""],["p41_06",41,820,194,0,"D2",[0.492,0.438,90]],["p41_07",41,283,274,0,""],["p41_frame",41,820,695,1,""],["p41_panel",41,820,695,2,""],["p42_01",42,541,820,0,""],["p42_02",42,820,820,0,""],["p42_03",42,585,820,0,""],["p42_04",42,820,650,0,""],["p42_frame",42,820,713,1,""],["p42_panel",42,820,713,2,""],["p43_01",43,820,329,0,""],["p43_02",43,820,796,0,"D1",[0.4923,0.5463,89.5]],["p43_03",43,486,820,0,""],["p43_frame",43,820,697,1,""],["p43_panel",43,820,697,2,""],["p44_01",44,820,614,0,""],["p44_02",44,820,799,0,"D1",[0.4921,0.528,90]],["p44_03",44,615,820,0,""],["p44_frame",44,820,698,1,""],["p44_panel",44,820,698,2,""],["p45_01",45,555,820,0,""],["p45_02",45,626,521,0,""],["p45_03",45,704,649,0,""],["p45_04",45,461,315,0,"≈D1",[0.4851,0.4863,88.5]],["p45_05",45,711,521,0,"D1",[0.4979,0.3839,89.5]],["p45_06",45,754,758,0,"D1",[0.4868,0.4948,90.5]],["p45_frame",45,820,691,1,""],["p45_panel",45,820,691,2,""],["p46_01",46,288,820,0,""],["p46_02",46,820,167,0,""],["p46_03",46,735,820,0,"≈D1",[0.4893,0.4894,90.0]],["p46_04",46,223,820,0,""],["p46_frame",46,820,698,1,""],["p46_panel",46,820,698,2,""],["p47_01",47,706,820,0,""],["p47_02",47,803,758,0,""],["p47_03",47,240,820,0,""],["p47_frame",47,820,700,1,""],["p47_panel",47,820,700,2,""],["p48_01",48,383,820,0,""],["p48_02",48,820,782,0,""],["p48_03",48,506,629,0,""],["p48_04",48,820,449,0,""],["p48_frame",48,820,699,1,""],["p48_panel",48,820,699,2,""],["p49_01",49,436,820,0,"D1",[0.492,0.3623,90.5]],["p49_02",49,414,820,0,"D1",[0.4877,0.3543,90.0]],["p49_03",49,817,820,0,""],["p49_frame",49,820,696,1,""],["p49_panel",49,820,696,2,""],["p50_01",50,820,591,0,"D1",[0.4923,0.3989,89.5]],["p50_02",50,526,820,0,""],["p50_03",50,583,820,0,""],["p50_04",50,820,368,0,"≈D1",[0.492,0.5681,90.5]],["p50_frame",50,820,698,1,""],["p50_panel",50,820,698,2,""],["p51_01",51,820,552,0,""],["p51_02",51,820,534,0,"D1",[0.4952,0.3836,90]],["p51_03",51,599,820,0,"≈D1",[0.4928,0.445,90.5]],["p51_04",51,547,820,0,""],["p51_05",51,745,817,0,"D1",[0.4887,0.388,88.5]],["p51_frame",51,820,693,1,""],["p51_panel",51,820,693,2,""],["p52_01",52,764,820,0,"≈D1",[0.491,0.3645,90]],["p52_02",52,417,806,0,""],["p52_03",52,773,820,0,""],["p52_04",52,619,503,0,"≈D1",[0.4902,0.4722,88.5]],["p52_05",52,820,737,0,""],["p52_06",52,820,761,0,""],["p52_frame",52,820,697,1,""],["p52_panel",52,820,697,2,""],["p53_01",53,787,820,0,""],["p53_02",53,820,612,0,"≈D1",[0.4806,0.3563,92.0]],["p53_03",53,163,163,0,""],["p53_04",53,524,365,0,""],["p53_05",53,370,740,0,"D1",[0.4877,0.5041,91.0]],["p53_06",53,443,649,0,""],["p53_07",53,631,771,0,"D1",[0.4901,0.5175,91.0]],["p53_08",53,442,447,0,"D1",[0.4833,0.5011,90.0]],["p53_frame",53,820,699,1,""],["p53_panel",53,820,699,2,""],["p54_01",54,802,584,0,""],["p54_02",54,260,820,0,""],["p54_03",54,820,171,0,""],["p54_frame",54,820,731,1,""],["p54_panel",54,820,731,2,""],["p55_01",55,249,820,0,""],["p55_02",55,310,820,0,""],["p55_03",55,820,670,0,"D1",[0.4919,0.4136,90.0]],["p55_04",55,820,257,0,""],["p55_05",55,514,524,0,""],["p55_frame",55,820,699,1,""],["p55_panel",55,820,699,2,""],["p56_01",56,820,382,0,"≈D1",[0.5002,0.5538,90]],["p56_02",56,621,322,0,""],["p56_03",56,540,290,0,""],["p56_04",56,820,267,0,"≈D1",[0.4447,0.5524,90.0]],["p56_05",56,608,458,0,""],["p56_06",56,820,174,0,"D1",[0.4906,0.4871,179.0]],["p56_frame",56,820,694,1,""],["p56_panel",56,820,694,2,""],["p57_01",57,119,92,0,""],["p57_02",57,622,636,0,"D5",[0.527,0.4853,33.5]],["p57_03",57,763,820,0,"D1",[0.4894,0.4674,89.5]],["p57_04",57,435,820,0,""],["p57_05",57,818,820,0,"≈D1",[0.4863,0.4596,89.0]],["p57_06",57,610,820,0,""],["p57_07",57,466,416,0,"≈D1",[0.4873,0.4453,90.0]],["p57_frame",57,820,697,1,""],["p57_panel",57,820,697,2,""],["p58_01",58,820,536,0,"≈D1",[0.5175,0.4985,90.5]],["p58_02",58,820,635,0,"D1",[0.4921,0.7482,90.0]],["p58_03",58,820,535,0,"≈D1",[0.5333,0.49,90.5]],["p58_04",58,728,732,0,""],["p58_05",58,724,732,0,""],["p58_frame",58,820,695,1,""],["p58_panel",58,820,695,2,""],["p59_01",59,820,481,0,""],["p59_02",59,820,217,0,"D1",[0.4904,0.4564,90.5]],["p59_03",59,820,664,0,""],["p59_04",59,820,669,0,""],["p59_frame",59,820,699,1,""],["p59_panel",59,820,699,2,""],["p60_01",60,820,655,0,""],["p60_frame",60,820,686,1,""],["p60_panel",60,820,686,2,""]];
 const libImg = {}, ATLAS_C = 120, ATLAS_COLS = 18;
 function loadLib(id) {
-  if (!libImg[id]) libImg[id] = new Promise((res, rej) => { const im = new Image(); im.onload = () => res(im); im.onerror = rej; im.src = 'ornaments/' + id + '.webp'; });
+  if (!libImg[id]) libImg[id] = new Promise((res, rej) => { const im = new Image(); im.onload = () => res(im); im.onerror = rej; im.src = 'ornaments/' + id + '.webp?v=2'; });
   return libImg[id];
 }
 async function placeLib(e) {
   const [id, n] = e; let img;
   try { img = await loadLib(id); } catch (err) { delete libImg[id]; const st = $('status'); st.classList.add('warn'); st.textContent = 'Could not load ornament ' + id + '. Check your connection and try again.'; return; }
-  place(n, img, 0, 0, img.width, img.height, { lib: id });
+  place(n, img, 0, 0, img.width, img.height, { lib: id, sym: e[5] || '', sp: e[6] || null });
 }
 (() => {
   const sel = $('libPlate');
   for (let n = FIRST_PLATE; n <= NPLATES; n++) if (LIB.some(e => e[1] === n)) { const o = document.createElement('option'); o.value = n; o.textContent = plateLabel(n); sel.appendChild(o); }
-  sel.onchange = renderLib; $('libKind').onchange = renderLib;
+  sel.onchange = renderLib; $('libKind').onchange = renderLib; $('libSym').onchange = renderLib;
 })();
+const symBadge = l => l ? `<b class="sym${l[0] === '≈' ? ' ap' : ''}">${l}</b>` : '';
 function renderLib() {
   const pf = +$('libPlate').value, kv = $('libKind').value, list = $('libList'); list.innerHTML = '';
-  const items = LIB.filter(e => e[1] >= FIRST_PLATE && (!pf || e[1] === pf) && (kv === 'all' || e[4] === +kv));
+  const sv = $('libSym').value, grp = effGroup().key;
+  const symOk = l0 => { const l = (l0 || '').replace('≈', '');
+    return !sv || (sv === 'sym' ? !!l : sv === 'D' ? l[0] === 'D' : sv === 'rot' ? !!l && symN(l) >= 2 : fitSites(l, grp).length > 0); };
+  const items = LIB.filter(e => e[1] >= FIRST_PLATE && (!pf || e[1] === pf) && (kv === 'all' || e[4] === +kv) && symOk(e[5]));
   const KN = ['ornament', 'whole frame', 'whole plate'];
-  $('libCount').textContent = kv === 'all' ? items.length + ' items' : items.length + ' ' + KN[+kv] + (items.length === 1 ? '' : 's');
+  $('libCount').textContent = (kv === 'all' ? items.length + ' items' : items.length + ' ' + KN[+kv] + (items.length === 1 ? '' : 's'))
+    + (sv === 'fit' ? ` that sit whole on a site of ${grp}` : '');
+  if (!items.length) list.innerHTML = `<p class="small">${sv === 'fit' && !(SITES[grp] || []).length ? `Group ${grp} has no rotation centres or mirrors, so every ornament fits it equally (choose “any”).` : 'Nothing matches these filters.'}</p>`;
   let cur = 0, grid = null;
   for (const e of items) {
     if (e[1] !== cur) { cur = e[1]; const h = document.createElement('h4'); h.textContent = plateLabel(cur); list.appendChild(h);
       grid = document.createElement('div'); grid.className = 'og'; list.appendChild(grid); }
-    const d = document.createElement('div'); d.title = e[0] + (e[4] ? ` (${KN[e[4]]})` : '');
+    const d = document.createElement('div'); d.title = e[0] + (e[4] ? ` (${KN[e[4]]})` : '') + (e[5] ? ' · symmetry ' + SYMTXT(e[5]) : '');
     const k = LIB.indexOf(e);
-    d.innerHTML = `<i style="display:block;width:${ATLAS_C}px;height:${ATLAS_C}px;background:url(othumbs_atlas.webp) -${(k % ATLAS_COLS) * ATLAS_C}px -${Math.floor(k / ATLAS_COLS) * ATLAS_C}px"></i><span>${e[4] ? KN[e[4]] : ''}</span>`;
+    d.innerHTML = `<i style="display:block;width:${ATLAS_C}px;height:${ATLAS_C}px;background:url(othumbs_atlas.webp?v=2) -${(k % ATLAS_COLS) * ATLAS_C}px -${Math.floor(k / ATLAS_COLS) * ATLAS_C}px"></i><span>${e[4] ? KN[e[4]] : ''}</span>${symBadge(e[5])}`;
     d.onclick = () => placeLib(e); grid.appendChild(d);
   }
 }
@@ -1835,23 +2137,123 @@ for (let n = FIRST_PLATE; n <= NPLATES; n++) {
 function openPicker(slot) {
   targetSlot = slot; showLib(); dlg.showModal();
 }
-function showLib() {
-  $('libWrap').hidden = false; grid.hidden = true; $('cropWrap').hidden = true; $('cropFoot').hidden = true;
-  $('tabLib').classList.add('on'); $('tabPlates').classList.remove('on');
-  $('dlgTitle').textContent = targetSlot < 0 ? 'Add an ornament' : `Replace ornament #${targetSlot + 1}`; if (!$('libList').childElementCount) renderLib();
-}
-function showGrid() {
-  $('libWrap').hidden = true; grid.hidden = false; $('cropWrap').hidden = true; $('cropFoot').hidden = true;
-  $('tabLib').classList.remove('on'); $('tabPlates').classList.add('on');
+function showTab(t) {
+  $('libWrap').hidden = t !== 'lib'; grid.hidden = t !== 'plates'; $('mineWrap').hidden = t !== 'mine'; $('cropWrap').hidden = true; $('cropFoot').hidden = true;
+  $('tabLib').classList.toggle('on', t === 'lib'); $('tabPlates').classList.toggle('on', t === 'plates'); $('tabMine').classList.toggle('on', t === 'mine');
   $('dlgTitle').textContent = targetSlot < 0 ? 'Add an ornament' : `Replace ornament #${targetSlot + 1}`;
 }
-$('tabLib').onclick = showLib; $('tabPlates').onclick = showGrid;
+function showLib() {
+  showTab('lib'); const fit = $('libSymFit'); fit.textContent = S.mode === 'lattice' ? `fits ${effGroup().key} (sits whole on a centre or mirror)` : 'fits the group (Brewster or wallpaper mode)';
+  fit.disabled = S.mode !== 'lattice'; if (fit.disabled && $('libSym').value === 'fit') $('libSym').value = 'sym';
+  renderLib();
+}
+function showGrid() { showTab('plates'); }
+function showMine() { showTab('mine'); renderMine(); }
+$('tabLib').onclick = showLib; $('tabPlates').onclick = showGrid; $('tabMine').onclick = showMine;
+
+/* ---------- my images: the user's own pictures, kept in this browser (IndexedDB), exported/imported as JSON ---------- */
+const MINE_MAX = 1600, MINE_FMT = 'mirror-tool-images';
+const MINE = { db: null, list: [], ready: null, mem: false };   // list: {id, name, w, h, sym, src, added}
+MINE.ready = new Promise(res => {
+  let r; try { r = indexedDB.open('mirror-tool', 1); } catch (e) { MINE.mem = true; return res(); }
+  r.onupgradeneeded = () => r.result.createObjectStore('images', { keyPath: 'id' });
+  r.onsuccess = () => { MINE.db = r.result; const q = MINE.db.transaction('images').objectStore('images').getAll();
+    q.onsuccess = () => { MINE.list = q.result.sort((a, b) => a.added - b.added); res(); }; q.onerror = () => res(); };
+  r.onerror = r.onblocked = () => { MINE.mem = true; res(); };
+});
+function mineTx(fn) {
+  if (!MINE.db) return Promise.resolve(false);
+  return new Promise(res => { try { const t = MINE.db.transaction('images', 'readwrite'); fn(t.objectStore('images'));
+    t.oncomplete = () => res(true); t.onerror = t.onabort = () => res(false); } catch (e) { res(false); } });
+}
+const mineImg = {};
+function loadMine(r) {
+  if (!mineImg[r.id]) mineImg[r.id] = new Promise((res, rej) => { const im = new Image(); im.onload = () => res(im); im.onerror = rej; im.src = r.src; });
+  return mineImg[r.id];
+}
+function mineMsg(t, warn) { const m = $('mineCount'); m.textContent = t; m.style.color = warn ? '#a33' : ''; }
+async function mineAdd(recs) {          // recs: {name, src}; each is decoded, reduced to MINE_MAX px and measured
+  let ok = 0, bad = 0, dup = 0, full = false;
+  for (const r of recs) {
+    if (typeof r.src !== 'string' || !/^data:image\//.test(r.src)) { bad++; continue; }
+    let im; try { im = await new Promise((res, rej) => { const i = new Image(); i.onload = () => res(i); i.onerror = rej; i.src = r.src; }); } catch (e) { bad++; continue; }
+    if (!im.naturalWidth) { bad++; continue; }
+    const k = Math.min(1, MINE_MAX / Math.max(im.naturalWidth, im.naturalHeight)), w = Math.max(1, Math.round(im.naturalWidth * k)), h = Math.max(1, Math.round(im.naturalHeight * k));
+    let src = r.src;
+    if (k < 1 || !/^data:image\/(webp|png|jpeg)/.test(src)) {
+      const c = document.createElement('canvas'); c.width = w; c.height = h; c.getContext('2d').drawImage(im, 0, 0, w, h);
+      src = c.toDataURL('image/webp', 0.92); if (!src.startsWith('data:image/webp')) src = c.toDataURL('image/png');
+    }
+    if (MINE.list.some(q => q.src === src)) { dup++; continue; }
+    const sy = symmetryOf(im), sym = sy.label === 'C1' ? '' : (sy.approx ? '≈' : '') + sy.label;
+    const rec = { id: 'm' + Date.now().toString(36) + Math.random().toString(36).slice(2, 7), name: String(r.name || 'image').slice(0, 80), w, h, sym, sp: sy.sp, src, added: Date.now() + ok };
+    if (MINE.db && !(await mineTx(st => st.put(rec)))) { full = true; break; }
+    MINE.list.push(rec); ok++;
+  }
+  await renderMine();
+  const bits = [ok ? `Added ${ok} image${ok === 1 ? '' : 's'}.` : '', dup ? `${dup} already here.` : '', bad ? `${bad} could not be read as images.` : '',
+    full ? 'The browser refused to store more (storage full or private mode).' : '', ok && !MINE.db ? 'This browser does not allow local storage here, so they last only until the page is closed: use Save library.' : ''];
+  mineMsg(bits.filter(Boolean).join(' '), bad || full || (ok && !MINE.db));
+}
+async function mineDel(r) {
+  if (!confirmDel(r.name)) return;
+  await mineTx(st => st.delete(r.id)); MINE.list = MINE.list.filter(q => q.id !== r.id); delete mineImg[r.id]; renderMine();
+}
+function confirmDel(name) { try { return window.confirm(`Remove “${name}” from your images? (Save the library first if you want to keep a copy.)`); } catch (e) { return true; } }
+async function renderMine() {
+  await MINE.ready;
+  const list = $('mineList'); list.innerHTML = '';
+  const n = MINE.list.length; mineMsg(n ? `${n} image${n === 1 ? '' : 's'} in this browser` : '');
+  $('mineExp').disabled = !n;
+  if (!n) { list.innerHTML = '<p class="small">No images yet.</p>'; return; }
+  const g = document.createElement('div'); g.className = 'og'; list.appendChild(g);
+  for (const r of MINE.list) {
+    const d = document.createElement('div'); d.title = `${r.name} · ${r.w}×${r.h}` + (r.sym ? ' · symmetry ' + SYMTXT(r.sym) : '');
+    d.innerHTML = `<img alt="">${symBadge(r.sym)}<span class="nm"></span><button class="del" title="Remove from your images">×</button>`;
+    d.querySelector('.nm').textContent = r.name; d.querySelector('img').src = r.src;
+    d.onclick = async ev => { if (ev.target.classList.contains('del')) return;
+      let im; try { im = await loadMine(r); } catch (e) { mineMsg('Could not open this image.', true); return; }
+      if (r.sym && !r.sp) r.sp = symmetryOf(im).sp;
+      place(0, im, 0, 0, im.width, im.height, { label: r.name, sym: r.sym, sp: r.sym ? r.sp : null }); };
+    d.querySelector('.del').onclick = ev => { ev.stopPropagation(); mineDel(r); };
+    g.appendChild(d);
+  }
+}
+const readAs = (f, how) => new Promise((res, rej) => { const fr = new FileReader(); fr.onload = () => res(fr.result); fr.onerror = rej; fr[how](f); });
+async function mineFiles(files) {
+  const imgs = [], jsons = [];
+  for (const f of files) (/json$/i.test(f.type) || /\.json$/i.test(f.name) ? jsons : /^image\//.test(f.type) ? imgs : jsons).push(f);
+  const recs = [];
+  for (const f of imgs) try { recs.push({ name: f.name.replace(/\.[^.]+$/, ''), src: await readAs(f, 'readAsDataURL') }); } catch (e) {}
+  for (const f of jsons) {
+    let j; try { j = JSON.parse(await readAs(f, 'readAsText')); } catch (e) { mineMsg(`${f.name} is not a saved image library.`, true); continue; }
+    const arr = Array.isArray(j) ? j : j && Array.isArray(j.images) ? j.images : null;
+    if (!arr) { mineMsg(`${f.name} is not a saved image library.`, true); continue; }
+    for (const r of arr) if (r && typeof r === 'object') recs.push({ name: r.name, src: r.src });
+  }
+  mineMsg('Adding…'); await MINE.ready; await mineAdd(recs);
+}
+$('mineAdd').onclick = () => $('mineFile').click();
+$('mineImp').onclick = () => $('mineJson').click();
+$('mineFile').onchange = e => { mineFiles([...e.target.files]); e.target.value = ''; };
+$('mineJson').onchange = e => { mineFiles([...e.target.files]); e.target.value = ''; };
+$('mineExp').onclick = async () => {
+  await MINE.ready; if (!MINE.list.length) return;
+  const out = { format: MINE_FMT, version: 1, saved: new Date().toISOString(), images: MINE.list.map(({ name, w, h, sym, src }) => ({ name, w, h, sym, src })) };
+  download(new Blob([JSON.stringify(out)], { type: 'application/json' }), 'my_images_' + new Date().toISOString().slice(0, 10) + '.json');
+  if (inFrame) mineMsg('If no file appears, this preview blocks downloads: open the tool on its own page.', true);
+};
+(() => { const z = $('mineDrop');
+  z.ondragover = e => { e.preventDefault(); z.classList.add('over'); };
+  z.ondragleave = () => z.classList.remove('over');
+  z.ondrop = e => { e.preventDefault(); z.classList.remove('over'); if (e.dataTransfer.files.length) mineFiles([...e.dataTransfer.files]); };
+})();
 $('dlgClose').onclick = () => dlg.close();
 $('cropBack').onclick = showGrid;
 const cc = $('cropCanvas'), cx = cc.getContext('2d');
 async function openCrop(n) {
   cropN = n; try { cropImg = await loadPlate(n); } catch (err) { delete imgCache[n]; return; } sel = null; $('cropUse').disabled = true;
-  grid.hidden = true; $('libWrap').hidden = true; $('cropWrap').hidden = false; $('cropFoot').hidden = false;
+  grid.hidden = true; $('libWrap').hidden = true; $('mineWrap').hidden = true; $('cropWrap').hidden = false; $('cropFoot').hidden = false;
   $('dlgTitle').textContent = `${plateLabel(n)} — select an ornament`;
   const maxW = Math.min(1060, window.innerWidth * 0.9), maxH = window.innerHeight * 0.92 - 140;
   cropK = Math.min(maxW / cropImg.width, maxH / cropImg.height);
@@ -1881,7 +2283,8 @@ function place(n, img, x, y, w, h, opts = {}) {
   const o = { n, img, cx: x, cy: y, cw: w, ch: h,
     x: opts.x ?? (prev ? prev.x : SW / 2 + ((k * 67) % 300) - 150),
     y: opts.y ?? (prev ? prev.y : SH / 2 + ((k * 41) % 200) - 100),
-    s: prev && !opts.s ? prev.s : s, rot: opts.rot ?? (prev ? prev.rot : 0), flip: false, lib: opts.lib || null };
+    s: prev && !opts.s ? prev.s : s, rot: opts.rot ?? (prev ? prev.rot : 0), flip: false, lib: opts.lib || null, label: opts.label || null, sym: opts.sym || '', sp: opts.sp || null };
+  if (S.mode === 'lattice' && o.sp && T.snapSym) { snapOrn(o, Infinity); snapNote = null; }
   if (replacing) { S.orn[targetSlot] = o; S.sel = targetSlot; }
   else { if (S.orn.length >= MAX_ORN) return; S.orn.push(o); S.sel = S.orn.length - 1; }
   if (dlg.open) dlg.close(); renderSlots(); redraw(true);
@@ -1921,11 +2324,14 @@ sheet.addEventListener('pointermove', e => {
     case 'open': S.alpha = snapAlpha(Math.min(180, Math.max(3, 2 * Math.abs(wrap180(ang - S.beta))))); break;
     case 'cell': S.lt = ang; S.cell = Math.min(600, Math.max(40, Math.hypot(p.x - O.x, p.y - O.y))); break;
     case 'dist': { const n = dir(S.theta + 90); S.d = Math.min(600, Math.max(10, (p.x - O.x) * n.x + (p.y - O.y) * n.y)); break; }
-    case 'orn': { const o = S.orn[drag.i]; o.x = p.x + drag.ox; o.y = p.y + drag.oy; redraw(true); return; }
+    case 'orn': { const o = S.orn[drag.i]; o.x = p.x + drag.ox; o.y = p.y + drag.oy;
+      const r0 = o.rot;
+      if (S.mode === 'lattice' && T.snapSym && o.sp && !e.altKey) snapOrn(o, 22 * sheet.width / sheet.getBoundingClientRect().width); else snapNote = null;
+      if (o.rot !== r0) renderSlots(); redraw(true); return; }
   }
   redraw();
 });
-const endDrag = () => { drag = null; };
+const endDrag = () => { drag = null; if (snapNote) { snapNote = null; redraw(); } };
 sheet.addEventListener('pointerup', endDrag); sheet.addEventListener('pointercancel', endDrag);
 sheet.addEventListener('wheel', e => {
   const i = hitOrn(canvasPt(sheet, e)); if (i < 0) return;
