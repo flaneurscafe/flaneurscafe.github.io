@@ -37,6 +37,7 @@
   .seg button{flex:1;border:0;border-right:1px solid var(--line);border-radius:0;background:#fbf8f1;margin:0}
   .seg button:last-child{border-right:0}
   .seg button.on{background:var(--teal);color:#fff}
+  #cFitEdge.on{background:var(--rose);border-color:var(--rose);color:#fff}
   button{font:inherit;font-size:13px;color:var(--ink);background:#fbf8f1;border:1px solid var(--line);border-radius:5px;padding:5px 9px;cursor:pointer}
   button:hover{border-color:var(--ochre)}
   button.primary{background:var(--teal);border-color:var(--teal);color:#fff}
@@ -300,10 +301,13 @@
     <div class="row"><label>Rotation</label><input type="range" id="cRot" min="-180" max="180" step="1"><output id="cRotV"></output></div>
     <div class="btnrow"><button id="cRotL" title="Rotate left by the step">⟲</button><select id="cStep" title="Rotation step"><option>15</option><option selected>30</option><option>45</option><option>60</option><option>90</option></select><button id="cRotR" title="Rotate right by the step">⟳</button><button id="cFlip">Flip</button></div>
     <div class="btnrow"><button id="cDup" title="Duplicate (Ctrl/⌘+D). Move the copy into place, then duplicate again to repeat the same step.">Duplicate</button><button id="cFront">Front</button><button id="cBack">Back</button><button id="cDel">Delete</button></div>
+    <div class="btnrow"><button id="cFitEdge" title="Scale and line up the selected pieces so their common side exactly covers an edge you click on another piece">Fit to an edge…</button></div>
+    <p class="small" id="cFitHint" style="margin:2px 0 0">Select pieces (Shift-click or Shift-drag), press <b>Fit to an edge…</b>, then click the edge of another piece. Shift-click several edges in a line to fit across all of them. <kbd>Esc</kbd> cancels.</p>
   </div>
 
   <h2>Board</h2>
   <label class="cb"><input type="checkbox" id="cSnap" checked> Snap corners and edges (and to the guide grid)</label>
+  <label class="cb" title="When a corner snaps and an edge of the moved piece lies along an edge of its neighbour, the piece is resized so that edge is exactly the same length, or exactly 1/2, 1/3 … 1/8 of it, or 2× … 8× of it (so n pieces fill the edge). The pattern is scaled, never stretched."><input type="checkbox" id="cFit" checked> Resize to fit edges (same length, ½, ⅓ … ⅛, 2×…)</label>
   <label class="cb"><input type="checkbox" id="cJoints" checked> Show joints</label>
   <div class="row"><label>Joint width</label><input type="range" id="cGroutW" min="0" max="8" step="0.5" value="1"><output id="cGroutWV"></output></div>
   <div class="row"><label>Colours</label><span style="display:flex;gap:8px;align-items:center"><input type="color" id="cGrout" value="#8a7a66" title="Joint colour"><input type="color" id="cBg" value="#ffffff" title="Background colour"></span><span></span></div>
@@ -419,7 +423,7 @@
       <p>The question of how identical decorated tiles combine has its own history: Sébastien Truchet's <i>Mémoire sur les combinaisons</i> (1704) and Dominique Douat's <i>Méthode pour faire une infinité de desseins différents</i> (1722) counted the patterns made by one two-coloured square tile in different orientations; brick bonds themselves are classified by their wallpaper groups (Coxeter, 1969).</p>
 
       <h4 id="h-compose">7 · Composing with saved tiles</h4>
-      <p>“Save tile” (under the tiled surface) keeps the current tile, cut exactly as shown, for the <b>Compose</b> tab. There you drag tiles onto a board and combine shapes: snapping brings a corner of the piece you move onto a nearby corner and lines up the edges. Pieces of equal edge length then fit edge to edge: squares beside triangles, hexagons ringed by squares and triangles, or a band of squares, then hexagons cut in half through their corners (whose long edge covers two squares) alternating with whole hexagons standing on a flat side, then whole hexagons. Each piece can be cut (half, diagonal), resized, turned and flipped. Duplicate a piece, move the copy into place, and Duplicate again repeats the same step, which builds rows quickly. Projects are saved as a single JSON file containing the tile images, so they reopen exactly; the finished surface exports as PNG, or as SVG with the joints as vector lines.</p>
+      <p>“Save tile” (under the tiled surface) keeps the current tile, cut exactly as shown, for the <b>Compose</b> tab. There you drag tiles onto a board and combine shapes: snapping brings a corner of the piece you move onto a nearby corner and lines up the edges. Pieces of equal edge length then fit edge to edge: squares beside triangles, hexagons ringed by squares and triangles, or a band of squares, then hexagons cut in half through their corners (whose long edge covers two squares) alternating with whole hexagons standing on a flat side, then whole hexagons. Each piece can be cut (half, diagonal), resized, turned and flipped. With “Resize to fit edges” on, a piece whose corner snaps onto a neighbour’s corner, with an edge running along the neighbour’s edge, is resized so that edge is exactly as long as the neighbour’s, or exactly ½, ⅓ … ⅛ of it (or 2× … 8×), so that n pieces fill the edge: narrow strips line up under a row of half-hexagons without adjusting the size by hand. When the automatic fit cannot guess what you mean, for example a group of strips that should together cover one hexagon edge, use <b>Fit to an edge…</b>: select the pieces (Shift-click or Shift-drag), press the button, then click the edge of another piece. The selection is turned to lie parallel to that edge, scaled and moved so that its side facing the edge covers it exactly from end to end. Shift-click several edges lying in one line (say the bottoms of two strips) to fit a piece across all of them. The pattern is scaled, never stretched; Undo reverses a fit. Duplicate a piece, move the copy into place, and Duplicate again repeats the same step, which builds rows quickly. Projects are saved as a single JSON file containing the tile images, so they reopen exactly; the finished surface exports as PNG, or as SVG with the joints as vector lines.</p>
 
       <h4 id="h-methods">8 · Methods and sources: what is what</h4>
       <p>Every pattern in the tool is labelled with the method that made it, and the label travels with saved tiles, pieces on the board, project files and exports, so a design can stay within one historical practice or mix them knowingly.</p>
@@ -1434,7 +1438,7 @@ const inFrame = (() => { try { return window.top !== window; } catch (e) { retur
 // design = a saved tile: image (transparent outside the shape), its shape and its unit edge in image px
 const DESIGNS = [];            // {id, name, shape, w, h, src, img, edge}
 let PIECES = [];               // {id, did, cut, x, y, rot, s, flip}
-const CB = { unit: 80, snap: true, joints: true, groutW: 1, grout: '#8a7a66', bg: '#ffffff', grid: 'none' };
+const CB = { unit: 80, snap: true, fit: true, joints: true, groutW: 1, grout: '#8a7a66', bg: '#ffffff', grid: 'none' };
 const VIEW = { ox: 0, oy: 0, z: 1, init: false };
 const SEL = new Set();
 let uid = 1;
@@ -1616,6 +1620,9 @@ function drawBoard() {
   if (CB.joints && CB.groutW > 0) for (const p of PIECES) strokePoly(ctx, worldPoly(p), CB.grout, Math.max(CB.groutW, 0.6 / VIEW.z));
   for (const p of PIECES) if (SEL.has(p.id)) strokePoly(ctx, worldPoly(p), '#2f5d5a', 2.2 / VIEW.z, [6 / VIEW.z, 4 / VIEW.z]);
   if (GHOST) { drawPiece(ctx, GHOST, 0.75); strokePoly(ctx, worldPoly(GHOST), '#2f5d5a', 1.5 / VIEW.z, [4 / VIEW.z, 3 / VIEW.z]); }
+  if (FITPICK) for (const e of FITPICK.edges.concat(FITPICK.hover ? [FITPICK.hover] : [])) {
+    ctx.save(); ctx.strokeStyle = e === FITPICK.hover ? 'rgba(163,67,79,.6)' : '#a3434f'; ctx.lineWidth = 5 / VIEW.z; ctx.lineCap = 'round';
+    ctx.beginPath(); ctx.moveTo(e.a.x, e.a.y); ctx.lineTo(e.b.x, e.b.y); ctx.stroke(); ctx.restore(); }
   if (SNAPMARK) { ctx.fillStyle = '#a3434f'; ctx.beginPath(); ctx.arc(SNAPMARK.x, SNAPMARK.y, 4 / VIEW.z, 0, 7); ctx.fill(); }
   if (BOX) { ctx.save(); ctx.strokeStyle = '#2f5d5a'; ctx.lineWidth = 1 / VIEW.z; ctx.setLineDash([4 / VIEW.z, 3 / VIEW.z]);
     ctx.strokeRect(BOX.a.x, BOX.a.y, BOX.b.x - BOX.a.x, BOX.b.y - BOX.a.y); ctx.restore(); }
@@ -1628,7 +1635,7 @@ function drawBoard() {
 /* ---------- snapping: bring a corner onto a nearby corner and line up the edges ---------- */
 let SNAPMARK = null;
 function snapPieces(list, allowRot) {
-  SNAPMARK = null; if (!CB.snap) return;
+  SNAPMARK = null; FITNOTE = ''; if (!CB.snap) return;
   const ids = new Set(list.map(p => p.id)), tol = 14 / VIEW.z, rotTol = 8;
   const mov = list.map(worldPoly), others = PIECES.filter(p => !ids.has(p.id));
   let bx0 = Infinity, by0 = Infinity, bx1 = -Infinity, by1 = -Infinity;
@@ -1654,7 +1661,7 @@ function snapPieces(list, allowRot) {
   const pts = poly => { const n = poly.length, out = [];
     for (let i = 0; i < n; i++) { const a = poly[i], b = poly[(i + 1) % n], c = poly[(i - 1 + n) % n];
       const eb = deg(Math.atan2(b.y - a.y, b.x - a.x)), ec = deg(Math.atan2(c.y - a.y, c.x - a.x));
-      out.push({ x: a.x, y: a.y, dirs: [eb, ec], mid: false }, { x: (a.x + b.x) / 2, y: (a.y + b.y) / 2, dirs: [eb], mid: true }); }
+      out.push({ x: a.x, y: a.y, dirs: [eb, ec], nb: [b, c], mid: false }, { x: (a.x + b.x) / 2, y: (a.y + b.y) / 2, dirs: [eb], mid: true }); }
     return out; };
   const fixedPts = fixed.flatMap(pts).concat(gridPts);
   for (const mp of mov) for (const v of pts(mp)) {
@@ -1679,7 +1686,89 @@ function snapPieces(list, allowRot) {
     p.x = best.v.x + dx * c - dy * s; p.y = best.v.y + dx * s + dy * c; p.rot = wrap180(p.rot + best.dl);
   }
   for (const p of list) { p.x += best.w.x - best.v.x; p.y += best.w.y - best.v.y; }
-  SNAPMARK = best.w;
+  SNAPMARK = best.w; FITNOTE = '';
+  if (CB.fit && best.w.nb && !best.v.mid) fitToEdge(list, best.w);
+}
+/* After a corner has snapped onto a corner w of a fixed piece: if an edge of the moved piece leaving that corner
+   runs along an edge of the fixed piece leaving w, scale the moved piece(s) about w so the two edges have the same
+   length or a simple ratio (½, ⅓, ¼, 2×, 3×, 4×). Uniform scaling: the pattern is never stretched. */
+let FITNOTE = '';
+const FRAC = ['', '', '½', '⅓', '¼', '⅕', '⅙', '1/7', '⅛'];
+const FIT_Q = [[1, 'same length as']];
+for (let n = 2; n <= 8; n++) FIT_Q.push([1 / n, `${FRAC[n]} of`], [n, `${n}× of`]);
+function fitToEdge(list, w) {
+  const eps = 1e-6; let best = null;
+  for (const p of list) {
+    const poly = worldPoly(p), n = poly.length;
+    for (let i = 0; i < n; i++) {
+      if (Math.hypot(poly[i].x - w.x, poly[i].y - w.y) > 0.5) continue;
+      for (const m of [poly[(i + 1) % n], poly[(i - 1 + n) % n]]) {
+        const lm = Math.hypot(m.x - w.x, m.y - w.y); if (lm < eps) continue;
+        for (const f of w.nb) {
+          const lf = Math.hypot(f.x - w.x, f.y - w.y); if (lf < eps) continue;
+          const cosA = ((m.x - w.x) * (f.x - w.x) + (m.y - w.y) * (f.y - w.y)) / (lm * lf);
+          if (cosA < Math.cos(rad(4))) continue;                       // the two edges must lie on the same ray
+          for (const [q, lab] of FIT_Q) {
+            const err = Math.abs(Math.log(lm / (lf * q)));             // how far from an exact fit, in log scale
+            if (err < Math.log(1.18) && (!best || err < best.err - 1e-9)) best = { err, k: lf * q / lm, lab, q };
+          }
+        }
+      }
+    }
+  }
+  if (!best || Math.abs(best.k - 1) < 1e-9) { if (best) FITNOTE = `Edge fits: ${best.lab} the neighbour’s edge.`; return; }
+  for (const p of list) { p.s *= best.k; p.x = w.x + (p.x - w.x) * best.k; p.y = w.y + (p.y - w.y) * best.k; }
+  FITNOTE = `Resized to fit: edge = ${best.lab} the neighbour’s edge.`;
+}
+/* ---------- Fit to an edge: the user picks the target edge(s); the selected pieces are turned (to the nearest
+   parallel position), scaled and moved so that their common side facing that edge covers it exactly ---------- */
+let FITPICK = null;            // {edges:[{pid,i,a,b}], hover}
+function edgeAt(w) {
+  const tol = 10 / VIEW.z; let best = null;
+  for (let j = PIECES.length - 1; j >= 0; j--) { const p = PIECES[j]; if (SEL.has(p.id)) continue;
+    const poly = worldPoly(p), n = poly.length;
+    for (let i = 0; i < n; i++) { const a = poly[i], b = poly[(i + 1) % n], dx = b.x - a.x, dy = b.y - a.y, L2 = dx * dx + dy * dy; if (L2 < 1e-9) continue;
+      const t = Math.max(0, Math.min(1, ((w.x - a.x) * dx + (w.y - a.y) * dy) / L2)), d = Math.hypot(w.x - a.x - t * dx, w.y - a.y - t * dy);
+      if (d <= tol && (!best || d < best.d)) best = { d, pid: p.id, i, a, b }; } }
+  return best;
+}
+function endFitPick(msg) { FITPICK = null; $('cFitEdge').classList.remove('on'); board.style.cursor = 'default'; if (msg) cMsg(msg); cRender(); }
+$('cFitEdge').onclick = () => {
+  if (FITPICK) { endFitPick('Fit cancelled.'); return; }
+  if (!selList().length) { cMsg('First select the pieces to fit (click, Shift-click or Shift-drag), then press “Fit to an edge…”.', true); return; }
+  FITPICK = { edges: [], hover: null }; $('cFitEdge').classList.add('on');
+  cMsg('Now click the edge of another piece to fit the selection to. Shift-click to pick several edges in a line; Esc cancels.');
+};
+function applyFitEdge() {
+  const L = selList(), E = FITPICK.edges;
+  if (!L.length || !E.length) { endFitPick(); return; }
+  // target segment: the first edge's line, spanning every picked edge
+  const A0 = E[0].a, B0 = E[0].b, len0 = Math.hypot(B0.x - A0.x, B0.y - A0.y);
+  let u = { x: (B0.x - A0.x) / len0, y: (B0.y - A0.y) / len0 }, n = { x: -u.y, y: u.x };
+  let t0 = Infinity, t1 = -Infinity;
+  for (const e of E) for (const q of [e.a, e.b]) { const t = (q.x - A0.x) * u.x + (q.y - A0.y) * u.y; t0 = Math.min(t0, t); t1 = Math.max(t1, t); }
+  const A = { x: A0.x + u.x * t0, y: A0.y + u.y * t0 }, tgtLen = t1 - t0;
+  // the selection goes on the side away from the target piece(s)
+  const tp = E.map(e => PIECES.find(p => p.id === e.pid)).filter(Boolean);
+  const tc = centroid(tp.map(p => { const q = worldPoly(p); return { x: q.reduce((s, v) => s + v.x, 0) / q.length, y: q.reduce((s, v) => s + v.y, 0) / q.length }; }));
+  const side = ((tc.x - A.x) * n.x + (tc.y - A.y) * n.y) > 0 ? -1 : 1;
+  // turn the selection so that its edge closest in direction to the target becomes parallel to it
+  const au = deg(Math.atan2(u.y, u.x)); let dl = null;
+  for (const p of L) { const q = worldPoly(p);
+    for (let i = 0; i < q.length; i++) { const a = q[i], b = q[(i + 1) % q.length];
+      let dd = ((au - deg(Math.atan2(b.y - a.y, b.x - a.x))) % 180 + 540) % 180; if (dd > 90) dd -= 180;
+      if (dl === null || Math.abs(dd) < Math.abs(dl)) dl = dd; } }
+  if (dl && Math.abs(dl) > 1e-6) rotateSel(dl);
+  // the side of the selection that will face the target: its extreme vertices towards the target line
+  const V = L.flatMap(worldPoly), S = V.map(q => (q.x - A.x) * n.x + (q.y - A.y) * n.y), T = V.map(q => (q.x - A.x) * u.x + (q.y - A.y) * u.y);
+  const ext = side > 0 ? Math.min(...S) : Math.max(...S), size = Math.max(...T) - Math.min(...T), tol = Math.max(0.5, size * 0.004);
+  const face = V.map((q, i) => i).filter(i => Math.abs(S[i] - ext) <= tol);
+  const f0 = Math.min(...face.map(i => T[i])), f1 = Math.max(...face.map(i => T[i]));
+  if (f1 - f0 < 1e-6) { commit(); endFitPick(); cMsg('The selection has no straight side that can lie along that edge (only a corner faces it).', true); return; }
+  const k = tgtLen / (f1 - f0), F = { x: A.x + u.x * f0 + n.x * ext, y: A.y + u.y * f0 + n.y * ext };
+  for (const p of L) { p.s *= k; p.x = A.x + (p.x - F.x) * k; p.y = A.y + (p.y - F.y) * k; }
+  commit(); endFitPick();
+  cMsg(`Fitted ${L.length} piece${L.length > 1 ? 's' : ''} to ${E.length > 1 ? E.length + ' edges' : 'the edge'} (scale ×${k.toFixed(3)}${dl && Math.abs(dl) > 0.05 ? `, turned ${dl.toFixed(1)}°` : ''}). Undo reverses it.`);
 }
 
 /* ---------- undo ---------- */
@@ -1756,13 +1845,14 @@ $('cClear').onclick = () => { PIECES = []; SEL.clear(); commit(); };
 /* ---------- board options ---------- */
 $('cUnit').addEventListener('input', e => { CB.unit = +e.target.value; syncSel(); saveBoard(); cRender(); });
 $('cSnap').onchange = e => { CB.snap = e.target.checked; saveBoard(); };
+$('cFit').onchange = e => { CB.fit = e.target.checked; saveBoard(); };
 $('cJoints').onchange = e => { CB.joints = e.target.checked; saveBoard(); cRender(); };
 $('cGroutW').addEventListener('input', e => { CB.groutW = +e.target.value; syncSel(); saveBoard(); cRender(); });
 $('cGrout').addEventListener('input', e => { CB.grout = e.target.value; saveBoard(); cRender(); });
 $('cBg').addEventListener('input', e => { CB.bg = e.target.value; saveBoard(); cRender(); });
 $('cGrid').onchange = e => { CB.grid = e.target.value; saveBoard(); cRender(); };
 function syncBoardCtl() {
-  $('cUnit').value = CB.unit; $('cSnap').checked = CB.snap; $('cJoints').checked = CB.joints; $('cGroutW').value = CB.groutW;
+  $('cUnit').value = CB.unit; $('cSnap').checked = CB.snap; $('cFit').checked = CB.fit; $('cJoints').checked = CB.joints; $('cGroutW').value = CB.groutW;
   $('cGrout').value = CB.grout; $('cBg').value = CB.bg; $('cGrid').value = CB.grid; syncSel();
 }
 function cMsg(t, warn) { const s = $('cStatus'); s.textContent = t; s.style.color = warn ? 'var(--rose)' : 'var(--muted)'; }
@@ -1770,6 +1860,12 @@ function cMsg(t, warn) { const s = $('cStatus'); s.textContent = t; s.style.colo
 /* ---------- board interaction ---------- */
 let BD = null;
 board.addEventListener('pointerdown', e => {
+  if (FITPICK) { const w = evWorld(e), ed = edgeAt(w);
+    if (!ed) { cMsg('Click closer to an edge of another piece (or press Esc to cancel).', true); return; }
+    const k = FITPICK.edges.findIndex(x => x.pid === ed.pid && x.i === ed.i);
+    if (k >= 0) FITPICK.edges.splice(k, 1); else FITPICK.edges.push(ed);
+    if (e.shiftKey) { cMsg(`${FITPICK.edges.length} edge${FITPICK.edges.length > 1 ? 's' : ''} picked. Shift-click more edges in the same line, or click the last one without Shift to fit.`); cRender(); return; }
+    applyFitEdge(); return; }
   board.setPointerCapture(e.pointerId); const w = evWorld(e);
   let hit = null; for (let i = PIECES.length - 1; i >= 0; i--) if (inPoly(w, worldPoly(PIECES[i]))) { hit = PIECES[i]; break; }
   if (hit) {
@@ -1777,20 +1873,21 @@ board.addEventListener('pointerdown', e => {
     if (!SEL.has(hit.id)) { SEL.clear(); SEL.add(hit.id); }
     if (e.altKey) { const copies = selList().map(p => ({ ...p, id: 'p' + (uid++) })); PIECES.push(...copies); SEL.clear(); copies.forEach(p => SEL.add(p.id)); }
     const L = selList();
-    BD = { kind: 'move', start: w, orig: L.map(p => ({ p, x: p.x, y: p.y, rot: p.rot })), moved: false };
+    BD = { kind: 'move', start: w, orig: L.map(p => ({ p, x: p.x, y: p.y, rot: p.rot, s: p.s })), moved: false };
     syncSel(); cRender();
   } else if (e.shiftKey) { BD = { kind: 'box' }; BOX = { a: w, b: w }; }
   else BD = { kind: 'pan', sx: e.clientX, sy: e.clientY, ox: VIEW.ox, oy: VIEW.oy, moved: false };
 });
 board.addEventListener('pointermove', e => {
+  if (FITPICK) { const ed = edgeAt(evWorld(e)); FITPICK.hover = ed; board.style.cursor = ed ? 'pointer' : 'crosshair'; cRender(); return; }
   if (!BD) { const w = evWorld(e); let over = false; for (let i = PIECES.length - 1; i >= 0; i--) if (inPoly(w, worldPoly(PIECES[i]))) { over = true; break; }
     board.style.cursor = over ? 'move' : 'grab'; return; }
   if (BD.kind === 'pan') { VIEW.ox = BD.ox + e.clientX - BD.sx; VIEW.oy = BD.oy + e.clientY - BD.sy; BD.moved = true; cRender(); return; }
   const w = evWorld(e);
   if (BD.kind === 'box') { BOX.b = w; cRender(); return; }
   BD.moved = true;
-  for (const o of BD.orig) { o.p.x = o.x + w.x - BD.start.x; o.p.y = o.y + w.y - BD.start.y; o.p.rot = o.rot; }
-  snapPieces(BD.orig.map(o => o.p), BD.orig.length === 1); cRender();
+  for (const o of BD.orig) { o.p.x = o.x + w.x - BD.start.x; o.p.y = o.y + w.y - BD.start.y; o.p.rot = o.rot; o.p.s = o.s; }
+  snapPieces(BD.orig.map(o => o.p), BD.orig.length === 1); if (FITNOTE) cMsg(FITNOTE); syncSel(); cRender();
 });
 function endBoardDrag() {
   if (!BD) return;
@@ -1815,6 +1912,7 @@ board.addEventListener('wheel', e => {
 }, { passive: false });
 document.addEventListener('keydown', e => {
   if ($('composeView').hidden || !$('helpOv').hidden || !$('prefOv').hidden) return;
+  if (FITPICK && e.key === 'Escape') { e.preventDefault(); endFitPick('Fit cancelled.'); return; }
   const mod = e.ctrlKey || e.metaKey, L = selList();
   const t = e.target, typing = t.matches && t.matches('input[type=text],input[type=number],input[type=search],textarea,[contenteditable]');
   const inControl = t.closest && t.closest('input,select,textarea');
@@ -1841,7 +1939,7 @@ function startPaletteDrag(e, d) {
     if (Math.hypot(ev.clientX - x0, ev.clientY - y0) > 4) moved = true; if (!moved) return;
     const r = board.getBoundingClientRect(), over = ev.clientX >= r.left && ev.clientX <= r.right && ev.clientY >= r.top && ev.clientY <= r.bottom;
     if (over) { gh.hidden = true; const w = toWorld(ev.clientX - r.left, ev.clientY - r.top);
-      GHOST = GHOST && GHOST.did === d.id ? Object.assign(GHOST, { x: w.x, y: w.y, rot: 0 }) : newPiece(d, w.x, w.y); snapPieces([GHOST], true); }
+      GHOST = GHOST && GHOST.did === d.id ? Object.assign(GHOST, { x: w.x, y: w.y, rot: 0, s: CB.unit / d.edge }) : newPiece(d, w.x, w.y); snapPieces([GHOST], true); if (FITNOTE) cMsg(FITNOTE); }
     else { GHOST = null; SNAPMARK = null; gh.hidden = false; gh.style.left = (ev.clientX - gh.offsetWidth / 2) + 'px'; gh.style.top = (ev.clientY - gh.offsetHeight / 2) + 'px'; }
     cRender();
   };
