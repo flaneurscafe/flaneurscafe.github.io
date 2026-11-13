@@ -6,8 +6,6 @@
 <meta name="robots" content="noindex, nofollow, noimageindex, noarchive">
 <meta name="googlebot" content="noindex, nofollow, noimageindex">
 <link rel="icon" href="data:,">
-<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@700&family=Federant&display=swap" rel="stylesheet">
 <title>Tessera · mirrors, tiles &amp; mosaics</title>
 <link rel="stylesheet" href="css/tessera.css">
 </head>
@@ -215,7 +213,7 @@
   <div id="zTxt" hidden>
     <textarea id="zText" rows="3" style="width:100%;box-sizing:border-box;font:15px Georgia,serif;padding:6px;border:1px solid var(--line);border-radius:4px" placeholder="Type the text (Enter for a new line)">ARS LONGA
 VITA BREVIS</textarea>
-    <div class="row"><label>Lettering</label><select id="zTFont" class="sel"><option value="roman">Roman capitals</option><option value="nouveau">Art Nouveau</option><option value="serif">Serif</option><option value="sans">Bold sans</option></select><span></span></div>
+    <div class="row"><label>Lettering</label><select id="zTFont" class="sel"><option value="roman">Roman capitals</option><optgroup label="Art Nouveau"><option value="boecklin">Böcklin, 1904</option><option value="gloria">Gloria, 1898</option><option value="nouveau">Feder Antiqua, 1911</option></optgroup><optgroup label="On your computer"><option value="serif">Serif</option><option value="sans">Bold sans</option></optgroup></select><span></span></div>
     <div class="row"><label>Letter height</label><input type="range" id="zTSize" min="30" max="400" step="5" value="120"><output id="zTSizeV">120 px</output></div>
     <div class="row"><label>Piece size</label><input type="range" id="zTPiece" min="3" max="40" step="0.5" value="9"><output id="zTPieceV">9 px</output></div>
     <div class="row"><label>Style</label><select id="zTStyle" class="sel"><option value="verm">Following the letters (vermiculatum)</option><option value="roman">Roman, in rows</option><option value="trenc">Trencadís</option></select><span></span></div>
@@ -267,14 +265,117 @@ VITA BREVIS</textarea>
         <dt>Tabs</dt><dd><b>Compose</b> (the board), <b>Tile maker</b> (mirrors and wallpaper patterns), <b>Mosaic maker</b> (from an image, free form, lettering)</dd>
         <dt>Your work</dt><dd>Kept in this browser only (the tile library, the board and the open mosaic). Nothing is uploaded. Use <b>Save project</b> and <b>Save mosaic</b> to keep a file or move to another computer.</dd>
         <dt>Files</dt><dd>Projects and mosaics as JSON (tile images included); pictures as PNG and SVG.</dd>
-        <dt>Sources</dt><dd>Ornaments and the mirror method from <i>Combinaisons ornementales</i> (Librairie Centrale des Beaux-Arts, c. 1901; scans at the New York Public Library). Its preface, in French and English, opens from How it works (sections 3 and 8). Lettering uses the Cinzel and Federant fonts (Google Fonts).</dd>
+        <dt>Sources</dt><dd>Ornaments and the mirror method from <i>Combinaisons ornementales</i> (Librairie Centrale des Beaux-Arts, c. 1901; scans at the New York Public Library). Its preface, in French and English, opens from How it works (sections 3 and 8). The lettering fonts are listed below.</dd>
       </dl>
+      <h4 id="infoFonts" style="margin:14px 0 4px">Fonts for lettering (Mosaic maker)</h4>
+      <table class="small fonttab">
+        <tr><th>Font</th><th>After</th><th>Designer</th><th>Licence</th></tr>
+        <tr><td style="font-family:'Cinzel';font-weight:700">Cinzel</td><td>Roman inscriptional capitals</td><td>Natanael Gama (The Cinzel Project Authors), 2012–2020</td><td>SIL Open Font License 1.1</td></tr>
+        <tr><td style="font-family:'Boecklins Universe'">Boecklins Universe</td><td><i>Arnold Böcklin</i>, Otto Weisert foundry, Stuttgart, 1904</td><td>Peter Wiegel (CAT-Fonts), 2013</td><td>SIL Open Font License 1.1</td></tr>
+        <tr><td style="font-family:'Gloria'">Gloria</td><td><i>Gloria</i>, Emil Gursch foundry, Berlin, 1898</td><td>Peter Wiegel, 2014</td><td>SIL Open Font License 1.1 (also offered under the GPL with font exception)</td></tr>
+        <tr><td style="font-family:'Federant'">Federant</td><td><i>Feder Antiqua</i>, Otto Ludwig Nägele, 1911</td><td>Olexa M. Volochay and Alexei Vanyashin (Cyreal), 2011</td><td>SIL Open Font License 1.1</td></tr>
+      </table>
+      <p class="small">The font files come with Tessera, unmodified, in its <code>fonts</code> folder with their licence files; nothing is loaded from a font service. “Serif” and “Bold sans” use fonts already on your computer. Mosaics made with these fonts are yours: the licence does not apply to documents or images made with the fonts.</p>
+      <details class="small"><summary>Copyright notices and the licence text</summary>
+        <p>Cinzel: Copyright 2020 The Cinzel Project Authors (https://github.com/NDISCOVER/Cinzel).<br>
+        Boecklins Universe: Copyright (c) 2013, Peter Wiegel, www.peter-wiegel.de, with Reserved Font Name Böcklins Universe.<br>
+        Gloria: Copyright (c) 2014 by Peter Wiegel (www.peter-wiegel.de).<br>
+        Federant: Copyright (c) 2011, Cyreal (www.cyreal.org), with Reserved Font Name ‘Federant’.</p>
+        <p>These Font Software are licensed under the SIL Open Font License, Version 1.1:</p>
+        <pre class="ofl">-----------------------------------------------------------
+SIL OPEN FONT LICENSE Version 1.1 - 26 February 2007
+-----------------------------------------------------------
+
+PREAMBLE
+The goals of the Open Font License (OFL) are to stimulate worldwide
+development of collaborative font projects, to support the font creation
+efforts of academic and linguistic communities, and to provide a free and
+open framework in which fonts may be shared and improved in partnership
+with others.
+
+The OFL allows the licensed fonts to be used, studied, modified and
+redistributed freely as long as they are not sold by themselves. The
+fonts, including any derivative works, can be bundled, embedded, 
+redistributed and/or sold with any software provided that any reserved
+names are not used by derivative works. The fonts and derivatives,
+however, cannot be released under any other type of license. The
+requirement for fonts to remain under this license does not apply
+to any document created using the fonts or their derivatives.
+
+DEFINITIONS
+&quot;Font Software&quot; refers to the set of files released by the Copyright
+Holder(s) under this license and clearly marked as such. This may
+include source files, build scripts and documentation.
+
+&quot;Reserved Font Name&quot; refers to any names specified as such after the
+copyright statement(s).
+
+&quot;Original Version&quot; refers to the collection of Font Software components as
+distributed by the Copyright Holder(s).
+
+&quot;Modified Version&quot; refers to any derivative made by adding to, deleting,
+or substituting -- in part or in whole -- any of the components of the
+Original Version, by changing formats or by porting the Font Software to a
+new environment.
+
+&quot;Author&quot; refers to any designer, engineer, programmer, technical
+writer or other person who contributed to the Font Software.
+
+PERMISSION &amp; CONDITIONS
+Permission is hereby granted, free of charge, to any person obtaining
+a copy of the Font Software, to use, study, copy, merge, embed, modify,
+redistribute, and sell modified and unmodified copies of the Font
+Software, subject to the following conditions:
+
+1) Neither the Font Software nor any of its individual components,
+in Original or Modified Versions, may be sold by itself.
+
+2) Original or Modified Versions of the Font Software may be bundled,
+redistributed and/or sold with any software, provided that each copy
+contains the above copyright notice and this license. These can be
+included either as stand-alone text files, human-readable headers or
+in the appropriate machine-readable metadata fields within text or
+binary files as long as those fields can be easily viewed by the user.
+
+3) No Modified Version of the Font Software may use the Reserved Font
+Name(s) unless explicit written permission is granted by the corresponding
+Copyright Holder. This restriction only applies to the primary font name as
+presented to the users.
+
+4) The name(s) of the Copyright Holder(s) or the Author(s) of the Font
+Software shall not be used to promote, endorse or advertise any
+Modified Version, except to acknowledge the contribution(s) of the
+Copyright Holder(s) and the Author(s) or with their explicit written
+permission.
+
+5) The Font Software, modified or unmodified, in part or in whole,
+must be distributed entirely under this license, and must not be
+distributed under any other license. The requirement for fonts to
+remain under this license does not apply to any document created
+using the Font Software.
+
+TERMINATION
+This license becomes null and void if any of the above conditions are
+not met.
+
+DISCLAIMER
+THE FONT SOFTWARE IS PROVIDED &quot;AS IS&quot;, WITHOUT WARRANTY OF ANY KIND,
+EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO ANY WARRANTIES OF
+MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT
+OF COPYRIGHT, PATENT, TRADEMARK, OR OTHER RIGHT. IN NO EVENT SHALL THE
+COPYRIGHT HOLDER BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,
+INCLUDING ANY GENERAL, SPECIAL, INDIRECT, INCIDENTAL, OR CONSEQUENTIAL
+DAMAGES, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+FROM, OUT OF THE USE OR INABILITY TO USE THE FONT SOFTWARE OR FROM
+OTHER DEALINGS IN THE FONT SOFTWARE.</pre>
+      </details>
+
       <h4 id="infoPrivacy" style="margin:14px 0 4px">Privacy</h4>
       <p>Tessera has no accounts, no cookies, no analytics or advertising, and no tracking. It never sends your work anywhere and shares no data with anyone.</p>
       <ul class="small" style="margin:4px 0 8px;padding-left:18px">
         <li><b>What stays on your computer.</b> Your saved tiles, the board, the open mosaic, its guide image and My images are kept in this browser’s own storage for this site (IndexedDB and localStorage). They never leave your computer. Pictures you open are read in the browser and not uploaded.</li>
         <li><b>Files you save</b> (projects, mosaics, PNG and SVG) go only where you save them.</li>
-        <li><b>What the page loads.</b> Its own files and the plates and ornaments come from the site that serves the page; that site, like any web server, may keep ordinary access logs. The lettering fonts come from Google Fonts, so Google receives your browser’s usual request details (such as your IP address) when the page loads them.</li>
+        <li><b>What the page loads.</b> Everything, including the plates, the ornaments and the lettering fonts, comes from the site that serves the page; nothing is loaded from any other site or service. That site, like any web server, may keep ordinary access logs.</li>
         <li><b>Removing your data.</b> <b>Clear the workshop</b> (Compose) with “Also empty the whole library”, and × on My images, delete what Tessera keeps; clearing this site’s data in your browser settings removes it all.</li>
       </ul>
       <p class="small"><a href="#" id="infoHelp" style="color:var(--teal)">How it works</a> explains the geometry, the tiles and the mosaic methods.</p>
@@ -394,7 +495,7 @@ VITA BREVIS</textarea>
       <p><b>Mosaics</b> have their own tab, <b>Mosaic maker</b>. <b>From an image</b>: choose a picture (<b>From the library…</b> opens the ornament library, the whole plates with their crop tool, and My images; <b>From a file…</b> takes any image) and a style. <i>Roman, in rows</i> (opus tessellatum) sets roughly square stones in rows. <i>Roman, following the outlines</i> (opus vermiculatum) lays the stones in rows that run along the edges of the shapes: the image is reduced to its palette colours, the borders between them become guide lines, and rows are laid at one, two, three… half-stones from the nearest border, turned to follow it, before smaller cut pieces fill what is left. <i>Trencadís</i>, the broken-tile mosaic of Gaudí and Jujol, uses irregular shards. Each piece takes the palette colour (k-means in CIELAB) nearest to the average of the image under it.</p>
       <p><b>Free form</b> starts from an empty space, a rectangle, square, hexagon or triangle of a given size. <b>Extend to this size</b> changes the space without scaling the pieces: it grows (or shrinks) around them. Three baskets (small, medium, large) hold random pieces: shards, tesserae, pebbles or a mix. Click one, then click in the space to lay it in the chosen colour; the basket hands you another of that size. Hold the mouse button and drag to paint with pieces: they are laid one after another along the stroke, a piece’s width apart, skipping places where they would overlap, and Undo takes the whole stroke back (<kbd>Shift</kbd>-click keeps the same shape, <kbd>R</kbd> turns it). <b>Toss</b> refills a basket with new random pieces until you like them; <b>Toss shapes</b> (<kbd>T</kbd>) does the same for pieces already laid, keeping their size and colour. The piece in hand can be turned with ⟲ ⟳ or the slider (or <kbd>R</kbd>, <kbd>Shift</kbd>+<kbd>R</kbd>); its angle stays for the next pieces, or <b>Random turn</b> gives each new one its own. A <b>guide image</b> can lie faintly under the space, as a cartoon lies under a real mosaic: lay the pieces on it, set how strongly it shows, and, if you like, let each piece take the guide’s colour under it. The guide stays with the open mosaic in this browser but is never part of the mosaic or its exports.</p>
       <p>An image can also be laid into a mosaic that is already open: choose it under <b>From an image</b>, set <b>Width when added</b>, press <b>Add to the current mosaic</b> and click where it should go. It is cut with pieces of the mosaic’s own size, only where the image is not transparent; its colours are matched to the mosaic’s palette (new colours are added), and the ground around it is re-laid.</p>
-      <p><b>Lettering</b> turns text into mosaic. Type the text (several lines if you like), choose the lettering (Roman capitals, Art Nouveau, serif, bold sans), the letter height and the piece size, and a style: <i>following the letters</i> runs the rows of stones along the strokes, as in Roman inscriptions; rows and trencadís are also offered. <b>Make a text mosaic</b> starts a new mosaic of the text, with or without background pieces; <b>Add to the current mosaic</b> lays the letters wherever you click in the open mosaic, lifting out the pieces underneath (Undo puts them back).</p>
+      <p><b>Lettering</b> turns text into mosaic. Type the text (several lines if you like), choose the lettering (Roman capitals; three Art Nouveau faces, after Böcklin 1904, Gloria 1898 and Feder Antiqua 1911; serif; bold sans: About lists the fonts and their licences), the letter height and the piece size, and a style: <i>following the letters</i> runs the rows of stones along the strokes, as in Roman inscriptions; rows and trencadís are also offered. <b>Make a text mosaic</b> starts a new mosaic of the text, with or without background pieces; <b>Add to the current mosaic</b> lays the letters wherever you click in the open mosaic, lifting out the pieces underneath (Undo puts them back).</p>
       <p>All mosaics follow the same rules, however they were made, so the techniques mix freely: a mosaic cut from an image can take lettering, another image and pieces from the baskets, and a hand-laid one can take an image or text. In every mosaic pieces may touch but never overlap: a new piece goes to the nearest free spot (or is refused when there is none), dragged pieces stop at their neighbours, turned and tossed pieces must fit, and text or an image laid in lifts the pieces it covers and re-lays the ground only where it fits. To make room in a full mosaic, delete some pieces first. The mosaic is then edited piece by piece: select pieces (click, <kbd>Shift</kbd>-click, <kbd>Shift</kbd>-drag a box; double-click a colour to select all its pieces) and click a colour to give it to them, or use <b>Paint</b> to click and drag colour over them (<kbd>Alt</kbd>-click picks a colour up). Pieces can be moved, turned, deleted and added from the baskets, also in a mosaic cut from an image; the palette colours, the mortar and the joint width can be changed for the whole mosaic. <b>Add to Compose as a tile</b> saves it with your tiles in the shape of its space, to be combined with the other tiles; <b>Place in Compose as a panel</b> puts it on the Compose board at its own size, as a rectangle. A mosaic tile selected in Compose offers <b>Edit in the Mosaic maker tab</b>; there, <b>Save back</b> updates the tile and every piece that uses it. The mosaic in the tab is kept between visits; <b>Save mosaic</b> and <b>Open a mosaic file</b> exchange it as a file (a project file from Compose opens too), and PNG and SVG export it, the SVG with every piece as a vector shape.</p>
 
       <h4 id="h-methods">8 · Methods and sources: what is what</h4>

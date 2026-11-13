@@ -35,6 +35,7 @@ from the folder (`file://`). Version: see the *info* button (bottom right).
 | `js/help.js` | How it works, About (version), the original text |
 | `js/main.js` | start-up; runs last |
 | `js/demo-data.js` | the first-visit demo (generated data, 1.2 MB: no need to read it) |
+| `fonts/` | the lettering fonts, unmodified, each with its licence file (all SIL Open Font License 1.1): Cinzel, Boecklins Universe (after Arnold Böcklin, 1904), Gloria (after Emil Gursch, 1898), Federant (after Feder Antiqua, 1911). The About panel lists them and carries the licence text |
 | `ornaments/`, `othumbs_atlas.webp` | the ornament library and its thumbnails |
 | `plates/`, `thumbs/` | the 60 plates and their thumbnails |
 
@@ -46,7 +47,7 @@ as JSON files (`combinaisons-mirror-tool`, `combinaisons-mosaic`).
 ## Publish with GitHub Pages
 
 1. Create a repository and push the contents of this folder to its root
-   (`index.html`, `.nojekyll`, `css/`, `js/`, `plates/`, `thumbs/`, `ornaments/`, `othumbs_atlas.webp`).
+   (`index.html`, `.nojekyll`, `css/`, `js/`, `fonts/`, `plates/`, `thumbs/`, `ornaments/`, `othumbs_atlas.webp`).
 2. On GitHub: **Settings → Pages → Build and deployment → Source: Deploy from a branch**,
    branch `main`, folder `/ (root)`.
 3. The site appears at `https://<user>.github.io/<repository>/` after a minute or two.
@@ -71,4 +72,4 @@ and the Internet Archive scan; the book is in the public domain. The ornaments w
 segmented, deskewed and cleaned automatically (`segment_ornaments_v2.py`; the first
 version, `segment_ornaments.py`, is kept for reference). The library has three kinds of
 item per plate: single ornaments (274), the whole printed frame (58) and the whole plate,
-uncut (58). Lettering uses the Cinzel and Federant fonts (Google Fonts).
+uncut (58). Lettering fonts: see `fonts/` and the About panel; nothing is loaded from a font service.

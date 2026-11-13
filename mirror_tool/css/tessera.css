@@ -1,4 +1,9 @@
 /* Tessera · styles */
+/* lettering fonts, shipped in fonts/ with their licences (SIL OFL 1.1) */
+@font-face { font-family: 'Cinzel'; src: url('../fonts/Cinzel-Variable.ttf') format('truetype'); font-weight: 400 900; font-display: swap; }
+@font-face { font-family: 'Federant'; src: url('../fonts/Federant-Regular.ttf') format('truetype'); font-weight: 400; font-display: swap; }
+@font-face { font-family: 'Boecklins Universe'; src: url('../fonts/BoecklinsUniverse.ttf') format('truetype'); font-weight: 400; font-display: swap; }
+@font-face { font-family: 'Gloria'; src: url('../fonts/Gloria.ttf') format('truetype'); font-weight: 400; font-display: swap; }
   :root{
     --paper:#f6f1e6; --paper2:#efe7d6; --ink:#33291f; --muted:#7a6a55;
     --ochre:#b07a2a; --teal:#2f5d5a; --rose:#a3434f; --line:#d9ccb3;
@@ -196,3 +201,5 @@
   #bgSw{display:inline-flex;gap:3px}
   #bgSw button{width:16px;height:16px;padding:0;border:1px solid rgba(60,45,30,.35);border-radius:50%;cursor:pointer}
   #bgSw button.on{outline:2px solid var(--teal,#2f5d5a);outline-offset:1px}
+  .fonttab{border-collapse:collapse;width:100%;margin:4px 0 6px} .fonttab th,.fonttab td{text-align:left;vertical-align:top;padding:3px 6px 3px 0;border-bottom:1px solid var(--line)} .fonttab td:first-child{font-size:17px;white-space:nowrap}
+  pre.ofl{white-space:pre-wrap;font-size:11px;max-height:220px;overflow:auto;background:#fbf6ea;border:1px solid var(--line);padding:6px}

@@ -12,6 +12,11 @@ import re, sys, pathlib
 root = pathlib.Path(__file__).resolve().parent.parent
 html = (root / 'index.html').read_text(encoding='utf-8')
 css = (root / 'css' / 'tessera.css').read_text(encoding='utf-8')
+import base64
+def font_data(m):   # the font files (unmodified) travel inside the page as data URLs; their licences are in the About panel
+    data = (root / 'fonts' / m.group(1)).read_bytes()
+    return "url('data:font/ttf;base64," + base64.b64encode(data).decode('ascii') + "')"
+css = re.sub(r"url\('\.\./fonts/([\w.-]+\.ttf)'\)", font_data, css)
 html = html.replace('<link rel="stylesheet" href="css/tessera.css">', '<style>\n' + css + '</style>', 1)
 def inline(m):
     code = (root / m.group(1)).read_text(encoding='utf-8')

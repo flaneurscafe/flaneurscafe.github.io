@@ -433,7 +433,9 @@ if (inFrame) { ['zPng', 'zSvg', 'zSaveFile'].forEach(id => $(id).disabled = true
 /* ---------- lettering: text turned into mosaic, as a new mosaic or laid into the current one ---------- */
 const ZFONTS = {
   roman: { css: '700 {S}px "Cinzel", "Trajan Pro", Georgia, serif', name: 'Roman capitals', caps: true },
-  nouveau: { css: '400 {S}px "Federant", "Arial Rounded MT Bold", Georgia, serif', name: 'Art Nouveau' },
+  boecklin: { css: '400 {S}px "Boecklins Universe", Georgia, serif', name: 'Art Nouveau · Böcklin' },
+  gloria: { css: '400 {S}px "Gloria", Georgia, serif', name: 'Art Nouveau · Gloria' },
+  nouveau: { css: '400 {S}px "Federant", "Arial Rounded MT Bold", Georgia, serif', name: 'Art Nouveau · Feder Antiqua' },
   serif: { css: '700 {S}px Georgia, "Times New Roman", serif', name: 'Serif' },
   sans: { css: '900 {S}px "Arial Black", "Helvetica Neue", Arial, sans-serif', name: 'Bold sans' },
 };
