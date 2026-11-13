@@ -203,3 +203,11 @@
   #bgSw button.on{outline:2px solid var(--teal,#2f5d5a);outline-offset:1px}
   .fonttab{border-collapse:collapse;width:100%;margin:4px 0 6px} .fonttab th,.fonttab td{text-align:left;vertical-align:top;padding:3px 6px 3px 0;border-bottom:1px solid var(--line)} .fonttab td:first-child{font-size:17px;white-space:nowrap}
   pre.ofl{white-space:pre-wrap;font-size:11px;max-height:220px;overflow:auto;background:#fbf6ea;border:1px solid var(--line);padding:6px}
+/* how-it-works media: ray-traced figures and animations */
+.help figure.media{margin:12px 0 16px;max-width:760px}
+.help .mfig{width:100%;background:url(../media/mirror_figures.webp) no-repeat;background-size:100% auto;border-radius:3px}
+.help .mfig.a{aspect-ratio:760/345;background-position:0 0}
+.help .mfig.b{aspect-ratio:760/272;background-position:0 100%}
+.help video{display:block;width:100%;height:auto;margin-top:10px;border-radius:3px;background:#efe8da}
+.help video.narrow{max-width:560px}
+.help figure.media figcaption{font-size:13px;line-height:1.5;color:var(--muted);margin-top:6px}
