@@ -1,0 +1,94 @@
+// Homepage quote module (_includes/section-quote.html)
+.fc-quote {
+  text-align: center;
+
+  &__item {
+    margin: 0;
+    padding: 10px 0 0;
+    position: relative;
+  }
+
+  &__item[hidden] { display: none; }
+
+  // large decorative opening quote mark
+  &__item::before {
+    content: "\201C";
+    display: block;
+    font-family: 'Lora', serif;
+    font-size: 5rem;
+    line-height: 0.6;
+    height: 2.2rem;
+    color: $global-primary-background;
+    opacity: 0.8;
+  }
+
+  &__context {
+    margin: 0 0 10px;
+    font-family: $font-san-serif;
+    font-size: 0.75rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: $global-primary-background;
+  }
+
+  &__original {
+    margin: 0 auto 18px;
+    max-width: 680px;
+    padding: 0;
+    border: 0;
+    font-family: 'Lora', serif;
+    font-style: italic;
+    font-size: 1.45rem;
+    line-height: 1.5;
+    color: $global-emphasis-color;
+  }
+
+  &__translation {
+    margin: 0 auto 22px;
+    max-width: 600px;
+    font-size: 1rem;
+    line-height: 1.6;
+    color: $global-color;
+
+    &::before {
+      content: "";
+      display: block;
+      width: 40px;
+      height: 1px;
+      margin: 0 auto 14px;
+      background: $global-primary-background;
+    }
+  }
+
+  &__cite {
+    font-family: $font-san-serif;
+    font-size: 0.8rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: $global-muted-color;
+
+    cite { font-style: italic; text-transform: none; letter-spacing: 0; }
+  }
+
+  &__author { color: $global-emphasis-color; font-weight: 600; }
+
+  &__translator {
+    display: block;
+    margin-top: 6px;
+    font-size: 0.7rem;
+    text-transform: none;
+    letter-spacing: 0;
+    opacity: 0.8;
+  }
+
+  &__next {
+    margin-top: 18px;
+    font-family: $font-san-serif;
+    font-size: 0.75rem;
+    letter-spacing: 0.08em;
+  }
+
+  @media (max-width: 640px) {
+    &__original { font-size: 1.2rem; }
+  }
+}

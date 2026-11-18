@@ -1,0 +1,143 @@
+# Quotes for the homepage "From the flâneur's notebook" module (_includes/section-quote.html).
+# Only entries with `verified: true` are shown, and not those with `show: false` (quotes that are hard to
+# understand without the essay around them). `context` is a short line shown above the quote, so that a visitor
+# knows what it is about. Keep the original exactly as printed; `translation` is shown below it.
+# `translator: flaneurs.cafe` marks our own working translations.
+# Sources and checks: _drafts/is-flanerie-dead-quotes.md and _drafts/sources/ (not published).
+
+- original: "Die letzte Reise des Flaneurs: der Tod. Ihr Ziel: das Neue."
+  context: "On the end of the flâneur"
+  lang: de
+  translation: "The flâneur's last journey: death. Its destination: the new."
+  translator: flaneurs.cafe
+  author: Walter Benjamin
+  work: "Paris, die Hauptstadt des XIX. Jahrhunderts"
+  year: 1935
+  verified: true
+
+- original: "Das Warenhaus ist der letzte Strich des Flaneurs."
+  context: "On strolling turned into shopping"
+  show: false   # "beat" is cryptic without the essay
+  lang: de
+  translation: "The department store is the flâneur's last beat."
+  translator: flaneurs.cafe
+  author: Walter Benjamin
+  work: "Paris, die Hauptstadt des XIX. Jahrhunderts"
+  year: 1935
+  verified: true
+
+- original: "Der Flaneur steht noch auf der Schwelle, der Großstadt sowohl wie der Bürgerklasse. Keine von beiden hat ihn noch überwältigt. In keiner von beiden ist er zu Hause."
+  context: "On the flâneur's place in the city"
+  lang: de
+  translation: "The flâneur still stands on the threshold – of the big city, and of the bourgeois class. Neither has swallowed him up yet. He is at home in neither."
+  translator: flaneurs.cafe
+  author: Walter Benjamin
+  work: "Paris, die Hauptstadt des XIX. Jahrhunderts"
+  year: 1935
+  verified: true
+
+- original: "Er sucht sich sein Asyl in der Menge."
+  context: "On the flâneur and the crowd"
+  lang: de
+  translation: "He seeks his refuge in the crowd."
+  translator: flaneurs.cafe
+  author: Walter Benjamin
+  work: "Paris, die Hauptstadt des XIX. Jahrhunderts"
+  year: 1935
+  verified: true
+
+- original: "Die Menge ist der Schleier, durch den hindurch dem Flaneur die gewohnte Stadt als Phantasmagorie winkt."
+  show: false   # too abstract out of context
+  lang: de
+  translation: "The crowd is the veil through which the familiar city beckons to the flâneur as a phantasmagoria."
+  translator: flaneurs.cafe
+  author: Walter Benjamin
+  work: "Paris, die Hauptstadt des XIX. Jahrhunderts"
+  year: 1935
+  verified: true
+
+- original: "Im Flaneur begibt sich die Intelligenz auf den Markt. Wie sie meint, um ihn anzusehen und in Wahrheit doch schon, um einen Käufer zu finden."
+  show: false   # needs the essay to make sense
+  lang: de
+  translation: "In the flâneur, the intelligentsia goes to the marketplace – to look it over, as it believes, but in truth already to find a buyer."
+  translator: flaneurs.cafe
+  author: Walter Benjamin
+  work: "Paris, die Hauptstadt des XIX. Jahrhunderts"
+  year: 1935
+  verified: true
+
+- original: "Le vieux Paris n'est plus (la forme d'une ville<br>Change plus vite, hélas ! que le cœur d'un mortel)"
+  context: "On a city that keeps changing"
+  lang: fr
+  translation: "Old Paris is no more (the shape of a city<br>changes faster, alas, than a mortal's heart)"
+  translator: flaneurs.cafe
+  author: Charles Baudelaire
+  work: "Le Cygne, Les Fleurs du mal"
+  year: 1861
+  verified: true
+
+- original: "Tout pour moi devient allégorie."
+  show: false   # too abstract out of context
+  lang: fr
+  translation: "Everything, for me, becomes allegory."
+  translator: flaneurs.cafe
+  author: Charles Baudelaire
+  work: "Le Cygne, Les Fleurs du mal"
+  year: 1861
+  verified: true
+
+- original: "Un daguerréotype mobile et passionné."
+  show: false   # a fragment; meaningless alone
+  lang: fr
+  translation: "A mobile and passionate daguerreotype."
+  translator: flaneurs.cafe
+  author: Victor Fournel
+  work: "Ce qu'on voit dans les rues de Paris"
+  year: 1858
+  verified: true
+
+- original: "What attracts people most, it would appear, is other people."
+  context: "On what draws people to a public square"
+  lang: en
+  author: William H. Whyte
+  work: "The Social Life of Small Urban Spaces"
+  year: 1980
+  verified: true
+
+- original: "People tend to sit most where there are places to sit."
+  context: "On why benches matter"
+  show: false   # reads as a truism without the book around it
+  lang: en
+  author: William H. Whyte
+  work: "The Social Life of Small Urban Spaces"
+  year: 1980
+  verified: true
+
+# --- Not yet verified: set verified: true once checked against a printed edition ---
+
+- original: "Paris change ! mais rien dans ma mélancolie<br>N'a bougé ! palais neufs, échafaudages, blocs,<br>Vieux faubourgs, tout pour moi devient allégorie,<br>Et mes chers souvenirs sont plus lourds que des rocs."
+  lang: fr
+  translation: "Paris changes! But nothing in my melancholy<br>has moved! New palaces, scaffolding, blocks of stone,<br>old districts, everything becomes allegory to me,<br>and my dear memories weigh more than rocks."
+  translator: flaneurs.cafe
+  author: Charles Baudelaire
+  work: "Le Cygne, Les Fleurs du mal"
+  year: 1861
+  verified: false   # last line not yet checked
+
+- original: "Sich in einer Stadt nicht zurechtzufinden heißt nicht viel. In einer Stadt sich aber zu verirren, wie man in einem Walde sich verirrt, braucht Schulung."
+  lang: de
+  translation: "Not to find one's way around a city does not mean much. But to lose one's way in a city, as one loses one's way in a forest, requires schooling."
+  translator: flaneurs.cafe
+  author: Walter Benjamin
+  work: "Berliner Kindheit um neunzehnhundert"
+  year: 1938
+  verified: false   # German quoted from memory
+
+- original: "La foule est son domaine, comme l'air est celui de l'oiseau, comme l'eau celui du poisson. Sa passion et sa profession, c'est d'épouser la foule."
+  lang: fr
+  translation: "The crowd is his domain, as the air is the bird's and water the fish's. His passion and his profession are to merge with the crowd."
+  translator: flaneurs.cafe
+  author: Charles Baudelaire
+  work: "Le Peintre de la vie moderne"
+  year: 1863
+  verified: false   # French quoted from memory

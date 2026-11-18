@@ -1,0 +1,64 @@
+{%- comment -%}
+  Random quote from _data/quotes.yml (entries with verified: true, except those with show: false).
+  All quotes are rendered; a small script shows one at random. Without JavaScript the first one is shown.
+  Usage: {% include section-quote.html title="From the Flâneur's Notebook" %}
+{%- endcomment -%}
+{%- assign quotes = site.data.quotes | where: "verified", true | where_exp: "q", "q.show != false" -%}
+{%- if quotes.size > 0 -%}
+<div class="uk-container uk-margin-medium-bottom">
+  <hr class="uk-margin-remove">
+  {%- if include.title %}
+  <h2 class="section-title uk-text-center uk-margin">{{ include.title }}</h2>
+  <hr class="uk-margin-remove">
+  {%- endif %}
+</div>
+
+<section class="fc-quote uk-container uk-container-small uk-margin-medium-bottom" aria-label="{{ include.title | default: 'Quote' }}">
+  {%- for q in quotes %}
+  <figure class="fc-quote__item"{% unless forloop.first %} hidden{% endunless %}>
+    {%- if q.context %}
+    <p class="fc-quote__context">{{ q.context }}</p>
+    {%- endif %}
+    <blockquote class="fc-quote__original" lang="{{ q.lang }}">{{ q.original }}</blockquote>
+    {%- if q.translation %}
+    <p class="fc-quote__translation" lang="en">{{ q.translation }}</p>
+    {%- endif %}
+    <figcaption class="fc-quote__cite">
+      <span class="fc-quote__author">{{ q.author }}</span>{% if q.work %}, <cite>{{ q.work }}</cite>{% endif %}{% if q.year %} ({{ q.year }}){% endif %}
+      {%- if q.translator %}<span class="fc-quote__translator">Translation: {{ q.translator }}</span>{% endif %}
+    </figcaption>
+  </figure>
+  {%- endfor %}
+  {%- if quotes.size > 1 %}
+  <div class="uk-text-center">
+    <button type="button" class="fc-quote__next uk-button uk-button-text" hidden>Another quote</button>
+  </div>
+  {%- endif %}
+</section>
+
+<script>
+(function () {
+  var box = document.querySelector('.fc-quote');
+  if (!box) return;
+  var items = box.querySelectorAll('.fc-quote__item');
+  var current = 0;
+  function show(i) {
+    items[current].hidden = true;
+    items[i].hidden = false;
+    current = i;
+  }
+  function pick() {
+    if (items.length < 2) return current;
+    var i;
+    do { i = Math.floor(Math.random() * items.length); } while (i === current);
+    return i;
+  }
+  show(pick());
+  var next = box.querySelector('.fc-quote__next');
+  if (next) {
+    next.hidden = false;
+    next.addEventListener('click', function () { show(pick()); });
+  }
+})();
+</script>
+{%- endif -%}
