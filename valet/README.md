@@ -39,6 +39,6 @@ Issues and suggestions are welcome. Because Valet is also offered under a separa
 
 Budgie Perruche, [Flâneurs' Café](https://flaneurs.cafe/): [contact page](https://flaneurs.cafe/contact/), or [@flaneurscafe@mstdn.social](https://mstdn.social/@flaneurscafe).
 
-Source: the public repository will be added soon.
+Source: <https://github.com/flaneurscafe/valet>
 
 Copyright © 2026 Budgie Perruche.
