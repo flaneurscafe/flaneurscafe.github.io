@@ -60,7 +60,7 @@
   let statusKey = '', statusVal = {};
   function status() {
     const a = api.analysis(); if (!a) return {};
-    const o = engineOutfit(), key = JSON.stringify(o) + '|' + a.contrast + '|' + a.lean + '|' + a.redness + '|' + a.underEye + '|' + a.glasses;
+    const o = engineOutfit(), key = JSON.stringify(o) + '|' + a.contrast + '|' + a.lean + '|' + a.redness + '|' + a.underEye + '|' + a.glasses + '|' + a.glassesHex;
     if (key === statusKey) return statusVal;
     const out = {};
     PIECES.forEach(function (p) { if (o[p.key]) out[p.key] = E.fitFor(o, a, p.key).judge(o[p.key].hex, o[p.key].name); });

@@ -1044,3 +1044,16 @@ button.gl-c.pk-no { text-decoration: line-through; text-decoration-color: var(--
   /* four occasions as a 2 × 2 grid rather than three and one */
   #ovOccasion .seg { display: grid; grid-template-columns: 1fr 1fr; width: 100%; }
 }
+
+/* Glasses: the colour of an acetate frame (You tab) */
+.gl-colour { margin-top: 0.5rem; }
+.gl-colour .chips { display: flex; flex-wrap: wrap; gap: 0.35rem; margin: 0.3rem 0 0.4rem; }
+.gl-colour .chip .d { display: inline-block; width: 14px; height: 14px; border-radius: 50%; margin-right: 0.35rem; vertical-align: -2px; border: 1px solid rgba(0,0,0,0.25); }
+.gl-any { display: inline-flex; align-items: center; gap: 0.45rem; font: 0.82rem var(--sans); color: var(--muted); }
+.gl-any input[type=color] { width: 2.4rem; height: 1.8rem; padding: 0; border: 1px solid var(--rule); border-radius: 6px; background: none; }
+
+/* The footer's text in the info dialog (copied from the footer by mobile.js) */
+.wl-foot { margin-top: 0.8rem; padding-top: 0.6rem; border-top: 1px solid var(--rule); font: 0.8rem/1.45 var(--sans); color: var(--muted); }
+.wl-foot p { margin: 0 0 0.3rem; }
+.wl-foot .foot-lic { font-size: inherit; margin-top: 0; }
+@media (max-width: 860px) { .foot { display: none; } }

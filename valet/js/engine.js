@@ -162,7 +162,8 @@
       depth: depth, depthLevel: depthLevel,
       skinHue: h, lean: lean, tempLevel: tempLevel, confidence: confidence,
       chroma: chroma, chromaLevel: chromaLevel,
-      glasses: profile.glasses || 'none', hairStyle: style, hairLabel: H.label,
+      glasses: profile.glasses || 'none', glassesHex: profile.glasses === 'acetate' ? (/^#[0-9a-f]{6}$/i.test(profile.glassesHex || '') ? profile.glassesHex : '#161616') : null,
+      hairStyle: style, hairLabel: H.label,
       redness: profile.redness || 'none', underEye: profile.underEye || 'none'
     };
   }
@@ -291,13 +292,16 @@
 
     // Frames (B): a metal frame is a second temperature at the face. It only counts against a
     // colour when the pair pulls away from the wearer: warm on warm is harmony for warm colouring.
-    if (p.glasses === 'gold' && tColour > 0.4 && p.lean < 0.35) {
+    // A coloured acetate frame counts the same way, by its own hue: tortoiseshell warm, navy cool;
+    // black, grey and clear frames are neutral.
+    const ft = frameTemp(p), fName = p.glasses === 'acetate' ? 'your ' + (ft === 'warm' ? 'warm-coloured' : 'cool-coloured') + ' frames' : p.glasses + ' frames';
+    if (ft === 'warm' && tColour > 0.4 && p.lean < 0.35) {
       rules.push({ id: 'glasses', level: 'B', score: 0.8,
-        text: 'With gold frames this is a second warm item at the face; keep the rest of the face area cool.' });
+        text: 'With ' + fName + ' this is a second warm item at the face; keep the rest of the face area cool.' });
       simPenalty += 0.04;
-    } else if (p.glasses === 'silver' && tColour < -0.4 && p.lean > 0.35) {
+    } else if (ft === 'cool' && tColour < -0.4 && p.lean > 0.35) {
       rules.push({ id: 'glasses', level: 'B', score: 0.8,
-        text: 'With silver frames this is a second cool item at the face of warm colouring; keep the rest of the face area warm.' });
+        text: 'With ' + fName + ' this is a second cool item at the face of warm colouring; keep the rest of the face area warm.' });
       simPenalty += 0.04;
     }
 
@@ -922,16 +926,26 @@
      is seen before the face (A: the step is measured; B: where it becomes too much is the
      convention of section 4). Metal frames are thin lines and clear frames show the skin through
      them, so only acetate is judged. Frame lightness by material is Valet's working value. */
-  const FRAME_L = { black: 15, tortoise: 35 };
+  /* The frame's own temperature: gold warm, silver cool; an acetate frame by its hue, scaled down
+     for low chroma as any colour is (section 7), so black and grey frames are neutral. */
+  function frameTemp(p) {
+    if (!p) return null;
+    if (p.glasses === 'gold') return 'warm';
+    if (p.glasses === 'silver') return 'cool';
+    if (p.glasses !== 'acetate' || !p.glassesHex) return null;
+    const lch = VC.labToLch(VC.hexToLab(p.glassesHex)), t = VC.hueTemperature(lch[2]) * Math.min(1, lch[1] / 25);
+    return t > 0.35 ? 'warm' : t < -0.35 ? 'cool' : null;
+  }
   function frameWeight(p) {
-    if (!p || !(p.glasses in FRAME_L) || !p.lab || !p.lab.skin) return null;
-    const step = Math.abs(p.lab.skin[0] - FRAME_L[p.glasses]), hi = p.contrast * 1.5 + 15;
-    const name = p.glasses === 'black' ? 'black acetate' : 'tortoiseshell';
+    if (!p || p.glasses !== 'acetate' || !p.glassesHex || !p.lab || !p.lab.skin) return null;
+    const fL = VC.hexToLab(p.glassesHex)[0];
+    const step = Math.abs(p.lab.skin[0] - fL), hi = p.contrast * 1.5 + 15;
+    const name = 'acetate';
     if (step <= hi) return { score: 1, step: step, hi: hi,
-      text: 'Glasses: a ' + name + ' frame against your skin (lightness step ' + round(step) + ') is within the contrast your face carries (up to ' + round(hi) + '), so it reads as part of the face.' };
-    const lighter = p.glasses === 'black' ? 'Tortoiseshell, a clear frame or a thin metal one' : 'A clear frame or a thin metal one';
+      text: 'Glasses: your acetate frame against your skin (lightness step ' + round(step) + ') is within the contrast your face carries (up to ' + round(hi) + '), so it reads as part of the face.' };
+    const lighter = fL < p.lab.skin[0] ? 'A lighter frame (honey tortoiseshell, grey or clear) or a thin metal one' : 'A darker frame or a thin metal one';
     return { score: 0.75, step: step, hi: hi,
-      text: 'Glasses: a ' + name + ' frame against your skin (lightness step ' + round(step) + ') is stronger than the contrast your face carries (up to ' + round(hi) + '), so it is seen before the face. ' + lighter + ' would sit with the face rather than over it.' };
+      text: 'Glasses: your ' + name + ' frame against your skin (lightness step ' + round(step) + ') is stronger than the contrast your face carries (up to ' + round(hi) + '), so it is seen before the face. ' + lighter + ' would sit with the face rather than over it.' };
   }
 
   /* Metal (Outfit Check, question 6): one metal through the outfit, a two-tone watch the one
@@ -1369,6 +1383,6 @@
   window.VENGINE = {
     analyseProfile: analyseProfile, bodyRatios: bodyRatios, scoreColour: scoreColour,
     checkOutfit: checkOutfit, verdict: verdict, penalty: penalty, suggest: suggest, complete: complete, rescue: rescue, themePalette: themePalette, themeStudy: themeStudy, SECTIONS: SECTIONS, sectionOf: sectionOf, watchRange: watchRange, summary: summary, look: look, SLOTS: SLOTS, FACE: FACE, TIER_TEXT: TIER_TEXT, corrected: corrected, HAIR: HAIR,
-    echoes: echoes, hairShown: hairShown, frameWeight: frameWeight, skinClashes: skinClashes, skinReasons: skinReasons, fitFor: fitFor, seasonProfile: seasonProfile, TAN: TAN
+    echoes: echoes, hairShown: hairShown, frameWeight: frameWeight, frameTemp: frameTemp, skinClashes: skinClashes, skinReasons: skinReasons, fitFor: fitFor, seasonProfile: seasonProfile, TAN: TAN
   };
 })();

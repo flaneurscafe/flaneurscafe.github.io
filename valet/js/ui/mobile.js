@@ -54,6 +54,9 @@
   }
 
   function setUp() {
+    // the footer's text also lives in the info dialog, where it is easy to reach on any screen
+    const foot = $('.foot'), wf = $('#welcomeFoot');
+    if (foot && wf) wf.innerHTML = foot.innerHTML;
     backdrop = document.createElement('div');
     backdrop.className = 'sheet-backdrop'; backdrop.hidden = true;
     backdrop.addEventListener('click', closeAll);

@@ -13,13 +13,13 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Valet — dressing from theory</title>
 <meta name="description" content="Valet: a browser tool that works out which colours suit you from colour science and tailoring theory, and charts an outfit's lightness against your own colouring. Nothing leaves your browser.">
-<link rel="stylesheet" href="css/valet.css?v=1.4">
+<link rel="stylesheet" href="css/valet.css?v=1.5">
 </head>
 <body>
 <header class="masthead">
   <div class="brand">
     <h1>Valet</h1>
-    <p class="tagline">Dressing from theory, not from cases <button type="button" class="ver" id="verTag" title="What Valet is and how to use it">v1.4 · proportion and fit</button></p>
+    <p class="tagline">Dressing from theory, not from cases <button type="button" class="ver" id="verTag" title="What Valet is and how to use it">v1.5</button></p>
   </div>
   <div class="season-bar"><span class="flabel" id="seasonLabel">Season</span>
     <div class="seg" id="season" role="radiogroup" aria-labelledby="seasonLabel">
@@ -91,11 +91,14 @@
           <select id="glasses">
             <option value="none">No glasses</option>
             <option value="gold">Gold metal</option>
-            <option value="silver">Silver / steel</option>
-            <option value="black">Black acetate</option>
-            <option value="tortoise">Tortoiseshell</option>
-            <option value="clear">Clear / crystal</option>
+            <option value="silver">Silver or steel metal</option>
+            <option value="acetate">Acetate, in a colour</option>
+            <option value="clear">Clear or crystal</option>
           </select>
+        </div>
+        <div class="field gl-colour" id="glassesColour" hidden><span class="flabel" id="glassesColourLabel">Frame colour</span>
+          <div class="chips" role="radiogroup" aria-labelledby="glassesColourLabel" id="glassesChips"></div>
+          <label class="gl-any">Any colour <input type="color" id="glassesHex" value="#161616"></label>
         </div>
         <p class="g-note" id="glassesNote" hidden></p>
 
@@ -414,7 +417,7 @@
           <p class="formula">lower = max(8, 0.5 × contrast) &nbsp;&nbsp; upper = 1.5 × contrast + 15</p>
           <p>The lower bound is about definition, which can come from lightness or from hue, so it is tested against the larger of ΔL* and 1.2 × ΔE2000. The upper bound is about heaviness, which is lightness alone, so it is tested against ΔL*. Inside the band scores fully; outside, the score falls off over 20 units. The profile card draws this band in green on your lightness scale.</p>
           <p><strong>Shirt against jacket.</strong> The lightness chart and the Outfit check check that the two layers at the face differ by at least the lower bound, so the face has a frame. It only objects to a very strong step when your own contrast is low.</p>
-          <p><span class="badge A">A</span> <span class="badge B">B</span> <strong>Glasses.</strong> A frame is the one dark line that is always at the face, so the same band judges it. The lightness step between a thick acetate frame and your skin is compared with the upper bound: above it, the frame is the strongest edge at the face and is seen before the face. On a low-contrast face a black acetate frame usually crosses it, and tortoiseshell, clear or thin metal frames sit with the face instead; on a high-contrast face the black frame belongs. Metal frames are thin lines and clear frames show the skin through them, so only acetate is judged. The frame's lightness is Valet's working value for each material, not a measurement. The verdict appears under the Glasses setting on the You tab and among the accessories in the Outfit check.</p>
+          <p><span class="badge A">A</span> <span class="badge B">B</span> <strong>Glasses.</strong> A frame is the one line that is always at the face, so the same band judges it. The lightness step between an acetate frame, in the colour you choose, and your skin is compared with the upper bound: above it, the frame is the strongest edge at the face and is seen before the face. On a low-contrast face a black frame usually crosses it, and honey tortoiseshell, grey, clear or thin metal frames sit with the face instead; on a high-contrast face the black frame belongs. Metal frames are thin lines and clear frames show the skin through them, so only acetate is judged, and its step is measured from the colour you set. The verdict appears under the Glasses setting on the You tab and among the accessories in the Outfit check.</p>
           <p class="note"><strong>Limit.</strong> The convention was written from mostly light-skinned examples. The whites-of-the-eyes term is Valet's own way of correcting that. The literature reaches the same place by assertion: men with dark skin are placed in the high-contrast group, with a navy suit and white shirt as the example (Gentleman's Gazette 2018; Permanent Style 2019).</p>
         </section>
 
@@ -440,7 +443,7 @@
           <p><span class="badge A">A</span> <span class="badge B">B</span> <strong>One angle, two pigments.</strong> Your lean is a single number, the hue angle of the skin: the direction between its redness (a*) and its yellowness (b*). Skin research keeps the two apart. Yellowness comes mainly from melanin and from carotenoids in the diet, and observers judge yellower, lighter faces as healthier (Stephen, Coetzee and Perrett 2011); redness comes mostly from blood in the skin. One angle hides which of them moved, so a ruddy face and a sallow one can share a hue. Your profile shows a* and b* beside the angle, and redness has a rule of its own (the Redness setting, section 6). Thresholds that would use a* and b* separately in the tiers have not been tested, so the angle remains the one temperature input.</p>
           <p><span class="badge C">C</span> <strong>Not used: a "healthy glow" bonus.</strong> By simultaneous contrast a blue or violet collar pushes the skin beside it a little towards yellow, and yellower skin looks healthier in the study above. Putting the two together would reward blues near the face. Neither study tested the combination, and looking healthy is not the same as being well dressed, so Valet gives no such bonus.</p>
           <p><span class="badge B">B</span> A colour much more saturated than your own colouring (more than about 35 C* above it) arrives before you do. The penalty grows with the excess.</p>
-          <p><span class="badge B">B</span> Metal frames are a second temperature at the face. Gold frames with a warm colour count against the colour unless your own lean is warm, where the two agree; silver frames with a cool colour count against it only if your lean is warm.</p>
+          <p><span class="badge B">B</span> Metal frames are a second temperature at the face. Gold frames with a warm colour count against the colour unless your own lean is warm, where the two agree; silver frames with a cool colour count against it only if your lean is warm. An acetate frame counts the same way by its own colour, warm or cool by its hue and scaled down for low chroma as any colour is: tortoiseshell is warm, navy cool, black and grey neutral.</p>
         </section>
 
         <section id="h-tiers">
@@ -815,7 +818,8 @@
       </ol>
       <p class="small">The lightness chart beside each tab shows your colouring and the outfit on one scale of light to dark. Point at any colour to try it; every “?” explains its control. <em>Save to a file</em> on the You tab keeps your colouring, palette and outfit; <em>How it works</em> gives the theory and its sources.</p>
       <p><strong>What it cannot do.</strong> A colour reading from a photo is only as good as the light it was taken in. Numbers cannot see one shoulder lower than the other, feel how a cloth hangs, or know how a house cuts its sizes, so the sizes are ranges to take into a fitting room, not a replacement for one. And it covers everyday dress, from casual to evening; the codes of black tie, white tie and morning dress are not checked. How it works, section 1, says more.</p>
-      <p class="small muted">Version 1.4. Proportion and Fit are new and still being refined: their numbers are tailoring rules and survey averages, so treat them as a starting point and trust a garment that fits you.</p>
+      <p class="small muted">Version 1.5. Proportion and Fit are still being refined: their numbers are tailoring rules and survey averages, so treat them as a starting point and trust a garment that fits you.</p>
+      <div class="wl-foot" id="welcomeFoot"></div>
       <div class="ov-actions">
         <button type="button" class="btn" id="welcomeStart">Set my colouring</button>
         <button type="button" class="btn ghost" id="welcomeDemo">Look around with the demo profile</button>
@@ -826,24 +830,24 @@
 </div>
 
 <div id="printCard" class="print-card" aria-hidden="true"></div>
-<script src="js/colour.js?v=1.4"></script>
-<script src="js/vision.js?v=1.4"></script>
-<script src="js/patterns.js?v=1.4"></script>
-<script src="js/measure-art.js?v=1.4"></script>
-<script src="js/data.js?v=1.4"></script>
-<script src="js/garments.js?v=1.4"></script>
-<script src="js/engine.js?v=1.4"></script>
-<script src="js/chart.js?v=1.4"></script>
-<script src="js/wardrobe.js?v=1.4"></script>
-<script src="js/body.js?v=1.4"></script>
-<script src="js/proportion.js?v=1.4"></script>
-<script src="js/fit.js?v=1.4"></script>
-<script src="js/ui/core.js?v=1.4"></script>
-<script src="js/ui/you.js?v=1.4"></script>
-<script src="js/ui/palette.js?v=1.4"></script>
-<script src="js/ui/chart-host.js?v=1.4"></script>
-<script src="js/ui/shape.js?v=1.4"></script>
-<script src="js/ui/main.js?v=1.4"></script>
-<script src="js/ui/mobile.js?v=1.4"></script>
+<script src="js/colour.js?v=1.5"></script>
+<script src="js/vision.js?v=1.5"></script>
+<script src="js/patterns.js?v=1.5"></script>
+<script src="js/measure-art.js?v=1.5"></script>
+<script src="js/data.js?v=1.5"></script>
+<script src="js/garments.js?v=1.5"></script>
+<script src="js/engine.js?v=1.5"></script>
+<script src="js/chart.js?v=1.5"></script>
+<script src="js/wardrobe.js?v=1.5"></script>
+<script src="js/body.js?v=1.5"></script>
+<script src="js/proportion.js?v=1.5"></script>
+<script src="js/fit.js?v=1.5"></script>
+<script src="js/ui/core.js?v=1.5"></script>
+<script src="js/ui/you.js?v=1.5"></script>
+<script src="js/ui/palette.js?v=1.5"></script>
+<script src="js/ui/chart-host.js?v=1.5"></script>
+<script src="js/ui/shape.js?v=1.5"></script>
+<script src="js/ui/main.js?v=1.5"></script>
+<script src="js/ui/mobile.js?v=1.5"></script>
 </body>
 </html>

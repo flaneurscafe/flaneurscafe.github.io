@@ -125,6 +125,11 @@
     }
   };
   /* Outfits saved by v0.2 were flat colour strings. */
+  /* Profiles from before 1.5 named two acetate frames; they become acetate in that colour. */
+  const GLASSES_OLD = { black: '#161616', tortoise: '#5b3a24' };
+  function migrateGlasses(s) {
+    if (s && GLASSES_OLD[s.glasses]) { s.glassesHex = GLASSES_OLD[s.glasses]; s.glasses = 'acetate'; }
+  }
   function normOutfit(o) {
     const d = JSON.parse(JSON.stringify(DEFAULT_OUTFIT)), out = { locks: (o && o.locks) || {} };
     window.VGARM.SLOTS.forEach(function (k) {
@@ -178,7 +183,9 @@
     };
     s.named = namedOk(s.named);
     if (s.summer && typeof s.summer === 'object') s.summer.named = namedOk(s.summer.named);
-    s.glasses = pick(s.glasses, ['none', 'gold', 'silver', 'black', 'tortoise', 'clear'], 'none');
+    migrateGlasses(s);
+    s.glasses = pick(s.glasses, ['none', 'gold', 'silver', 'acetate', 'clear'], 'none');
+    if (s.glassesHex != null && !isHex(s.glassesHex)) delete s.glassesHex;
     s.redness = pick(s.redness, ['none', 'some', 'marked'], 'none');
     s.underEye = pick(s.underEye, ['none', 'some', 'deep'], 'none');
     if (s.hairStyle != null) s.hairStyle = pick(s.hairStyle, ['short', 'long', 'none'], 'short');
@@ -207,7 +214,7 @@
 
   V.state = {
     samples: { white: null, skin: null, hair: null, eyes: null }, manual: {},
-    useWhite: true, measurements: {}, glasses: 'none', redness: 'none', underEye: 'none', hairStyle: 'short', grey: 0, named: {}, fitMark: true,
+    useWhite: true, measurements: {}, glasses: 'none', glassesHex: '#161616', redness: 'none', underEye: 'none', hairStyle: 'short', grey: 0, named: {}, fitMark: true,
     season: 'winter', summer: newSummer(),
     outfit: normOutfit(null), study: null, shape: {}, period: 'classic'
   };
@@ -226,6 +233,7 @@
     // Nothing saved yet: start empty; the You tab offers the demo profile.
     if (!s || !s.samples) return;
     upgrade(s);
+    migrateGlasses(s);
     // A period that no longer exists (the 2020s revival was removed) falls back to today's classic.
     if (s.period != null && !(s.period in window.VPROP.PERIODS)) s.period = 'classic';
     s.outfit = normOutfit(s.outfit);
@@ -295,8 +303,8 @@
     },
     'glasses': {
       title: 'Glasses frames', what: 'The frames you wear most days.',
-      how: 'Pick the material and colour of the frame front.',
-      use: 'Frames sit right at the face, so a gold frame counts as a warm item near the face; colour verdicts take that into account. A thick acetate frame is also judged against the contrast your face carries: on a low-contrast face a black frame is seen before the face. The frame\'s width and lens depth for your face are on the Proportion tab.'
+      how: 'Pick the material of the frame front. For acetate, pick its colour too: a typical one, or any colour.',
+      use: 'Frames sit right at the face, so their temperature counts: gold is warm, silver cool, and an acetate frame is warm or cool by its colour (tortoiseshell warm, navy cool, black and grey neutral); colour verdicts take that into account. An acetate frame is also judged against the contrast your face carries, from the lightness of its colour: on a low-contrast face a black frame is seen before the face. The frame\'s width and lens depth for your face are on the Proportion tab.'
     },
     'redness': {
       title: 'Redness', what: 'Skin that flushes or stays red across the cheeks and nose, as with rosacea.',

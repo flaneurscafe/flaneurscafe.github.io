@@ -15,7 +15,7 @@
       samples: Object.assign({ white: null, skin: null, hair: null, eyes: null }, s.samples || {}),
       useWhite: s.useWhite !== false,
       measurements: Object.assign({}, s.measurements || {}),
-      glasses: s.glasses || 'none', redness: s.redness || 'none', underEye: s.underEye || 'none',
+      glasses: s.glasses || 'none', glassesHex: s.glassesHex || '#161616', redness: s.redness || 'none', underEye: s.underEye || 'none',
       hairStyle: E.HAIR[s.hairStyle] ? s.hairStyle : 'short',
       manual: Object.assign({}, s.manual || {}),
       grey: Math.max(0, Math.min(100, +s.grey || 0)), named: Object.assign({}, s.named || {}), fitMark: V.state.fitMark !== false,
@@ -29,6 +29,7 @@
   function syncInputs() {
     $('#useWhite').checked = V.state.useWhite;
     $('#glasses').value = V.state.glasses;
+    if (V.renderGlassesColour) V.renderGlassesColour();
     $('#redness').value = V.state.redness; $('#underEye').value = V.state.underEye;
     renderHair();
     renderMeasures();
@@ -53,7 +54,7 @@
      palette is rebuilt from it with the current rules, and any colour whose tier differs from the
      saved palette is listed. A file with a palette but no colouring gets its colouring from the
      palette, as set by hand. */
-  const VERSION = '1.4';
+  const VERSION = '1.5';
   function paletteFor(season) {
     const a = E.analyseProfile(E.seasonProfile(V.state, season)); if (!a) return null;
     const r1 = function (x) { return Math.round(x * 10) / 10; };
