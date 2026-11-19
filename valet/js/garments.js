@@ -23,8 +23,13 @@
     { key: 'hat', label: 'Headwear', face: true, optional: true, kinds: [
       { id: 'flatcap', name: 'Flat cap', f: 2, cloths: ['tweed', 'flannel', 'linen', 'cotton'], pats: ['solid', 'herringbone', 'houndstooth', 'glen'], maxScale: 'small' },
       { id: 'beanie', name: 'Beanie', f: 1, cloths: ['lambswool', 'merino', 'cashmere'], pats: SOLID_ONLY, maxScale: 'small' },
-      { id: 'fedora', name: 'Fedora or trilby', brim: true, f: 4, cloths: ['felt', 'straw'], pats: SOLID_ONLY, maxScale: 'small' },
-      { id: 'panama', name: 'Panama', brim: true, f: 3, cloths: ['straw'], pats: SOLID_ONLY, maxScale: 'small' }
+      { id: 'cap', name: 'Baseball cap', f: 0, cloths: ['cotton', 'tweed', 'nylonmatte'], pats: SOLID_ONLY, maxScale: 'small' },
+      { id: 'trilby', name: 'Trilby', brim: true, f: 3, cloths: ['felt', 'tweed', 'straw'], pats: ['solid', 'herringbone', 'houndstooth'], maxScale: 'small' },
+      { id: 'fedora', name: 'Fedora', brim: true, f: 4, cloths: ['felt', 'straw'], pats: SOLID_ONLY, maxScale: 'small' },
+      { id: 'homburg', name: 'Homburg', brim: true, f: 5, cloths: ['felt'], pats: SOLID_ONLY, maxScale: 'small' },
+      { id: 'bowler', name: 'Bowler', brim: true, f: 5, cloths: ['felt'], pats: SOLID_ONLY, maxScale: 'small' },
+      { id: 'panama', name: 'Panama', brim: true, f: 3, cloths: ['straw'], pats: SOLID_ONLY, maxScale: 'small' },
+      { id: 'boater', name: 'Boater', brim: true, f: 3, cloths: ['straw'], pats: SOLID_ONLY, maxScale: 'small' }
     ] },
     { key: 'shirt', label: 'Next to the neck', face: true, optional: false, kinds: [
       { id: 'shirt', name: 'Shirt', frame: 'collar', collar: true, f: 5, cloths: ['oxford', 'poplin', 'shirttwill', 'linen', 'brushed', 'chambray', 'cflannel', 'satinshirt'], pats: ['solid', 'pinstripe', 'bengal', 'candy', 'gingham', 'tattersall'], maxScale: 'small' },
@@ -54,10 +59,28 @@
       // the suit as the third piece or on its own as an odd waistcoat. Its points cover the waistband.
       { id: 'waistcoat', name: 'Waistcoat', frame: null, needsCollarUnder: true, vest: true, f: 4, cloths: ['worsted', 'flannel', 'tweed', 'linen', 'cotton', 'corduroy', 'moleskin', 'merino'], pats: ['solid', 'nailhead', 'birdseye', 'herringbone', 'pinstripe', 'chalkstripe', 'houndstooth', 'glen', 'windowpane', 'tattersall'], maxScale: 'medium' }
     ] },
-    { key: 'jacket', label: 'Outer layer', face: true, optional: true, kinds: [
+    // Jackets. A blazer is a jacket worn without its trousers, with metal or contrasting buttons
+    // (buttons: the colour counts as a metal near the face). The casual jackets frame the face with a
+    // collar, not lapels.
+    { key: 'jacket', label: 'Jacket', face: true, optional: true, kinds: [
       { id: 'jacket', name: 'Jacket', frame: 'lapel', suit: true, pocket: true, f: 5, cloths: ['hopsack', 'worsted', 'flannel', 'tweed', 'linen', 'fresco', 'seersucker', 'cotton', 'corduroy', 'lustre'], pats: ['solid', 'nailhead', 'birdseye', 'herringbone', 'pinstripe', 'chalkstripe', 'candy', 'houndstooth', 'glen', 'windowpane'], maxScale: 'medium' },
+      { id: 'blazer', name: 'Blazer', frame: 'lapel', pocket: true, buttons: true, f: 4, cloths: ['hopsack', 'worsted', 'flannel', 'fresco', 'linen'], pats: ['solid', 'candy'], maxScale: 'medium' },
       { id: 'overshirt', name: 'Overshirt', frame: 'collar', f: 2, cloths: ['flannel', 'corduroy', 'cotton', 'denim', 'linen', 'moleskin'], pats: ['solid', 'herringbone', 'houndstooth', 'glen', 'gingham', 'windowpane'], maxScale: 'medium' },
-      { id: 'coat', name: 'Coat', frame: 'lapel', outer: true, f: 4, cloths: ['melton', 'cashmere', 'tweed', 'gabardine', 'waxed', 'leather', 'nylonmatte', 'nylongloss'], pats: ['solid', 'herringbone', 'houndstooth', 'glen', 'windowpane'], maxScale: 'large' }
+      { id: 'waxed', name: 'Waxed jacket', frame: 'collar', f: 1, cloths: ['waxed'], pats: SOLID_ONLY, maxScale: 'small' },
+      { id: 'field', name: 'Field jacket', frame: 'collar', f: 1, cloths: ['cotton', 'gabardine', 'waxed'], pats: SOLID_ONLY, maxScale: 'small' },
+      { id: 'harrington', name: 'Harrington jacket', frame: 'collar', f: 1, cloths: ['cotton', 'gabardine'], pats: SOLID_ONLY, maxScale: 'small' }
+    ] },
+    // Coats: their own layer, over a jacket or a knit. Outerwear is judged by its colour at the face
+    // and its weight; its formality is the register of the street, so it is checked only where a coat
+    // is far from the occasion.
+    { key: 'coat', label: 'Coat', face: true, optional: true, kinds: [
+      { id: 'overcoat', name: 'Overcoat', frame: 'lapel', outer: true, f: 4, cloths: ['melton', 'cashmere', 'tweed', 'leather'], pats: ['solid', 'herringbone', 'houndstooth', 'glen', 'windowpane'], maxScale: 'large' },
+      { id: 'chesterfield', name: 'Chesterfield', frame: 'lapel', outer: true, f: 5, cloths: ['melton', 'cashmere'], pats: ['solid', 'herringbone'], maxScale: 'medium' },
+      { id: 'covert', name: 'Covert coat', frame: 'lapel', outer: true, f: 4, cloths: ['covert'], pats: SOLID_ONLY, maxScale: 'small' },
+      { id: 'trench', name: 'Trench coat', frame: 'lapel', outer: true, f: 3, cloths: ['gabardine'], pats: SOLID_ONLY, maxScale: 'small' },
+      { id: 'peacoat', name: 'Peacoat', frame: 'lapel', outer: true, f: 2, cloths: ['melton'], pats: SOLID_ONLY, maxScale: 'small' },
+      { id: 'duffle', name: 'Duffle coat', frame: 'collar', outer: true, f: 1, cloths: ['duffel'], pats: SOLID_ONLY, maxScale: 'small' },
+      { id: 'parka', name: 'Parka', frame: 'collar', outer: true, f: 0, cloths: ['nylonmatte', 'nylongloss', 'cotton'], pats: SOLID_ONLY, maxScale: 'small' }
     ] },
     { key: 'square', label: 'Pocket square', face: false, near: true, optional: true, needsPocket: true, kinds: [
       { id: 'square', name: 'Pocket square', f: null, cloths: ['linen', 'silktwill', 'woolchallis'], pats: ['solid', 'pindot', 'foulard', 'paisley', 'houndstooth'], maxScale: 'medium' }
@@ -73,10 +96,19 @@
       { id: 'monk', name: 'Monk strap', f: 4, cloths: ['calf', 'suede'], pats: SOLID_ONLY, maxScale: 'small' },
       { id: 'derby', name: 'Derby or brogue', f: 4, cloths: ['calf', 'suede'], pats: SOLID_ONLY, maxScale: 'small' },
       { id: 'loafer', name: 'Loafer', f: 4, cloths: ['calf', 'suede'], pats: SOLID_ONLY, maxScale: 'small' },
+      // Spectators (co-respondents): a brogue whose toe cap, heel and lace panel are in a second
+      // colour. Summer and daytime; smart, not formal.
+      { id: 'spectator', name: 'Spectator (two-tone)', twoTone: true, f: 3, season: 'summer', cloths: ['calf', 'suede'], pats: SOLID_ONLY, maxScale: 'small' },
       { id: 'chelsea', name: 'Chelsea boot', f: 3, cloths: ['calf', 'suede'], pats: SOLID_ONLY, maxScale: 'small' },
       { id: 'chukka', name: 'Chukka or desert boot', f: 2, cloths: ['suede', 'calf'], pats: SOLID_ONLY, maxScale: 'small' },
       { id: 'trainer', name: 'Minimal trainer', f: 1, cloths: ['calf', 'suede', 'canvas'], pats: SOLID_ONLY, maxScale: 'small' },
       { id: 'chunky', name: 'Chunky or technical trainer', f: 0, cloths: ['canvas', 'calf'], pats: SOLID_ONLY, maxScale: 'small' }
+    ] },
+    // Gloves: in the hand, away from the face. They follow the shoes or the coat (B).
+    { key: 'gloves', label: 'Gloves', face: false, optional: true, kinds: [
+      { id: 'leather', name: 'Leather gloves', f: 4, cloths: ['gloveleather'], pats: SOLID_ONLY, maxScale: 'small' },
+      { id: 'suede', name: 'Suede gloves', f: 3, cloths: ['suede'], pats: SOLID_ONLY, maxScale: 'small' },
+      { id: 'knit', name: 'Knitted gloves', f: 1, cloths: ['lambswool', 'merino', 'cashmere'], pats: SOLID_ONLY, maxScale: 'small' }
     ] }
   ];
   /* Cloths (Style Guide sections 4 to 6). f: how formal, 1 casual to 5 business; a garment is as
@@ -117,6 +149,9 @@
     repsilk: { name: 'Silk repp', f: 5, season: 'all', sheen: 1 },
     woolchallis: { name: 'Wool', f: 4, season: 'winter', sheen: 0 },
     melton: { name: 'Melton or overcoat wool', f: 4, season: 'winter', sheen: 0 },
+    covert: { name: 'Covert cloth', f: 4, season: 'all', sheen: 0 },
+    duffel: { name: 'Duffel wool', f: 1, season: 'winter', sheen: 0 },
+    gloveleather: { name: 'Glove leather (lambskin, deerskin or peccary)', f: 4, season: 'winter', sheen: 1 },
     gabardine: { name: 'Gabardine', f: 3, season: 'all', sheen: 0 },
     waxed: { name: 'Waxed cotton', f: 1, season: 'all', sheen: 1 },
     leather: { name: 'Leather, matte finish', f: 2, season: 'all', sheen: 0 },
@@ -163,7 +198,7 @@
     silktwill: ['pindot', 'foulard', 'paisley', 'houndstooth'],
     woolchallis: ['paisley', 'foulard', 'pindot', 'houndstooth'],
     repsilk: ['repp'],
-    melton: [], gabardine: [], waxed: [], leather: [], nylonmatte: [], nylongloss: [],
+    melton: [], covert: [], duffel: [], gloveleather: [], gabardine: [], waxed: [], leather: [], nylonmatte: [], nylongloss: [],
     felt: [], straw: [], calf: [], suede: [], patent: [], canvas: []
   };
   function patOK(clothId, patType) {
@@ -210,7 +245,8 @@
     { id: 'gunmetal', name: 'Gunmetal', warm: false, hex: '#5d6166' },
     { id: 'gold', name: 'Yellow gold', warm: true, hex: '#c9a54a' },
     { id: 'rose', name: 'Rose gold', warm: true, hex: '#c58f78' },
-    { id: 'twotone', name: 'Two-tone (steel and gold)', warm: null, hex: '#c2b48a', only: ['watch'] }
+    { id: 'twotone', name: 'Two-tone (steel and gold)', warm: null, hex: '#c2b48a', only: ['watch'] },
+    { id: 'black', name: 'Black coated steel', warm: null, hex: '#2a2b2e', only: ['watch'] }
   ];
   const STONES = [
     { id: 'none', name: 'No stone' },
@@ -227,7 +263,7 @@
     { id: 'tigereye', name: 'Tiger’s eye', hex: '#9c6b2e' }
   ];
   const ACCESSORIES = [
-    { key: 'watch', name: 'Watch', size: { label: 'Case diameter', min: 26, max: 50 }, metals: ['silver', 'white', 'gunmetal', 'gold', 'rose', 'twotone'] },
+    { key: 'watch', name: 'Watch', watch: true, size: { label: 'Case diameter', min: 26, max: 50 }, metals: ['silver', 'white', 'gunmetal', 'gold', 'rose', 'twotone', 'black'] },
     { key: 'buckle', name: 'Belt buckle', metals: ['silver', 'gunmetal', 'gold'] },
     { key: 'cufflinks', name: 'Cufflinks', stone: true, size: { label: 'Face width', min: 8, max: 30 }, needs: 'cuffs', metals: ['silver', 'white', 'gunmetal', 'gold', 'rose'],
       note: 'Only with a shirt with double (French) cuffs.' },
@@ -238,6 +274,19 @@
     { key: 'earring', name: 'Earring (stud)', stone: true, face: true, size: { label: 'Diameter', min: 1, max: 20 }, metals: ['silver', 'white', 'gunmetal', 'gold', 'rose'],
       note: 'At the face, so it is read with your glasses frames and skin, not with the belt.' }
   ];
+  /* A watch beyond its case: the strap or bracelet, its colour, the dial and the display. Whether
+     it is mechanical or quartz cannot be seen and is not judged; a digital display can be, and is
+     sport or casual (B). */
+  const STRAPS = [
+    { id: 'bracelet', name: 'Metal bracelet', coloured: false },
+    { id: 'leather', name: 'Leather', coloured: true, leather: true },
+    { id: 'suede', name: 'Suede', coloured: true, leather: true },
+    { id: 'fabric', name: 'Fabric or NATO', coloured: true },
+    { id: 'rubber', name: 'Rubber', coloured: true }
+  ];
+  const STRAP_COLOURS = [['Black', '#151515'], ['Dark brown', '#3b2417'], ['Brown', '#6e4227'], ['Tan', '#a8733f'], ['Navy', '#1d2a44'], ['Grey', '#6e6f72'], ['Olive', '#4b5132']];
+  const DIALS = [['White', '#f2f0ea'], ['Cream', '#e6dbc4'], ['Silver', '#c4c7cb'], ['Black', '#17181a'], ['Blue', '#1f3a6e'], ['Green', '#25483a'], ['Brown', '#4f3423']];
+  const BUTTONS = [['self', 'Self-coloured', null], ['horn', 'Horn', null], ['gold', 'Gold metal', 'gold'], ['silver', 'Silver metal', 'silver'], ['pearl', 'Mother of pearl', null]];
   const metalBy = {}; METALS.forEach(function (m) { metalBy[m.id] = m; });
   const stoneBy = {}; STONES.forEach(function (m) { stoneBy[m.id] = m; });
   const accBy = {}; ACCESSORIES.forEach(function (m) { accBy[m.key] = m; });
@@ -255,5 +304,5 @@
   /* How far a scale class is above what is usual on the garment: 0 fine, 1 bold, 2 or more wrong. */
   function scaleOver(k, clsId) { return Math.max(0, SCALE_ORDER.indexOf(clsId) - SCALE_ORDER.indexOf(k.maxScale)); }
 
-  window.VGARM = { CLOTH_PATS: CLOTH_PATS, patOK: patOK, BRIMS: BRIMS, BANDS: BANDS, CLOTHS: CLOTHS, cloth: cloth, formality: formality, OCCASIONS: OCCASIONS, POSITIONS: POSITIONS, SLOTS: SLOTS, FACE: FACE, NEAR: NEAR, METALS: METALS, STONES: STONES, ACCESSORIES: ACCESSORIES, metalBy: metalBy, stoneBy: stoneBy, accBy: accBy, byKey: byKey, kind: kind, neckwearAllowed: neckwearAllowed, scaleOver: scaleOver };
+  window.VGARM = { STRAPS: STRAPS, STRAP_COLOURS: STRAP_COLOURS, DIALS: DIALS, BUTTONS: BUTTONS, CLOTH_PATS: CLOTH_PATS, patOK: patOK, BRIMS: BRIMS, BANDS: BANDS, CLOTHS: CLOTHS, cloth: cloth, formality: formality, OCCASIONS: OCCASIONS, POSITIONS: POSITIONS, SLOTS: SLOTS, FACE: FACE, NEAR: NEAR, METALS: METALS, STONES: STONES, ACCESSORIES: ACCESSORIES, metalBy: metalBy, stoneBy: stoneBy, accBy: accBy, byKey: byKey, kind: kind, neckwearAllowed: neckwearAllowed, scaleOver: scaleOver };
 })();

@@ -104,7 +104,7 @@
   };
 
   /* Frame size, for things that scale with the whole figure (hat brim, pattern repeat): big for a
-     tall or broad man, small for a short or narrow one. Same thresholds as the Outfit check's brim. */
+     tall or broad man, small for a short or narrow one. Same thresholds as the Dresser's brim. */
   function frameSize(m) {
     m = m || {};
     const h = +m.height || 0, sh = +m.shoulder || 0;

@@ -5,7 +5,7 @@
 (function () {
   'use strict';
   const V = window.VAPP;
-  const { $, $$, D, E, cleanProfile, esc, fillSelects, load, marks, mountChart, nameOf, newSummer, normOutfit, refreshEffects, renderColour, renderHair, renderMeasures, renderProfileCard, renderSamplers, renderSeason, save, showTab, showYouPane, syncChart, upgrade, warmPairs } = V;
+  const { $, $$, D, E, cleanProfile, esc, fillSelects, load, marks, mountChart, nameOf, newSummer, normOutfit, normWardrobe, refreshEffects, renderColour, renderHair, renderMeasures, renderProfileCard, renderSamplers, renderSeason, save, showTab, showYouPane, syncChart, upgrade, warmPairs } = V;
   Object.assign(V, { update });
 
   /* ---------- Demo, import, export ---------- */
@@ -21,7 +21,9 @@
       grey: Math.max(0, Math.min(100, +s.grey || 0)), named: Object.assign({}, s.named || {}), fitMark: V.state.fitMark !== false,
       season: (s.season || V.state.season) === 'summer' ? 'summer' : 'winter', summer: newSummer(s.summer),
       // the body's shape goes with its measurements, so erase and the demo reset it
-      outfit: normOutfit(s.outfit || V.state.outfit), study: s.study || V.state.study, shape: s.shape && typeof s.shape === 'object' ? s.shape : {},
+      outfit: normOutfit(s.outfit || V.state.outfit),
+      // a profile without a wardrobe (the demo, an old file) keeps the one you have
+      wardrobe: normWardrobe(Array.isArray(s.wardrobe) ? s.wardrobe : V.state.wardrobe), study: s.study || V.state.study, shape: s.shape && typeof s.shape === 'object' ? s.shape : {},
       period: s.period || V.state.period || 'classic', combos: Array.isArray(s.combos) ? s.combos.filter(function (c) { return c && typeof c.name === 'string' && ['face', 'accent', 'below'].every(function (k) { return c[k] == null || /^#[0-9a-f]{6}$/i.test(c[k]); }); }).slice(0, 24) : (V.state.combos || []), theme: s.theme || V.state.theme, fitCheck: window.VFIT.clean(s.fitCheck || V.state.fitCheck)
     };
     syncInputs(); update();
@@ -54,7 +56,7 @@
      palette is rebuilt from it with the current rules, and any colour whose tier differs from the
      saved palette is listed. A file with a palette but no colouring gets its colouring from the
      palette, as set by hand. */
-  const VERSION = '1.5';
+  const VERSION = '1.6';
   function paletteFor(season) {
     const a = E.analyseProfile(E.seasonProfile(V.state, season)); if (!a) return null;
     const r1 = function (x) { return Math.round(x * 10) / 10; };
@@ -182,6 +184,9 @@
       clearTimeout(V.previewTimer); V.previewTimer = setTimeout(syncChart, slot ? 30 : 120);
     },
     resetOutfit: function () { const locks = V.state.outfit.locks; V.state.outfit = normOutfit(null); V.state.outfit.locks = locks; },
+    setOutfit: function (o) { V.state.outfit = normOutfit(o); },
+    normWardrobe: normWardrobe, version: VERSION,
+    analysisFor: function (season) { return E.analyseProfile(E.seasonProfile(V.state, season)); },
     season: function () { return V.state.season; }
   });
   // open the tab named in the address (#proportion, #fit…)

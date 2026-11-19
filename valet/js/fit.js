@@ -102,7 +102,8 @@
     } else need('Accessories', 'Hat', ['head']);
     if (has('foot')) {
       const eu = Math.round((m.foot + 1.5) * 1.5 * 2) / 2;
-      add({ group: 'Accessories', label: 'Shoes', value: 'EU about ' + eu + ' (Mondopoint ' + Math.round(m.foot * 10) + ')', level: 'A',
+      // A/B: the Paris point is a definition; the 1.5 cm a last adds to the foot is makers' convention
+      add({ group: 'Accessories', label: 'Shoes', value: 'EU about ' + eu + ' (Mondopoint ' + Math.round(m.foot * 10) + ')', level: 'A/B',
         how: 'European sizes count the last in Paris points of two thirds of a centimetre; the last is about 1.5 cm longer than the foot. Lasts differ between makers by a size or more, so try shoes on, late in the day.' });
     } else need('Accessories', 'Shoes', ['foot']);
     return out;
@@ -585,7 +586,7 @@
     h += '<h3>Your sizes</h3><p class="small">Worked out from your measurements. A starting point: brands cut differently, and the check above is the reliable test.</p><div class="fit-sizes">' + groups.map(function (g) {
       return '<div class="fit-group"><h4>' + g + '</h4><dl>' + sz.filter(function (x) { return x.group === g; }).map(function (x) {
         return x.needs ? '<div class="fit-row miss"><dt>' + x.label + '</dt><dd>needs ' + x.needs.map(labelOf).join(' and ').toLowerCase() + '</dd></div>'
-          : '<div class="fit-row"><dt>' + x.label + ' <span class="badge ' + x.level + '">' + x.level + '</span></dt><dd><strong>' + esc(x.value) + '</strong><span>' + esc(x.how) + '</span></dd></div>';
+          : '<div class="fit-row"><dt>' + x.label + ' ' + x.level.split('/').map(function (l) { return '<span class="badge ' + l + '">' + l + '</span>'; }).join(' ') + '</dt><dd><strong>' + esc(x.value) + '</strong><span>' + esc(x.how) + '</span></dd></div>';
       }).join('') + '</dl></div>';
     }).join('') + '</div>' +
       (sz.some(function (x) { return x.needs; }) ? '<p class="small muted">Missing measurements can be added on the <a href="#" data-goto-fit="you">You</a> tab.</p>' : '');

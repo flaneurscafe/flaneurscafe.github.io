@@ -117,9 +117,11 @@
   }
   /* The page leaves room at the bottom for the bar when the open tab has one. */
   function markSheet() {
-    const p = $('.tab-panel.active');
-    document.body.classList.toggle('has-sheet', !!(p && $('aside.side', p)));
+    const p = $('.tab-panel.active'), a = p && $('aside.side', p);
+    document.body.classList.toggle('has-sheet', !!(a && getComputedStyle(a).display !== 'none'));
   }
+  // a tab that hides its side panel (the Dresser's wardrobe view) says so
+  document.addEventListener('valet:layout', function () { closeAll(); markSheet(); });
 
   /* ---------- Touch screens (no hover), at any width ----------
      The instructions were written for a mouse: "point at", "hover", "click". On a touch screen they

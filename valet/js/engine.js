@@ -1,6 +1,6 @@
 /* SPDX-FileCopyrightText: 2026 Budgie Perruche <https://flaneurs.cafe/contact/>
    SPDX-License-Identifier: GPL-3.0-or-later */
-/* Valet — rules engine for the profile, the Palette tab, the Outfit check and the lightness chart.
+/* Valet — rules engine for the profile, the Palette tab, the Dresser and the lightness chart.
    Every rule returns a verdict plus the reason and its evidence level:
    A = perception science, B = tailoring/colour convention, C = popular system. */
 (function () {
@@ -393,6 +393,14 @@
   function look(piece) {
     const pat = P() ? P().norm(piece.pat) : { type: 'solid' };
     const out = { hex: piece.hex, name: piece.name || piece.hex, pat: pat, mean: piece.hex, colours: [piece.hex], visible: false, texture: false };
+    // A two-tone shoe (spectator): toe cap, heel and lace panel in a second colour, about 40% of what
+    // shows. Read from a distance as the mix of the two, and never as a pattern.
+    if (piece.hex2 && piece.kind === 'spectator') {
+      const a = VC.hexToLab(piece.hex), b = VC.hexToLab(piece.hex2);
+      out.mean = VC.labToHex([a[0] * 0.6 + b[0] * 0.4, a[1] * 0.6 + b[1] * 0.4, a[2] * 0.6 + b[2] * 0.4]);
+      out.colours = [piece.hex, piece.hex2];
+      return out;
+    }
     if (pat.type === 'solid') return out;
     const t = P().byId[pat.type], cls = P().scaleClass(pat.scale);
     const dE = VC.deltaE2000(VC.hexToLab(piece.hex), VC.hexToLab(pat.hex2));
@@ -507,7 +515,8 @@
     // Pieces that meet or sit near each other; the tie and the floor are only compared with neighbours.
     const pairs = [['jacket', 'trousers'], ['mid', 'jacket'], ['shirt', 'mid'], ['tie', 'mid'], ['shirt', 'jacket'], ['shirt', 'tie'], ['tie', 'jacket'],
       ['mid', 'trousers'], ['jacket', 'shoes'], ['trousers', 'shoes'], ['shirt', 'trousers'],
-      ['scarf', 'jacket'], ['scarf', 'mid'], ['scarf', 'shirt'], ['tie', 'scarf']];
+      ['scarf', 'jacket'], ['scarf', 'mid'], ['scarf', 'shirt'], ['tie', 'scarf'],
+      ['coat', 'jacket'], ['coat', 'mid'], ['coat', 'trousers'], ['scarf', 'coat'], ['coat', 'shoes']];
     let suitText = null;
     pairs.forEach(function (pr) {
       if (!L[pr[0]] || !L[pr[1]]) return;
@@ -823,7 +832,8 @@
       add({ id: 'shoe', group: 'formality', score: 0.65, slots: ['tie'], text: 'A ' + K.tie.name.toLowerCase() + ' with denim: possible with a knitted or wool tie and a tweed jacket, otherwise the two halves disagree.' });
 
     // Formality: the pieces that set the register (not scarf, socks, square, hat or an overcoat).
-    const reg = Object.keys(L).filter(function (k) { return F[k] != null && k !== 'hat' && !(k === 'jacket' && K.jacket.outer) && !handled[k]; });
+    const reg = Object.keys(L).filter(function (k) { return F[k] != null && k !== 'hat' && k !== 'coat' && k !== 'gloves' && !handled[k]; });
+    outerwear(o, L, K, F, C, p, add, what);
     const W = ['', 'casual', 'relaxed', 'smart casual', 'smart', 'business'];
     const word = function (f) { return f <= 0 ? 'sportswear' : W[f]; };
     if (reg.length) {
@@ -866,7 +876,7 @@
   /* ---------- Clashes with your skin ----------
      The colour rules already say why a colour is weak at the face; these turn the weakest one or
      two into a short reason, and list every piece near the face that clashes. Shared by the
-     Outfit check's warning and the chart, so both name the same pieces for the same reasons. */
+     Dresser's warning and the chart, so both name the same pieces for the same reasons. */
   function skinReasons(hex, p) {
     const s = scoreCached(hex, p);
     const failing = s.rules.filter(function (r) { return r.score < 0.7; }).sort(function (x, y) { return x.score - y.score; });
@@ -948,10 +958,44 @@
       text: 'Glasses: your ' + name + ' frame against your skin (lightness step ' + round(step) + ') is stronger than the contrast your face carries (up to ' + round(hi) + '), so it is seen before the face. ' + lighter + ' would sit with the face rather than over it.' };
   }
 
+  /* Outerwear, gloves and two-tone shoes (B). A coat is the register of the street: only a coat far
+     from the occasion is noted (a parka over business dress). Gloves follow the shoes or the coat in
+     colour, and belong to cold weather. Spectators are a summer, daytime shoe. */
+  function outerwear(o, L, K, F, C, p, add, what) {
+    const occ = o.occasion || 'smart', formal = occ === 'business' || occ === 'evening';
+    const dE = function (a, b) { return VC.deltaE2000(VC.hexToLab(a), VC.hexToLab(b)); };
+    if (L.coat) {
+      if (formal && F.coat <= 1) add({ id: 'coat', group: 'formality', score: 0.65, slots: ['coat'],
+        text: 'A ' + K.coat.name.toLowerCase() + ' over ' + (occ === 'evening' ? 'evening' : 'business') + ' dress looks like an afterthought; an overcoat, a covert coat or a trench coat belongs with it.' });
+      else add({ id: 'coat', group: 'formality', score: 1, slots: [],
+        text: 'Coat: a ' + K.coat.name.toLowerCase() + ', in keeping with the occasion.' });
+    }
+    if (L.gloves) {
+      const leather = K.gloves.id !== 'knit';
+      if (p.season === 'summer') add({ id: 'gloves', group: 'season', score: 0.6, slots: ['gloves'],
+        text: 'Gloves in summer: they belong to cold weather.' });
+      if (!leather && formal) add({ id: 'gloves', group: 'formality', score: 0.65, slots: ['gloves'],
+        text: 'Knitted gloves with ' + (occ === 'evening' ? 'evening' : 'business') + ' dress: leather or suede belongs with it.' });
+      const ref = [L.shoes && ['shoes', L.shoes.mean], L.coat && ['coat', L.coat.mean]].filter(Boolean);
+      const near = ref.filter(function (r) { return dE(L.gloves.mean, r[1]) < 20; });
+      if (leather && ref.length && !near.length) add({ id: 'gloves', group: 'colour', score: 0.75, slots: ['gloves'],
+        text: 'Gloves usually follow the shoes or the coat: brown with brown shoes, black with black, or the coat\'s own tone. These match neither.' });
+      else if (leather && near.length) add({ id: 'gloves', group: 'colour', score: 1, slots: [],
+        text: 'Gloves tone with the ' + near.map(function (r) { return r[0]; }).join(' and ') + '.' });
+    }
+    if (L.shoes && K.shoes.id === 'spectator') {
+      if (p.season !== 'summer') add({ id: 'spectator', group: 'season', score: 0.7, slots: ['shoes'],
+        text: 'Spectators are a summer shoe; in winter they look out of season.' });
+      if (formal) add({ id: 'spectator', group: 'formality', score: 0.6, slots: ['shoes'],
+        text: 'Spectators are daytime and smart casual, a sporting shoe in origin; not for business or evening.' });
+    }
+  }
+
   /* Metal (Outfit Check, question 6): one metal through the outfit, a two-tone watch the one
      exception; a warm metal against cool colouring is a stray warm note, a cool one against warm
      colouring the reverse. A ring worn every day stands outside the matching rule, and glasses
      frames and an earring, at the face, are judged with the face. Stones are small accents. */
+  function C0(o, slot) { const c = o && o[slot] ? G.cloth(slot, o[slot]) : null; return !!(c && ['calf', 'suede', 'patent'].indexOf(c.id) >= 0); }
   function accessoryChecks(acc, L, K, p, add, nm, occasion, o) {
     const A = G.ACCESSORIES, M = G.metalBy, worn = A.filter(function (a) { return acc[a.key] && acc[a.key].on; });
     const ad = function (c) { c.group = 'accessory'; c.slots = c.slots || []; return add(c); };
@@ -970,14 +1014,18 @@
       if (a.needs === 'tie' && !(L.tie && K.tie.id === 'tie')) ad({ id: 'acc', score: 0.2, acc: a.key, text: 'A tie bar needs a tie to hold.' });
     });
     // matching: everything but the ring and the face pieces
-    const match = worn.filter(function (a) { return a.key !== 'ring' && !a.face && acc[a.key].metal !== 'twotone'; });
+    const match = worn.filter(function (a) { return a.key !== 'ring' && !a.face && acc[a.key].metal !== 'twotone' && acc[a.key].metal !== 'black'; });
+    // metal blazer buttons are worn metal too
+    const btn = o && o.jacket && K.jacket && K.jacket.buttons ? G.BUTTONS.find(function (b) { return b[0] === (o.jacket.buttons || 'gold'); }) : null;
+    if (btn && btn[2] && match.length) match.push({ key: 'buttons', name: 'Blazer buttons', metals: [], btn: btn[2] });
+    const metalOf = function (a) { return a.btn || acc[a.key].metal; };
     const fam = function (m) { return M[m] && M[m].warm ? 'warm' : 'cool'; };
-    const fams = match.map(function (a) { return fam(acc[a.key].metal); }).filter(function (x, i, arr) { return arr.indexOf(x) === i; });
-    const desc = function (list) { return list.map(function (a) { return a.name.toLowerCase() + ' in ' + M[acc[a.key].metal].name.toLowerCase(); }).join(', '); };
+    const fams = match.map(function (a) { return fam(metalOf(a)); }).filter(function (x, i, arr) { return arr.indexOf(x) === i; });
+    const desc = function (list) { return list.map(function (a) { return a.name.toLowerCase() + ' in ' + M[metalOf(a)].name.toLowerCase(); }).join(', '); };
     if (fams.length > 1) {
       // match the odd one out to the majority
-      const nWarm = match.filter(function (a) { return fam(acc[a.key].metal) === 'warm'; }).length, keepWarm = nWarm > match.length - nWarm;
-      const odd = match.filter(function (a) { return (fam(acc[a.key].metal) === 'warm') !== keepWarm; });
+      const nWarm = match.filter(function (a) { return fam(metalOf(a)) === 'warm'; }).length, keepWarm = nWarm > match.length - nWarm;
+      const odd = match.filter(function (a) { return (fam(metalOf(a)) === 'warm') !== keepWarm; });
       const to = keepWarm ? 'gold' : 'silver';
       ad({ id: 'metal', score: 0.5, text: 'Mixed metals: ' + desc(match) + '. Keep one metal through the outfit; a two-tone watch is the one exception.',
         fixes: odd.filter(function (a) { return a.metals.indexOf(to) >= 0; }).slice(0, 2).map(function (a) { return { label: 'Make the ' + a.name.toLowerCase() + ' ' + (to === 'gold' ? 'gold' : 'silver'), acc: a.key, set: { metal: to } }; }) });
@@ -1000,7 +1048,7 @@
         text: 'A gold earring is a warm point at the face of cool colouring. Small, but it sits beside the skin; silver or white gold agrees with you.' });
       else ad({ id: 'metal', score: 1, text: 'Earring: a single small stud in ' + M[em].name.toLowerCase() + ' is the quiet choice' + (glassMetal ? ', and it agrees with your frames.' : '.') });
     }
-    sizeChecks(acc, L, K, p, ad, worn);
+    sizeChecks(acc, L, K, p, ad, worn, occasion, o);
     // Formality: a stud is unremarkable in casual and evening dress; in traditional business
     // dress it is still noticed, so it is a caution there, not a fault (B).
     if (acc.earring && acc.earring.on && occasion === 'business')
@@ -1031,7 +1079,7 @@
     if (!wrist) return [36, 40];
     return wrist < 15.5 ? [34, 38] : wrist < 17 ? [36, 40] : wrist < 18.5 ? [38, 42] : [40, 44];
   }
-  function sizeChecks(acc, L, K, p, ad, worn) {
+  function sizeChecks(acc, L, K, p, ad, worn, occasion, o) {
     const has = function (k) { return acc[k] && acc[k].on; };
     const tie = !!(L.tie && K.tie.id === 'tie'), facePats = G.FACE.filter(function (k) { return L[k] && L[k].visible; });
     // A check over the range: comps are { done, text, fix } and lift the score from base to at most 0.85.
@@ -1054,13 +1102,38 @@
       else if (over <= 4) carry('watch', 0.55, 'Watch, ' + mm + ' mm: large. ' + why + ' A bigger case overhangs the wrist and will not go under a shirt cuff, so it shows at every gesture.', [
         { done: !has('cufflinks'), text: 'no cufflinks, so the cuff does not have to close over it', fix: { label: 'Take off the cufflinks', acc: 'cufflinks', set: { on: false } } },
         { done: !tie, text: 'an open collar: a big watch belongs to casual dress', fix: { label: 'Take off the tie', slot: 'tie', on: false } },
-        { done: !!(L.jacket && !K.jacket.suit) || !!L.mid, text: 'a heavier layer (overshirt, coat or knit) to match its weight' }
+        { done: !!(L.jacket && !K.jacket.suit) || !!L.mid || !!L.coat, text: 'a heavier layer (overshirt, coat or knit) to match its weight' }
       ]);
       else if (tie || has('cufflinks')) out('watch', 'Watch, ' + mm + ' mm: far over ' + r[1] + ' mm. ' + why + ' With a tie or cufflinks nothing makes up for it. For this outfit, take it off or wear a smaller watch; keep this one for casual days.');
       else carry('watch', 0.45, 'Watch, ' + mm + ' mm: far over ' + r[1] + ' mm. ' + why + ' It reads as sports equipment.', [
         { done: !L.jacket || !K.jacket.suit, text: 'no tailored jacket' },
         { done: !!(L.jacket && !K.jacket.suit) || !!L.mid, text: 'a heavy casual layer beside it' }
       ]);
+    }
+    // The watch beyond its size (B): what the strap, dial, display and case finish say. Mechanical or
+    // quartz cannot be seen and is not judged.
+    if (has('watch')) {
+      const w = acc.watch, strap = G.STRAPS.find(function (x) { return x.id === (w.strap || 'leather'); }) || G.STRAPS[1];
+      const formal = occasion === 'business' || occasion === 'evening', eve = occasion === 'evening';
+      const kindOfLeather = function (hex) {
+        const lab = VC.hexToLab(hex), c = Math.hypot(lab[1], lab[2]), h = (Math.atan2(lab[2], lab[1]) * 180 / Math.PI + 360) % 360;
+        return lab[0] < 24 && c < 10 ? 'black' : (h > 20 && h < 95 && c >= 8) ? 'brown' : null;
+      };
+      const notes = [];
+      if (w.display === 'digital' && formal) notes.push([0.55, 'A digital display reads as sport or casual; with ' + (eve ? 'evening' : 'business') + ' dress an analogue watch belongs.']);
+      if (strap.id === 'rubber' && formal) notes.push([0.55, 'A rubber strap is sports equipment; with ' + (eve ? 'evening' : 'business') + ' dress wear leather or a bracelet.']);
+      if (strap.id === 'fabric' && eve) notes.push([0.6, 'A fabric strap is a daytime, casual strap; for the evening, plain black or dark leather.']);
+      else if (strap.id === 'fabric' && formal) notes.push([0.8, 'A fabric strap with business dress is relaxed; leather or a bracelet is the usual choice.']);
+      if (w.metal === 'black' && formal) notes.push([0.75, 'A black coated case reads as a sports watch; steel or gold suits ' + (eve ? 'evening' : 'business') + ' dress.']);
+      if (eve && w.dial && ['#f2f0ea', '#e6dbc4', '#c4c7cb', '#17181a'].indexOf(w.dial) < 0) notes.push([0.8, 'For the evening the classic dial is plain: white, cream, silver or black.']);
+      // a leather strap is the third leather after the shoes and belt: one family, black or brown
+      if (strap.leather && w.strapHex && L.shoes && C0(o, 'shoes')) {
+        const sk = kindOfLeather(L.shoes.hex), wk = kindOfLeather(w.strapHex);
+        if (sk && wk && sk !== wk) notes.push([0.7, 'A ' + wk + ' strap with ' + sk + ' shoes: strap, belt and shoes are the leathers of an outfit and stay in one family, black with black, brown with brown.']);
+        else if (sk && wk) ok('watch', 'Watch strap: ' + wk + ' leather, with ' + sk + ' shoes.');
+      }
+      notes.forEach(function (n) { ad({ id: 'wstyle', score: n[0], acc: 'watch', text: n[1] }); });
+      if (!notes.length && formal) ok('watch', 'Watch: ' + (strap.id === 'bracelet' ? 'a metal bracelet' : 'a ' + strap.name.toLowerCase() + ' strap') + (w.display === 'digital' ? '' : ' and an analogue dial') + ', right for ' + (eve ? 'the evening' : 'business') + '.');
     }
     if (has('cufflinks')) {
       const mm = +acc.cufflinks.size || 15, stone = acc.cufflinks.stone || 'none';

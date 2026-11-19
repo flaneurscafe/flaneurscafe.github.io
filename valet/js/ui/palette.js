@@ -216,7 +216,7 @@
   }
 
   /* ---- The study's three places, as a choice of where the next colour goes ---- */
-  /* Whether each filled place is part of a problem with the others, as on the Outfit check rows:
+  /* Whether each filled place is part of a problem with the others, as on the Dresser rows:
      the same judgement as the palette marks, for the colour already in the place. */
   function studyStatus() {
     const o = studyOutfit(), out = {};
@@ -290,7 +290,7 @@
     box.innerHTML = '<h4 class="outfit-h">The study together</h4>' + ppList +
       (bad.length ? ruleList(bad) : pp.length ? '' : '<p class="small">No rule between these colours is broken.</p>') +
       (good.length ? '<details class="face-score"><summary>' + good.length + ' rule' + (good.length > 1 ? 's' : '') + ' passed</summary>' + ruleList(good) + '</details>' : '') +
-      '<div class="next-step with-note"><button type="button" class="btn small" id="toOutfit">Send to the Outfit check</button><span class="ns-note">Puts these colours on your outfit there: near the face on the shirt (or the outer layer, if dark), the accent on the tie or scarf, below the belt on the trousers. Your other pieces stay; Undo there takes it back.</span>' +
+      '<div class="next-step with-note"><button type="button" class="btn small" id="toOutfit">Send to the Dresser</button><span class="ns-note">Puts these colours on your outfit there: near the face on the shirt (or the outer layer, if dark), the accent on the tie or scarf, below the belt on the trousers. Your other pieces stay; Undo there takes it back.</span>' +
       '</div>';
     $('#toOutfit').addEventListener('click', studyToOutfit);
   }
@@ -298,7 +298,7 @@
      current shirt when dark; the accent a tie when the shirt has a collar, otherwise a scarf. */
   function studyToOutfit() {
     const st = study(), o = V.state.outfit, notes = [];
-    VWARD.snapshot();                         // so Undo on the Outfit check takes it back
+    VWARD.snapshot();                         // so Undo on the Dresser takes it back
     if (st.face) {
       const L = VC.hexToLab(st.face)[0];
       if (L >= 55 || !o.jacket) { o.shirt.hex = st.face; o.shirt.on = true; notes.push(nameOf(st.face) + ' ' + window.VGARM.kind('shirt', o.shirt).name.toLowerCase()); }
@@ -325,7 +325,7 @@
     const scored = D.colours.map(function (c) { return Object.assign({ name: c.name }, E.scoreColour(c.hex, a)); });
     const chip = function (hex, name) { return '<span class="pc-c"><i style="background:' + hex + '"></i>' + esc(name) + '</span>'; };
     const bald = a.hairStyle === 'none';
-    // the step between layers at the face, as the Outfit check measures it (engine.js, checkOutfit)
+    // the step between layers at the face, as the Dresser measures it (engine.js, checkOutfit)
     const lo = Math.round(Math.max(12, a.contrast * 0.5)), hi = Math.round(a.band[1]);
     const metal = a.lean < 0.35 ? 'Silver, steel, white gold or gunmetal; your colouring is cool, so gold is a stray warm note.'
       : a.lean > 0.65 ? 'Yellow gold or rose gold agree with your warm colouring; silver is the cooler alternative.'
@@ -740,7 +740,7 @@
       (trios.length ? '<h4 class="outfit-h">Tested combinations from your core palette</h4><ul class="combos trios">' + trios.map(function (t, i) {
         return '<li><button type="button" class="combo-open" data-t="' + i + '" title="Put it in the study"><span class="combo-sw"><i style="background:' + t.face.hex + '"></i><i style="background:' + t.accent.hex + '"></i><i style="background:' + t.below.hex + '"></i></span>' +
           '<span class="combo-name">' + esc(t.face.name) + ', ' + esc(t.accent.name) + ' accent, ' + esc(t.below.name) + ' below</span><span class="combo-m ok">✓</span></button></li>';
-      }).join('') + '</ul><p class="small muted">Each passes every rule of the study: near the face, the accent, below the belt. Click one to put it in the study, then save it or send it to the Outfit check. To test any other pair yourself, put a colour in the study, choose another place, and read the palette: a plain swatch goes with what is there, "!" bends a rule, struck through clashes.</p>' : '');
+      }).join('') + '</ul><p class="small muted">Each passes every rule of the study: near the face, the accent, below the belt. Click one to put it in the study, then save it or send it to the Dresser. To test any other pair yourself, put a colour in the study, choose another place, and read the palette: a plain swatch goes with what is there, "!" bends a rule, struck through clashes.</p>' : '');
     $$('.pair-pick button', box).forEach(function (b) { b.addEventListener('click', function () { pairFace = b.dataset.hex; renderPairs(); }); });
     // the colour goes into the study beside this face colour; the study's other place stays,
     // unless the study had another colour near the face, when it is emptied with it

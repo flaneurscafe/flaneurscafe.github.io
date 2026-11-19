@@ -12,7 +12,7 @@
      - helpers and constants from an earlier part are taken from it at the top of a later part;
      - a function in a later part is called through it (V.update), so it is looked up when called. */
   const V = window.VAPP = {};
-  Object.assign(V, { cleanProfile, infoBtn, load, newSummer, normOutfit, openMeasures, save, showTab, showYouPane, upgrade });
+  Object.assign(V, { cleanProfile, infoBtn, load, newSummer, normOutfit, normWardrobe, openMeasures, save, showTab, showYouPane, upgrade });
 
   const VC = window.VC, E = window.VENGINE, D = window.VDATA, CHART = window.VCHART;
   const $ = function (s, r) { return (r || document).querySelector(s); };
@@ -83,7 +83,7 @@
       how: 'Wrap a soft tape (or a strip of paper, then lay it on a ruler) around the wrist just above the bone, snug but not tight.',
       helper: 'alone', helperNote: 'Easy alone.',
       garment: 'From a watch strap that fits: measure from the buckle pin to the hole you use, plus the length of the watch case and lugs.',
-      use: 'Watch case size (Accessories on the Outfit check).' },
+      use: 'Watch case size (Accessories on the Dresser).' },
     { key: 'head', label: 'Head', what: 'Head circumference where a hat sits.',
       how: 'Tape around the head across the middle of the forehead and just above the ears, level all round, snug.',
       helper: 'alone', helperNote: 'Easy alone in a mirror.',
@@ -109,17 +109,19 @@
 
   /* The outfit: one entry per position in garments.js, each { hex, kind, cloth, pat, on } (a hat
      also has band and brim); pat is a cloth pattern (patterns.js). locks keep pieces fixed when the
-     Outfit check suggests or completes; name is the outfit's own name, for the printed card. */
+     Dresser suggests or completes; name is the outfit's own name, for the printed card. */
   const DEFAULT_OUTFIT = {
     hat: { hex: '#3d4045', kind: 'flatcap', pat: { type: 'solid' }, on: false },
     shirt: { hex: '#c3d7ee', kind: 'shirt', pat: { type: 'solid' } }, tie: { hex: '#5e1f2c', kind: 'tie', pat: { type: 'solid' }, on: false },
     mid: { hex: '#3d4045', kind: 'crew', pat: { type: 'solid' }, on: false },
-    jacket: { hex: '#1d2a44', kind: 'jacket', pat: { type: 'solid' }, on: true },
+    jacket: { hex: '#1d2a44', kind: 'jacket', pat: { type: 'solid' }, on: true, buttons: 'gold' },
+    coat: { hex: '#3d4045', kind: 'overcoat', cloth: 'melton', pat: { type: 'solid' }, on: false },
+    gloves: { hex: '#4a3326', kind: 'leather', pat: { type: 'solid' }, on: false },
     scarf: { hex: '#3d4045', kind: 'scarf', cloth: 'cashmere', pat: { type: 'solid' }, on: false }, square: { hex: '#f7f6f2', kind: 'square', pat: { type: 'solid' }, on: false },
     trousers: { hex: '#8e9196', kind: 'trousers', pat: { type: 'solid' } },
     socks: { hex: '#1d2a44', kind: 'socks', pat: { type: 'solid' }, on: true }, shoes: { hex: '#4a3326', kind: 'loafer', cloth: 'calf' }, locks: {}, occasion: 'smart',
     acc: {
-      watch: { on: true, metal: 'silver', size: 38 }, buckle: { on: true, metal: 'silver' },
+      watch: { on: true, metal: 'silver', size: 38, strap: 'leather', strapHex: '#3b2417', dial: '#f2f0ea', display: 'analogue' }, buckle: { on: true, metal: 'silver' },
       cufflinks: { on: false, metal: 'silver', stone: 'none', size: 15 }, tiebar: { on: false, metal: 'silver', size: 45 },
       ring: { on: false, metal: 'silver', stone: 'none', size: 12 }, earring: { on: false, metal: 'silver', stone: 'none', size: 4 }
     }
@@ -130,7 +132,20 @@
   function migrateGlasses(s) {
     if (s && GLASSES_OLD[s.glasses]) { s.glassesHex = GLASSES_OLD[s.glasses]; s.glasses = 'acetate'; }
   }
+  /* Until 1.5 a coat was a kind of outer layer in the jacket's place. It moves to its own position,
+     its type read from its cloth; a waxed cotton coat becomes a waxed jacket and stays. */
+  function migrateCoat(o) {
+    if (!o || !o.jacket || typeof o.jacket !== 'object' || o.jacket.kind !== 'coat' || (o.coat && typeof o.coat === 'object')) return o;
+    o = Object.assign({}, o); const j = o.jacket, c = j.cloth;
+    if (c === 'waxed') { o.jacket = Object.assign({}, j, { kind: 'waxed' }); return o; }
+    const kind = c === 'gabardine' ? 'trench' : (c === 'nylonmatte' || c === 'nylongloss') ? 'parka' : 'overcoat';
+    o.coat = Object.assign({}, j, { kind: kind });
+    o.jacket = Object.assign({}, DEFAULT_OUTFIT.jacket, { on: false });
+    if (o.locks && o.locks.jacket) { o.locks = Object.assign({}, o.locks, { coat: true, jacket: false }); }
+    return o;
+  }
   function normOutfit(o) {
+    o = migrateCoat(o);
     const d = JSON.parse(JSON.stringify(DEFAULT_OUTFIT)), out = { locks: (o && o.locks) || {} };
     window.VGARM.SLOTS.forEach(function (k) {
       const v = o && o[k];
@@ -140,6 +155,8 @@
       if (!isHex(out[k].hex)) out[k].hex = d[k].hex;
       if (out[k].rise != null && ['high', 'mid', 'low'].indexOf(out[k].rise) < 0) delete out[k].rise;
       if (out[k].length != null && ['short', 'regular', 'long'].indexOf(out[k].length) < 0) delete out[k].length;
+      if (out[k].hex2 != null && !isHex(out[k].hex2)) delete out[k].hex2;                 // a spectator's second colour
+      if (out[k].buttons != null && !window.VGARM.BUTTONS.some(function (b) { return b[0] === out[k].buttons; })) delete out[k].buttons;
       if (!out[k].pat || typeof out[k].pat !== 'object') out[k].pat = { type: 'solid' };
       else if (out[k].pat.hex2 != null && !isHex(out[k].pat.hex2)) { out[k].pat = Object.assign({}, out[k].pat); delete out[k].pat.hex2; }
       // a pattern the garment does not take, or its cloth cannot carry, is worn plain
@@ -153,14 +170,30 @@
       out.tie = Object.assign({}, d.tie, { hex: o.tie.hex, on: false });
     }
     out.name = o && typeof o.name === 'string' ? o.name.slice(0, 80) : '';
+    if (o && typeof o.savedId === 'string' && /^[a-z0-9]{1,40}$/i.test(o.savedId)) out.savedId = o.savedId;   // the wardrobe entry it came from
     out.occasion = window.VGARM.OCCASIONS.some(function (x) { return o && x.id === o.occasion; }) ? o.occasion : 'smart';
     out.acc = {};
     Object.keys(d.acc).forEach(function (k) {
       const x = out.acc[k] = Object.assign({}, d.acc[k], (o && o.acc && o.acc[k]) || {}), G = window.VGARM;
       if (!G.metalBy[x.metal]) x.metal = d.acc[k].metal;
       if (x.stone != null && !G.stoneBy[x.stone]) x.stone = d.acc[k].stone;
+      if (k === 'watch') {
+        if (!G.STRAPS.some(function (t) { return t.id === x.strap; })) x.strap = d.acc.watch.strap;
+        if (!isHex(x.strapHex)) x.strapHex = d.acc.watch.strapHex;
+        if (!isHex(x.dial)) x.dial = d.acc.watch.dial;
+        if (['analogue', 'digital'].indexOf(x.display) < 0) x.display = 'analogue';
+      }
     });
     return out;
+  }
+  /* The saved outfits: each is checked like the outfit being edited, since its fields reach the page. */
+  function normWardrobe(list) {
+    if (!Array.isArray(list)) return [];
+    return list.slice(0, 500).filter(function (w) { return w && typeof w === 'object' && w.outfit && typeof w.id === 'string' && /^[a-z0-9]{1,40}$/i.test(w.id); }).map(function (w) {
+      const o = normOutfit(w.outfit); delete o.savedId; o.locks = {};
+      return { id: w.id, name: String(w.name || '').slice(0, 80) || 'Untitled outfit', saved: /^\d{4}-\d{2}-\d{2}$/.test(w.saved || '') ? w.saved : '',
+        season: ['winter', 'summer', 'all'].indexOf(w.season) >= 0 ? w.season : 'all', occasion: o.occasion, outfit: o };
+    });
   }
   const isHex = function (h) { return typeof h === 'string' && /^#[0-9a-f]{6}$/i.test(h); };
   /* A profile opened from a file: everything that reaches the page's markup or a lookup is checked,
@@ -216,7 +249,7 @@
     samples: { white: null, skin: null, hair: null, eyes: null }, manual: {},
     useWhite: true, measurements: {}, glasses: 'none', glassesHex: '#161616', redness: 'none', underEye: 'none', hairStyle: 'short', grey: 0, named: {}, fitMark: true,
     season: 'winter', summer: newSummer(),
-    outfit: normOutfit(null), study: null, shape: {}, period: 'classic'
+    outfit: normOutfit(null), wardrobe: [], study: null, shape: {}, period: 'classic'
   };
   V.previewing = null;   // a piece shown on the chart while hovering, not saved
   V.activeSampler = 'skin';
@@ -237,6 +270,7 @@
     // A period that no longer exists (the 2020s revival was removed) falls back to today's classic.
     if (s.period != null && !(s.period in window.VPROP.PERIODS)) s.period = 'classic';
     s.outfit = normOutfit(s.outfit);
+    s.wardrobe = normWardrobe(s.wardrobe);
     s.grey = Math.max(0, Math.min(100, +s.grey || 0)); s.named = s.named || {};
     s.fitMark = s.fitMark !== false;
     s.season = s.season === 'summer' ? 'summer' : 'winter'; s.summer = newSummer(s.summer);
@@ -349,7 +383,7 @@
     'season': {
       title: 'Winter and summer', what: 'Skin is the one part of your colouring that changes with the time of year. A tan makes it darker and a little redder; hair and eyes stay as they are here.',
       how: 'Switch at the top of the page. Every tab follows: palette, outfit, chart. For summer skin, pick the depth you reach by late summer, sample a summer photo, or leave it on the estimate. The estimate is a light tan, the average change measured after two weeks of outdoor sun: lightness about 2.7 lower, slightly redder. Keep the undertone you have in winter.',
-      use: 'A darker skin changes the light-dark step to your hair and lets pale colours separate from your face. Light colours, white above all, often move up a tier in summer. Colours close to tanned skin, such as camel and some pinks, can move down. The profile card lists exactly which. The season also changes the light and the surroundings, which Valet does not model: grey, weak winter light makes colours look quieter and darker, strong summer sun makes them louder and contrasts harder. On the Outfit check the switch also decides which cloths are in season.'
+      use: 'A darker skin changes the light-dark step to your hair and lets pale colours separate from your face. Light colours, white above all, often move up a tier in summer. Colours close to tanned skin, such as camel and some pinks, can move down. The profile card lists exactly which. The season also changes the light and the surroundings, which Valet does not model: grey, weak winter light makes colours look quieter and darker, strong summer sun makes them louder and contrasts harder. On the Dresser the switch also decides which cloths are in season.'
     },
     'echo': {
       title: 'Echo', what: 'Colours from the library that repeat the colour of your eyes or your hair.',

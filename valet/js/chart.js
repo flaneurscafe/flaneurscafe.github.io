@@ -8,7 +8,7 @@
    shaded zone marks the lightness that frames your face (the band of section 4). Underneath,
    first any piece near the face that clashes with your skin (ringed in red), then the three steps
    the outfit rules check, with their numbers: shirt against jacket, top against
-   trousers, shoes against trousers. They use the same thresholds as the Outfit check, so the
+   trousers, shoes against trousers. They use the same thresholds as the Dresser, so the
    chart and the checks always agree.
 
    It sits on white, so the dark text and thin rules read clearly (How it works, section 12); the
@@ -35,7 +35,7 @@
       const k = pos.key; if (!o[k]) return;
       const label = k === 'shoes' ? 'Shoes, belt' : (kinds[k] || pos.label);
       rows.push({ k: k, label: label.length > 13 ? label.replace('Shawl-collar cardigan', 'Shawl cardigan').replace('Crew-neck knit', 'Crew neck').replace('Knitted polo', 'Knit polo') : label,
-        name: n[k], hex: k === 'shoes' ? o.shoes : mean(k), two: k === 'shoes' ? null : twoTone(k), face: pos.face });
+        name: n[k], hex: k === 'shoes' ? o.shoes : mean(k), two: k === 'shoes' ? (P.shoesTwo || null) : twoTone(k), face: pos.face });
     });
 
     const top = 44, youH = 50, rowH = 40, chartBot = top + youH + rows.length * rowH;
@@ -131,7 +131,7 @@
     if (by.shirt && a && Math.abs(by.shirt.L - skinL) < lo) {
       notes.push({ ok: null, text: by.shirt.label + ' at your skin\u2019s lightness (' + Math.round(Math.abs(by.shirt.L - skinL)) + ' apart): beside the face it separates by colour, not by light against dark.' });
     }
-    if (faceLayers.length === 1 && !P.study) {      // layering is the Outfit check's business, not the study's
+    if (faceLayers.length === 1 && !P.study) {      // layering is the Dresser's business, not the study's
       notes.push({ ok: null, text: 'One layer at the face: only its neckline frames it. A jacket or a knit adds a frame.' });
     }
     const topK = by.jacket ? 'jacket' : by.mid ? 'mid' : 'shirt';
@@ -180,7 +180,7 @@
     A.key.innerHTML = keyHtml(A.P);
   }
   /* How to read the chart, and where to put colours, with this person's numbers: the framing zones
-     and the step the face needs. The same numbers as the chart and the Outfit check. */
+     and the step the face needs. The same numbers as the chart and the Dresser. */
   function keyHtml(P) {
     const a = P.analysis;
     const head = '<summary>How to read the chart</summary>';

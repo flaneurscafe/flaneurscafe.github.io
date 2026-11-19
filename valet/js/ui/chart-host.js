@@ -17,10 +17,17 @@
       if (V.previewing && V.previewing.slot === k) x = Object.assign({}, x, { on: true }, V.previewing.look);
       hex[k] = x.on === false ? '' : x.hex; pats[k] = x.pat;
     });
+    // spectators: plotted at the mix of their two leathers, as the rules judge them, and shown in both
+    let shoesTwo = null;
+    if (hex.shoes && o.shoes.kind === 'spectator' && o.shoes.hex2) {
+      const p1 = window.VC.hexToLab(o.shoes.hex), p2 = window.VC.hexToLab(o.shoes.hex2);
+      shoesTwo = [o.shoes.hex, o.shoes.hex2];
+      hex.shoes = window.VC.labToHex([p1[0] * 0.6 + p2[0] * 0.4, p1[1] * 0.6 + p2[1] * 0.4, p1[2] * 0.6 + p2[2] * 0.4]);
+    }
     return {
       skin: c.skin || PLACEHOLDER.skin, hair: c.hair || PLACEHOLDER.hair, eyes: c.eyes || PLACEHOLDER.eyes,
       hairStyle: V.state.hairStyle,
-      outfit: hex, pats: pats,
+      outfit: hex, pats: pats, shoesTwo: shoesTwo,
       names: (function () { const n = {}; window.VGARM.SLOTS.forEach(function (k) { n[k] = nameOf(hex[k] || o[k].hex); }); return n; })(),
       kinds: (function () { const n = {}; window.VGARM.SLOTS.forEach(function (k) { n[k] = window.VGARM.kind(k, o[k]).name; }); return n; })(),
       analysis: a, previewSlot: V.previewing ? V.previewing.slot : null
@@ -42,7 +49,7 @@
   function syncChart() {
     if (!CHART) return;
     CHART.update(chartProps());
-    $('#chartYouNote').textContent = (V.analysis ? 'Your colouring and the outfit from the Outfit check, by lightness.' : 'Stand-in colours until you set your skin.') +
+    $('#chartYouNote').textContent = (V.analysis ? 'Your colouring and the outfit from the Dresser, by lightness.' : 'Stand-in colours until you set your skin.') +
       ' The green zone is the lightness that frames your face.';
   }
   let chartTimer = 0; V.previewTimer = 0;

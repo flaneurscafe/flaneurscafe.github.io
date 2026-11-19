@@ -1,6 +1,6 @@
 /* SPDX-FileCopyrightText: 2026 Budgie Perruche <https://flaneurs.cafe/contact/>
    SPDX-License-Identifier: GPL-3.0-or-later */
-/* Valet — the Outfit check tab. Every piece can be given a colour and a cloth; the outfit is then
+/* Valet — the Dresser tab (formerly Dresser). Every piece can be given a colour and a cloth; the outfit is then
    verified against the colour and pattern rules, each failing rule offers a fix, and open pieces
    can be suggested or filled in around the ones that are locked. Started by the interface (js/ui/main.js) with an API. */
 (function () {
@@ -23,10 +23,15 @@
   const FAMILIES = [['all', 'All'], ['Neutral', 'Neutrals'], ['Blue', 'Blues'], ['Green', 'Greens'], ['Red', 'Reds'], ['Yellow', 'Yellows'], ['Purple', 'Purples']];
   const ACCENT_NEUTRALS = ['#f7f6f2', '#c9cbcd', '#8e9196', '#3d4045', '#1d2a44', '#161616'];
   const PX_PER_CM = 96 / 2.54;
+  // a spectator's second colour, named (these are not in the colour library)
+  const SPEC2 = [['White', '#f2efe6'], ['Cream', '#e6dbc4'], ['Black', '#161616'], ['Dark brown', '#3b2417'], ['Tan', '#a8733f'], ['Navy', '#1d2a44']];
+  const spec2Name = function (h) { const c = SPEC2.find(function (x) { return x[1] === String(h).toLowerCase(); }); return c ? c[0].toLowerCase() : api.nameOf(h); };
 
   let api = null, open = null, tab = 'colour', filter = { fam: 'all', q: '', faceOnly: true }, undo = [], lastNote = '';
 
   const S = function () { return api.state(); };
+  // the first sentence, with its full stop (no lookbehind: Safari before 16.4 cannot parse one)
+  const firstSentence = function (t) { const m = String(t).match(/^.*?\.(?=\s|$)/); return m ? m[0] : String(t); };
   const tt = function (t) { return '<span class="tt t' + t + '" title="Tier ' + t + ': ' + E.TIER_TEXT[t].note.replace(/"/g, '') + '">T' + t + '</span>'; };
   const piece = function (k) { return S().outfit[k]; };
   const worn = function (k) { return piece(k).on !== false; };
@@ -35,7 +40,7 @@
     const out = {};
     PIECES.forEach(function (p) {
       const x = o[p.key];
-      out[p.key] = x.on === false ? null : { hex: x.hex, name: api.nameOf(x.hex), kind: x.kind, cloth: x.cloth, band: x.band, brim: x.brim, pat: x.pat || { type: 'solid' }, rise: x.rise, length: x.length };
+      out[p.key] = x.on === false ? null : { hex: x.hex, name: api.nameOf(x.hex), kind: x.kind, cloth: x.cloth, band: x.band, brim: x.brim, pat: x.pat || { type: 'solid' }, rise: x.rise, length: x.length, hex2: x.hex2, buttons: x.buttons };
     });
     // the Proportion checks, with the body's percentiles if measured
     {
@@ -70,7 +75,7 @@
   // The row line and class for one piece's status.
   function statusLine(st) {
     if (!st || st.state === 'ok') return '';
-    const first = st.why.split(/(?<=\.)\s/)[0];
+    const first = firstSentence(st.why);
     return '<span class="g-why fit-' + st.state + '-t">' + (st.state === 'out' ? 'Clashes: ' : 'Careful: ') + '<span class="g-why-t">' + esc(first) + '</span></span>';
   }
   /* One colour in one piece, judged with the rest of the outfit: '' when it fits, otherwise a
@@ -116,7 +121,153 @@
     renderPieces(a);
     renderAcc();
     renderChecks(checks, a);
+    renderSave();
     $('#ovUndo').disabled = !undo.length;
+    aCache = {};
+    renderWardrobe(a);
+  }
+
+  /* ---------- The wardrobe: outfits you have composed, checked and kept ----------
+     Saved in your profile (in this browser, and in the file when you save it). Grouped first by
+     season, read from the cloths (winter cloth only: winter; summer cloth only: summer; neither or
+     both: all year), then by the occasion. Each verdict is worked out again when the wardrobe is
+     shown, so it follows your colouring if that changes. */
+  let view = 'outfit', removed = null, wNote = '';
+  const SEASONS = [['winter', 'Winter'], ['summer', 'Summer'], ['all', 'All year']];
+  function wardrobe() { const st = S(); if (!Array.isArray(st.wardrobe)) st.wardrobe = []; return st.wardrobe; }
+  /* The colouring a saved outfit is judged with: a summer outfit with your summer colouring and the
+     summer season, a winter one with winter's; an all-year outfit with the season you are in now. */
+  let aCache = {};
+  function analysisFor(w, aNow) {
+    if (w.season !== 'summer' && w.season !== 'winter') return aNow;
+    if (aNow && aNow.season === w.season) return aNow;
+    if (!aCache[w.season]) aCache[w.season] = api.analysisFor(w.season);
+    return aCache[w.season] || aNow;
+  }
+  function seasonOf(o) {
+    let w = 0, su = 0;
+    G.SLOTS.forEach(function (k) {
+      const x = o[k]; if (!x || x.on === false) return;
+      const c = G.cloth(k, x), kd = G.kind(k, x), sea = (kd && kd.season) || (c && c.season);
+      if (sea === 'winter') w++; else if (sea === 'summer') su++;
+    });
+    return w && !su ? 'winter' : su && !w ? 'summer' : 'all';
+  }
+  function autoName(o) {
+    const parts = ['jacket', 'mid', 'shirt', 'trousers'].filter(function (k) { return o[k] && o[k].on !== false; }).slice(0, 2);
+    return parts.map(function (k) { return api.nameOf(o[k].hex) + ' ' + G.kind(k, o[k]).name.toLowerCase(); }).join(', ');
+  }
+  function snapshotOutfit() {
+    const o = JSON.parse(JSON.stringify(S().outfit)); delete o.savedId; o.locks = {}; return o;
+  }
+  function saveOutfit(asNew) {
+    const list = wardrobe(), cur = S().outfit, o = snapshotOutfit();
+    const name = (cur.name || '').trim() || autoName(o);
+    const existing = !asNew && cur.savedId ? list.find(function (w) { return w.id === cur.savedId; }) : null;
+    if (existing) { existing.outfit = o; existing.name = name; existing.season = seasonOf(o); existing.occasion = o.occasion; existing.saved = new Date().toISOString().slice(0, 10); lastNote = 'Updated in the wardrobe: ' + name + '.'; }
+    else {
+      const id = 'w' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
+      list.push({ id: id, name: name, season: seasonOf(o), occasion: o.occasion || 'smart', saved: new Date().toISOString().slice(0, 10), outfit: o });
+      cur.savedId = id; lastNote = 'Saved to the wardrobe: ' + name + '.';
+    }
+    if (!cur.name) cur.name = name;
+    api.save(); render();
+  }
+  function renderSave() {
+    const box = $('#ovSave'); if (!box) return;
+    const cur = S().outfit, inList = cur.savedId && wardrobe().some(function (w) { return w.id === cur.savedId; });
+    box.innerHTML = inList
+      ? '<button type="button" class="btn small" data-save="update">Update in wardrobe</button><button type="button" class="btn ghost small" data-save="new">Save as new</button>'
+      : '<button type="button" class="btn small" data-save="new">Save to wardrobe</button>';
+    $$('[data-save]', box).forEach(function (b) { b.addEventListener('click', function () { saveOutfit(b.dataset.save === 'new'); }); });
+  }
+  function setView(v) {
+    view = v;
+    $$('.dr-views [data-view]').forEach(function (b) { b.setAttribute('aria-selected', String(b.dataset.view === v)); });
+    $('#drOutfit').hidden = v !== 'outfit'; $('#drWardrobe').hidden = v !== 'wardrobe';
+    const body = $('#outfitBody'); if (body) body.classList.toggle('wardrobe-view', v === 'wardrobe');
+    if (v === 'wardrobe') renderWardrobe(api.analysis());
+    document.dispatchEvent(new Event('valet:layout'));
+    if (window.scrollY > 0 && $('.dr-views')) $('.dr-views').scrollIntoView({ block: 'nearest' });
+  }
+  function renderWardrobe(a) {
+    const list = wardrobe(), cnt = $('#drCount'); if (cnt) cnt.textContent = list.length ? '(' + list.length + ')' : '';
+    const box = $('#drWardrobe'); if (!box || view !== 'wardrobe' || !a) return;
+    const undoBar = (removed ? '<div class="dr-undo">Removed “' + esc(removed.item.name) + '”. <button type="button" class="btn ghost small" id="drUndo">Undo</button></div>' : '') +
+      '<div class="dr-tools"><button type="button" class="btn ghost small" id="drPrint"' + (list.length ? '' : ' disabled') + '>Print or save as PDF</button>' +
+      '<button type="button" class="btn ghost small" id="drExport"' + (list.length ? '' : ' disabled') + '>Export wardrobe</button>' +
+      '<label class="btn ghost small">Import wardrobe<input type="file" id="drImport" accept="application/json,.json" hidden></label></div>' +
+      (wNote ? '<p class="dr-note" role="status">' + esc(wNote) + '</p>' : '');
+    if (!list.length) { box.innerHTML = undoBar + '<p class="dr-empty">Nothing saved yet. Put an outfit together under <strong>Outfit</strong>, check it, and press <strong>Save to wardrobe</strong>. Saved outfits are grouped here by season and occasion.</p>'; wireUndo(box); return; }
+    const occName = {}; G.OCCASIONS.forEach(function (x) { occName[x.id] = x.name; });
+    const order = SEASONS.slice().sort(function (x, y) { return (y[0] === a.season) - (x[0] === a.season); });
+    box.innerHTML = undoBar + order.map(function (se) {
+      const inSeason = list.filter(function (w) { return w.season === se[0]; }); if (!inSeason.length) return '';
+      return '<section class="dr-season"><h3>' + se[1] + ' <span class="dr-n">' + inSeason.length + '</span></h3>' + G.OCCASIONS.map(function (oc) {
+        const items = inSeason.filter(function (w) { return (w.occasion || 'smart') === oc.id; }); if (!items.length) return '';
+        return '<h4 class="dr-occ">' + esc(oc.name) + '</h4><ul class="dr-list">' + items.map(function (w) {
+          const o = engineOutfit(w.outfit), v = E.verdict(E.checkOutfit(o, analysisFor(w, a)));
+          const strip = G.SLOTS.filter(function (k) { return w.outfit[k] && w.outfit[k].on !== false; }).map(function (k) {
+            return '<i title="' + esc(api.nameOf(w.outfit[k].hex) + ' ' + G.kind(k, w.outfit[k]).name.toLowerCase()) + '" style="' + chipStyle(w.outfit[k]) + '"></i>';
+          }).join('');
+          const isCur = S().outfit.savedId === w.id;
+          return '<li class="dr-item lv-' + esc(v.level || '') + (isCur ? ' cur' : '') + '" data-id="' + esc(w.id) + '"><div class="dr-strip" aria-hidden="true">' + strip + '</div>' +
+            '<div class="dr-text"><strong>' + esc(w.name) + '</strong><span class="dr-verdict">' + esc(v.title || '') + '</span><span class="dr-date">Saved ' + esc(w.saved || '') + (isCur ? ' · being worn' : '') + '</span></div>' +
+            '<div class="dr-acts"><button type="button" class="btn small" data-wear>Wear</button><button type="button" class="btn ghost small" data-del aria-label="Delete ' + esc(w.name) + '">Delete</button></div></li>';
+        }).join('') + '</ul>';
+      }).join('') + '</section>';
+    }).join('');
+    $$('.dr-item', box).forEach(function (li) {
+      const id = li.dataset.id;
+      $('[data-wear]', li).addEventListener('click', function () {
+        const w = list.find(function (x) { return x.id === id; }); if (!w) return;
+        snapshot(); api.setOutfit(Object.assign(JSON.parse(JSON.stringify(w.outfit)), { savedId: id, name: w.name }));
+        lastNote = 'Wearing “' + w.name + '” from the wardrobe.'; setView('outfit'); api.save(); render();
+      });
+      $('[data-del]', li).addEventListener('click', function () {
+        const i = list.findIndex(function (x) { return x.id === id; }); if (i < 0) return;
+        removed = { item: list[i], at: i }; list.splice(i, 1); api.save(); render();
+      });
+    });
+    wireUndo(box);
+  }
+  /* Export and import. A wardrobe file holds only the saved outfits, to move them to another browser,
+     keep a copy or share them. Importing adds to the wardrobe: an outfit already there is skipped, and
+     a different one that happens to carry the same id is kept under a new id. A full profile file is
+     accepted too; only its wardrobe is taken. */
+  function exportWardrobe() {
+    const out = { app: 'valet', kind: 'wardrobe', version: 1, valet: api.version, saved: new Date().toISOString().slice(0, 10), wardrobe: wardrobe() };
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(new Blob([JSON.stringify(out, null, 2)], { type: 'application/json' }));
+    a.download = 'valet-wardrobe-' + out.saved + '.json'; a.click();
+    setTimeout(function () { URL.revokeObjectURL(a.href); }, 1000);
+    wNote = 'Exported ' + out.wardrobe.length + ' outfit' + (out.wardrobe.length === 1 ? '' : 's') + '.'; renderWardrobe(api.analysis());
+  }
+  function importWardrobe(data) {
+    if (!data || data.app !== 'valet' || !Array.isArray(data.wardrobe)) { wNote = 'That file has no Valet wardrobe in it.'; return; }
+    const incoming = api.normWardrobe(data.wardrobe), list = wardrobe();
+    const sig = function (w) { return JSON.stringify([w.name, w.outfit]); };
+    const have = {}; list.forEach(function (w) { have[sig(w)] = true; });
+    let added = 0, same = 0;
+    incoming.forEach(function (w) {
+      if (have[sig(w)]) { same++; return; }
+      if (list.some(function (x) { return x.id === w.id; })) w.id = 'w' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
+      list.push(w); have[sig(w)] = true; added++;
+    });
+    if (!incoming.length) wNote = 'The file\'s wardrobe is empty.';
+    else wNote = 'Imported ' + added + ' outfit' + (added === 1 ? '' : 's') + (same ? '; ' + same + ' already in your wardrobe' + (same === 1 ? ' was' : ' were') + ' skipped' : '') + '.';
+    if (added) api.save();
+  }
+  function wireUndo(box) {
+    const ex = $('#drExport', box); if (ex) ex.addEventListener('click', exportWardrobe);
+    const pr = $('#drPrint', box); if (pr) pr.addEventListener('click', printWardrobe);
+    const im = $('#drImport', box);
+    if (im) im.addEventListener('change', function (e) {
+      const f = e.target.files[0]; if (!f) return;
+      f.text().then(function (t) { let d = null; try { d = JSON.parse(t); } catch (err) { /* not JSON */ } importWardrobe(d); render(); });
+      e.target.value = '';
+    });
+    const u = $('#drUndo', box); if (u) u.addEventListener('click', function () { if (removed) { wardrobe().splice(removed.at, 0, removed.item); removed = null; api.save(); render(); } });
   }
 
   /* The verdict, with clashes against your skin put first and kept on screen for as long as they
@@ -212,6 +363,7 @@
 
   function chipStyle(x) {
     const pat = VP.norm(x.pat);
+    if (x.kind === 'spectator' && x.hex2) return 'background:linear-gradient(90deg,' + x.hex + ' 0 58%,' + x.hex2 + ' 58% 100%)';
     return pat.type === 'solid' ? 'background:' + x.hex : 'background-image:url(' + VP.thumb(x.hex, pat, 12, 3) + ');background-size:cover';
   }
   function patLabel(x) {
@@ -273,11 +425,19 @@
     const cutRow = cut ? '<div class="kind-row cut-row" role="radiogroup" aria-label="' + cut.label + '"><span class="kind-lab">' + cut.label + '</span>' + cut.opts.map(function (o) {
       return '<button type="button" role="radio" class="kind cut" data-cut="' + o[0] + '" aria-checked="' + ((x[cut.key] || cut.def) === o[0]) + '" title="' + esc(o[1]) + '">' + o[1].split(':')[0] + '</button>';
     }).join('') + '</div><p class="ed-note">' + esc(cut.opts.find(function (o) { return o[0] === (x[cut.key] || cut.def); })[1]) + '. It sets where this piece meets the next; see Proportion in the checks.</p>' : '';
-    ed.innerHTML = kindRow + cutRow + keepRow + (p.cloth ? '<div class="seg ed-tabs" role="tablist"><button type="button" role="tab" data-t="colour" aria-selected="' + (tab === 'colour') + '">Colour</button>' +
-      '<button type="button" role="tab" data-t="cloth" aria-selected="' + (tab === 'cloth') + '">' + (kindOf(k).pats.length > 1 ? 'Cloth and pattern' : 'Cloth') + '</button></div>' : '') +
+    const extraRow = cur.buttons ? '<div class="kind-row" role="radiogroup" aria-label="Buttons"><span class="kind-lab">Buttons</span>' + G.BUTTONS.map(function (b) {
+        return '<button type="button" role="radio" class="kind btn-opt" data-btn="' + b[0] + '" aria-checked="' + ((x.buttons || 'gold') === b[0]) + '">' + b[1] + '</button>';
+      }).join('') + '</div><p class="ed-note">Metal buttons count as metal in the outfit: keep the watch and buckle in the same metal.</p>'
+      : cur.twoTone ? '<div class="kind-row" role="radiogroup" aria-label="Toe cap and heel"><span class="kind-lab">Toe cap and heel</span>' + SPEC2.map(function (c) {
+        return '<button type="button" role="radio" class="kind spec2" data-hex2="' + c[1] + '" aria-checked="' + ((x.hex2 || '').toLowerCase() === c[1]) + '"><i class="d" style="background:' + c[1] + '"></i>' + c[0] + '</button>';
+      }).join('') + '</div><p class="ed-note">The second colour of the spectator; the main colour, chosen below, is the rest of the upper.</p>' : '';
+    ed.innerHTML = kindRow + cutRow + extraRow + keepRow + (p.cloth ? '<div class="seg ed-tabs" role="tablist"><button type="button" role="tab" data-t="colour" aria-selected="' + (tab === 'colour') + '">Colour</button>' +
+      '<button type="button" role="tab" data-t="cloth" aria-selected="' + (tab === 'cloth') + '">' + (k === 'shoes' ? 'Upper' : kindOf(k).pats.length > 1 ? 'Cloth and pattern' : 'Cloth') + '</button></div>' : '') +
       '<div class="ed-body"></div>';
     $$('.ed-tabs button', ed).forEach(function (b) { b.addEventListener('click', function () { tab = b.dataset.t; renderEditor(ed, k, a); }); });
-    $$('.kind:not(.cut)', ed).forEach(function (b) { b.addEventListener('click', function () { setKind(k, b.dataset.kind); }); });
+    $$('.kind:not(.cut):not(.btn-opt):not(.spec2)', ed).forEach(function (b) { b.addEventListener('click', function () { setKind(k, b.dataset.kind); }); });
+    $$('.btn-opt', ed).forEach(function (b) { b.addEventListener('click', function () { snapshot(); piece(k).buttons = b.dataset.btn; commit('Buttons: ' + b.textContent.toLowerCase() + '.'); }); });
+    $$('.spec2', ed).forEach(function (b) { b.addEventListener('click', function () { snapshot(); piece(k).hex2 = b.dataset.hex2; commit('Toe cap and heel: ' + b.textContent.toLowerCase() + '.'); }); });
     $$('.cut', ed).forEach(function (b) { b.addEventListener('click', function () { snapshot(); piece(k)[cut.key] = b.dataset.cut; commit(cut.label + ': ' + b.textContent.toLowerCase() + '.'); }); });
     $('.ov-keep', ed).addEventListener('click', function () { keepAndFix(k); });
     const body = $('.ed-body', ed);
@@ -286,7 +446,7 @@
 
   /* The optional positions not worn now, as one row of Add buttons. */
   // Add buttons name the position; the title lists the types to choose from once it is added.
-  const ADD_NAME = { hat: 'Headwear', tie: 'Neckwear', scarf: 'Scarf', mid: 'Knit or waistcoat', jacket: 'Jacket or coat', square: 'Pocket square', socks: 'Socks' };
+  const ADD_NAME = { hat: 'Headwear', tie: 'Neckwear', scarf: 'Scarf', mid: 'Knit or waistcoat', jacket: 'Jacket', coat: 'Coat', square: 'Pocket square', socks: 'Socks', gloves: 'Gloves' };
   function addBar() {
     const off = PIECES.filter(function (p) { return p.optional && !worn(p.key); });
     if (!off.length) return '';
@@ -331,6 +491,8 @@
     if (k === 'shirt' && !t.collar && worn('tie') && kindOf('tie').needsCollar) { notes.push('Took off the ' + lname('tie') + ': it needs a shirt collar. Add a scarf instead if you want one.'); piece('tie').on = false; }
     if (k === 'shirt' && !t.collar && S().outfit.acc.cufflinks.on) { S().outfit.acc.cufflinks.on = false; notes.push('Took off the cufflinks: they need shirt cuffs.'); }
     if (k === 'jacket' && !t.pocket && worn('square')) { piece('square').on = false; notes.push('Took off the pocket square: it needs a breast pocket.'); }
+    if (t.twoTone && !x.hex2) x.hex2 = '#f2efe6';                     // spectators start brown and white
+    if (t.buttons && !x.buttons) x.buttons = 'gold';                  // a blazer's classic buttons
     commit(notes.join(' '));
   }
   function keepAndFix(k) {
@@ -378,7 +540,7 @@
           '<label>Metal <select class="acc-metal">' + d.metals.map(function (m) { return '<option value="' + m + '"' + (x.metal === m ? ' selected' : '') + '>' + G.metalBy[m].name + '</option>'; }).join('') + '</select></label>' +
           (d.stone ? '<label>Stone <select class="acc-stone">' + G.STONES.map(function (st) { return '<option value="' + st.id + '"' + (x.stone === st.id ? ' selected' : '') + '>' + st.name + '</option>'; }).join('') + '</select></label>' : '') +
           (d.size ? '<label>' + d.size.label + ' <input type="number" class="acc-size" min="' + d.size.min + '" max="' + d.size.max + '" step="1" value="' + (x.size || '') + '"> mm</label><span class="ed-note">' + hint + '</span>' : '') +
-          '</span>' + (d.note ? '<p class="ed-note">' + esc(d.note) + '</p>' : '') : '') +
+          '</span>' + (d.watch ? watchHtml(x) : '') + (d.note ? '<p class="ed-note">' + esc(d.note) + '</p>' : '') : '') +
         '</div>';
     }).join('') + (offs.length ? '<div class="add-bar"><span class="add-lab">Add</span>' + offs.map(function (d) {
       const why = accBlocked(d);
@@ -391,7 +553,28 @@
       const m = $('.acc-metal', el); if (m) m.addEventListener('change', function () { snapshot(); x.metal = m.value; commit(''); });
       const st = $('.acc-stone', el); if (st) st.addEventListener('change', function () { snapshot(); x.stone = st.value; commit(''); });
       const sz = $('.acc-size', el); if (sz) sz.addEventListener('change', function () { const v = +sz.value; if (v > 0) { snapshot(); x.size = v; commit(''); } });
+      const strap = $('.acc-strap', el); if (strap) strap.addEventListener('change', function () { snapshot(); x.strap = strap.value; commit(''); });
+      $$('[data-strap-hex]', el).forEach(function (b) { b.addEventListener('click', function () { snapshot(); x.strapHex = b.dataset.strapHex; commit(''); }); });
+      $$('[data-dial]', el).forEach(function (b) { b.addEventListener('click', function () { snapshot(); x.dial = b.dataset.dial; commit(''); }); });
+      $$('[data-display]', el).forEach(function (b) { b.addEventListener('click', function () { snapshot(); x.display = b.dataset.display; commit(''); }); });
     });
+  }
+
+  /* The watch beyond its case: strap and its colour, dial, and display. */
+  function watchHtml(x) {
+    const strap = G.STRAPS.find(function (t) { return t.id === (x.strap || 'leather'); }) || G.STRAPS[1];
+    const chips = function (list, attr, cur) {
+      return '<div class="chips w-chips">' + list.map(function (c) {
+        const sel = (cur || '').toLowerCase() === c[1];
+        return '<button type="button" class="chip' + (sel ? ' sel' : '') + '" aria-pressed="' + sel + '" ' + attr + '="' + c[1] + '"><i class="d" style="background:' + c[1] + '"></i>' + c[0] + '</button>';
+      }).join('') + '</div>';
+    };
+    return '<div class="w-more">' +
+      '<label>Strap <select class="acc-strap">' + G.STRAPS.map(function (t) { return '<option value="' + t.id + '"' + (t.id === strap.id ? ' selected' : '') + '>' + t.name + '</option>'; }).join('') + '</select></label>' +
+      (strap.coloured ? '<span class="w-lab">Strap colour</span>' + chips(G.STRAP_COLOURS, 'data-strap-hex', x.strapHex) : '') +
+      '<span class="w-lab">Dial</span>' + chips(G.DIALS, 'data-dial', x.dial) +
+      '<div class="seg w-display" role="radiogroup" aria-label="Display"><button type="button" role="radio" data-display="analogue" aria-checked="' + (x.display !== 'digital') + '">Analogue</button><button type="button" role="radio" data-display="digital" aria-checked="' + (x.display === 'digital') + '">Digital</button></div>' +
+      '<p class="ed-note">Mechanical or quartz cannot be seen, so it is not judged; a digital display can be.</p></div>';
   }
 
   /* ---------- Colour from a photo ----------
@@ -521,7 +704,7 @@
       '<div class="sug-row">' + sug.map(function (s) {
         const care = s.j.state === 'care';
         return '<button type="button" class="sug' + (care ? ' fit-care' : '') + '" data-hex="' + s.hex + '"' + (care ? ' title="' + esc(s.j.why) + '"' : '') + '><span class="d" style="background:' + s.hex + '"></span><span><strong>' + esc(s.name) + '</strong> ' + tt(s.tier) +
-          '<small>' + (care ? '<span class="fit-care-t">Careful:</span> ' + esc(s.j.why.split(/(?<=\.)\s/)[0]) : esc(s.why)) + '</small></span></button>';
+          '<small>' + (care ? '<span class="fit-care-t">Careful:</span> ' + esc(firstSentence(s.j.why)) : esc(s.why)) + '</small></span></button>';
       }).join('') + '</div>' +
       photoHtml() +
       '<h4>All colours</h4>' +
@@ -589,7 +772,8 @@
   function clothHtml(k, x) {
     const kd = kindOf(k); if (!kd.cloths) return '';
     const cur = G.cloth(k, x);
-    return '<h4>Cloth</h4><p class="ed-note">What it is made of sets how formal it is, which season it belongs to, and whether it shines.</p><div class="cloth-grid">' +
+    return (k === 'shoes' ? '<h4>Upper</h4><p class="ed-note">The leather of the upper sets how formal the shoe is and whether it shines.</p>'
+      : '<h4>Cloth</h4><p class="ed-note">What it is made of sets how formal it is, which season it belongs to, and whether it shines.</p>') + '<div class="cloth-grid">' +
       kd.cloths.map(function (id) {
         const c = G.CLOTHS[id], f = kd.f == null ? null : Math.min(kd.f, c.f);
         return '<button type="button" class="cloth' + (cur.id === id ? ' sel' : '') + '" data-cloth="' + id + '" aria-pressed="' + (cur.id === id) + '">' +
@@ -870,6 +1054,7 @@
 
   function init(theApi) {
     api = theApi;
+    $$('.dr-views [data-view]').forEach(function (b) { b.addEventListener('click', function () { setView(b.dataset.view); }); });
     $('#ovComplete').addEventListener('click', completeOutfit);
     $('#ovUndo').addEventListener('click', function () {
       const s = undo.pop(); if (!s) return;
@@ -904,7 +1089,7 @@
         '<td><strong>' + esc(p.label) + '</strong>' + (p.kinds.length > 1 ? '<span class="oc-pos">' + esc(p.position) + '</span>' : '') + '</td>' +
         '<td>' + esc(api.nameOf(x.hex)) + '</td><td>' + (c ? esc(c.name) : '') + '</td><td>' + esc(patLabel(x)) + '</td>' +
         '<td class="oc-t">T' + t + '</td>' +
-        '<td class="oc-st">' + (st && st.state !== 'ok' ? (st.state === 'out' ? '✕ ' : '! ') + esc(st.why.split(/(?<=\.)\s/)[0]) : '✓') + '</td></tr>';
+        '<td class="oc-st">' + (st && st.state !== 'ok' ? (st.state === 'out' ? '✕ ' : '! ') + esc(firstSentence(st.why)) : '✓') + '</td></tr>';
     }).join('');
     const acc = S().outfit.acc, accs = G.ACCESSORIES.filter(function (d) { return acc[d.key].on; }).map(function (d) {
       const x = acc[d.key], st = d.stone && x.stone && x.stone !== 'none' ? G.stoneBy[x.stone] : null;
@@ -930,6 +1115,53 @@
       '<h2>The checks</h2><ul class="oc-checks">' + secs + '</ul>' +
       '<p class="pc-foot">T1 to T4: how each colour suits your face on its own (T1 anywhere, T2 the one deliberate colour, T3 below the belt, T4 away from the face). ✓ passes, ! worth knowing, ✕ fails. Printed colours are approximate: go by the names, and check cloth in daylight.</p>';
   }
+  /* The whole wardrobe as one document, to print or save as PDF from the print dialog: grouped like
+     the wardrobe view, one block per outfit (kept on one page), each with its verdict worked out now,
+     its pieces, its accessories and the points to watch. */
+  function wardrobeDoc() {
+    const a = api.analysis(), list = wardrobe(); if (!a || !list.length) return '';
+    const date = new Date().toLocaleDateString(undefined, { year: 'numeric', month: 'long', day: 'numeric' });
+    const order = SEASONS.slice().sort(function (x, y) { return (y[0] === a.season) - (x[0] === a.season); });
+    const block = function (w) {
+      const aw = analysisFor(w, a), o = engineOutfit(w.outfit), checks = E.checkOutfit(o, aw), v = E.verdict(checks), hd = headline(v, E.skinClashes(o, aw));
+      const rows = PIECES.filter(function (p) { return o[p.key]; }).map(function (p) {
+        const x = w.outfit[p.key], kd = G.kind(p.key, x), c = G.cloth(p.key, x), t = E.scoreColour(VP.mean(x.hex, x.pat), aw).tier;
+        const extra = kd.twoTone && x.hex2 ? ' and ' + spec2Name(x.hex2) : kd.buttons ? ', ' + (G.BUTTONS.find(function (b) { return b[0] === (x.buttons || 'gold'); }) || [0, ''])[1].toLowerCase() + ' buttons' : '';
+        return '<tr><td class="oc-sw"><i style="' + chipStyle(x) + '"></i></td><td><strong>' + esc(kd.name) + '</strong></td><td>' + esc(api.nameOf(x.hex) + extra) + '</td><td>' + (c ? esc(c.name) : '') + '</td><td>' + esc(patLabel(x)) + '</td><td class="oc-t">T' + t + '</td></tr>';
+      }).join('');
+      const acc = w.outfit.acc || {}, accs = G.ACCESSORIES.filter(function (d) { return acc[d.key] && acc[d.key].on; }).map(function (d) {
+        const x = acc[d.key], st = d.stone && x.stone && x.stone !== 'none' ? G.stoneBy[x.stone] : null;
+        const watch = d.watch ? ', ' + ((G.STRAPS.find(function (t) { return t.id === x.strap; }) || {}).name || '').toLowerCase() + (x.display === 'digital' ? ', digital' : '') : '';
+        return esc(d.name) + ': ' + esc(G.metalBy[x.metal].name.toLowerCase()) + (st ? ', ' + esc(st.name.toLowerCase()) : '') + (d.size && x.size ? ', ' + x.size + ' mm' : '') + esc(watch);
+      });
+      const watch = checks.filter(function (c) { return c.score < 0.85; }).sort(function (x, y) { return x.score - y.score; }).slice(0, 4);
+      return '<div class="wd-item"><h4>' + esc(w.name) + '</h4>' +
+        '<div class="oc-verdict ' + hd.level + '"><strong>' + esc(hd.title) + '.</strong> <span class="oc-count">' + v.fails + ' fail' + (v.fails === 1 ? '' : 's') + ', ' + v.warns + ' to note</span></div>' +
+        '<table class="oc-table"><thead><tr><th></th><th>Piece</th><th>Colour</th><th>Cloth</th><th>Pattern</th><th>Tier</th></tr></thead><tbody>' + rows + '</tbody></table>' +
+        (accs.length ? '<p class="wd-acc">' + accs.join('; ') + '.</p>' : '') +
+        (watch.length ? '<ul class="wd-notes">' + watch.map(function (c) { return '<li>' + (c.score < 0.5 ? '✕ ' : '! ') + esc(firstSentence(c.text)) + '</li>'; }).join('') + '</ul>' : '') +
+        '<p class="wd-saved">Saved ' + esc(w.saved || '') + '.</p></div>';
+    };
+    const body = order.map(function (se) {
+      const inS = list.filter(function (w) { return w.season === se[0]; }); if (!inS.length) return '';
+      return '<h2>' + se[1] + '</h2>' + G.OCCASIONS.map(function (oc) {
+        const items = inS.filter(function (w) { return (w.occasion || 'smart') === oc.id; }); if (!items.length) return '';
+        return '<h3>' + esc(oc.name) + '</h3>' + items.map(block).join('');
+      }).join('');
+    }).join('');
+    const counts = order.map(function (se) { const n = list.filter(function (w) { return w.season === se[0]; }).length; return n ? se[1] + ' ' + n : ''; }).filter(Boolean).join(', ');
+    return '<h1>Wardrobe</h1><p class="pc-sub">' + (S().name ? 'For ' + esc(S().name) + '. ' : '') + list.length + ' outfit' + (list.length === 1 ? '' : 's') + ' (' + esc(counts) + '), grouped by season and occasion. Summer outfits are judged with your summer colouring, winter ones with your winter colouring, all-year ones with the ' + (api.season() === 'summer' ? 'summer' : 'winter') + ' colouring in use now. Valet, ' + date + '.</p>' + body;
+  }
+  function printWardrobe() {
+    const card = $('#printCard'); if (!card) return;
+    card.innerHTML = wardrobeDoc(); card.classList.add('outfit', 'wardrobe-doc');
+    const was = document.title;
+    document.title = 'Valet wardrobe ' + new Date().toISOString().slice(0, 10);
+    const back = function () { document.title = was; card.classList.remove('outfit', 'wardrobe-doc'); window.removeEventListener('afterprint', back); };
+    window.addEventListener('afterprint', back);
+    window.print();
+  }
+
   function printCard() {
     const card = $('#printCard'); if (!card) return;
     card.innerHTML = buildCard(); card.classList.add('outfit');
@@ -940,5 +1172,5 @@
     window.print();
   }
 
-  window.VWARD = { snapshot: snapshot, note: note, init: init, render: render, engineOutfit: engineOutfit, PIECES: PIECES, status: status, statusLine: statusLine, buildCard: buildCard };
+  window.VWARD = { wardrobeDoc: wardrobeDoc, snapshot: snapshot, note: note, init: init, render: render, engineOutfit: engineOutfit, PIECES: PIECES, status: status, statusLine: statusLine, buildCard: buildCard };
 })();
