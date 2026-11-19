@@ -114,7 +114,7 @@
     hat: { hex: '#3d4045', kind: 'flatcap', pat: { type: 'solid' }, on: false },
     shirt: { hex: '#c3d7ee', kind: 'shirt', pat: { type: 'solid' } }, tie: { hex: '#5e1f2c', kind: 'tie', pat: { type: 'solid' }, on: false },
     mid: { hex: '#3d4045', kind: 'crew', pat: { type: 'solid' }, on: false },
-    jacket: { hex: '#1d2a44', kind: 'jacket', pat: { type: 'solid' }, on: true, buttons: 'gold' },
+    jacket: { hex: '#1d2a44', kind: 'jacket', pat: { type: 'solid' }, on: true, buttons: 'silver' },   // a blazer's buttons start in the same metal as the default watch and buckle
     coat: { hex: '#3d4045', kind: 'overcoat', cloth: 'melton', pat: { type: 'solid' }, on: false },
     gloves: { hex: '#4a3326', kind: 'leather', pat: { type: 'solid' }, on: false },
     boutonniere: { hex: '#f7f6f2', kind: 'flower', pat: { type: 'solid' }, on: false, metal: 'silver' },
@@ -122,7 +122,7 @@
     trousers: { hex: '#8e9196', kind: 'trousers', pat: { type: 'solid' } },
     socks: { hex: '#1d2a44', kind: 'socks', pat: { type: 'solid' }, on: true }, shoes: { hex: '#4a3326', kind: 'loafer', cloth: 'calf' }, locks: {}, occasion: 'smart',
     acc: {
-      watch: { on: true, metal: 'silver', size: 38, strap: 'leather', strapHex: '#3b2417', dial: '#f2f0ea', display: 'analogue' }, buckle: { on: true, metal: 'silver' },
+      watch: { on: true, metal: 'silver', size: 38, strap: 'leather', display: 'analogue' }, buckle: { on: true, metal: 'silver' },
       cufflinks: { on: false, metal: 'silver', stone: 'none', size: 15 }, tiebar: { on: false, metal: 'silver', size: 45 },
       ring: { on: false, metal: 'silver', stone: 'none', size: 12 }, earring: { on: false, metal: 'silver', stone: 'none', size: 4 }
     }
@@ -181,8 +181,7 @@
       if (x.stone != null && !G.stoneBy[x.stone]) x.stone = d.acc[k].stone;
       if (k === 'watch') {
         if (!G.STRAPS.some(function (t) { return t.id === x.strap; })) x.strap = d.acc.watch.strap;
-        if (!isHex(x.strapHex)) x.strapHex = d.acc.watch.strapHex;
-        if (!isHex(x.dial)) x.dial = d.acc.watch.dial;
+        delete x.strapHex; delete x.dial;   // 1.6 kept strap and dial colours; they are not judged
         if (['analogue', 'digital'].indexOf(x.display) < 0) x.display = 'analogue';
       }
     });
@@ -194,7 +193,7 @@
     return list.slice(0, 500).filter(function (w) { return w && typeof w === 'object' && w.outfit && typeof w.id === 'string' && /^[a-z0-9]{1,40}$/i.test(w.id); }).map(function (w) {
       const o = normOutfit(w.outfit); delete o.savedId; o.locks = {};
       return { id: w.id, name: String(w.name || '').slice(0, 80) || 'Untitled outfit', saved: /^\d{4}-\d{2}-\d{2}$/.test(w.saved || '') ? w.saved : '',
-        season: ['winter', 'summer', 'all'].indexOf(w.season) >= 0 ? w.season : 'all', occasion: o.occasion, outfit: o };
+        season: ['winter', 'summer', 'all', 'mixed'].indexOf(w.season) >= 0 ? w.season : 'all', occasion: o.occasion, outfit: o };
     });
   }
   const isHex = function (h) { return typeof h === 'string' && /^#[0-9a-f]{6}$/i.test(h); };
@@ -390,7 +389,7 @@
     'echo': {
       title: 'Echo', what: 'Colours from the library that repeat the colour of your eyes or your hair.',
       how: 'Use one near the feature it repeats: a tie or shirt for the eyes, a jacket, knit or shoes for the hair. Colours tagged T3 or T4 echo you but belong away from the face.',
-      use: 'After contrast, this is the second technique the menswear writers agree on (Flusser; Gentleman’s Gazette). A repeated colour reads as chosen, and it sends the eye back to the feature it matches.'
+      use: 'A classic technique in the tailoring literature (Flusser 2002). It rests on how the eye groups what it sees: colours that are alike are seen as belonging together (grouping by similarity, Wertheimer 1923), so a repeated colour reads as chosen and sends the eye back to the feature it matches.'
     },
     'useWhite': {
       title: 'White reference correction',

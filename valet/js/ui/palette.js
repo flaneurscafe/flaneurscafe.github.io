@@ -306,7 +306,7 @@
     }
     if (st.accent) {
       // the accent goes on the tie when the shirt has a collar, otherwise on a scarf
-      if (window.VGARM.kind('shirt', o.shirt).collar) { o.tie.hex = st.accent; o.tie.on = true; notes.push(nameOf(st.accent) + ' ' + window.VGARM.kind('tie', o.tie).name.toLowerCase()); }
+      if (window.VGARM.kind('shirt', o.shirt).tieable) { o.tie.hex = st.accent; o.tie.on = true; notes.push(nameOf(st.accent) + ' ' + window.VGARM.kind('tie', o.tie).name.toLowerCase()); }
       else { o.scarf.hex = st.accent; o.scarf.on = true; notes.push(nameOf(st.accent) + ' scarf'); }
     }
     if (st.below) { o.trousers.hex = st.below; notes.push(nameOf(st.below) + ' trousers'); }
@@ -326,7 +326,7 @@
     const chip = function (hex, name) { return '<span class="pc-c"><i style="background:' + hex + '"></i>' + esc(name) + '</span>'; };
     const bald = a.hairStyle === 'none';
     // the step between layers at the face, as the Dresser measures it (engine.js, checkOutfit)
-    const lo = Math.round(Math.max(12, a.contrast * 0.5)), hi = Math.round(a.band[1]);
+    const lo = Math.round(a.band[0]), hi = Math.round(a.band[1]);
     const metal = a.lean < 0.35 ? 'Silver, steel, white gold or gunmetal; your colouring is cool, so gold is a stray warm note.'
       : a.lean > 0.65 ? 'Yellow gold or rose gold agree with your warm colouring; silver is the cooler alternative.'
         : 'Either; keep one metal through the outfit.';

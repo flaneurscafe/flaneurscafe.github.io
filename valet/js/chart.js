@@ -105,7 +105,7 @@
 
     // the steps the outfit rules check (the same thresholds as engine.js)
     const by = {}; rows.forEach(function (r) { by[r.k] = r; });
-    const lo = a ? Math.max(12, a.contrast * 0.5) : 12, hi = a ? a.contrast * 1.5 + 15 : 70;
+    const lo = a ? a.band[0] : 12, hi = a ? a.band[1] : 70;   // the face band of section 4, as the engine uses it
     const notes = [];
     // Clashes with your skin come first: they are the one thing no other piece can fix.
     clashRows.forEach(function (c) {
@@ -185,7 +185,7 @@
     const a = P.analysis;
     const head = '<summary>How to read the chart</summary>';
     if (!a) return head + '<p>Set your colouring on the You tab; the chart then measures every piece against it.</p>';
-    const skinL = Lof(P.skin), band = a.band, lo = Math.round(Math.max(12, a.contrast * 0.5));
+    const skinL = Lof(P.skin), band = a.band, lo = Math.round(band[0]);
     const z = function (x, y) { return Math.round(Math.max(0, x)) + ' to ' + Math.round(Math.min(100, y)); };
     const dark = z(skinL - band[1], skinL - band[0]), light = skinL + band[0] < 100 ? z(skinL + band[0], skinL + band[1]) : null;
     return head +

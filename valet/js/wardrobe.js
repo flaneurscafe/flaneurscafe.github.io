@@ -129,17 +129,17 @@
 
   /* ---------- The wardrobe: outfits you have composed, checked and kept ----------
      Saved in your profile (in this browser, and in the file when you save it). Grouped first by
-     season, read from the cloths (winter cloth only: winter; summer cloth only: summer; neither or
-     both: all year), then by the occasion. Each verdict is worked out again when the wardrobe is
+     season, read from the cloths (winter cloth only: winter; summer cloth only: summer; neither: all
+     year; both: mixed, which the season rule fails), then by the occasion. Each verdict is worked out again when the wardrobe is
      shown, so it follows your colouring if that changes. */
   let view = 'outfit', removed = null, wNote = '';
-  const SEASONS = [['winter', 'Winter'], ['summer', 'Summer'], ['all', 'All year']];
+  const SEASONS = [['winter', 'Winter'], ['summer', 'Summer'], ['all', 'All year'], ['mixed', 'Winter and summer cloth mixed']];
   function wardrobe() { const st = S(); if (!Array.isArray(st.wardrobe)) st.wardrobe = []; return st.wardrobe; }
   /* The colouring a saved outfit is judged with: a summer outfit with your summer colouring and the
      summer season, a winter one with winter's; an all-year outfit with the season you are in now. */
   let aCache = {};
   function analysisFor(w, aNow) {
-    if (w.season !== 'summer' && w.season !== 'winter') return aNow;
+    if (w.season !== 'summer' && w.season !== 'winter') return aNow;   // all year and mixed: the season you are in
     if (aNow && aNow.season === w.season) return aNow;
     if (!aCache[w.season]) aCache[w.season] = api.analysisFor(w.season);
     return aCache[w.season] || aNow;
@@ -151,7 +151,8 @@
       const c = G.cloth(k, x), kd = G.kind(k, x), sea = (kd && kd.season) || (c && c.season);
       if (sea === 'winter') w++; else if (sea === 'summer') su++;
     });
-    return w && !su ? 'winter' : su && !w ? 'summer' : 'all';
+    // both winter and summer cloth: the season rule fails it, so it is not filed as all year
+    return w && su ? 'mixed' : w ? 'winter' : su ? 'summer' : 'all';
   }
   function autoName(o) {
     const parts = ['jacket', 'mid', 'shirt', 'trousers'].filter(function (k) { return o[k] && o[k].on !== false; }).slice(0, 2);
@@ -164,11 +165,11 @@
     const list = wardrobe(), cur = S().outfit, o = snapshotOutfit();
     const name = (cur.name || '').trim() || autoName(o);
     const existing = !asNew && cur.savedId ? list.find(function (w) { return w.id === cur.savedId; }) : null;
-    if (existing) { existing.outfit = o; existing.name = name; existing.season = seasonOf(o); existing.occasion = o.occasion; existing.saved = new Date().toISOString().slice(0, 10); lastNote = 'Updated in the wardrobe: ' + name + '.'; }
+    if (existing) { existing.outfit = o; existing.name = name; existing.season = seasonOf(o); existing.occasion = o.occasion; existing.saved = new Date().toISOString().slice(0, 10); lastNote = 'Updated in Saved outfits: ' + name + '.'; }
     else {
       const id = 'w' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
       list.push({ id: id, name: name, season: seasonOf(o), occasion: o.occasion || 'smart', saved: new Date().toISOString().slice(0, 10), outfit: o });
-      cur.savedId = id; lastNote = 'Saved to the wardrobe: ' + name + '.';
+      cur.savedId = id; lastNote = 'Saved: ' + name + '.';
     }
     if (!cur.name) cur.name = name;
     api.save(); render();
@@ -177,8 +178,8 @@
     const box = $('#ovSave'); if (!box) return;
     const cur = S().outfit, inList = cur.savedId && wardrobe().some(function (w) { return w.id === cur.savedId; });
     box.innerHTML = inList
-      ? '<button type="button" class="btn small" data-save="update">Update in wardrobe</button><button type="button" class="btn ghost small" data-save="new">Save as new</button>'
-      : '<button type="button" class="btn small" data-save="new">Save to wardrobe</button>';
+      ? '<button type="button" class="btn small" data-save="update">Update saved outfit</button><button type="button" class="btn ghost small" data-save="new">Save as new</button>'
+      : '<button type="button" class="btn small" data-save="new">Save outfit</button>';
     $$('[data-save]', box).forEach(function (b) { b.addEventListener('click', function () { saveOutfit(b.dataset.save === 'new'); }); });
   }
   function setView(v) {
@@ -195,11 +196,12 @@
     const box = $('#drWardrobe'); if (!box || view !== 'wardrobe' || !a) return;
     const undoBar = (removed ? '<div class="dr-undo">Removed “' + esc(removed.item.name) + '”. <button type="button" class="btn ghost small" id="drUndo">Undo</button></div>' : '') +
       '<div class="dr-tools"><button type="button" class="btn ghost small" id="drPrint"' + (list.length ? '' : ' disabled') + '>Print or save as PDF</button>' +
-      '<button type="button" class="btn ghost small" id="drExport"' + (list.length ? '' : ' disabled') + '>Export wardrobe</button>' +
-      '<label class="btn ghost small">Import wardrobe<input type="file" id="drImport" accept="application/json,.json" hidden></label></div>' +
+      '<button type="button" class="btn ghost small" id="drExport"' + (list.length ? '' : ' disabled') + '>Export saved outfits</button>' +
+      '<label class="btn ghost small">Import saved outfits<input type="file" id="drImport" accept="application/json,.json" hidden></label></div>' +
       (wNote ? '<p class="dr-note" role="status">' + esc(wNote) + '</p>' : '');
-    if (!list.length) { box.innerHTML = undoBar + '<p class="dr-empty">Nothing saved yet. Put an outfit together under <strong>Outfit</strong>, check it, and press <strong>Save to wardrobe</strong>. Saved outfits are grouped here by season and occasion.</p>'; wireUndo(box); return; }
+    if (!list.length) { box.innerHTML = undoBar + '<p class="dr-empty">Nothing saved yet. Put an outfit together under <strong>Outfit</strong>, check it, and press <strong>Save outfit</strong>. Saved outfits are grouped here by season and occasion.</p>'; wireUndo(box); return; }
     const occName = {}; G.OCCASIONS.forEach(function (x) { occName[x.id] = x.name; });
+    list.forEach(function (w) { w.season = seasonOf(w.outfit); });   // from the cloths as the rules now read them, not as saved
     const order = SEASONS.slice().sort(function (x, y) { return (y[0] === a.season) - (x[0] === a.season); });
     box.innerHTML = undoBar + order.map(function (se) {
       const inSeason = list.filter(function (w) { return w.season === se[0]; }); if (!inSeason.length) return '';
@@ -222,7 +224,7 @@
       $('[data-wear]', li).addEventListener('click', function () {
         const w = list.find(function (x) { return x.id === id; }); if (!w) return;
         snapshot(); api.setOutfit(Object.assign(JSON.parse(JSON.stringify(w.outfit)), { savedId: id, name: w.name }));
-        setView('outfit'); commit('Wearing “' + w.name + '” from the wardrobe.');   // commit: saves, redraws the chart and the rows
+        setView('outfit'); commit('Wearing “' + w.name + '” from Saved outfits.');   // commit: saves, redraws the chart and the rows
       });
       $('[data-del]', li).addEventListener('click', function () {
         const i = list.findIndex(function (x) { return x.id === id; }); if (i < 0) return;
@@ -244,7 +246,7 @@
     wNote = 'Exported ' + out.wardrobe.length + ' outfit' + (out.wardrobe.length === 1 ? '' : 's') + '.'; renderWardrobe(api.analysis());
   }
   function importWardrobe(data) {
-    if (!data || data.app !== 'valet' || !Array.isArray(data.wardrobe)) { wNote = 'That file has no Valet wardrobe in it.'; return; }
+    if (!data || data.app !== 'valet' || !Array.isArray(data.wardrobe)) { wNote = 'That file has no saved Valet outfits in it.'; return; }
     const incoming = api.normWardrobe(data.wardrobe), list = wardrobe();
     const sig = function (w) { return JSON.stringify([w.name, w.outfit]); };
     const have = {}; list.forEach(function (w) { have[sig(w)] = true; });
@@ -254,8 +256,8 @@
       if (list.some(function (x) { return x.id === w.id; })) w.id = 'w' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
       list.push(w); have[sig(w)] = true; added++;
     });
-    if (!incoming.length) wNote = 'The file\'s wardrobe is empty.';
-    else wNote = 'Imported ' + added + ' outfit' + (added === 1 ? '' : 's') + (same ? '; ' + same + ' already in your wardrobe' + (same === 1 ? ' was' : ' were') + ' skipped' : '') + '.';
+    if (!incoming.length) wNote = 'The file holds no saved outfits.';
+    else wNote = 'Imported ' + added + ' outfit' + (added === 1 ? '' : 's') + (same ? '; ' + same + ' already saved' + (same === 1 ? ' was' : ' were') + ' skipped' : '') + '.';
     if (added) api.save();
   }
   function wireUndo(box) {
@@ -469,7 +471,7 @@
   }
   // Why a garment type cannot be chosen here now (or '' when it can).
   function kindBlocked(k, t) {
-    if (k === 'tie' && t.needsCollar && !kindOf('shirt').collar) return 'A ' + t.name.toLowerCase() + ' needs a shirt collar: choose a shirt as the layer next to the neck first.';
+    if (k === 'tie' && t.needsCollar && !kindOf('shirt').tieable) return 'A ' + t.name.toLowerCase() + ' needs a shirt\'s collar and button front: choose a shirt as the layer next to the neck first.';
     return '';
   }
   const hasLapel = function () { return (worn('jacket') && kindOf('jacket').frame === 'lapel') || (worn('coat') && kindOf('coat').frame === 'lapel'); };
@@ -477,13 +479,13 @@
   function blockedWhy(k) {
     if (k === 'square' && !(worn('jacket') && kindOf('jacket').pocket)) return 'A pocket square needs a jacket with a breast pocket.';
     if (k === 'boutonniere' && !hasLapel()) return 'A buttonhole flower or pin needs a jacket, blazer or coat with lapels.';
-    if (k === 'tie' && !kindOf('shirt').collar) return 'Neckwear (a tie, bow tie or cravat) needs a shirt collar. With a ' + lname('shirt') + ', add a scarf instead.';
+    if (k === 'tie' && !kindOf('shirt').tieable) return 'Neckwear (a tie, bow tie or cravat) needs a shirt\'s collar and button front. With a ' + lname('shirt') + ', add a scarf instead.';
     return '';
   }
   // Putting a piece on. Neckwear needs a collar; the Add button is disabled without one.
   function putOn(k) {
     piece(k).on = true;
-    if (k === 'tie' && !kindOf('shirt').collar) { piece('tie').on = false; return 'A ' + lname('shirt') + ' has no collar for neckwear; add a scarf instead.'; }
+    if (k === 'tie' && !kindOf('shirt').tieable) { piece('tie').on = false; return 'A ' + lname('shirt') + ' is not cut for neckwear; add a scarf instead.'; }
     return '';
   }
   function setKind(k, id) { snapshot(); commit(applyKind(k, id).join(' ')); }
@@ -496,8 +498,8 @@
     const pat = VP.norm(x.pat);
     if (pat.type !== 'solid' && t.pats.indexOf(pat.type) < 0) { x.pat = { type: 'solid' }; notes.push('Made it plain: ' + VP.byId[pat.type].name.toLowerCase() + ' is not used on a ' + t.name.toLowerCase() + '.'); }
     // what depends on this piece
-    if (k === 'shirt' && !t.collar && worn('tie') && kindOf('tie').needsCollar) { notes.push('Took off the ' + lname('tie') + ': it needs a shirt collar. Add a scarf instead if you want one.'); piece('tie').on = false; }
-    if (k === 'shirt' && !t.collar && S().outfit.acc.cufflinks.on) { S().outfit.acc.cufflinks.on = false; notes.push('Took off the cufflinks: they need shirt cuffs.'); }
+    if (k === 'shirt' && !t.tieable && worn('tie') && kindOf('tie').needsCollar) { notes.push('Took off the ' + lname('tie') + ': it needs a shirt\'s collar and button front. Add a scarf instead if you want one.'); piece('tie').on = false; }
+    if (k === 'shirt' && !t.tieable && S().outfit.acc.cufflinks.on) { S().outfit.acc.cufflinks.on = false; notes.push('Took off the cufflinks: they need shirt cuffs.'); }
     if (k === 'jacket' && !t.pocket && worn('square')) { piece('square').on = false; notes.push('Took off the pocket square: it needs a breast pocket.'); }
     if ((k === 'jacket' || k === 'coat') && worn('boutonniere') && !hasLapel()) { piece('boutonniere').on = false; notes.push('Took off the buttonhole: it needs a lapel.'); }
     if (t.metal) { x.metal = x.metal || 'silver'; x.hex = G.metalBy[x.metal].hex; }   // a lapel pin is its metal
@@ -535,13 +537,13 @@
   function renderAcc() {
     const box = $('#ovAcc'); if (!box) return;
     const acc = S().outfit.acc, wrist = +(S().measurements && S().measurements.wrist) || null;
-    const accBlocked = function (d) { return (d.needs === 'tie' && !(worn('tie') && kindOf('tie').id === 'tie')) ? 'Needs a tie.' : (d.needs === 'cuffs' && !kindOf('shirt').collar) ? 'Needs a shirt with cuffs.' : ''; };
+    const accBlocked = function (d) { return (d.needs === 'tie' && !(worn('tie') && kindOf('tie').id === 'tie')) ? 'Needs a tie.' : (d.needs === 'cuffs' && !kindOf('shirt').tieable) ? 'Needs a shirt with cuffs.' : ''; };
     const offs = G.ACCESSORIES.filter(function (d) { return !acc[d.key].on; });
     const a = api.analysis(), accChecks = a ? E.checkOutfit(engineOutfit(), a).filter(function (c) { return c.group === 'accessory' && c.score < 0.85; }) : [];
     box.innerHTML = G.ACCESSORIES.filter(function (d) { return acc[d.key].on; }).map(function (d) {
       const mine = accChecks.filter(function (c) { return c.acc === d.key; }).sort(function (p1, p2) { return p1.score - p2.score; })[0];
       const st = mine ? { state: mine.score < 0.5 ? 'out' : 'care', why: mine.text } : null;
-      const x = acc[d.key], on = !!x.on, blocked = (d.needs === 'tie' && !(worn('tie') && kindOf('tie').id === 'tie')) ? 'Needs a tie.' : (d.needs === 'cuffs' && !kindOf('shirt').collar) ? 'Needs a shirt with cuffs.' : '';
+      const x = acc[d.key], on = !!x.on, blocked = (d.needs === 'tie' && !(worn('tie') && kindOf('tie').id === 'tie')) ? 'Needs a tie.' : (d.needs === 'cuffs' && !kindOf('shirt').tieable) ? 'Needs a shirt with cuffs.' : '';
       const hint = d.key === 'watch' ? (wrist ? 'suits ' + E.watchRange(wrist).join('–') + ' mm for your wrist' : 'classic 36–40 mm') :
         { cufflinks: 'classic 12–18 mm', tiebar: 'about ¾ of the tie: up to 60 mm on an 8 cm tie', ring: 'classic up to 15 mm', earring: 'up to about 5 mm' }[d.key];
       return '<div class="acc-item' + (on ? '' : ' off') + (st ? ' st-' + st.state : '') + '" data-a="' + d.key + '">' +
@@ -565,27 +567,18 @@
       const st = $('.acc-stone', el); if (st) st.addEventListener('change', function () { snapshot(); x.stone = st.value; commit(''); });
       const sz = $('.acc-size', el); if (sz) sz.addEventListener('change', function () { const v = +sz.value; if (v > 0) { snapshot(); x.size = v; commit(''); } });
       const strap = $('.acc-strap', el); if (strap) strap.addEventListener('change', function () { snapshot(); x.strap = strap.value; commit(''); });
-      $$('[data-strap-hex]', el).forEach(function (b) { b.addEventListener('click', function () { snapshot(); x.strapHex = b.dataset.strapHex; commit(''); }); });
-      $$('[data-dial]', el).forEach(function (b) { b.addEventListener('click', function () { snapshot(); x.dial = b.dataset.dial; commit(''); }); });
       $$('[data-display]', el).forEach(function (b) { b.addEventListener('click', function () { snapshot(); x.display = b.dataset.display; commit(''); }); });
     });
   }
 
-  /* The watch beyond its case: strap and its colour, dial, and display. */
+  /* The watch beyond its case: the strap and the display, the two things that set its register
+     (a rubber strap or a digital display is sportswear). Strap and dial colours are taste, not judged. */
   function watchHtml(x) {
     const strap = G.STRAPS.find(function (t) { return t.id === (x.strap || 'leather'); }) || G.STRAPS[1];
-    const chips = function (list, attr, cur) {
-      return '<div class="chips w-chips">' + list.map(function (c) {
-        const sel = (cur || '').toLowerCase() === c[1];
-        return '<button type="button" class="chip' + (sel ? ' sel' : '') + '" aria-pressed="' + sel + '" ' + attr + '="' + c[1] + '"><i class="d" style="background:' + c[1] + '"></i>' + c[0] + '</button>';
-      }).join('') + '</div>';
-    };
     return '<div class="w-more">' +
       '<label>Strap <select class="acc-strap">' + G.STRAPS.map(function (t) { return '<option value="' + t.id + '"' + (t.id === strap.id ? ' selected' : '') + '>' + t.name + '</option>'; }).join('') + '</select></label>' +
-      (strap.coloured ? '<span class="w-lab">Strap colour</span>' + chips(G.STRAP_COLOURS, 'data-strap-hex', x.strapHex) : '') +
-      '<span class="w-lab">Dial</span>' + chips(G.DIALS, 'data-dial', x.dial) +
       '<div class="seg w-display" role="radiogroup" aria-label="Display"><button type="button" role="radio" data-display="analogue" aria-checked="' + (x.display !== 'digital') + '">Analogue</button><button type="button" role="radio" data-display="digital" aria-checked="' + (x.display === 'digital') + '">Digital</button></div>' +
-      '<p class="ed-note">Mechanical or quartz cannot be seen, so it is not judged; a digital display can be.</p></div>';
+      '<p class="ed-note">Mechanical or quartz cannot be seen, so it is not judged; a digital display or a rubber strap can be, as sportswear.</p></div>';
   }
 
   /* ---------- Colour from a photo ----------
@@ -1134,6 +1127,7 @@
   function wardrobeDoc() {
     const a = api.analysis(), list = wardrobe(); if (!a || !list.length) return '';
     const date = new Date().toLocaleDateString(undefined, { year: 'numeric', month: 'long', day: 'numeric' });
+    list.forEach(function (w) { w.season = seasonOf(w.outfit); });   // from the cloths as the rules now read them, not as saved
     const order = SEASONS.slice().sort(function (x, y) { return (y[0] === a.season) - (x[0] === a.season); });
     const block = function (w) {
       const aw = analysisFor(w, a), o = engineOutfit(w.outfit), checks = E.checkOutfit(o, aw), v = E.verdict(checks), hd = headline(v, E.skinClashes(o, aw));
@@ -1163,13 +1157,13 @@
       }).join('');
     }).join('');
     const counts = order.map(function (se) { const n = list.filter(function (w) { return w.season === se[0]; }).length; return n ? se[1] + ' ' + n : ''; }).filter(Boolean).join(', ');
-    return '<h1>Wardrobe</h1><p class="pc-sub">' + (S().name ? 'For ' + esc(S().name) + '. ' : '') + list.length + ' outfit' + (list.length === 1 ? '' : 's') + ' (' + esc(counts) + '), grouped by season and occasion. Summer outfits are judged with your summer colouring, winter ones with your winter colouring, all-year ones with the ' + (api.season() === 'summer' ? 'summer' : 'winter') + ' colouring in use now. Valet, ' + date + '.</p>' + body;
+    return '<h1>Saved outfits</h1><p class="pc-sub">' + (S().name ? 'For ' + esc(S().name) + '. ' : '') + list.length + ' outfit' + (list.length === 1 ? '' : 's') + ' (' + esc(counts) + '), grouped by season and occasion. Summer outfits are judged with your summer colouring, winter ones with your winter colouring, all-year ones with the ' + (api.season() === 'summer' ? 'summer' : 'winter') + ' colouring in use now. Valet, ' + date + '.</p>' + body;
   }
   function printWardrobe() {
     const card = $('#printCard'); if (!card) return;
     card.innerHTML = wardrobeDoc(); card.classList.add('outfit', 'wardrobe-doc');
     const was = document.title;
-    document.title = 'Valet wardrobe ' + new Date().toISOString().slice(0, 10);
+    document.title = 'Valet saved outfits ' + new Date().toISOString().slice(0, 10);
     const back = function () { document.title = was; card.classList.remove('outfit', 'wardrobe-doc'); window.removeEventListener('afterprint', back); };
     window.addEventListener('afterprint', back);
     window.print();

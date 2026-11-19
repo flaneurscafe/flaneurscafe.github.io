@@ -32,7 +32,9 @@
       { id: 'boater', name: 'Boater', brim: true, f: 3, cloths: ['straw'], pats: SOLID_ONLY, maxScale: 'small' }
     ] },
     { key: 'shirt', label: 'Next to the neck', face: true, optional: false, kinds: [
-      { id: 'shirt', name: 'Shirt', frame: 'collar', collar: true, f: 5, cloths: ['oxford', 'poplin', 'shirttwill', 'linen', 'brushed', 'chambray', 'cflannel', 'satinshirt'], pats: ['solid', 'pinstripe', 'bengal', 'candy', 'gingham', 'tattersall'], maxScale: 'small' },
+      // tieable: a dress shirt's collar band and full button front, cut to take a tie, a waistcoat and double cuffs;
+      // a polo's soft collar frames the face but is not cut for them
+      { id: 'shirt', name: 'Shirt', frame: 'collar', collar: true, tieable: true, f: 5, cloths: ['oxford', 'poplin', 'shirttwill', 'linen', 'brushed', 'chambray', 'cflannel', 'satinshirt'], pats: ['solid', 'pinstripe', 'bengal', 'candy', 'gingham', 'tattersall'], maxScale: 'small' },
       { id: 'rollneck', name: 'Roll neck', frame: 'neck', f: 4, cloths: ['merino', 'cashmere', 'lambswool', 'cottonknit'], pats: SOLID_ONLY, maxScale: 'small' },
       { id: 'knitpolo', name: 'Knitted polo', frame: 'collar', f: 3, cloths: ['merino', 'cottonknit', 'cashmere'], pats: SOLID_ONLY, maxScale: 'small' },
       { id: 'polo', name: 'Polo shirt', frame: 'collar', f: 2, cloths: ['pique', 'jersey'], pats: SOLID_ONLY, maxScale: 'small' },
@@ -60,8 +62,8 @@
       { id: 'waistcoat', name: 'Waistcoat', frame: null, needsCollarUnder: true, vest: true, f: 4, cloths: ['worsted', 'flannel', 'tweed', 'linen', 'cotton', 'corduroy', 'moleskin', 'merino'], pats: ['solid', 'nailhead', 'birdseye', 'herringbone', 'pinstripe', 'chalkstripe', 'houndstooth', 'glen', 'windowpane', 'tattersall'], maxScale: 'medium' }
     ] },
     // Jackets. A blazer is a jacket worn without its trousers, with metal or contrasting buttons
-    // (buttons: the colour counts as a metal near the face). The casual jackets frame the face with a
-    // collar, not lapels.
+    // (buttons: metal buttons join the metals of the outfit, judged with the watch and buckle by the
+    // one-metal rule). The casual jackets frame the face with a collar, not lapels.
     { key: 'jacket', label: 'Jacket', face: true, optional: true, kinds: [
       { id: 'jacket', name: 'Jacket', frame: 'lapel', suit: true, pocket: true, f: 5, cloths: ['hopsack', 'worsted', 'flannel', 'tweed', 'linen', 'fresco', 'seersucker', 'cotton', 'corduroy', 'lustre'], pats: ['solid', 'nailhead', 'birdseye', 'herringbone', 'pinstripe', 'chalkstripe', 'candy', 'houndstooth', 'glen', 'windowpane'], maxScale: 'medium' },
       { id: 'blazer', name: 'Blazer', frame: 'lapel', pocket: true, buttons: true, f: 4, cloths: ['hopsack', 'worsted', 'flannel', 'fresco', 'linen'], pats: ['solid', 'candy'], maxScale: 'medium' },
@@ -105,8 +107,9 @@
       { id: 'derby', name: 'Derby or brogue', f: 4, cloths: ['calf', 'suede'], pats: SOLID_ONLY, maxScale: 'small' },
       { id: 'loafer', name: 'Loafer', f: 4, cloths: ['calf', 'suede'], pats: SOLID_ONLY, maxScale: 'small' },
       // Spectators (co-respondents): a brogue whose toe cap, heel and lace panel are in a second
-      // colour. Summer and daytime; smart, not formal.
-      { id: 'spectator', name: 'Spectator (two-tone)', twoTone: true, f: 3, season: 'summer', cloths: ['calf', 'suede'], pats: SOLID_ONLY, maxScale: 'small' },
+      // colour, read at a distance as the mix of the two (engine.js, look). A brogue's formality step.
+      // The old saying that they are a summer shoe is etiquette, not cloth weight, so it is not used.
+      { id: 'spectator', name: 'Spectator (two-tone)', twoTone: true, f: 3, cloths: ['calf', 'suede'], pats: SOLID_ONLY, maxScale: 'small' },
       { id: 'chelsea', name: 'Chelsea boot', f: 3, cloths: ['calf', 'suede'], pats: SOLID_ONLY, maxScale: 'small' },
       { id: 'chukka', name: 'Chukka or desert boot', f: 2, cloths: ['suede', 'calf'], pats: SOLID_ONLY, maxScale: 'small' },
       { id: 'trainer', name: 'Minimal trainer', f: 1, cloths: ['calf', 'suede', 'canvas'], pats: SOLID_ONLY, maxScale: 'small' },
@@ -282,7 +285,7 @@
     { key: 'earring', name: 'Earring (stud)', stone: true, face: true, size: { label: 'Diameter', min: 1, max: 20 }, metals: ['silver', 'white', 'gunmetal', 'gold', 'rose'],
       note: 'At the face, so it is read with your glasses frames and skin, not with the belt.' }
   ];
-  /* A watch beyond its case: the strap or bracelet, its colour, the dial and the display. Whether
+  /* A watch beyond its case: the strap or bracelet and the display. Whether
      it is mechanical or quartz cannot be seen and is not judged; a digital display can be, and is
      sport or casual (B). */
   const STRAPS = [
@@ -292,8 +295,6 @@
     { id: 'fabric', name: 'Fabric or NATO', coloured: true },
     { id: 'rubber', name: 'Rubber', coloured: true }
   ];
-  const STRAP_COLOURS = [['Black', '#151515'], ['Dark brown', '#3b2417'], ['Brown', '#6e4227'], ['Tan', '#a8733f'], ['Navy', '#1d2a44'], ['Grey', '#6e6f72'], ['Olive', '#4b5132']];
-  const DIALS = [['White', '#f2f0ea'], ['Cream', '#e6dbc4'], ['Silver', '#c4c7cb'], ['Black', '#17181a'], ['Blue', '#1f3a6e'], ['Green', '#25483a'], ['Brown', '#4f3423']];
   const BUTTONS = [['self', 'Self-coloured', null], ['horn', 'Horn', null], ['gold', 'Gold metal', 'gold'], ['silver', 'Silver metal', 'silver'], ['pearl', 'Mother of pearl', null]];
   const metalBy = {}; METALS.forEach(function (m) { metalBy[m.id] = m; });
   const stoneBy = {}; STONES.forEach(function (m) { stoneBy[m.id] = m; });
@@ -308,9 +309,9 @@
     return pos.kinds.find(function (k) { return k.id === id; }) || pos.kinds[0];
   }
   /* Can this neckwear go with this inner layer? A tie needs a collared shirt. */
-  function neckwearAllowed(neckKind, innerKind) { return !neckKind.needsCollar || !!(innerKind && innerKind.collar); }
+  function neckwearAllowed(neckKind, innerKind) { return !neckKind.needsCollar || !!(innerKind && innerKind.tieable); }
   /* How far a scale class is above what is usual on the garment: 0 fine, 1 bold, 2 or more wrong. */
   function scaleOver(k, clsId) { return Math.max(0, SCALE_ORDER.indexOf(clsId) - SCALE_ORDER.indexOf(k.maxScale)); }
 
-  window.VGARM = { STRAPS: STRAPS, STRAP_COLOURS: STRAP_COLOURS, DIALS: DIALS, BUTTONS: BUTTONS, CLOTH_PATS: CLOTH_PATS, patOK: patOK, BRIMS: BRIMS, BANDS: BANDS, CLOTHS: CLOTHS, cloth: cloth, formality: formality, OCCASIONS: OCCASIONS, POSITIONS: POSITIONS, SLOTS: SLOTS, FACE: FACE, NEAR: NEAR, METALS: METALS, STONES: STONES, ACCESSORIES: ACCESSORIES, metalBy: metalBy, stoneBy: stoneBy, accBy: accBy, byKey: byKey, kind: kind, neckwearAllowed: neckwearAllowed, scaleOver: scaleOver };
+  window.VGARM = { STRAPS: STRAPS, BUTTONS: BUTTONS, CLOTH_PATS: CLOTH_PATS, patOK: patOK, BRIMS: BRIMS, BANDS: BANDS, CLOTHS: CLOTHS, cloth: cloth, formality: formality, OCCASIONS: OCCASIONS, POSITIONS: POSITIONS, SLOTS: SLOTS, FACE: FACE, NEAR: NEAR, METALS: METALS, STONES: STONES, ACCESSORIES: ACCESSORIES, metalBy: metalBy, stoneBy: stoneBy, accBy: accBy, byKey: byKey, kind: kind, neckwearAllowed: neckwearAllowed, scaleOver: scaleOver };
 })();

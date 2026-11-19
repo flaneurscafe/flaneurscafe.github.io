@@ -280,8 +280,8 @@
     if (v.faceWidth) add({ id: 'glasses', group: 'Face', label: 'Glasses, the frame front', lo: rr(v.faceWidth - 0.5), hi: rr(v.faceWidth + 0.3),
       text: 'About the width of your face at the cheekbones; the temples should not bow outwards or leave a gap.', why: 'Frames wider than the face make it look narrow, narrower ones make it look broad.',
       uses: ['faceWidth'], est: [] });
-    // Lens depth: the collar's counterbalance rule (section 13) applied to the frame, as optician
-    // advice also puts it. The millimetres are working values within the usual range of men's frames.
+    // Lens depth: the collar's counterbalance rule (section 13) applied to the frame. The
+    // millimetres are working values within the usual range of men's frames.
     if (v.faceWidth && v.faceLength && d.pct.faceShape != null) {
       const fsh = d.pct.faceShape, broad = fsh >= 70, long = fsh <= 30;
       const dep = long ? [36, 42] : broad ? [30, 35] : [32, 38];

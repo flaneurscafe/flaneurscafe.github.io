@@ -1087,9 +1087,7 @@ button.gl-c.pk-no { text-decoration: line-through; text-decoration-color: var(--
 
 /* the watch beyond its case */
 .w-more { display: flex; flex-direction: column; gap: 0.35rem; margin-top: 0.5rem; }
-.w-lab { font: 0.78rem var(--sans); color: var(--muted); }
-.w-chips { display: flex; flex-wrap: wrap; gap: 0.3rem; }
-.w-chips .chip .d, .kind .d { display: inline-block; width: 13px; height: 13px; border-radius: 50%; margin-right: 0.35rem; vertical-align: -2px; border: 1px solid rgba(0,0,0,0.25); }
+.kind .d { display: inline-block; width: 13px; height: 13px; border-radius: 50%; margin-right: 0.35rem; vertical-align: -2px; border: 1px solid rgba(0,0,0,0.25); }
 .w-display { align-self: flex-start; }
 
 @media (max-width: 860px) {
@@ -1101,7 +1099,6 @@ button.gl-c.pk-no { text-decoration: line-through; text-decoration-color: var(--
   .dr-strip { flex-direction: row; width: auto; height: 2.4rem; }
   .dr-strip i { width: 0.55rem; height: 100%; }
   .ov-save .btn { flex: 1; min-height: 44px; }
-  .w-chips .chip { min-height: 36px; }
 }
 .dr-tools { display: flex; flex-wrap: wrap; gap: 0.4rem; margin: 0 0 0.6rem; }
 .dr-note { font: 0.86rem var(--sans); color: var(--ink); background: var(--paper); border-radius: var(--radius); padding: 0.4rem 0.7rem; margin: 0 0 0.8rem; }
