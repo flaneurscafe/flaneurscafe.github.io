@@ -76,9 +76,9 @@
     // and its weight; its formality is the register of the street, so it is checked only where a coat
     // is far from the occasion.
     { key: 'coat', label: 'Coat', face: true, optional: true, kinds: [
-      { id: 'overcoat', name: 'Overcoat', frame: 'lapel', outer: true, f: 4, cloths: ['melton', 'cashmere', 'tweed', 'leather'], pats: ['solid', 'herringbone', 'houndstooth', 'glen', 'windowpane'], maxScale: 'large' },
-      { id: 'chesterfield', name: 'Chesterfield', frame: 'lapel', outer: true, f: 5, cloths: ['melton', 'cashmere'], pats: ['solid', 'herringbone'], maxScale: 'medium' },
-      { id: 'covert', name: 'Covert coat', frame: 'lapel', outer: true, f: 4, cloths: ['covert'], pats: SOLID_ONLY, maxScale: 'small' },
+      { id: 'overcoat', name: 'Overcoat', frame: 'lapel', outer: true, pocket: true, f: 4, cloths: ['melton', 'cashmere', 'tweed', 'leather'], pats: ['solid', 'herringbone', 'houndstooth', 'glen', 'windowpane'], maxScale: 'large' },
+      { id: 'chesterfield', name: 'Chesterfield', frame: 'lapel', outer: true, pocket: true, f: 5, cloths: ['melton', 'cashmere'], pats: ['solid', 'herringbone'], maxScale: 'medium' },
+      { id: 'covert', name: 'Covert coat', frame: 'lapel', outer: true, pocket: true, f: 4, cloths: ['covert'], pats: SOLID_ONLY, maxScale: 'small' },
       { id: 'trench', name: 'Trench coat', frame: 'lapel', outer: true, f: 3, cloths: ['gabardine'], pats: SOLID_ONLY, maxScale: 'small' },
       { id: 'peacoat', name: 'Peacoat', frame: 'lapel', outer: true, f: 2, cloths: ['melton'], pats: SOLID_ONLY, maxScale: 'small' },
       { id: 'duffle', name: 'Duffle coat', frame: 'collar', outer: true, f: 1, cloths: ['duffel'], pats: SOLID_ONLY, maxScale: 'small' },
@@ -144,7 +144,7 @@
     cotton: { name: 'Cotton twill (chino)', f: 2, season: 'all', sheen: 0 },
     corduroy: { name: 'Corduroy', f: 2, season: 'winter', sheen: 0 },
     moleskin: { name: 'Moleskin', f: 2, season: 'winter', sheen: 0 },
-    denim: { name: 'Denim', f: 1, season: 'all', sheen: 0 },
+    denim: { name: 'Denim', f: 2, season: 'all', sheen: 0 },          // dark jeans under a blazer are the smart-casual staple: relaxed, not sportswear
     poplin: { name: 'Poplin', f: 5, season: 'all', sheen: 0 },
     shirttwill: { name: 'Twill shirting', f: 5, season: 'all', sheen: 1 },
     oxford: { name: 'Oxford cloth', f: 3, season: 'all', sheen: 0 },
@@ -280,6 +280,11 @@
     { id: 'tigereye', name: 'Tiger’s eye', hex: '#9c6b2e' }
   ];
   const ACCESSORIES = [
+    // Glasses: worn with an outfit, so set in the Dresser and saved with each outfit. At the face, so
+    // judged with the colours there (temperature) and against the face's contrast (weight), and
+    // compared with an earring rather than with the belt.
+    { key: 'glasses', name: 'Glasses', glasses: true, face: true, metals: [],
+      note: 'Frames sit at the face: a metal frame adds its temperature there, and an acetate frame is a line whose weight is judged against your contrast.' },
     { key: 'watch', name: 'Watch', watch: true, size: { label: 'Case diameter', min: 26, max: 50 }, metals: ['silver', 'white', 'gunmetal', 'gold', 'rose', 'twotone', 'black'] },
     { key: 'buckle', name: 'Belt buckle', metals: ['silver', 'gunmetal', 'gold'] },
     { key: 'cufflinks', name: 'Cufflinks', stone: true, size: { label: 'Face width', min: 8, max: 30 }, needs: 'cuffs', metals: ['silver', 'white', 'gunmetal', 'gold', 'rose'],
@@ -302,6 +307,8 @@
     { id: 'rubber', name: 'Rubber', coloured: true }
   ];
   const BUTTONS = [['self', 'Self-coloured', null], ['horn', 'Horn', null], ['gold', 'Gold metal', 'gold'], ['silver', 'Silver metal', 'silver'], ['pearl', 'Mother of pearl', null]];
+  const FRAMES = [['gold', 'Gold metal'], ['silver', 'Silver or steel metal'], ['acetate', 'Acetate, in a colour'], ['clear', 'Clear or crystal']];
+  const FRAME_COLOURS = [['Black', '#161616'], ['Dark tortoiseshell', '#5b3a24'], ['Honey tortoiseshell', '#a8743c'], ['Navy', '#1f2a44'], ['Grey', '#6e6f72'], ['Burgundy', '#5c1f2a']];
   const metalBy = {}; METALS.forEach(function (m) { metalBy[m.id] = m; });
   const stoneBy = {}; STONES.forEach(function (m) { stoneBy[m.id] = m; });
   const accBy = {}; ACCESSORIES.forEach(function (m) { accBy[m.key] = m; });
@@ -319,5 +326,5 @@
   /* How far a scale class is above what is usual on the garment: 0 fine, 1 bold, 2 or more wrong. */
   function scaleOver(k, clsId) { return Math.max(0, SCALE_ORDER.indexOf(clsId) - SCALE_ORDER.indexOf(k.maxScale)); }
 
-  window.VGARM = { STRAPS: STRAPS, BUTTONS: BUTTONS, CLOTH_PATS: CLOTH_PATS, patOK: patOK, BRIMS: BRIMS, BANDS: BANDS, CLOTHS: CLOTHS, cloth: cloth, formality: formality, OCCASIONS: OCCASIONS, POSITIONS: POSITIONS, SLOTS: SLOTS, FACE: FACE, NEAR: NEAR, METALS: METALS, STONES: STONES, ACCESSORIES: ACCESSORIES, metalBy: metalBy, stoneBy: stoneBy, accBy: accBy, byKey: byKey, kind: kind, neckwearAllowed: neckwearAllowed, scaleOver: scaleOver };
+  window.VGARM = { FRAMES: FRAMES, FRAME_COLOURS: FRAME_COLOURS, STRAPS: STRAPS, BUTTONS: BUTTONS, CLOTH_PATS: CLOTH_PATS, patOK: patOK, BRIMS: BRIMS, BANDS: BANDS, CLOTHS: CLOTHS, cloth: cloth, formality: formality, OCCASIONS: OCCASIONS, POSITIONS: POSITIONS, SLOTS: SLOTS, FACE: FACE, NEAR: NEAR, METALS: METALS, STONES: STONES, ACCESSORIES: ACCESSORIES, metalBy: metalBy, stoneBy: stoneBy, accBy: accBy, byKey: byKey, kind: kind, neckwearAllowed: neckwearAllowed, scaleOver: scaleOver };
 })();

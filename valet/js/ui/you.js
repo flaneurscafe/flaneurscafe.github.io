@@ -418,24 +418,6 @@
   $$('#hairStyle button').forEach(function (b) {
     b.addEventListener('click', function () { V.state.hairStyle = b.dataset.hair; renderHair(); V.update(); });
   });
-  /* Acetate frames come in a colour; the colour row shows only for them. The colour is measured:
-     its lightness against your skin (frame weight) and its hue (warm or cool, like gold and silver). */
-  const FRAME_COLOURS = [['Black', '#161616'], ['Dark tortoiseshell', '#5b3a24'], ['Honey tortoiseshell', '#a8743c'], ['Navy', '#1f2a44'], ['Grey', '#6e6f72'], ['Burgundy', '#5c1f2a']];
-  function renderGlassesColour() {
-    const box = $('#glassesColour'); if (!box) return;
-    box.hidden = V.state.glasses !== 'acetate';
-    const cur = (V.state.glassesHex || '#161616').toLowerCase();
-    $('#glassesChips').innerHTML = FRAME_COLOURS.map(function (c) {
-      const sel = c[1] === cur;
-      return '<button type="button" class="chip' + (sel ? ' sel' : '') + '" role="radio" aria-checked="' + sel + '" data-hex="' + c[1] + '"><i class="d" style="background:' + c[1] + '"></i>' + c[0] + '</button>';
-    }).join('');
-    $('#glassesHex').value = cur;
-    $$('#glassesChips button').forEach(function (b) { b.addEventListener('click', function () { V.state.glassesHex = b.dataset.hex; V.update(); renderGlassesColour(); }); });
-  }
-  $('#glasses').addEventListener('change', function (e) { V.state.glasses = e.target.value; V.update(); renderGlassesColour(); });
-  $('#glassesHex').addEventListener('input', function (e) { V.state.glassesHex = e.target.value.toLowerCase(); V.update(); });
-  $('#glassesHex').addEventListener('change', renderGlassesColour);
-  V.renderGlassesColour = renderGlassesColour;
   $('#redness').addEventListener('change', function (e) { V.state.redness = e.target.value; V.update(); });
   $('#underEye').addEventListener('change', function (e) { V.state.underEye = e.target.value; V.update(); });
   $('#useWhite').addEventListener('change', function (e) { V.state.useWhite = e.target.checked; V.update(); });
@@ -564,15 +546,7 @@
         return '<li><span class="pair"><i style="background:' + t.pair[0] + '"></i><i style="background:' + t.pair[1] + '"></i></span><span><strong>' + esc(t.title) + '</strong><br>' + esc(t.text) + '</span></li>';
       }).join('') + '</ul>' : '');
   }
-  /* Under the Glasses setting: the frame's weight against the face (engine.js, frameWeight). */
-  function renderGlassesNote() {
-    const n = $('#glassesNote'); if (!n) return;
-    const fw = V.analysis ? E.frameWeight(V.analysis) : null;
-    n.hidden = !fw;
-    if (fw) { n.className = 'g-note ' + (fw.score < 1 ? 'warn' : 'ok'); n.innerHTML = '<span class="badge A">A</span> <span class="badge B">B</span> ' + esc(fw.text); }
-  }
   function renderProfileCard() {
-    renderGlassesNote();
     const card = $('#profileCard');
     if (!V.analysis) {
       card.innerHTML = '<h3>Your profile</h3><p class="muted">Sample at least your skin to start. Hair and eyes make the contrast reading meaningful; the white paper makes everything more reliable.</p>';

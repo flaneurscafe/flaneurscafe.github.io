@@ -45,7 +45,7 @@
     // the Proportion checks, with the body's percentiles if measured
     {
       out.propOn = true;
-      out.body = window.VBODY && S().measurements && S().measurements.height > 0 ? window.VBODY.derive(S().measurements, S().shape).pct : {};
+      if (window.VBODY && S().measurements && S().measurements.height > 0) { const dd = window.VBODY.derive(S().measurements, S().shape); out.body = Object.assign({ faceClass: dd.faceClass }, dd.pct); } else out.body = {};
       out.frame = window.VPROP ? window.VPROP.frameSize(S().measurements) : null;
       out.shape = S().shape || {};
       out.hairStyle = S().hairStyle;
@@ -65,7 +65,7 @@
   let statusKey = '', statusVal = {};
   function status() {
     const a = api.analysis(); if (!a) return {};
-    const o = engineOutfit(), key = JSON.stringify(o) + '|' + a.contrast + '|' + a.lean + '|' + a.redness + '|' + a.underEye + '|' + a.glasses + '|' + a.glassesHex;
+    const o = engineOutfit(), key = JSON.stringify(o) + '|' + a.contrast + '|' + a.lean + '|' + a.redness + '|' + a.underEye;
     if (key === statusKey) return statusVal;
     const out = {};
     PIECES.forEach(function (p) { if (o[p.key]) out[p.key] = E.fitFor(o, a, p.key).judge(o[p.key].hex, o[p.key].name); });
@@ -373,11 +373,37 @@
     return pat.type === 'solid' ? 'plain' : VP.byId[pat.type].name.toLowerCase() + ', ' + (Math.round(pat.scale * 10) / 10) + ' cm';
   }
 
+  /* The outfit laid out on the body: a row for each level from head to feet, and in each row the
+     layers from the innermost on the left to the outermost on the right. A position not worn keeps
+     its place as an empty slot, so a piece is added where it is worn. */
+  const ZONES = [
+    { id: 'head', label: 'Head', keys: ['hat'] },
+    { id: 'upper', label: 'Head to belt', keys: ['shirt', 'tie', 'mid', 'jacket', 'square', 'boutonniere', 'coat', 'scarf'] },
+    { id: 'hands', label: 'Hands', keys: ['gloves'] },
+    { id: 'legs', label: 'Legs', keys: ['trousers'] },
+    { id: 'feet', label: 'Feet', keys: ['socks', 'shoes'] }
+  ];
   function renderPieces(a) {
     const box = $('#ovPieces');
     const stAll = status();
-    // Only what is worn (and what every outfit needs) gets a row; the rest waits in the Add bar.
-    box.innerHTML = PIECES.filter(function (p) { return !p.optional || worn(p.key); }).map(function (p) {
+    const placed = {}; ZONES.forEach(function (z) { z.keys.forEach(function (k) { placed[k] = true; }); });
+    const slot = function (p) {
+      if (!p.optional || worn(p.key)) return tileHtml(p);
+      const why = blockedWhy(p.key);
+      return '<button type="button" class="add-btn slot-add" data-add="' + p.key + '"' + (why ? ' disabled aria-describedby="why-' + p.key + '"' : ' title="' + esc(p.kinds.map(function (t) { return t.name; }).join(', ')) + '"') + '>' +
+        '<span class="slot-plus" aria-hidden="true">+</span><span class="slot-name">' + (ADD_NAME[p.key] || p.label) + '</span>' +
+        (why ? '<span class="slot-why" id="why-' + p.key + '">' + esc(why) + '</span>' : '') + '</button>';
+    };
+    const byKey = {}; PIECES.forEach(function (p) { byKey[p.key] = p; });
+    const zones = ZONES.map(function (z) { return { label: z.label, id: z.id, list: z.keys.filter(function (k) { return byKey[k]; }).map(function (k) { return byKey[k]; }) }; });
+    // anything a later version adds that has no place yet goes at the end, so nothing is lost
+    const rest = PIECES.filter(function (p) { return !placed[p.key]; });
+    if (rest.length) zones.push({ label: 'Other', id: 'other', list: rest });
+    box.innerHTML = zones.map(function (z) {
+      return '<section class="ov-zone" data-zone="' + z.id + '"><h4 class="ov-zone-lab">' + z.label + (z.list.length > 1 ? ' <span class="ov-zone-dir">inner \u2192 outer</span>' : '') + '</h4>' +
+        '<div class="ov-zone-grid">' + z.list.map(slot).join('') + '</div></section>';
+    }).join('');
+    function tileHtml(p) {
       const st = stAll[p.key];
       const x = piece(p.key), on = worn(p.key), locked = !!S().outfit.locks[p.key], isOpen = open === p.key;
       const t = on ? E.scoreColour(VP.mean(x.hex, x.pat), a).tier : null;
@@ -393,8 +419,8 @@
         (locked ? '<svg viewBox="0 0 16 16"><rect x="3" y="7" width="10" height="7" rx="1.5"/><path d="M5 7V5a3 3 0 0 1 6 0v2"/></svg>' : '<svg viewBox="0 0 16 16"><rect x="3" y="7" width="10" height="7" rx="1.5"/><path d="M5 7V5a3 3 0 0 1 6 0"/></svg>') +
         '</button></div>' +
         (isOpen && on ? '<div class="ov-editor"></div>' : '') + '</div>';
-    }).join('') + addBar();
-    $$('.add-bar [data-add]', box).forEach(function (b) {
+    }
+    $$('[data-add]', box).forEach(function (b) {
       b.addEventListener('click', function () { const k = b.dataset.add; snapshot(); open = k; tab = 'colour'; commit(putOn(k) || 'Added: ' + kindOf(k).name.toLowerCase() + '. ' + (G.byKey[k].kinds.length > 1 ? 'Choose what it is and its colour below.' : 'Choose its colour below.')); });
     });
     $$('.ov-piece', box).forEach(function (el) {
@@ -482,7 +508,7 @@
   const hasLapel = function () { return (worn('jacket') && kindOf('jacket').frame === 'lapel') || (worn('coat') && kindOf('coat').frame === 'lapel'); };
   // Why a position cannot be put on now.
   function blockedWhy(k) {
-    if (k === 'square' && !(worn('jacket') && kindOf('jacket').pocket)) return 'A pocket square needs a jacket with a breast pocket.';
+    if (k === 'square' && !((worn('jacket') && kindOf('jacket').pocket) || (worn('coat') && kindOf('coat').pocket))) return 'A pocket square needs a breast pocket: a tailored jacket, a blazer or an overcoat.';
     if (k === 'boutonniere' && !hasLapel()) return 'A buttonhole flower or pin needs a jacket, blazer or coat with lapels.';
     if (k === 'tie' && !kindOf('shirt').tieable) return 'Neckwear (a tie, bow tie or cravat) needs a shirt\'s collar and button front. With a ' + lname('shirt') + ', add a scarf instead.';
     return '';
@@ -505,7 +531,7 @@
     // what depends on this piece
     if (k === 'shirt' && !t.tieable && worn('tie') && kindOf('tie').needsCollar) { notes.push('Took off the ' + lname('tie') + ': it needs a shirt\'s collar and button front. Add a scarf instead if you want one.'); piece('tie').on = false; }
     if (k === 'shirt' && !t.tieable && S().outfit.acc.cufflinks.on) { S().outfit.acc.cufflinks.on = false; notes.push('Took off the cufflinks: they need shirt cuffs.'); }
-    if (k === 'jacket' && !t.pocket && worn('square')) { piece('square').on = false; notes.push('Took off the pocket square: it needs a breast pocket.'); }
+    if ((k === 'jacket' || k === 'coat') && worn('square') && !((worn('jacket') && kindOf('jacket').pocket) || (worn('coat') && kindOf('coat').pocket))) { piece('square').on = false; notes.push('Took off the pocket square: it needs a breast pocket.'); }
     if ((k === 'jacket' || k === 'coat') && worn('boutonniere') && !hasLapel()) { piece('boutonniere').on = false; notes.push('Took off the buttonhole: it needs a lapel.'); }
     if (t.metal) { x.metal = x.metal || 'silver'; x.hex = G.metalBy[x.metal].hex; }   // a lapel pin is its metal
     else if (was.metal) x.hex = '#f7f6f2';                           // from a pin back to a flower: a white carnation
@@ -554,7 +580,8 @@
       return '<div class="acc-item' + (on ? '' : ' off') + (st ? ' st-' + st.state : '') + '" data-a="' + d.key + '">' +
         '<div class="acc-head"><span><strong>' + d.name + '</strong>' + statusLine(st) + '</span><button type="button" class="btn ghost small acc-rm">Remove</button></div>' +
         (blocked ? '<span class="ed-note fit-care-t">' + blocked + '</span>' : '') +
-        (on ? '<span class="acc-fields">' +
+        (on && d.glasses ? glassesHtml(x) + (d.note ? '<p class="ed-note">' + esc(d.note) + '</p>' : '') :
+         on ? '<span class="acc-fields">' +
           '<label>Metal <select class="acc-metal">' + d.metals.map(function (m) { return '<option value="' + m + '"' + (x.metal === m ? ' selected' : '') + '>' + G.metalBy[m].name + '</option>'; }).join('') + '</select></label>' +
           (d.stone ? '<label>Stone <select class="acc-stone">' + G.STONES.map(function (st) { return '<option value="' + st.id + '"' + (x.stone === st.id ? ' selected' : '') + '>' + st.name + '</option>'; }).join('') + '</select></label>' : '') +
           (d.size ? '<label>' + d.size.label + ' <input type="number" class="acc-size" min="' + d.size.min + '" max="' + d.size.max + '" step="1" value="' + (x.size || '') + '"> mm</label><span class="ed-note">' + hint + '</span>' : '') +
@@ -571,11 +598,31 @@
       const m = $('.acc-metal', el); if (m) m.addEventListener('change', function () { snapshot(); x.metal = m.value; commit(''); });
       const st = $('.acc-stone', el); if (st) st.addEventListener('change', function () { snapshot(); x.stone = st.value; commit(''); });
       const sz = $('.acc-size', el); if (sz) sz.addEventListener('change', function () { const v = +sz.value; if (v > 0) { snapshot(); x.size = v; commit(''); } });
+      $$('[data-frame]', el).forEach(function (b) { b.addEventListener('click', function () { snapshot(); x.frame = b.dataset.frame; commit('Glasses: ' + b.textContent.toLowerCase() + '.'); }); });
+      $$('[data-frame-hex]', el).forEach(function (b) { b.addEventListener('click', function () { snapshot(); x.hex = b.dataset.frameHex; commit('Frame colour: ' + b.textContent.toLowerCase() + '.'); }); });
+      const gh = $('.gl-hex', el); if (gh) gh.addEventListener('change', function () { snapshot(); x.hex = gh.value.toLowerCase(); commit(''); });
       const strap = $('.acc-strap', el); if (strap) strap.addEventListener('change', function () { snapshot(); x.strap = strap.value; commit(''); });
       $$('[data-display]', el).forEach(function (b) { b.addEventListener('click', function () { snapshot(); x.display = b.dataset.display; commit(''); }); });
     });
   }
 
+  /* Glasses in words, for the printed card and the wardrobe PDF. */
+  function glassesWord(x) {
+    const f = (G.FRAMES.find(function (q) { return q[0] === x.frame; }) || G.FRAMES[0])[1].toLowerCase();
+    const c = x.frame === 'acetate' ? (G.FRAME_COLOURS.find(function (q) { return q[1] === (x.hex || '').toLowerCase(); }) || [api.nameOf(x.hex || '#161616')])[0].toLowerCase() : '';
+    return 'Glasses: ' + (x.frame === 'acetate' ? c + ' acetate' : f) + ' frames';
+  }
+  /* Glasses: the frame, and an acetate frame's colour (a typical one, or any). */
+  function glassesHtml(x) {
+    const fr = x.frame || 'gold', cur = (x.hex || '#161616').toLowerCase();
+    return '<div class="seg gl-frame" role="radiogroup" aria-label="Frame">' + G.FRAMES.map(function (f) {
+        return '<button type="button" role="radio" data-frame="' + f[0] + '" aria-checked="' + (fr === f[0]) + '">' + f[1] + '</button>';
+      }).join('') + '</div>' +
+      (fr === 'acetate' ? '<span class="w-lab">Frame colour</span><div class="chips w-chips">' + G.FRAME_COLOURS.map(function (c) {
+        const sel = c[1] === cur;
+        return '<button type="button" class="chip' + (sel ? ' sel' : '') + '" aria-pressed="' + sel + '" data-frame-hex="' + c[1] + '"><i class="d" style="background:' + c[1] + '"></i>' + c[0] + '</button>';
+      }).join('') + '</div><label class="gl-any">Any colour <input type="color" class="gl-hex" value="' + cur + '"></label>' : '');
+  }
   /* The watch beyond its case: the strap and the display, the two things that set its register
      (a rubber strap or a digital display is sportswear). Strap and dial colours are taste, not judged. */
   function watchHtml(x) {
@@ -1104,6 +1151,7 @@
     }).join('');
     const acc = S().outfit.acc, accs = G.ACCESSORIES.filter(function (d) { return acc[d.key].on; }).map(function (d) {
       const x = acc[d.key], st = d.stone && x.stone && x.stone !== 'none' ? G.stoneBy[x.stone] : null;
+      if (d.glasses) return esc(glassesWord(x));
       return esc(d.name) + ': ' + esc(G.metalBy[x.metal].name.toLowerCase()) + (st ? ', ' + esc(st.name.toLowerCase()) : '') + (d.size && x.size ? ', ' + x.size + ' mm' : '');
     });
     const secs = E.SECTIONS.map(function (sec) {
@@ -1144,7 +1192,8 @@
       const acc = w.outfit.acc || {}, accs = G.ACCESSORIES.filter(function (d) { return acc[d.key] && acc[d.key].on; }).map(function (d) {
         const x = acc[d.key], st = d.stone && x.stone && x.stone !== 'none' ? G.stoneBy[x.stone] : null;
         const watch = d.watch ? ', ' + ((G.STRAPS.find(function (t) { return t.id === x.strap; }) || {}).name || '').toLowerCase() + (x.display === 'digital' ? ', digital' : '') : '';
-        return esc(d.name) + ': ' + esc(G.metalBy[x.metal].name.toLowerCase()) + (st ? ', ' + esc(st.name.toLowerCase()) : '') + (d.size && x.size ? ', ' + x.size + ' mm' : '') + esc(watch);
+        if (d.glasses) return esc(glassesWord(x));
+      return esc(d.name) + ': ' + esc(G.metalBy[x.metal].name.toLowerCase()) + (st ? ', ' + esc(st.name.toLowerCase()) : '') + (d.size && x.size ? ', ' + x.size + ' mm' : '') + esc(watch);
       });
       const watch = checks.filter(function (c) { return c.score < 0.85; }).sort(function (x, y) { return x.score - y.score; }).slice(0, 4);
       return '<div class="wd-item"><h4>' + esc(w.name) + '</h4>' +

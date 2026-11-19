@@ -353,7 +353,7 @@
       '<li><strong>Colour:</strong> two neutrals and one colour never fails. One deliberate (T2) colour per outfit. A colour is one piece, not top and trousers together.</li>' +
       '<li><strong>Below the belt:</strong> shoes the trousers\' depth or darker; belt matches the shoes; socks match the trousers or go darker.</li>' +
       '<li><strong>Metal:</strong> ' + metal + ' Keep one metal through an outfit; a two-tone watch is the exception.</li>' +
-      (a.glasses !== 'none' ? '<li><strong>Glasses:</strong> they sit at the face, so they count as a colour there' + (a.underEye === 'deep' ? '; with deep-set eyes, check that the bottom rim does not sit on the shadow' : '') + '.</li>' : '') +
+      (V.state.outfit && V.state.outfit.acc && V.state.outfit.acc.glasses && V.state.outfit.acc.glasses.on ? '<li><strong>Glasses:</strong> they sit at the face, so the Dresser judges them with the colours there' + (a.underEye === 'deep' ? '; with deep-set eyes, check that the bottom rim does not sit on the shadow' : '') + '.</li>' : '') +
       (a.redness !== 'none' ? '<li><strong>Redness:</strong> reds and pinks near the face pick out the red in the skin, and greens push it redder. Blues and greys are the calm choice.</li>' : '') +
       (a.underEye !== 'none' ? '<li><strong>Eye area:</strong> on all-dark days keep one light element near the face, such as a white collar.</li>' : '') +
       '</ul>' +

@@ -210,12 +210,12 @@
     }
 
     if (v.faceWidth) {
-      const fs = d.pct.faceShape, wide = fs != null && fs >= 70, long = fs != null && fs <= 30;
+      const fs = d.pct.faceShape, wide = d.faceClass === 'broad', long = d.faceClass === 'long';   // beyond the tape's error only (body.js)
       const bald = extra.hairStyle === 'none';
       add({ id: 'collar', group: 'Shirt and tie', label: 'Collar', unit: '', text:
         (wide ? 'Your face is broad for its length: longer points and a moderate spread (point or semi-spread) counterbalance it; a wide cutaway widens it further.'
           : long ? 'Your face is long for its width: a wider spread balances it; long narrow points lengthen it further.'
-            : 'A semi-spread suits a face of your proportions; point lengths of about 7 to 8 cm.') +
+            : 'A semi-spread suits a face of your proportions' + (d.faceClass === 'middle' && (fs >= 65 || fs <= 35) ? ' (it leans ' + (fs >= 65 ? 'broad' : 'long') + ', but within what a tape measure can tell)' : '') + '; point lengths of about 7 to 8 cm.') +
         (bald ? ' Without hair the collar is the frame: choose a taller band, which stands up on its own.' : '') +
         ' About 1 to 1.5 cm of collar shows above the jacket collar at the back.',
         why: 'The collar frames the face and should counterbalance it, not repeat it (Flusser).',
@@ -283,7 +283,7 @@
     // Lens depth: the collar's counterbalance rule (section 13) applied to the frame. The
     // millimetres are working values within the usual range of men's frames.
     if (v.faceWidth && v.faceLength && d.pct.faceShape != null) {
-      const fsh = d.pct.faceShape, broad = fsh >= 70, long = fsh <= 30;
+      const broad = d.faceClass === 'broad', long = d.faceClass === 'long';   // beyond the tape's error only (body.js)
       const dep = long ? [36, 42] : broad ? [30, 35] : [32, 38];
       add({ id: 'frameDepth', group: 'Face', label: 'Glasses, the depth of each lens', unit: 'mm', lo: dep[0], hi: dep[1],
         text: (long ? 'Your face is long for its width: a deeper lens breaks up the length.'

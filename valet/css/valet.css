@@ -1121,3 +1121,44 @@ button.gl-c.pk-no { text-decoration: line-through; text-decoration-color: var(--
 /* the watch's strap label matches the accessory fields above it */
 .w-more > label { font: 0.8rem var(--sans); display: flex; align-items: center; gap: 0.4rem; }
 @media (max-width: 860px) { .kind-row .kind { min-height: 38px; padding-top: 0.35rem; padding-bottom: 0.35rem; } }
+
+/* The Dresser's pieces on the body: a row per level, head to feet; in each row the layers from the
+   innermost (left) to the outermost (right). Worn pieces are tiles, positions not worn are dashed
+   slots in their place, and the open piece spans its row where it sits. */
+.ov-pieces { display: block; }
+.ov-zone { margin: 0 0 0.75rem; }
+.ov-zone-lab { font: 600 0.72rem var(--sans); letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted); margin: 0 0 0.3rem; }
+.ov-zone-dir { font-weight: 400; letter-spacing: 0; text-transform: none; margin-left: 0.35rem; }
+.ov-zone-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(10.5rem, 1fr)); gap: 0.4rem; align-items: stretch; }
+.ov-zone .ov-piece:not(.open) .ov-row { flex-wrap: wrap; padding: 0 0.45rem 0.45rem 0; height: 100%; align-content: space-between; }
+.ov-zone .ov-piece:not(.open) .ov-pick { flex-basis: 100%; gap: 0.5rem; }
+.ov-zone .ov-piece:not(.open) .ov-on { margin-left: 0.5rem; }
+.ov-zone .ov-piece:not(.open) .ov-lock { margin-left: auto; }
+.ov-zone .ov-piece:not(.open) .g-colour { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+.ov-zone .ov-piece.open { grid-column: 1 / -1; }
+.slot-add { border-radius: var(--radius); display: grid; grid-template-columns: auto 1fr; align-items: center; column-gap: 0.45rem; text-align: left; padding: 0.55rem 0.7rem; min-height: 3.4rem; }
+.slot-add .slot-plus { font-size: 1.15rem; line-height: 1; color: var(--muted); }
+.slot-add .slot-name { font-weight: 600; }
+.slot-add .slot-why { grid-column: 1 / -1; font-size: 0.74rem; color: var(--muted); margin-top: 0.2rem; font-weight: 400; }
+.slot-add:disabled { cursor: default; opacity: 0.75; }
+@media (max-width: 860px) {
+  .ov-zone-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .ov-zone .ov-piece:not(.open) .ov-lock, .ov-zone .ov-piece:not(.open) .ov-on { min-height: 40px; }
+  .ov-zone .ov-piece:not(.open) .ov-lock { width: 40px; }
+  .slot-add { min-height: 3.6rem; }
+}
+/* tiles: four layers to a row on a wide screen (inner layers, then outer layers and accents), two on a
+   phone; slots and tiles take the height of their content; the colour may run to a second line */
+.ov-zone-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); align-items: start; }
+.ov-zone .ov-piece:not(.open) .ov-row { height: auto; }
+.ov-zone .ov-piece:not(.open) .g-colour { white-space: normal; text-overflow: clip; }
+.ov-zone .ov-piece:not(.open) .g-text { min-width: 0; }
+.slot-add { min-height: 0; }
+@media (max-width: 860px) { .ov-zone-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } .slot-add { min-height: 3rem; } }
+/* inside a tile: the tier tag in the corner, a smaller swatch, the name and colour across the rest */
+.ov-zone .ov-piece:not(.open) { position: relative; }
+.ov-zone .ov-piece:not(.open) .ov-pick { grid-template-columns: auto 1fr; padding-right: 0.5rem; }
+.ov-zone .ov-piece:not(.open) .g-pill { position: absolute; top: 0.4rem; right: 0.4rem; }
+.ov-zone .ov-piece:not(.open) .g-text > :first-child { padding-right: 2.1rem; }
+.ov-zone .ov-piece:not(.open) .ov-pick > .chip { width: 34px; height: 34px; }
+.ov-zone .ov-piece:not(.open) .g-name { line-height: 1.2; }

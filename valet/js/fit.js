@@ -147,7 +147,8 @@
         ok: 'In proportion to your shoulders for the period chosen on Proportion.' }
     ] },
     coat: { name: 'Overcoat', cut: true, fields: [
-      // worn over a jacket: the ease is the jacket's plus the room for it (B)
+      // worn over a jacket: the ease is the jacket's plus about 8 cm of room for it (B), so each cut assumes a
+      // jacket of the same cut beneath (a slim overcoat will not go over a classic jacket)
       { key: 'chest', label: 'Chest, around', body: 'chest', flat: true, step: 4, around: true,
         cuts: { slim: [14, 19], modern: [19, 25], classic: [25, 34] },
         tight: [14, 'Too tight to go over a jacket: it pulls at the buttons and the jacket sleeves bunch inside.', 'no'],
@@ -407,12 +408,14 @@
     shirt: [{ id: 'cm', name: 'Collar in cm (39, 41…)', body: 'neck', toCm: function (n) { return n; }, collar: true },
       { id: 'in', name: 'Collar in inches (15½, 16…)', body: 'neck', toCm: function (n) { return n * IN; }, collar: true }],
     trousers: [{ id: 'in', name: 'Waist in inches (32, 34…)', body: 'waist', toCm: function (n) { return n * IN; } },
-      { id: 'eu', name: 'German or Italian size (48, 50…; long 98, 102…; short 24, 25…; French trousers use their own scale)', body: 'waist', toCm: function (n) {
+      { id: 'eu', name: 'German or Italian size (48, 50…; long 98, 102…; short 24, 25…)', body: 'waist', toCm: function (n) {
         /* German size charts (Baur, Breuninger, outdoor-renner, 2026): normal sizes step 4 cm of waist
            a size, 48 is about 84 cm and 50 about 88; long sizes (90, 94, 98, 102…) run about 14 cm
            under their number (102 is 86–89 cm); short sizes (23, 24, 25…) about 4 × size − 8 (24 is
            86–92 cm). Charts differ by a centimetre or two (B). */
-        return n >= 88 ? n - 14 : n < 35 ? n * 4 - 8 : (n - 6) * 2; } }]
+        return n >= 88 ? n - 14 : n < 35 ? n * 4 - 8 : (n - 6) * 2; } },
+      // French trouser sizes are about half the waist in cm (38 is about 76 cm, 42 about 84); charts differ by a centimetre or two (B)
+      { id: 'fr', name: 'French size (38, 40, 42…)', body: 'waist', toCm: function (n) { return n * 2; } }]
 ,
     /* Shoes: the size names the last, which is about 1.5 cm longer than the foot it fits. European
        sizes count the last in Paris points of 2/3 cm; British sizes in barleycorns of 1/3 inch,

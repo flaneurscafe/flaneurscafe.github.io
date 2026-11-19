@@ -12,7 +12,7 @@
      - helpers and constants from an earlier part are taken from it at the top of a later part;
      - a function in a later part is called through it (V.update), so it is looked up when called. */
   const V = window.VAPP = {};
-  Object.assign(V, { cleanProfile, infoBtn, load, newSummer, normOutfit, normWardrobe, openMeasures, save, showTab, showYouPane, upgrade });
+  Object.assign(V, { cleanProfile, glassesToOutfit, infoBtn, load, newSummer, normOutfit, normWardrobe, openMeasures, save, showTab, showYouPane, upgrade });
 
   const VC = window.VC, E = window.VENGINE, D = window.VDATA, CHART = window.VCHART;
   const $ = function (s, r) { return (r || document).querySelector(s); };
@@ -122,6 +122,7 @@
     trousers: { hex: '#8e9196', kind: 'trousers', pat: { type: 'solid' } },
     socks: { hex: '#1d2a44', kind: 'socks', pat: { type: 'solid' }, on: true }, shoes: { hex: '#4a3326', kind: 'loafer', cloth: 'calf' }, locks: {}, occasion: 'smart',
     acc: {
+      glasses: { on: false, frame: 'gold', hex: '#161616' },
       watch: { on: true, metal: 'silver', size: 38, strap: 'leather', display: 'analogue' }, buckle: { on: true, metal: 'silver' },
       cufflinks: { on: false, metal: 'silver', stone: 'none', size: 15 }, tiebar: { on: false, metal: 'silver', size: 45 },
       ring: { on: false, metal: 'silver', stone: 'none', size: 12 }, earring: { on: false, metal: 'silver', stone: 'none', size: 4 }
@@ -132,6 +133,27 @@
   const GLASSES_OLD = { black: '#161616', tortoise: '#5b3a24' };
   function migrateGlasses(s) {
     if (s && GLASSES_OLD[s.glasses]) { s.glassesHex = GLASSES_OLD[s.glasses]; s.glasses = 'acetate'; }
+  }
+  /* Until 1.7 glasses were part of the profile (You tab); since then they are worn with an outfit
+     (Dresser). A profile that had frames puts them on the current outfit and on every saved outfit
+     that does not say otherwise, so nothing that was judged with them is judged without them. */
+  function glassesToOutfit(s, fallbackOutfit) {
+    if (!s) return s;
+    migrateGlasses(s);
+    const frame = s.glasses, hex = isHex(s.glassesHex) ? s.glassesHex : '#161616';
+    delete s.glasses; delete s.glassesHex;
+    if (!frame || frame === 'none' || ['gold', 'silver', 'acetate', 'clear'].indexOf(frame) < 0) return s;
+    const put = function (o) {
+      if (!o || typeof o !== 'object') return o;
+      o = Object.assign({}, o); o.acc = Object.assign({}, o.acc || {});
+      // an outfit saved before 1.7 has no glasses entry; the outfit a profile is loaded onto (the demo's)
+      // has the default one, switched off: in both cases the profile's frames are what was worn
+      if (!o.acc.glasses || !o.acc.glasses.on) o.acc.glasses = { on: true, frame: frame, hex: hex };
+      return o;
+    };
+    s.outfit = put(s.outfit || fallbackOutfit || JSON.parse(JSON.stringify(DEFAULT_OUTFIT)));
+    if (Array.isArray(s.wardrobe)) s.wardrobe = s.wardrobe.map(function (w) { return w && typeof w === 'object' ? Object.assign({}, w, { outfit: put(w.outfit) }) : w; });
+    return s;
   }
   /* Until 1.5 a coat was a kind of outer layer in the jacket's place. It moves to its own position,
      its type read from its cloth; a waxed cotton coat becomes a waxed jacket and stays. */
@@ -177,6 +199,11 @@
     out.acc = {};
     Object.keys(d.acc).forEach(function (k) {
       const x = out.acc[k] = Object.assign({}, d.acc[k], (o && o.acc && o.acc[k]) || {}), G = window.VGARM;
+      if (k === 'glasses') {
+        if (!G.FRAMES.some(function (f) { return f[0] === x.frame; })) x.frame = 'gold';
+        if (!isHex(x.hex)) x.hex = '#161616';
+        delete x.metal; return;
+      }
       if (!G.metalBy[x.metal]) x.metal = d.acc[k].metal;
       if (x.stone != null && !G.stoneBy[x.stone]) x.stone = d.acc[k].stone;
       if (k === 'watch') {
@@ -217,9 +244,7 @@
     };
     s.named = namedOk(s.named);
     if (s.summer && typeof s.summer === 'object') s.summer.named = namedOk(s.summer.named);
-    migrateGlasses(s);
-    s.glasses = pick(s.glasses, ['none', 'gold', 'silver', 'acetate', 'clear'], 'none');
-    if (s.glassesHex != null && !isHex(s.glassesHex)) delete s.glassesHex;
+    glassesToOutfit(s);
     s.redness = pick(s.redness, ['none', 'some', 'marked'], 'none');
     s.underEye = pick(s.underEye, ['none', 'some', 'deep'], 'none');
     if (s.hairStyle != null) s.hairStyle = pick(s.hairStyle, ['short', 'long', 'none'], 'short');
@@ -248,7 +273,7 @@
 
   V.state = {
     samples: { white: null, skin: null, hair: null, eyes: null }, manual: {},
-    useWhite: true, measurements: {}, glasses: 'none', glassesHex: '#161616', redness: 'none', underEye: 'none', hairStyle: 'short', grey: 0, named: {}, fitMark: true,
+    useWhite: true, measurements: {}, redness: 'none', underEye: 'none', hairStyle: 'short', grey: 0, named: {}, fitMark: true,
     season: 'winter', summer: newSummer(),
     outfit: normOutfit(null), wardrobe: [], study: null, shape: {}, period: 'classic'
   };
@@ -267,7 +292,7 @@
     // Nothing saved yet: start empty; the You tab offers the demo profile.
     if (!s || !s.samples) return;
     upgrade(s);
-    migrateGlasses(s);
+    glassesToOutfit(s);
     // A period that no longer exists (the 2020s revival was removed) falls back to today's classic.
     if (s.period != null && !(s.period in window.VPROP.PERIODS)) s.period = 'classic';
     s.outfit = normOutfit(s.outfit);

@@ -10,12 +10,13 @@
 
   /* ---------- Demo, import, export ---------- */
   function applyState(s) {
+    s = V.glassesToOutfit(Object.assign({}, s), V.state.outfit);   // frames from an older profile go on the outfit
     V.state = {
       name: s.name || '', note: s.note || '',
       samples: Object.assign({ white: null, skin: null, hair: null, eyes: null }, s.samples || {}),
       useWhite: s.useWhite !== false,
       measurements: Object.assign({}, s.measurements || {}),
-      glasses: s.glasses || 'none', glassesHex: s.glassesHex || '#161616', redness: s.redness || 'none', underEye: s.underEye || 'none',
+      redness: s.redness || 'none', underEye: s.underEye || 'none',
       hairStyle: E.HAIR[s.hairStyle] ? s.hairStyle : 'short',
       manual: Object.assign({}, s.manual || {}),
       grey: Math.max(0, Math.min(100, +s.grey || 0)), named: Object.assign({}, s.named || {}), fitMark: V.state.fitMark !== false,
@@ -30,8 +31,6 @@
   }
   function syncInputs() {
     $('#useWhite').checked = V.state.useWhite;
-    $('#glasses').value = V.state.glasses;
-    if (V.renderGlassesColour) V.renderGlassesColour();
     $('#redness').value = V.state.redness; $('#underEye').value = V.state.underEye;
     renderHair();
     renderMeasures();

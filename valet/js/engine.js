@@ -23,10 +23,17 @@
     // A colour set by hand is already meant as the true colour; only photo samples are corrected.
     if (profile.manual && profile.manual[key]) return raw;
     const white = whiteFor(profile, key);
-    if (profile.useWhite && white) {
+    // paper blown out to pure white has lost the cast it should measure, and paper in shadow would
+    // brighten everything by the shadow's depth: neither is used (How it works, section 2)
+    if (profile.useWhite && white && !whiteUnusable(white)) {
       return VC.rgbToHex(VC.whiteBalance(VC.hexToRgb(raw), VC.hexToRgb(white)));
     }
     return raw;
+  }
+
+  function whiteUnusable(hex) {
+    const rgb = VC.hexToRgb(hex);
+    return Math.max(rgb[0], rgb[1], rgb[2]) >= 252 || VC.labToLch(VC.hexToLab(hex))[0] < 55;
   }
 
   /* Winter and summer. Skin is the one feature that changes with the time of year. Winter is the
@@ -79,7 +86,7 @@
   const EYE_EDGE = 0.6;
   /* The white of the eye is not sampled; a typical in-photo lightness is assumed. It only matters
      for deeper skin, where it is the strongest light-dark step in the face. */
-  const SCLERA_L = 80, SMALL_FEATURE = 0.8;
+  const SCLERA_L = 80, SMALL_FEATURE = EYE_EDGE;   // the whites of the eyes are as small as the iris, so they count alike
 
   function hairStyleOf(profile) { return HAIR[profile.hairStyle] ? profile.hairStyle : 'short'; }
 
@@ -163,36 +170,28 @@
       depth: depth, depthLevel: depthLevel,
       skinHue: h, lean: lean, tempLevel: tempLevel, confidence: confidence,
       chroma: chroma, chromaLevel: chromaLevel,
-      glasses: profile.glasses || 'none', glassesHex: profile.glasses === 'acetate' ? (/^#[0-9a-f]{6}$/i.test(profile.glassesHex || '') ? profile.glassesHex : '#161616') : null,
       hairStyle: style, hairLabel: H.label,
       redness: profile.redness || 'none', underEye: profile.underEye || 'none'
     };
   }
 
+  /* Body ratios for the profile card, placed among the survey's men (ANSUR II, body.js) in neutral
+     words. The shoulder is not compared: Valet measures it along the back, the survey straight across. */
   function bodyRatios(m) {
     if (!m) return [];
-    const out = [];
+    const B = window.VBODY, out = [];
     if (m.inseam && m.height) {
-      const r = m.inseam / m.height;
-      out.push({ label: 'Leg to height', value: round(r, 3),
-        note: r > 0.47 ? 'long legs for your height' : r < 0.44 ? 'longer torso for your height' : 'balanced' });
+      const r = m.inseam / m.height, pc = B ? B.percentile('legRatio', r) : null;
+      out.push({ label: 'Leg to height', value: round(r, 3), note: pc != null ? 'inside leg ' + B.words(pc) + ' for the height (percentile ' + pc + ')' : '' });
     }
     if (m.chest && m.waist) {
-      const d = m.chest - m.waist;
-      out.push({ label: 'Chest–waist drop', value: d + ' cm',
-        note: d >= 16 ? 'athletic drop' : d >= 10 ? 'regular drop' : 'little drop' });
+      const d = m.chest - m.waist, pc = B ? B.percentile('drop', d) : null;
+      out.push({ label: 'Chest–waist drop', value: d + ' cm', note: pc != null ? B.words(pc) + ' (percentile ' + pc + ')' : '' });
     }
-    if (m.shoulder && m.height) {
-      const r = m.shoulder / m.height;
-      out.push({ label: 'Shoulder to height', value: round(r, 3),
-        note: r < 0.245 ? 'narrow frame for your height' : r > 0.265 ? 'broad frame for your height' : 'medium frame' });
-    }
-    if (m.backNeckFloor && m.height) {
-      out.push({ label: 'Jacket length guide', value: round(m.backNeckFloor / 2, 1) + ' cm',
-        note: 'half of back-neck to floor' });
-    }
+    if (m.backNeckFloor && m.height) out.push({ label: 'Jacket length guide', value: round(m.backNeckFloor / 2, 1) + ' cm', note: 'half of back-neck to floor' });
     return out;
   }
+
 
   /* ---------- Colour scoring near the face ---------- */
 
@@ -269,7 +268,7 @@
       const k = 0.1;
       const da = -k * lab[1], db = -k * lab[2];
       const skin = p.lab.skin;
-      if (da > 2 && skin[1] > 14) {
+      if (da > 2 && skin[1] > 14 && !(p.redness && p.redness !== 'none')) {   // with redness set, the redness rule below judges this push
         simPenalty += 0.1;
         rules.push({ id: 'sim', level: 'A/B', score: 0.6,
           text: 'Simultaneous contrast: this green/cyan side pushes your skin toward red, so ruddiness reads stronger.' });
@@ -289,21 +288,6 @@
         rules.push({ id: 'sim', level: 'A/B', score: 1,
           text: 'Simultaneous contrast: a blue/violet neighbour adds a little warmth to your skin, a flattering push.' });
       }
-    }
-
-    // Frames (B): a metal frame is a second temperature at the face. It only counts against a
-    // colour when the pair pulls away from the wearer: warm on warm is harmony for warm colouring.
-    // A coloured acetate frame counts the same way, by its own hue: tortoiseshell warm, navy cool;
-    // black, grey and clear frames are neutral.
-    const ft = frameTemp(p), fName = p.glasses === 'acetate' ? 'your ' + (ft === 'warm' ? 'warm-coloured' : 'cool-coloured') + ' frames' : p.glasses + ' frames';
-    if (ft === 'warm' && tColour > 0.4 && p.lean < 0.35) {
-      rules.push({ id: 'glasses', level: 'B', score: 0.8,
-        text: 'With ' + fName + ' this is a second warm item at the face; keep the rest of the face area cool.' });
-      simPenalty += 0.04;
-    } else if (ft === 'cool' && tColour < -0.4 && p.lean > 0.35) {
-      rules.push({ id: 'glasses', level: 'B', score: 0.8,
-        text: 'With ' + fName + ' this is a second cool item at the face of warm colouring; keep the rest of the face area warm.' });
-      simPenalty += 0.04;
     }
 
     // Redness (rosacea, a ruddy or flushing skin), B with an A mechanism. Two effects at the face:
@@ -341,8 +325,10 @@
     let tier;
     if (score >= 0.8 && weakest >= 0.7) tier = 1;
     else if (score >= 0.62 && weakest >= 0.45) tier = 2;
-    else if (C < 30 || sMerge < 0.5) tier = 3;
-    else tier = 4;
+    // Tier 4 is "too vivid or too much against your colouring": the chroma rule or the heavy side of
+    // the contrast rule says so. Any other colour that fails at the face is useful below the belt.
+    else if (sChroma < 0.99 || (sContrast < 0.7 && sep >= lo)) tier = 4;
+    else tier = 3;
 
     return {
       hex: hex, lab: lab, lch: lch, oklch: ok, neutral: neutral,
@@ -439,7 +425,7 @@
     /* --- colour --- */
     const weak = !near.length ? [] : near.filter(function (k) { return scoreCached(L[k].mean, p).tier > 2; });
     if (near.length) add(weak.length
-      ? { id: 'face', score: weak.every(function (k) { return k === 'square'; }) ? 0.6 : 0.3, n: weak.length, slots: weak, text: 'Clashes with your skin: ' + weak.map(function (k) { const r = skinReasons(L[k].mean, p); return nm(k) + ' (tier ' + scoreCached(L[k].mean, p).tier + (r.length ? ', ' + r[0] : '') + ')'; }).join(' and ') + '. Swap it, or move that colour below the belt.' }
+      ? { id: 'face', score: weak.every(function (k) { return k === 'square' || k === 'boutonniere'; }) ? 0.6 : 0.3, n: weak.length, slots: weak, text: 'Clashes with your skin: ' + weak.map(function (k) { const r = skinReasons(L[k].mean, p); return nm(k) + ' (tier ' + scoreCached(L[k].mean, p).tier + (r.length ? ', ' + r[0] : '') + ')'; }).join(' and ') + '. Swap it, or move that colour below the belt.' }
       : { id: 'face', score: 1, slots: face, text: 'Against your skin: everything near the face is tier 1 or 2 for you.' });
 
     // A light-dark step at the face (Outfit Check, question 2), in proportion to the face: the layer
@@ -448,7 +434,12 @@
     // which is put on before the jacket; else the jacket; else a coat worn straight over the shirt;
     // else a tie. A hat, or a coat over a jacket, is further out, so it neither rescues a flat shirt
     // and jacket nor is blamed for a strong step.
-    const over = ['scarf', 'mid', 'jacket', 'coat', 'tie'].find(function (k) { return L[k]; });
+    let over = ['scarf', 'mid', 'jacket', 'coat', 'tie'].find(function (k) { return L[k]; });
+    // a scarf is narrow: the layer over the shirt front beside it frames the face too, so the stronger step counts
+    if (over === 'scarf') {
+      const next = ['mid', 'jacket', 'coat'].find(function (k) { return L[k]; });
+      if (next && Math.abs(lum(L.shirt.mean) - lum(L[next].mean)) > Math.abs(lum(L.shirt.mean) - lum(L.scarf.mean))) over = next;
+    }
     if (L.shirt && over) {
       const best = Math.abs(lum(L.shirt.mean) - lum(L[over].mean)), pair = ['shirt', over];
       if (best < lo) add({ id: 'step', score: 0.35, slots: [over, 'shirt'], level: 'A/B',
@@ -491,7 +482,7 @@
       L[k].colours.forEach(function (hex, i) {
         if (i === 1 && !L[k].visible && !L[k].twoTone) return;   // a texture's accent does not count; a spectator's second leather does
         const c = okc(hex);
-        if (c[1] >= 0.06) chrom.push({ k: k, hex: hex, h: c[2], C: c[1], Lk: c[0], small: k === 'tie' || k === 'shoes' || k === 'socks' || k === 'square' || k === 'boutonniere' || k === 'gloves' || i === 1 });
+        if (!wardrobeNeutral(hex) && c[1] >= 0.06) chrom.push({ k: k, hex: hex, h: c[2], C: c[1], Lk: c[0], small: k === 'tie' || k === 'shoes' || k === 'socks' || k === 'square' || k === 'boutonniere' || k === 'gloves' || i === 1 });
       });
     });
     const fam = [];
@@ -519,9 +510,9 @@
     // Near misses: two pieces almost but not quite the same colour (A: they read as a failed match).
     // Pieces that meet or sit near each other; the tie and the floor are only compared with neighbours.
     const pairs = [['jacket', 'trousers'], ['mid', 'jacket'], ['shirt', 'mid'], ['tie', 'mid'], ['shirt', 'jacket'], ['shirt', 'tie'], ['tie', 'jacket'],
-      ['mid', 'trousers'], ['jacket', 'shoes'], ['trousers', 'shoes'], ['shirt', 'trousers'],
+      ['mid', 'trousers'], ['trousers', 'shoes'], ['shirt', 'trousers'],
       ['scarf', 'jacket'], ['scarf', 'mid'], ['scarf', 'shirt'], ['tie', 'scarf'],
-      ['coat', 'jacket'], ['coat', 'mid'], ['coat', 'trousers'], ['scarf', 'coat'], ['coat', 'shoes'], ['boutonniere', 'tie']];
+      ['coat', 'jacket'], ['coat', 'mid'], ['coat', 'trousers'], ['scarf', 'coat'], ['boutonniere', 'tie']];
     let suitText = null;
     pairs.forEach(function (pr) {
       if (!L[pr[0]] || !L[pr[1]]) return;
@@ -530,7 +521,10 @@
         // a suit is one cloth as well as one colour; the same colour in two cloths looks like a
         // suit jacket that lost its trousers
         const cj = G.cloth('jacket', o.jacket), ct = G.cloth('trousers', o.trousers);
-        if (K.jacket.suit && (!cj || !ct || cj.id === ct.id)) suitText = 'Jacket and trousers match in colour and cloth: this reads as a suit.';
+        const pj = L.jacket.pat, pt = L.trousers.pat, samePat = pj.type === pt.type && (pj.type === 'solid' || Math.abs(pj.scale - pt.scale) < 0.3);
+        if (K.jacket.suit && (!cj || !ct || cj.id === ct.id) && samePat) suitText = 'Jacket and trousers match in colour, cloth and pattern: this reads as a suit.';
+        else if (K.jacket.suit && (!cj || !ct || cj.id === ct.id)) add({ id: 'orphan', group: 'formality', score: 0.5, slots: ['trousers'],
+          text: 'Jacket and trousers are one colour and cloth but not one pattern (' + (pj.type === 'solid' ? 'plain' : L.jacket.typeName.toLowerCase()) + ' against ' + (pt.type === 'solid' ? 'plain' : L.trousers.typeName.toLowerCase()) + '): it reads as a suit jacket with the wrong trousers. Match the pattern, or make the trousers clearly different.' });
         else if (K.jacket.suit) add({ id: 'orphan', group: 'formality', score: 0.5, slots: ['trousers'],
           text: 'Jacket in ' + cj.name.toLowerCase() + ' and trousers in ' + ct.name.toLowerCase() + ', both ' + L.jacket.name.toLowerCase() + ': the same colour in two cloths looks like a suit jacket worn with the wrong trousers. Match the cloth too, or make the trousers clearly different.' });
       }
@@ -577,7 +571,7 @@
     // runs unbroken into the shoe. A dark, deep colour (burgundy, forest) is the one allowed play.
     if (L.socks && L.trousers) {
       const lS = lum(L.socks.mean), lT = lum(L.trousers.mean), dE = VC.deltaE2000(VC.hexToLab(L.socks.mean), VC.hexToLab(L.trousers.mean));
-      const sc = okc(L.socks.mean), dark = lS < 40;
+      const sc = okc(L.socks.mean), dark = lS < 40 && sc[1] <= 0.12;   // deep: dark and muted (burgundy, wine, forest), not royal blue
       if (lS > 82 && sc[1] < 0.04) add({ id: 'socks', score: 0.3, slots: ['socks'],
         text: 'White socks with shoes: the eye goes straight to the ankle. Match the trousers instead (no white socks with shoes).' });
       else if (dE < 7 || (lT - lS >= 0 && lT - lS <= 45 && (sc[1] < 0.06 || dE < 15))) add({ id: 'socks', score: 1, slots: ['socks'],
@@ -593,8 +587,8 @@
     // Pocket square: needs a breast pocket; white linen is never wrong; matching the tie exactly
     // looks bought as a set. A square picks up a colour from the tie or shirt rather than copying it.
     if (L.square) {
-      if (!(L.jacket && K.jacket.pocket)) add({ id: 'square', score: 0.2, slots: ['square'],
-        text: 'A pocket square needs a jacket with a breast pocket. Take it off, or wear a jacket.' });
+      if (!((L.jacket && K.jacket.pocket) || (L.coat && K.coat.pocket))) add({ id: 'square', score: 0.2, slots: ['square'],
+        text: 'A pocket square needs a breast pocket: a tailored jacket, a blazer, or an overcoat with one. Take it off, or wear one of them.' });
       else {
         const sq = VC.hexToLab(L.square.mean), white = sq[0] > 88 && okc(L.square.mean)[1] < 0.03;
         if (L.tie && K.tie.knotted && VC.deltaE2000(sq, VC.hexToLab(L.tie.mean)) < 5 && L.square.pat.type === L.tie.pat.type)
@@ -616,7 +610,7 @@
     const stated = [];
     face.forEach(function (k) {
       const sc = scoreCached(L[k].mean, p);
-      if (sc.tier !== 2 || isNeutral(L[k].mean)) return;
+      if (sc.tier !== 2 || wardrobeNeutral(L[k].mean)) return;      // a menswear neutral (camel, navy, brown) is not a statement
       const f = stated.find(function (g) { return g.h != null && hueDist(g.h, sc.oklch[2]) <= 35; });
       if (f) f.slots.push(k); else stated.push({ h: sc.oklch[2], slots: [k], what: nm(k) + ' (tier 2)' });
     });
@@ -633,7 +627,7 @@
     }
 
     /* --- pattern --- */
-    const pats = face.filter(function (k) { return L[k].visible; });
+    const pats = near.filter(function (k) { return L[k].visible; });   // the face layers and the pocket square, a hand from the face
     const allPats = worn.filter(function (k) { return L[k].visible; });
     const tex = worn.filter(function (k) { return L[k].texture; });
     // Why a patterned cloth does not count: tonal, or too fine or faint to read from 3 m.
@@ -650,7 +644,7 @@
         (tex.length ? ' ' + tex.map(texWhy).join(', ') + (tex.length > 1 ? ' do' : ' does') + ' not count.' : '') });
     if (pats.length > 2) add({ id: 'pcount', group: 'pattern', score: 0.3, slots: pats.slice(1),
       text: pats.length + ' patterns near the face. At most two (rule 7): make one of them plain.', fix: { kind: 'solid', slot: pats[pats.length - 1] } });
-    if (face.length >= 2 && pats.length === face.length) add({ id: 'anchor', group: 'pattern', score: 0.45, slots: pats.slice(-1),
+    if (face.length >= 2 && face.every(function (k) { return L[k].visible; })) add({ id: 'anchor', group: 'pattern', score: 0.45, slots: pats.slice(-1),
       text: 'Every layer at the face is patterned. One plain layer anchors the others (rule 7).', fix: { kind: 'solid', slot: pats[pats.length - 1] } });
     const unshared = [];
     for (let i = 0; i < pats.length; i++) for (let j = i + 1; j < pats.length; j++) {
@@ -662,6 +656,13 @@
       const shared = A.colours.some(function (x) { return B.colours.some(function (y) { return VC.deltaE2000(VC.hexToLab(x), VC.hexToLab(y)) < 10; }); });
       if (!shared) unshared.push([pats[i], pats[j]]);
     }
+    // the top layer and the trousers meet at the hips; the same scale interferes there too (unless a suit)
+    const topP = L.jacket ? 'jacket' : L.mid ? 'mid' : null;
+    if (topP && L[topP].visible && L.trousers && L.trousers.visible && !(topP === 'jacket' && suitWorn(o, L, K, (function () { const c = {}; ['jacket', 'trousers'].forEach(function (k) { c[k] = G.cloth(k, o[k]); }); return c; })()))) {
+      const A = L[topP], Bt = L.trousers, ratio = Math.max(A.pat.scale, Bt.pat.scale) / Math.min(A.pat.scale, Bt.pat.scale);
+      if (ratio < 1.8) add({ id: 'pscale', group: 'pattern', level: 'A/B', score: 0.5, slots: ['trousers'],
+        text: nm(topP) + ' (' + A.label + ') and ' + nm('trousers') + ' (' + Bt.label + ') meet at the hips at nearly the same scale: patterns of similar size interfere. Vary the scale by about two or more, or make one plain.' });
+    }
     if (unshared.length) add({ id: 'pshare', group: 'pattern', score: 0.55, slots: [unshared[0][1]],
       text: unshared.map(function (u) { return nm(u[0]) + ' and ' + nm(u[1]); }).join('; ') + ': no colour in common. Patterns hold together when they share one (rule 7).' });
     const medium = allPats.filter(function (k) { return L[k].cls.id === 'medium'; });
@@ -669,8 +670,10 @@
       text: 'Two medium-scale patterns (' + medium.map(nm).join(', ') + '). The medium pattern is the one statement of an outfit.' });
     // Which patterns and what scale each garment type takes (Style Guide, section 7), from garments.js.
     worn.forEach(function (k) {
-      const t = L[k].pat.type;
-      if (t !== 'solid' && K[k].pats.indexOf(t) < 0) add({ id: 'ptype', group: 'pattern', score: 0.6, slots: [k],
+      const t = L[k].pat.type, cl = G.cloth(k, o[k]);
+      if (t !== 'solid' && cl && !G.patOK(cl.id, t)) add({ id: 'ptype', group: 'pattern', score: 0.3, slots: [k],
+        text: nm(k) + ': ' + L[k].typeName.toLowerCase() + ' is not made in ' + cl.name.toLowerCase().replace(/ \(shiny\)$/, '') + '. The weave or print does not exist in that cloth.' });
+      else if (t !== 'solid' && K[k].pats.indexOf(t) < 0) add({ id: 'ptype', group: 'pattern', score: 0.6, slots: [k],
         text: nm(k) + ': ' + L[k].typeName.toLowerCase() + ' is not a cloth the guide uses for a ' + K[k].name.toLowerCase() + '.' +
           (K[k].pats.length > 1 ? ' It uses ' + K[k].pats.filter(function (x) { return x !== 'solid'; }).map(function (x) { return P().byId[x].name.toLowerCase(); }).join(', ') + '.' : ' It is worn plain.') });
     });
@@ -697,8 +700,19 @@
 
     /* --- accessories --- */
     accessoryChecks(o.acc || {}, L, K, p, add, nm, o.occasion, o);
-    const fw = frameWeight(p);
-    if (fw) add({ id: 'gweight', group: 'accessory', level: 'A/B', score: fw.score, slots: [], text: fw.text });
+    const gl = framesOf(o), fw = frameWeight(p, gl);
+    if (fw) add({ id: 'gweight', group: 'accessory', level: 'A/B', score: fw.score, slots: [], acc: 'glasses', text: fw.text });
+    // Frames and the colours beside them (B): a metal or coloured frame is a second temperature at the
+    // face, against you only when the pair pulls away from your colouring: warm frames with a warm
+    // colour on a face that is not warm, cool frames with a cool colour on a warm face.
+    const ft = frameTemp(gl);
+    if (ft) {
+      const fName = gl.frame === 'acetate' ? 'your ' + ft + '-coloured frames' : gl.frame + ' frames';
+      const pull = ft === 'warm' ? p.tempLevel !== 'warm' : p.tempLevel === 'warm';
+      const second = pull ? near.filter(function (k) { const t = scoreCached(L[k].mean, p).temperature; return ft === 'warm' ? t > 0.4 : t < -0.4; }) : [];
+      if (second.length) add({ id: 'glasses', group: 'colour', score: 0.8, slots: second,
+        text: 'With ' + fName + ', ' + second.map(nm).join(' and ') + (second.length > 1 ? ' are' : ' is') + ' a second ' + ft + ' note at the face. Keep the rest of the face area ' + (ft === 'warm' ? 'cool' : 'warm') + ', or wear ' + (ft === 'warm' ? 'silver' : 'gold') + ' frames with it.' });
+    }
     return out;
   }
 
@@ -753,7 +767,8 @@
       text: 'With high-rise trousers a standard-length tie hangs past the waistband; tie a larger knot, or wear a knit or waistcoat over it, as the 1930s did.' });
     // the collar against the face: the outfit does not record the collar's cut, so this is the
     // advice for the shirt you choose, from the face's proportions (Flusser: counterbalance, not repeat)
-    const fs = pc.faceShape, bald = o.hairStyle === 'none';
+    // broad or long only beyond the tape's error (body.js); the percentile alone is not trusted
+    const fs = pc.faceClass === 'broad' ? 70 : pc.faceClass === 'long' ? 30 : null, bald = o.hairStyle === 'none';
     if (L.shirt && K.shirt && K.shirt.collar && ((fs != null && (fs >= 70 || fs <= 30)) || bald)) ad({ id: 'pcollar', score: 1, slots: ['shirt'],
       text: (fs >= 70 ? 'Your face is broad for its length: a collar with longer points and a moderate spread balances it; a wide cutaway would widen it further.'
         : fs != null && fs <= 30 ? 'Your face is long for its width: a wider spread balances it; long narrow points would lengthen it further.' : '') +
@@ -797,6 +812,8 @@
   function wholeChecks(o, L, K, p, add, nm) {
     const C = {}, F = {};
     Object.keys(L).forEach(function (k) { C[k] = G.cloth(k, o[k]); F[k] = G.formality(k, o[k]); });
+    // a dress shirt worn without a tie is open-collared: smart, not business (B)
+    if (F.shirt != null && K.shirt.tieable && !(L.tie && K.tie.knotted)) F.shirt = Math.min(F.shirt, 4);
     const cn = function (k) { return C[k] ? C[k].name.toLowerCase().replace(/ \(shiny\)$/, '') : ''; };
     const what = function (k) { return L[k].name + ' ' + (C[k] ? cn(k) + ' ' : '') + K[k].name.toLowerCase(); };
     const occ = G.OCCASIONS.find(function (x) { return x.id === o.occasion; }) || G.OCCASIONS[1];
@@ -870,7 +887,7 @@
   }
   function suitWorn(o, L, K, C) {
     return !!(L.jacket && L.trousers && K.jacket.suit && C.jacket && C.trousers && C.jacket.id === C.trousers.id &&
-      VC.deltaE2000(VC.hexToLab(L.jacket.mean), VC.hexToLab(L.trousers.mean)) < 1.5);
+      L.jacket.pat.type === L.trousers.pat.type && VC.deltaE2000(VC.hexToLab(L.jacket.mean), VC.hexToLab(L.trousers.mean)) < 1.5);
   }
 
   /* The Outfit Check card's order: six questions, then the feet, then what this tool adds. Each
@@ -913,7 +930,7 @@
 
   const SECTIONS = [
     { id: 'skin', title: '1. Against your skin', q: 'Does every colour near the face suit your skin (tier 1 or 2)?', ids: ['face', 'red', 'band'] },
-    { id: 'temperature', title: 'Temperature', q: 'One temperature near the face?', ids: ['temp'] },
+    { id: 'temperature', title: 'Temperature', q: 'One temperature near the face?', ids: ['temp', 'glasses'] },
     { id: 'contrast', title: '2. Contrast', q: 'Is there a clear light-dark step at the face, and between top and bottom?', ids: ['step', 'blur', 'light'] },
     { id: 'frame', title: '3. Frame', q: 'What frames the face?', ids: ['frame', 'layer', 'neck', 'brim'] },
     { id: 'sheen', title: '4. Sheen', q: 'Is anything glossy?', ids: ['sheen'] },
@@ -940,17 +957,24 @@
      them, so only acetate is judged. Frame lightness by material is Valet's working value. */
   /* The frame's own temperature: gold warm, silver cool; an acetate frame by its hue, scaled down
      for low chroma as any colour is (section 7), so black and grey frames are neutral. */
-  function frameTemp(p) {
-    if (!p) return null;
-    if (p.glasses === 'gold') return 'warm';
-    if (p.glasses === 'silver') return 'cool';
-    if (p.glasses !== 'acetate' || !p.glassesHex) return null;
-    const lch = VC.labToLch(VC.hexToLab(p.glassesHex)), t = VC.hueTemperature(lch[2]) * Math.min(1, lch[1] / 25);
+  /* The glasses worn with an outfit (o.acc.glasses), or null. */
+  function framesOf(o) {
+    const g = o && o.acc && o.acc.glasses;
+    if (!g || !g.on) return null;
+    const frame = ['gold', 'silver', 'acetate', 'clear'].indexOf(g.frame) >= 0 ? g.frame : 'gold';
+    return { frame: frame, hex: frame === 'acetate' ? (/^#[0-9a-f]{6}$/i.test(g.hex || '') ? g.hex : '#161616') : null };
+  }
+  function frameTemp(g) {
+    if (!g) return null;
+    if (g.frame === 'gold') return 'warm';
+    if (g.frame === 'silver') return 'cool';
+    if (g.frame !== 'acetate' || !g.hex) return null;
+    const lch = VC.labToLch(VC.hexToLab(g.hex)), t = VC.hueTemperature(lch[2]) * Math.min(1, lch[1] / 25);
     return t > 0.35 ? 'warm' : t < -0.35 ? 'cool' : null;
   }
-  function frameWeight(p) {
-    if (!p || p.glasses !== 'acetate' || !p.glassesHex || !p.lab || !p.lab.skin) return null;
-    const fL = VC.hexToLab(p.glassesHex)[0];
+  function frameWeight(p, g) {
+    if (!p || !g || g.frame !== 'acetate' || !g.hex || !p.lab || !p.lab.skin) return null;
+    const fL = VC.hexToLab(g.hex)[0];
     const step = Math.abs(p.lab.skin[0] - fL), hi = p.contrast * 1.5 + 15;
     const name = 'acetate';
     if (step <= hi) return { score: 1, step: step, hi: hi,
@@ -1007,8 +1031,8 @@
   function accessoryChecks(acc, L, K, p, add, nm, occasion, o) {
     const A = G.ACCESSORIES, M = G.metalBy, worn = A.filter(function (a) { return acc[a.key] && acc[a.key].on; });
     const ad = function (c) { c.group = 'accessory'; c.slots = c.slots || []; return add(c); };
-    const glassMetal = p.glasses === 'gold' ? 'gold' : p.glasses === 'silver' ? 'silver' : null;
-    const cool = p.lean < 0.35, warm = p.lean > 0.65;
+    const glf = framesOf(o), glassMetal = glf && (glf.frame === 'gold' || glf.frame === 'silver') ? glf.frame : null;
+    const cool = p.tempLevel === 'cool', warm = p.tempLevel === 'warm';   // the profile's own bands (cool under -0.35, warm over 0.35)
     worn.forEach(function (a) {
       if (a.needs === 'cuffs' && !(L.shirt && K.shirt.tieable)) ad({ id: 'acc', score: 0.2, acc: a.key,
         text: 'Cufflinks need a shirt with double cuffs; a ' + K.shirt.name.toLowerCase() + ' has none.' });
@@ -1158,7 +1182,7 @@
       else out('ring', 'Ring, ' + mm + ' mm: a statement ring. In a classic outfit nothing balances it; take it off for this one.');
     }
     if (has('earring')) {
-      const mm = +acc.earring.size || 4, st = acc.earring.stone || 'none', gm = p.glasses === 'gold' ? 'gold' : p.glasses === 'silver' ? 'silver' : null;
+      const glf = framesOf(o), gm = glf && (glf.frame === 'gold' || glf.frame === 'silver') ? glf.frame : null, mm = +acc.earring.size || 4, st = acc.earring.stone || 'none';
       const bright = st === 'diamond' || st === 'pearl' || (st === 'none' && acc.earring.metal !== 'gunmetal');
       const why = ' The pupil is 2 to 8 mm and the iris about 12 mm: a stud up to about 5 mm reads as a point of light beside the face, and the eyes stay the focus.';
       if (mm <= 5) ok('earring', 'Earring, ' + mm + ' mm: a small stud, one ear.' + why);
@@ -1289,11 +1313,13 @@
     let cur = Object.assign({}, o);
     const open = SLOTS.filter(function (k) { return cur[k] && !locked[k]; });
     for (let step = 0; step < 6; step++) {
-      const now = totalCost(cur, p);
+      const now = totalCost(cur, p), nowFails = verdict(checkOutfit(cur, p)).fails;
       let best = null;
       open.forEach(function (k) {
         suggest(cur, p, k, 3).forEach(function (c) {
           const next = withPiece(cur, k, c.hex, c.name), cost = totalCost(next, p);
+          // a change that adds a failing rule is never better, whatever it saves elsewhere
+          if (verdict(checkOutfit(next, p)).fails > nowFails) return;
           if (cost < now - 0.05 && (!best || cost < best.cost)) best = { next: next, cost: cost };
         });
       });
@@ -1425,7 +1451,7 @@
       text: 'Your contrast (' + round(p.contrast) + ') sits near a boundary. If white sharpens the face, you are at the higher end; if it looks harsh and écru looks right, the lower.' });
     if (p.hairStyle === 'none') tests.push({ title: 'Brows', pair: [p.hex.hair || '#5a4636', p.hex.skin],
       text: 'With no hair the brows set your contrast. Sample them in daylight; a groomed, defined brow reads darker than a sparse one.' });
-    if (p.underEye === 'deep' && p.glasses !== 'none' && p.glasses !== 'clear') tests.push({ title: 'Glasses: the bottom rim', pair: ['#1b1b1e', p.hex.skin],
+    if (p.underEye === 'deep') tests.push({ title: 'If you wear glasses: the bottom rim', pair: ['#1b1b1e', p.hex.skin],
       text: 'With deep-set eyes the frames are the one thing at the height of the shadow. In a mirror by a window, check that the bottom rim does not sit on the shadow and double it; a browline or a frame with its weight at the top avoids that.' });
     if (p.redness !== 'none') tests.push({ title: 'Redness: navy against bottle green', pair: ['#1d2a44', '#1f4d3a'],
       text: 'Hold both at the jaw in daylight. Navy should leave the skin calm; if the green makes the cheeks look redder, keep greens below the collar or in dark, muted versions.' });
@@ -1455,6 +1481,6 @@
   window.VENGINE = {
     analyseProfile: analyseProfile, bodyRatios: bodyRatios, scoreColour: scoreColour,
     checkOutfit: checkOutfit, verdict: verdict, penalty: penalty, suggest: suggest, complete: complete, rescue: rescue, themePalette: themePalette, themeStudy: themeStudy, SECTIONS: SECTIONS, sectionOf: sectionOf, watchRange: watchRange, summary: summary, look: look, SLOTS: SLOTS, FACE: FACE, TIER_TEXT: TIER_TEXT, corrected: corrected, HAIR: HAIR,
-    echoes: echoes, hairShown: hairShown, frameWeight: frameWeight, frameTemp: frameTemp, skinClashes: skinClashes, skinReasons: skinReasons, fitFor: fitFor, seasonProfile: seasonProfile, TAN: TAN
+    echoes: echoes, hairShown: hairShown, frameWeight: frameWeight, frameTemp: frameTemp, framesOf: framesOf, skinClashes: skinClashes, skinReasons: skinReasons, fitFor: fitFor, seasonProfile: seasonProfile, TAN: TAN
   };
 })();

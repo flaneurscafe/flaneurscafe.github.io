@@ -59,7 +59,17 @@
       const uses = { legRatio: ['inseam'], torsoRatio: ['inseam', 'backNeckFloor'], waistHeightRatio: ['waistHeight'], frame: [], drop: [], faceShape: [] }[k] || [];
       if (!uses.some(function (u) { return est[u]; })) pct[k] = percentile(k, r[k]);
     });
-    return { v: v, r: r, pct: pct, est: est, shape: shape, unc: UNC };
+    /* Broad or long for its size, only beyond what the tape's error could cause: a 4 mm error on
+       width and on length moves the ratio by about ±0.05, as far as from the middle of the survey to
+       its 70th percentile. So a face is called broad (or long) only when the ratio minus (plus) that
+       error is still beyond the 70th (30th) percentile; otherwise it is the middle, within the error. */
+    let faceClass = null;
+    if (r.faceShape != null) {
+      const u = r.faceShape * Math.hypot(UNC.faceWidth / v.faceWidth, UNC.faceLength / v.faceLength);
+      const at = function (q) { const t = REF.faceShape, i = PCT.findIndex(function (p) { return p >= q; }); return t[i - 1] + (t[i] - t[i - 1]) * (q - PCT[i - 1]) / (PCT[i] - PCT[i - 1]); };
+      faceClass = r.faceShape - u > at(70) ? 'broad' : r.faceShape + u < at(30) ? 'long' : 'middle';
+    }
+    return { v: v, r: r, pct: pct, est: est, shape: shape, unc: UNC, faceClass: faceClass };
   }
 
   /* A percentile in words, neutral: where it sits, not whether that is good. */
