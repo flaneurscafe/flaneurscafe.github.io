@@ -91,9 +91,15 @@
     // left lapel's buttonhole of a jacket, blazer or coat with lapels. Near the face, so its colour is
     // judged like the pocket square's; a pin is worn metal.
     { key: 'boutonniere', label: 'Buttonhole', face: false, near: true, optional: true, needsLapel: true, kinds: [
-      { id: 'flower', name: 'Flower (boutonnière)', f: null, pats: SOLID_ONLY, maxScale: 'small' },
-      { id: 'fabric', name: 'Fabric flower', f: null, cloths: ['silktwill', 'knitsilk', 'linen'], pats: SOLID_ONLY, maxScale: 'small' },
-      { id: 'pin', name: 'Lapel pin', f: null, metal: true, pats: SOLID_ONLY, maxScale: 'small' }
+      // Three things go through the buttonhole, and each has one thing to set: a fresh flower its
+      // colour only (it has no cloth); a fabric flower its colour and cloth (silk shines a little,
+      // linen is summer cloth, so the sheen and season rules reach it); a pin its metal.
+      { id: 'flower', name: 'Fresh flower', f: null, pats: SOLID_ONLY, maxScale: 'small',
+        note: 'A real flower (a boutonnière): only its colour is chosen. It has no cloth, so there is nothing else to set.' },
+      { id: 'fabric', name: 'Fabric flower', f: null, cloths: ['silktwill', 'knitsilk', 'linen'], pats: SOLID_ONLY, maxScale: 'small',
+        note: 'A flower made of silk or linen, which keeps: its colour and its cloth are chosen, and the cloth brings the sheen and season rules with it, as on a tie.' },
+      { id: 'pin', name: 'Lapel pin', f: null, metal: true, pats: SOLID_ONLY, maxScale: 'small',
+        note: 'Worn metal, so only its metal is chosen, below.' }
     ] },
     { key: 'trousers', label: 'Trousers', face: false, optional: false, kinds: [
       { id: 'trousers', name: 'Trousers', f: 5, cloths: ['flannel', 'worsted', 'fresco', 'cotton', 'linen', 'corduroy', 'moleskin', 'denim', 'seersucker', 'lustre'], pats: ['solid', 'nailhead', 'birdseye', 'herringbone', 'pinstripe', 'chalkstripe', 'candy', 'houndstooth', 'glen', 'windowpane'], maxScale: 'medium' }

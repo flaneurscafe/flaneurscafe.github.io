@@ -428,15 +428,18 @@
       return '<button type="button" role="radio" class="kind cut" data-cut="' + o[0] + '" aria-checked="' + ((x[cut.key] || cut.def) === o[0]) + '" title="' + esc(o[1]) + '">' + o[1].split(':')[0] + '</button>';
     }).join('') + '</div><p class="ed-note">' + esc(cut.opts.find(function (o) { return o[0] === (x[cut.key] || cut.def); })[1]) + '. It sets where this piece meets the next; see Proportion in the checks.</p>' : '';
     const extraRow = cur.buttons ? '<div class="kind-row" role="radiogroup" aria-label="Buttons"><span class="kind-lab">Buttons</span>' + G.BUTTONS.map(function (b) {
-        return '<button type="button" role="radio" class="kind btn-opt" data-btn="' + b[0] + '" aria-checked="' + ((x.buttons || 'gold') === b[0]) + '">' + b[1] + '</button>';
+        return '<button type="button" role="radio" class="kind btn-opt" data-btn="' + b[0] + '" aria-checked="' + ((x.buttons || 'silver') === b[0]) + '">' + b[1] + '</button>';
       }).join('') + '</div><p class="ed-note">Metal buttons count as metal in the outfit: keep the watch and buckle in the same metal.</p>'
       : cur.metal ? '<div class="kind-row" role="radiogroup" aria-label="Metal"><span class="kind-lab">Metal</span>' + ['silver', 'gold', 'gunmetal', 'rose'].map(function (m) {
         return '<button type="button" role="radio" class="kind pin-metal" data-metal="' + m + '" aria-checked="' + ((x.metal || 'silver') === m) + '"><i class="d" style="background:' + G.metalBy[m].hex + '"></i>' + G.metalBy[m].name + '</button>';
-      }).join('') + '</div><p class="ed-note">A lapel pin is worn metal: keep it in the metal of the watch and buckle.</p>'
+      }).join('') + '</div><p class="ed-note">It joins the one-metal rule: keep it in the metal of the watch, the buckle and any metal blazer buttons.</p>'
       : cur.twoTone ? '<div class="kind-row" role="radiogroup" aria-label="Toe cap and heel"><span class="kind-lab">Toe cap and heel</span>' + SPEC2.map(function (c) {
         return '<button type="button" role="radio" class="kind spec2" data-hex2="' + c[1] + '" aria-checked="' + ((x.hex2 || '').toLowerCase() === c[1]) + '"><i class="d" style="background:' + c[1] + '"></i>' + c[0] + '</button>';
       }).join('') + '</div><p class="ed-note">The second colour of the spectator; the main colour, chosen below, is the rest of the upper.</p>' : '';
-    ed.innerHTML = kindRow + cutRow + extraRow + keepRow + (p.cloth ? '<div class="seg ed-tabs" role="tablist"><button type="button" role="tab" data-t="colour" aria-selected="' + (tab === 'colour') + '">Colour</button>' +
+    // A Cloth tab only when there is something to choose there: a fresh flower has no cloth and a
+    // lapel pin is its metal, so neither gets one. A pin has no Colour list either: its metal row sets it.
+    const hasCloth = p.cloth && !cur.metal && (!!cur.cloths || cur.pats.length > 1);
+    ed.innerHTML = kindRow + cutRow + extraRow + keepRow + (hasCloth ? '<div class="seg ed-tabs" role="tablist"><button type="button" role="tab" data-t="colour" aria-selected="' + (tab === 'colour') + '">Colour</button>' +
       '<button type="button" role="tab" data-t="cloth" aria-selected="' + (tab === 'cloth') + '">' + (k === 'shoes' ? 'Upper' : kindOf(k).pats.length > 1 ? 'Cloth and pattern' : 'Cloth') + '</button></div>' : '') +
       '<div class="ed-body"></div>';
     $$('.ed-tabs button', ed).forEach(function (b) { b.addEventListener('click', function () { tab = b.dataset.t; renderEditor(ed, k, a); }); });
@@ -447,7 +450,8 @@
     $$('.cut', ed).forEach(function (b) { b.addEventListener('click', function () { snapshot(); piece(k)[cut.key] = b.dataset.cut; commit(cut.label + ': ' + b.textContent.toLowerCase() + '.'); }); });
     $('.ov-keep', ed).addEventListener('click', function () { keepAndFix(k); });
     const body = $('.ed-body', ed);
-    if (tab === 'cloth' && p.cloth) clothEditor(body, k, x, a); else colourEditor(body, k, x, a, p);
+    if (cur.metal) body.innerHTML = '';
+    else if (tab === 'cloth' && hasCloth) clothEditor(body, k, x, a); else colourEditor(body, k, x, a, p);
   }
 
   /* The optional positions not worn now, as one row of Add buttons. */
@@ -464,6 +468,7 @@
 
   /* ---------- Garment types ---------- */
   function kindNote(t) {
+    if (t.note) return t.name + ': ' + t.note;
     const fr = { collar: 'its collar frames the face', neck: 'the roll neck frames the face', lapel: 'lapels frame the face', shawl: 'the shawl collar frames the face', scarf: 'a scarf frames the face' }[t.frame];
     const pats = t.pats.filter(function (x) { return x !== 'solid'; }).map(function (x) { return VP.byId[x].name.toLowerCase(); });
     return t.name + ': ' + (fr || (t.frame === null && G.byKey.shirt.kinds.concat(G.byKey.mid.kinds).indexOf(t) >= 0 ? 'no collar, so something else must frame the face' : 'not a frame for the face')) +
@@ -505,7 +510,7 @@
     if (t.metal) { x.metal = x.metal || 'silver'; x.hex = G.metalBy[x.metal].hex; }   // a lapel pin is its metal
     else if (was.metal) x.hex = '#f7f6f2';                           // from a pin back to a flower: a white carnation
     if (t.twoTone && !x.hex2) x.hex2 = '#f2efe6';                     // spectators start brown and white
-    if (t.buttons && !x.buttons) x.buttons = 'gold';                  // a blazer's classic buttons
+    if (t.buttons && !x.buttons) x.buttons = 'silver';                // silver, so a new blazer agrees with the default steel watch
     return notes;
   }
   function keepAndFix(k) {
@@ -1174,7 +1179,7 @@
     const kd = G.kind(k, x);
     if (kd.twoTone && x.hex2) return ' and ' + spec2Name(x.hex2);
     if (kd.metal) return ' (' + G.metalBy[x.metal || 'silver'].name.toLowerCase() + ')';
-    if (kd.buttons) return ', ' + (G.BUTTONS.find(function (b) { return b[0] === (x.buttons || 'gold'); }) || [0, ''])[1].toLowerCase() + ' buttons';
+    if (kd.buttons) return ', ' + (G.BUTTONS.find(function (b) { return b[0] === (x.buttons || 'silver'); }) || [0, ''])[1].toLowerCase() + ' buttons';
     return '';
   }
   function printCard() {

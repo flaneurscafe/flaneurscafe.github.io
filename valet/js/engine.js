@@ -443,10 +443,12 @@
       : { id: 'face', score: 1, slots: face, text: 'Against your skin: everything near the face is tier 1 or 2 for you.' });
 
     // A light-dark step at the face (Outfit Check, question 2), in proportion to the face: the layer
-    // next to the neck against the layer that frames it, the one directly over it (a jacket, else a
-    // knit or waistcoat, else a coat worn straight over the shirt, else a scarf or tie). A hat or a coat over a jacket is
-    // further out, so it neither rescues a flat shirt and jacket nor is blamed for a strong step.
-    const over = ['jacket', 'mid', 'coat', 'scarf', 'tie'].find(function (k) { return L[k]; });   // without a layer over it, a scarf or tie is the second line
+    // next to the neck against the one that meets it at the neck. In the order they sit there: a
+    // scarf, which lies against the collar whatever is worn over the shirt; else a knit or waistcoat,
+    // which is put on before the jacket; else the jacket; else a coat worn straight over the shirt;
+    // else a tie. A hat, or a coat over a jacket, is further out, so it neither rescues a flat shirt
+    // and jacket nor is blamed for a strong step.
+    const over = ['scarf', 'mid', 'jacket', 'coat', 'tie'].find(function (k) { return L[k]; });
     if (L.shirt && over) {
       const best = Math.abs(lum(L.shirt.mean) - lum(L[over].mean)), pair = ['shirt', over];
       if (best < lo) add({ id: 'step', score: 0.35, slots: [over, 'shirt'], level: 'A/B',
@@ -966,7 +968,14 @@
     const occ = o.occasion || 'smart', formal = occ === 'business' || occ === 'evening';
     const occWord = { casual: 'casual', smart: 'smart casual', business: 'business', evening: 'evening' }[occ];
     if (L.coat) {
-      if (formal && F.coat <= 1) add({ id: 'coat', group: 'formality', score: 0.65, slots: ['coat'],
+      // Against what it is worn over: the most formal of the jacket and the knit. The general rule
+      // calls four steps apart a mistake (wholeChecks); a coat comes off indoors and lives in the
+      // register of the street, so it gets one step more: five apart, a parka over a worsted suit.
+      const under = ['jacket', 'mid'].filter(function (k) { return L[k] && F[k] != null; }).sort(function (a, b) { return F[b] - F[a]; })[0];
+      if (F.coat != null && under && F[under] - F.coat >= 5) add({ id: 'coat', group: 'formality', score: 0.65, slots: ['coat'],
+        text: 'A ' + K.coat.name.toLowerCase() + ' over ' + what(under) + ': the coat is sportswear and what it covers is the most formal tailoring, five steps apart. An overcoat, a covert coat or a trench coat goes over tailoring like this.',
+        fixes: [{ label: 'An overcoat instead', slot: 'coat', kind: 'overcoat' }, { label: 'Take off the coat', slot: 'coat', on: false }] });
+      else if (formal && F.coat <= 1) add({ id: 'coat', group: 'formality', score: 0.65, slots: ['coat'],
         text: 'A ' + K.coat.name.toLowerCase() + ' is casual outerwear; over ' + occWord + ' dress it sits two steps below the rest. An overcoat, a covert coat or a trench coat is in the same register.',
         fixes: [{ label: 'An overcoat instead', slot: 'coat', kind: 'overcoat' }, { label: 'Take off the coat', slot: 'coat', on: false }] });
       else add({ id: 'coat', group: 'formality', score: 1, slots: [],
@@ -998,7 +1007,6 @@
   function accessoryChecks(acc, L, K, p, add, nm, occasion, o) {
     const A = G.ACCESSORIES, M = G.metalBy, worn = A.filter(function (a) { return acc[a.key] && acc[a.key].on; });
     const ad = function (c) { c.group = 'accessory'; c.slots = c.slots || []; return add(c); };
-    if (!worn.length) return;
     const glassMetal = p.glasses === 'gold' ? 'gold' : p.glasses === 'silver' ? 'silver' : null;
     const cool = p.lean < 0.35, warm = p.lean > 0.65;
     worn.forEach(function (a) {
@@ -1009,9 +1017,9 @@
     // matching: everything but the ring and the face pieces
     const match = worn.filter(function (a) { return a.key !== 'ring' && !a.face && acc[a.key].metal !== 'twotone' && acc[a.key].metal !== 'black'; });
     // metal blazer buttons are worn metal too
-    const btn = o && o.jacket && K.jacket && K.jacket.buttons ? G.BUTTONS.find(function (b) { return b[0] === (o.jacket.buttons || 'gold'); }) : null;
-    if (btn && btn[2] && match.length) match.push({ key: 'buttons', name: 'Blazer buttons', metals: [], btn: btn[2] });
-    if (o && o.boutonniere && K.boutonniere && K.boutonniere.id === 'pin' && match.length) match.push({ key: 'pin', name: 'Lapel pin', metals: [], btn: o.boutonniere.metal || 'silver' });
+    const btn = o && o.jacket && K.jacket && K.jacket.buttons ? G.BUTTONS.find(function (b) { return b[0] === (o.jacket.buttons || 'silver'); }) : null;
+    if (btn && btn[2]) match.push({ key: 'buttons', name: 'Blazer buttons', btn: btn[2], slot: 'jacket' });   // checked even with no watch or belt
+    if (o && o.boutonniere && K.boutonniere && K.boutonniere.id === 'pin') match.push({ key: 'pin', name: 'Lapel pin', btn: o.boutonniere.metal || 'silver', slot: 'boutonniere' });
     const metalOf = function (a) { return a.btn || acc[a.key].metal; };
     const fam = function (m) { return M[m] && M[m].warm ? 'warm' : 'cool'; };
     const fams = match.map(function (a) { return fam(metalOf(a)); }).filter(function (x, i, arr) { return arr.indexOf(x) === i; });
@@ -1022,7 +1030,13 @@
       const odd = match.filter(function (a) { return (fam(metalOf(a)) === 'warm') !== keepWarm; });
       const to = keepWarm ? 'gold' : 'silver';
       ad({ id: 'metal', score: 0.5, text: 'Mixed metals: ' + desc(match) + '. Keep one metal through the outfit; a two-tone watch is the one exception.',
-        fixes: odd.filter(function (a) { return a.metals.indexOf(to) >= 0; }).slice(0, 2).map(function (a) { return { label: 'Make the ' + a.name.toLowerCase() + ' ' + (to === 'gold' ? 'gold' : 'silver'), acc: a.key, set: { metal: to } }; }) });
+        fixes: odd.map(function (a) {
+          const label = 'Make the ' + a.name.toLowerCase() + ' ' + to;
+          // a worn accessory, the blazer's buttons or the lapel pin: each is set where it lives
+          if (a.key === 'buttons') return { label: label, slot: 'jacket', set: { buttons: to } };
+          if (a.key === 'pin') return { label: label, slot: 'boutonniere', set: { metal: to, hex: M[to].hex } };
+          return a.metals.indexOf(to) >= 0 ? { label: label, acc: a.key, set: { metal: to } } : null;
+        }).filter(Boolean).concat(odd.some(function (a) { return a.key === 'buttons'; }) ? [{ label: 'Horn buttons, which are not metal', slot: 'jacket', set: { buttons: 'horn' } }] : []).slice(0, 2) });
     }
     else if (match.length) {
       const f = fams[0];
@@ -1165,7 +1179,7 @@
   function verdict(checks) {
     const fails = checks.filter(function (c) { return c.score < 0.5; }).length, warns = checks.filter(function (c) { return c.score >= 0.5 && c.score < 0.85; }).length;
     const NAMES = { face: 'a colour at the face', step: 'the light-dark step', temp: 'mixed temperature', harmony: 'colours that compete', near: 'a near match', blur: 'top and bottom blur',
-      tie: 'tie against shirt', neck: 'a tie with no collar', frame: 'nothing frames the face', socks: 'the socks', dose: 'one colour head to toe', square: 'the pocket square', acc: 'an accessory without what it needs', metal: 'the metal', asize: 'the size of an accessory', sheen: 'a shiny cloth', formal: 'pieces of different formality', occasion: 'the occasion', orphan: 'a suit jacket with the wrong trousers', shoe: 'the shoes', season: 'the season', budget: 'too many statements', pcount: 'too many patterns', anchor: 'no plain layer', pscale: 'patterns at the same scale', pshare: 'patterns with no shared colour', pmed: 'two medium patterns', psize: 'pattern size', pbusy: 'too busy' };
+      tie: 'tie against shirt', bout: 'a buttonhole without lapels', pperiod: 'cuts from different periods', neck: 'a tie with no collar', frame: 'nothing frames the face', socks: 'the socks', dose: 'one colour head to toe', square: 'the pocket square', acc: 'an accessory without what it needs', metal: 'the metal', asize: 'the size of an accessory', sheen: 'a shiny cloth', formal: 'pieces of different formality', occasion: 'the occasion', orphan: 'a suit jacket with the wrong trousers', shoe: 'the shoes', season: 'the season', budget: 'too many statements', pcount: 'too many patterns', anchor: 'no plain layer', pscale: 'patterns at the same scale', pshare: 'patterns with no shared colour', pmed: 'two medium patterns', psize: 'pattern size', pbusy: 'too busy' };
     const what = checks.filter(function (c) { return c.score < 0.5; }).map(function (c) { return NAMES[c.id] || c.id; })
       .filter(function (x, i, arr) { return arr.indexOf(x) === i; });
     if (fails >= 2) return { level: 'bad', title: 'Start again', text: 'Fails on ' + what.join(', ') + '. Fix the first one below; the others often follow.', fails: fails, warns: warns };
