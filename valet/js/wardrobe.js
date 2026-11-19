@@ -480,8 +480,10 @@
     if (k === 'tie' && !kindOf('shirt').collar) { piece('tie').on = false; return 'A ' + lname('shirt') + ' has no collar for neckwear; add a scarf instead.'; }
     return '';
   }
-  function setKind(k, id) {
-    snapshot();
+  function setKind(k, id) { snapshot(); commit(applyKind(k, id).join(' ')); }
+  /* A change of garment type with what follows from it: the cloth and pattern brought in line, and the
+     pieces that depend on it. Used by the type buttons and by fixes that change a type. */
+  function applyKind(k, id) {
     const x = piece(k), t = G.byKey[k].kinds.find(function (q) { return q.id === id; }), notes = [t.name + ' chosen.'];
     x.kind = id;
     if (x.cloth && (!t.cloths || t.cloths.indexOf(x.cloth) < 0)) { x.cloth = t.cloths ? t.cloths[0] : undefined; }
@@ -493,7 +495,7 @@
     if (k === 'jacket' && !t.pocket && worn('square')) { piece('square').on = false; notes.push('Took off the pocket square: it needs a breast pocket.'); }
     if (t.twoTone && !x.hex2) x.hex2 = '#f2efe6';                     // spectators start brown and white
     if (t.buttons && !x.buttons) x.buttons = 'gold';                  // a blazer's classic buttons
-    commit(notes.join(' '));
+    return notes;
   }
   function keepAndFix(k) {
     const a = api.analysis(), before = engineOutfit(), r = E.rescue(before, a, k, S().outfit.locks);
@@ -931,10 +933,12 @@
   function fixesFor(c, a) {
     if (c.score >= 0.85) return [];
     const locks = S().outfit.locks, out = [];
-    if (c.fixes) return c.fixes.slice(0, 2).map(function (f) {
+    // a fix never touches a piece you have locked (one you own)
+    if (c.fixes) return c.fixes.filter(function (f) { return !(f.slot && locks[f.slot]); }).slice(0, 2).map(function (f) {
       return { label: f.label, run: function () {
         snapshot();
         if (f.acc) Object.assign(S().outfit.acc[f.acc], f.set);
+        if (f.slot && f.kind) applyKind(f.slot, f.kind);
         if (f.slot && f.on === false) piece(f.slot).on = false;
         if (f.slot && f.pat) piece(f.slot).pat = f.pat;
         if (f.slot && f.set) Object.assign(piece(f.slot), f.set);
@@ -1087,7 +1091,7 @@
       const t = E.scoreColour(VP.mean(x.hex, x.pat), a).tier;
       return '<tr><td class="oc-sw"><i style="' + chipStyle(x) + '"></i></td>' +
         '<td><strong>' + esc(p.label) + '</strong>' + (p.kinds.length > 1 ? '<span class="oc-pos">' + esc(p.position) + '</span>' : '') + '</td>' +
-        '<td>' + esc(api.nameOf(x.hex)) + '</td><td>' + (c ? esc(c.name) : '') + '</td><td>' + esc(patLabel(x)) + '</td>' +
+        '<td>' + esc(api.nameOf(x.hex) + pieceExtra(p.key, x)) + '</td><td>' + (c ? esc(c.name) : '') + '</td><td>' + esc(patLabel(x)) + '</td>' +
         '<td class="oc-t">T' + t + '</td>' +
         '<td class="oc-st">' + (st && st.state !== 'ok' ? (st.state === 'out' ? '✕ ' : '! ') + esc(firstSentence(st.why)) : '✓') + '</td></tr>';
     }).join('');
@@ -1126,7 +1130,7 @@
       const aw = analysisFor(w, a), o = engineOutfit(w.outfit), checks = E.checkOutfit(o, aw), v = E.verdict(checks), hd = headline(v, E.skinClashes(o, aw));
       const rows = PIECES.filter(function (p) { return o[p.key]; }).map(function (p) {
         const x = w.outfit[p.key], kd = G.kind(p.key, x), c = G.cloth(p.key, x), t = E.scoreColour(VP.mean(x.hex, x.pat), aw).tier;
-        const extra = kd.twoTone && x.hex2 ? ' and ' + spec2Name(x.hex2) : kd.buttons ? ', ' + (G.BUTTONS.find(function (b) { return b[0] === (x.buttons || 'gold'); }) || [0, ''])[1].toLowerCase() + ' buttons' : '';
+        const extra = pieceExtra(p.key, x);
         return '<tr><td class="oc-sw"><i style="' + chipStyle(x) + '"></i></td><td><strong>' + esc(kd.name) + '</strong></td><td>' + esc(api.nameOf(x.hex) + extra) + '</td><td>' + (c ? esc(c.name) : '') + '</td><td>' + esc(patLabel(x)) + '</td><td class="oc-t">T' + t + '</td></tr>';
       }).join('');
       const acc = w.outfit.acc || {}, accs = G.ACCESSORIES.filter(function (d) { return acc[d.key] && acc[d.key].on; }).map(function (d) {
@@ -1162,6 +1166,13 @@
     window.print();
   }
 
+  /* What a piece's colour name leaves out: a spectator's second colour, a blazer's buttons. */
+  function pieceExtra(k, x) {
+    const kd = G.kind(k, x);
+    if (kd.twoTone && x.hex2) return ' and ' + spec2Name(x.hex2);
+    if (kd.buttons) return ', ' + (G.BUTTONS.find(function (b) { return b[0] === (x.buttons || 'gold'); }) || [0, ''])[1].toLowerCase() + ' buttons';
+    return '';
+  }
   function printCard() {
     const card = $('#printCard'); if (!card) return;
     card.innerHTML = buildCard(); card.classList.add('outfit');

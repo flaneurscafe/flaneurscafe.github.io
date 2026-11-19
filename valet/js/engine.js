@@ -858,8 +858,9 @@
     }
     // Season: cloth weight against the season switch, and two seasons in one outfit.
     const season = p.season === 'summer' ? 'summer' : 'winter', other = season === 'summer' ? 'winter' : 'summer';
-    const wrong = Object.keys(L).filter(function (k) { return C[k] && C[k].season === other; });
-    const sum = Object.keys(L).filter(function (k) { return C[k] && C[k].season === 'summer'; }), win = Object.keys(L).filter(function (k) { return C[k] && C[k].season === 'winter'; });
+    const seasonal = Object.keys(L).filter(function (k) { return k !== 'gloves'; });     // gloves have their own rule (outerwear)
+    const wrong = seasonal.filter(function (k) { return C[k] && C[k].season === other; });
+    const sum = seasonal.filter(function (k) { return C[k] && C[k].season === 'summer'; }), win = seasonal.filter(function (k) { return C[k] && C[k].season === 'winter'; });
     if (sum.length && win.length) add({ id: 'season', group: 'season', score: 0.55, slots: [sum[0]],
       text: what(sum[0]) + ' and ' + what(win[0]) + ' belong to different seasons: summer and winter cloth in one outfit look as if one of them was a mistake.' });
     else if (wrong.length) add({ id: 'season', group: 'season', score: 0.65, slots: wrong,
@@ -966,28 +967,50 @@
     const dE = function (a, b) { return VC.deltaE2000(VC.hexToLab(a), VC.hexToLab(b)); };
     if (L.coat) {
       if (formal && F.coat <= 1) add({ id: 'coat', group: 'formality', score: 0.65, slots: ['coat'],
-        text: 'A ' + K.coat.name.toLowerCase() + ' over ' + (occ === 'evening' ? 'evening' : 'business') + ' dress looks like an afterthought; an overcoat, a covert coat or a trench coat belongs with it.' });
+        text: 'A ' + K.coat.name.toLowerCase() + ' over ' + (occ === 'evening' ? 'evening' : 'business') + ' dress looks like an afterthought; an overcoat, a covert coat or a trench coat belongs with it.',
+        fixes: [{ label: 'An overcoat instead', slot: 'coat', kind: 'overcoat' }, { label: 'Take off the coat', slot: 'coat', on: false }] });
       else add({ id: 'coat', group: 'formality', score: 1, slots: [],
         text: 'Coat: a ' + K.coat.name.toLowerCase() + ', in keeping with the occasion.' });
     }
     if (L.gloves) {
       const leather = K.gloves.id !== 'knit';
       if (p.season === 'summer') add({ id: 'gloves', group: 'season', score: 0.6, slots: ['gloves'],
-        text: 'Gloves in summer: they belong to cold weather.' });
+        text: 'Gloves in summer: they belong to cold weather.', fixes: [{ label: 'Take off the gloves', slot: 'gloves', on: false }] });
       if (!leather && formal) add({ id: 'gloves', group: 'formality', score: 0.65, slots: ['gloves'],
-        text: 'Knitted gloves with ' + (occ === 'evening' ? 'evening' : 'business') + ' dress: leather or suede belongs with it.' });
+        text: 'Knitted gloves with ' + (occ === 'evening' ? 'evening' : 'business') + ' dress: leather or suede belongs with it.', fixes: [{ label: 'Leather gloves instead', slot: 'gloves', kind: 'leather' }] });
+      // black or brown leather is a family (as for the watch strap): across families it never matches
+      const fam = function (hex) {
+        const lab = VC.hexToLab(hex), c = Math.hypot(lab[1], lab[2]), h = (Math.atan2(lab[2], lab[1]) * 180 / Math.PI + 360) % 360;
+        return lab[0] < 24 && c < 10 ? 'black' : (h > 20 && h < 95 && c >= 8) ? 'brown' : null;
+      };
       const ref = [L.shoes && ['shoes', L.shoes.mean], L.coat && ['coat', L.coat.mean]].filter(Boolean);
-      const near = ref.filter(function (r) { return dE(L.gloves.mean, r[1]) < 20; });
+      const near = ref.filter(function (r) {
+        const a = fam(L.gloves.mean), b = fam(r[1]);
+        return a && b && r[0] === 'shoes' ? a === b && dE(L.gloves.mean, r[1]) < 25 : dE(L.gloves.mean, r[1]) < 15;
+      });
       if (leather && ref.length && !near.length) add({ id: 'gloves', group: 'colour', score: 0.75, slots: ['gloves'],
-        text: 'Gloves usually follow the shoes or the coat: brown with brown shoes, black with black, or the coat\'s own tone. These match neither.' });
+        text: 'Gloves usually follow the shoes or the coat: brown with brown shoes, black with black, or the coat\'s own tone. These match neither.',
+        fixes: L.shoes ? [{ label: 'Gloves in the shoes\' colour', slot: 'gloves', set: { hex: L.shoes.hex } }] : [] });
       else if (leather && near.length) add({ id: 'gloves', group: 'colour', score: 1, slots: [],
         text: 'Gloves tone with the ' + near.map(function (r) { return r[0]; }).join(' and ') + '.' });
     }
+    // A hat by its type against the occasion, a step of grace either side (B): a homburg or bowler with
+    // casual dress, a baseball cap or beanie with business or evening dress.
+    if (L.hat && K.hat.f != null) {
+      const r = (G.OCCASIONS.find(function (x) { return x.id === occ; }) || G.OCCASIONS[1]).range, hn = K.hat.name.toLowerCase();
+      const occWord = { casual: 'casual', smart: 'smart casual', business: 'business', evening: 'evening' }[occ];
+      if (K.hat.f > r[1] + 1) add({ id: 'hatf', group: 'formality', score: 0.65, slots: ['hat'],
+        text: 'A ' + hn + ' is a formal town hat; with ' + occWord + ' dress it looks borrowed. A flat cap, a trilby or no hat suits it better.',
+        fixes: [{ label: 'A trilby instead', slot: 'hat', kind: 'trilby' }, { label: 'Take off the hat', slot: 'hat', on: false }] });
+      else if (K.hat.f < r[0] - 1) add({ id: 'hatf', group: 'formality', score: 0.55, slots: ['hat'],
+        text: 'A ' + hn + ' is ' + (K.hat.f <= 0 ? 'sportswear' : 'casual') + '; with ' + occWord + ' dress go bareheaded, or wear a fedora or a homburg.',
+        fixes: [{ label: 'Take off the hat', slot: 'hat', on: false }, { label: 'A fedora instead', slot: 'hat', kind: 'fedora' }] });
+    }
     if (L.shoes && K.shoes.id === 'spectator') {
       if (p.season !== 'summer') add({ id: 'spectator', group: 'season', score: 0.7, slots: ['shoes'],
-        text: 'Spectators are a summer shoe; in winter they look out of season.' });
+        text: 'Spectators are a summer shoe; in winter they look out of season.', fixes: [{ label: 'Loafers instead', slot: 'shoes', kind: 'loafer' }] });
       if (formal) add({ id: 'spectator', group: 'formality', score: 0.6, slots: ['shoes'],
-        text: 'Spectators are daytime and smart casual, a sporting shoe in origin; not for business or evening.' });
+        text: 'Spectators are daytime and smart casual, a sporting shoe in origin; not for business or evening.', fixes: [{ label: 'Oxfords instead', slot: 'shoes', kind: 'oxford' }] });
     }
   }
 
@@ -1120,19 +1143,19 @@
         return lab[0] < 24 && c < 10 ? 'black' : (h > 20 && h < 95 && c >= 8) ? 'brown' : null;
       };
       const notes = [];
-      if (w.display === 'digital' && formal) notes.push([0.55, 'A digital display reads as sport or casual; with ' + (eve ? 'evening' : 'business') + ' dress an analogue watch belongs.']);
-      if (strap.id === 'rubber' && formal) notes.push([0.55, 'A rubber strap is sports equipment; with ' + (eve ? 'evening' : 'business') + ' dress wear leather or a bracelet.']);
-      if (strap.id === 'fabric' && eve) notes.push([0.6, 'A fabric strap is a daytime, casual strap; for the evening, plain black or dark leather.']);
-      else if (strap.id === 'fabric' && formal) notes.push([0.8, 'A fabric strap with business dress is relaxed; leather or a bracelet is the usual choice.']);
-      if (w.metal === 'black' && formal) notes.push([0.75, 'A black coated case reads as a sports watch; steel or gold suits ' + (eve ? 'evening' : 'business') + ' dress.']);
-      if (eve && w.dial && ['#f2f0ea', '#e6dbc4', '#c4c7cb', '#17181a'].indexOf(w.dial) < 0) notes.push([0.8, 'For the evening the classic dial is plain: white, cream, silver or black.']);
+      if (w.display === 'digital' && formal) notes.push([0.55, 'A digital display reads as sport or casual; with ' + (eve ? 'evening' : 'business') + ' dress an analogue watch belongs.', [{ label: 'An analogue watch', acc: 'watch', set: { display: 'analogue' } }]]);
+      if (strap.id === 'rubber' && formal) notes.push([0.55, 'A rubber strap is sports equipment; with ' + (eve ? 'evening' : 'business') + ' dress wear leather or a bracelet.', [{ label: 'A leather strap', acc: 'watch', set: { strap: 'leather' } }]]);
+      if (strap.id === 'fabric' && eve) notes.push([0.6, 'A fabric strap is a daytime, casual strap; for the evening, plain black or dark leather.', [{ label: 'A black leather strap', acc: 'watch', set: { strap: 'leather', strapHex: '#151515' } }]]);
+      else if (strap.id === 'fabric' && formal) notes.push([0.8, 'A fabric strap with business dress is relaxed; leather or a bracelet is the usual choice.', [{ label: 'A leather strap', acc: 'watch', set: { strap: 'leather' } }]]);
+      if (w.metal === 'black' && formal) notes.push([0.75, 'A black coated case reads as a sports watch; steel or gold suits ' + (eve ? 'evening' : 'business') + ' dress.', [{ label: 'A steel case', acc: 'watch', set: { metal: 'silver' } }]]);
+      if (eve && w.dial && ['#f2f0ea', '#e6dbc4', '#c4c7cb', '#17181a'].indexOf(w.dial) < 0) notes.push([0.8, 'For the evening the classic dial is plain: white, cream, silver or black.', [{ label: 'A white dial', acc: 'watch', set: { dial: '#f2f0ea' } }]]);
       // a leather strap is the third leather after the shoes and belt: one family, black or brown
       if (strap.leather && w.strapHex && L.shoes && C0(o, 'shoes')) {
         const sk = kindOfLeather(L.shoes.hex), wk = kindOfLeather(w.strapHex);
-        if (sk && wk && sk !== wk) notes.push([0.7, 'A ' + wk + ' strap with ' + sk + ' shoes: strap, belt and shoes are the leathers of an outfit and stay in one family, black with black, brown with brown.']);
+        if (sk && wk && sk !== wk) notes.push([0.7, 'A ' + wk + ' strap with ' + sk + ' shoes: strap, belt and shoes are the leathers of an outfit and stay in one family, black with black, brown with brown.', [{ label: 'A ' + sk + ' strap', acc: 'watch', set: { strapHex: sk === 'black' ? '#151515' : '#6e4227' } }]]);
         else if (sk && wk) ok('watch', 'Watch strap: ' + wk + ' leather, with ' + sk + ' shoes.');
       }
-      notes.forEach(function (n) { ad({ id: 'wstyle', score: n[0], acc: 'watch', text: n[1] }); });
+      notes.forEach(function (n) { ad({ id: 'wstyle', score: n[0], acc: 'watch', text: n[1], fixes: n[2] || [] }); });
       if (!notes.length && formal) ok('watch', 'Watch: ' + (strap.id === 'bracelet' ? 'a metal bracelet' : 'a ' + strap.name.toLowerCase() + ' strap') + (w.display === 'digital' ? '' : ' and an analogue dial') + ', right for ' + (eve ? 'the evening' : 'business') + '.');
     }
     if (has('cufflinks')) {
@@ -1208,6 +1231,11 @@
     if (slot === 'jacket' && !neutral) c += 0.15;
     if (slot === 'trousers') c += (t === 4 ? 0.35 : 0) + (neutral ? 0 : 0.2) + (l > 85 ? 0.25 : 0);
     if (slot === 'shoes') c += (name && SHOE_COLOURS.indexOf(name) < 0 ? 2 : 0) + (l > 55 && name !== 'White' ? 0.6 : 0);
+    // coats, gloves and hats (B): a coat is a neutral and not pale; gloves are leather colours, like
+    // shoes; a hat is a neutral, a straw hat may be light
+    if (slot === 'coat') c += (neutral ? 0 : 0.45) + (l > 75 ? 0.4 : 0);
+    if (slot === 'gloves') c += (name && SHOE_COLOURS.concat(['Mid grey', 'Grey', 'Camel', 'Tan']).indexOf(name) < 0 ? 1.2 : 0);
+    if (slot === 'hat') c += (neutral ? 0 : 0.3) + (l > 75 && kindId !== 'panama' && kindId !== 'boater' ? 0.4 : 0);
     return c;
   }
 
