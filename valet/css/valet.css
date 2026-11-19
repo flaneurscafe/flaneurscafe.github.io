@@ -1116,3 +1116,11 @@ button.gl-c.pk-no { text-decoration: line-through; text-decoration-color: var(--
 .print-card .wd-acc, .print-card .wd-saved { font-size: 8.5pt; color: #444; margin: 3pt 0 0; }
 .print-card .wd-notes { margin: 3pt 0 0; padding-left: 12pt; font-size: 8.5pt; }
 .print-card .wd-notes { list-style: none; padding-left: 0; }
+/* each season's occasion groups side by side on a wide screen */
+.dr-occs { display: grid; grid-template-columns: repeat(auto-fill, minmax(19rem, 1fr)); gap: 0.4rem 1.2rem; align-items: start; }
+.dr-occs .dr-list { grid-template-columns: 1fr; }
+.dr-occgroup .dr-occ { margin-top: 0.4rem; }
+@media (max-width: 860px) { .dr-occs { grid-template-columns: 1fr; } }
+/* the watch's strap label matches the accessory fields above it */
+.w-more > label { font: 0.8rem var(--sans); display: flex; align-items: center; gap: 0.4rem; }
+@media (max-width: 860px) { .kind-row .kind { min-height: 38px; padding-top: 0.35rem; padding-bottom: 0.35rem; } }

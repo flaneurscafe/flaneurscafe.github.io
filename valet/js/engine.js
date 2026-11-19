@@ -424,7 +424,8 @@
     const L = {}, worn = SLOTS.filter(function (k) { return o[k]; });
     worn.forEach(function (k) { L[k] = look(o[k]); });
     const face = FACE.filter(function (k) { return L[k]; });
-    const near = G.NEAR.filter(function (k) { return L[k]; });      // the face layers and the pocket square
+    // the face layers, the pocket square and a buttonhole flower; a lapel pin is metal, judged with the metals
+    const near = G.NEAR.filter(function (k) { return L[k] && !(k === 'boutonniere' && o[k].kind === 'pin'); });
     const out = [];
     const add = function (c) { c.group = c.group || 'colour'; c.level = c.level || 'B'; out.push(c); return c; };
     // Every position has a type, worn or not, so a rule can ask what is (or would be) there.
@@ -516,7 +517,7 @@
     const pairs = [['jacket', 'trousers'], ['mid', 'jacket'], ['shirt', 'mid'], ['tie', 'mid'], ['shirt', 'jacket'], ['shirt', 'tie'], ['tie', 'jacket'],
       ['mid', 'trousers'], ['jacket', 'shoes'], ['trousers', 'shoes'], ['shirt', 'trousers'],
       ['scarf', 'jacket'], ['scarf', 'mid'], ['scarf', 'shirt'], ['tie', 'scarf'],
-      ['coat', 'jacket'], ['coat', 'mid'], ['coat', 'trousers'], ['scarf', 'coat'], ['coat', 'shoes']];
+      ['coat', 'jacket'], ['coat', 'mid'], ['coat', 'trousers'], ['scarf', 'coat'], ['coat', 'shoes'], ['boutonniere', 'tie']];
     let suitText = null;
     pairs.forEach(function (pr) {
       if (!L[pr[0]] || !L[pr[1]]) return;
@@ -901,7 +902,7 @@
     const out = [];
     if (!p) return out;
     G.NEAR.forEach(function (k) {
-      if (!o[k]) return;
+      if (!o[k] || (k === 'boutonniere' && o[k].kind === 'pin')) return;     // a lapel pin is judged as metal
       const L = look(o[k]), t = scoreCached(L.mean, p).tier;
       if (t <= 2) return;
       out.push({ slot: k, name: L.name, piece: G.kind(k, o[k]).name.toLowerCase(), tier: t, hex: L.mean,
@@ -1006,6 +1007,44 @@
         text: 'A ' + hn + ' is ' + (K.hat.f <= 0 ? 'sportswear' : 'casual') + '; with ' + occWord + ' dress go bareheaded, or wear a fedora or a homburg.',
         fixes: [{ label: 'Take off the hat', slot: 'hat', on: false }, { label: 'A fedora instead', slot: 'hat', kind: 'fedora' }] });
     }
+    // The lapel buttonhole (B, after the etiquette guides: Gentleman's Gazette, Art of Manliness, Real Men Real Style).
+    if (L.boutonniere) {
+      const lapel = (L.jacket && K.jacket.frame === 'lapel') || (L.coat && K.coat.frame === 'lapel');
+      const bn = K.boutonniere.id === 'pin' ? 'lapel pin' : 'flower in the lapel';
+      if (!lapel) add({ id: 'bout', group: 'formality', score: 0.2, slots: ['boutonniere'],
+        text: 'A ' + bn + ' needs a lapel with a buttonhole: a tailored jacket, a blazer or a coat with lapels.', fixes: [{ label: 'Take it off', slot: 'boutonniere', on: false }] });
+      else if (occ === 'casual' && K.boutonniere.id !== 'pin') add({ id: 'bout', group: 'formality', score: 0.7, slots: ['boutonniere'],
+        text: 'A flower in the lapel is for an occasion (a wedding, an event, a summer party); on a casual day it reads as costume.', fixes: [{ label: 'Take it off', slot: 'boutonniere', on: false }] });
+      // with a pocket square: allowed, but not identical, and not two strong colours on one chest
+      if (L.square && K.boutonniere.id !== 'pin') {
+        const c1 = VC.labToLch(VC.hexToLab(L.boutonniere.mean))[1], c2 = VC.labToLch(VC.hexToLab(L.square.mean))[1];
+        if (dE(L.boutonniere.mean, L.square.mean) < 5) add({ id: 'bout', group: 'colour', score: 0.8, slots: ['boutonniere'],
+          text: 'The flower and the pocket square are the same colour: they read as a set. Harmonious, not identical: let them share a tone, not a colour.' });
+        else if (c1 > 25 && c2 > 25) add({ id: 'bout', group: 'colour', score: 0.75, slots: ['square'],
+          text: 'A strong flower and a strong pocket square put two colours on one chest. Let one be pale: a white square, or a white flower.',
+          fixes: [{ label: 'A white pocket square', slot: 'square', set: { hex: '#f7f6f2', pat: { type: 'solid' } } }] });
+      }
+    }
+    // Accents (B): the decorative small pieces, beyond the working basics (watch, belt, glasses). Writers
+    // agree on restraint without agreeing on a number; the limits here are Valet's working values: two
+    // accents by day, three in the evening (cufflinks, a white square and a flower are the black-tie trio).
+    {
+      const acc = o.acc || {}, list = [];
+      if (L.square) list.push({ n: 'the pocket square', fix: { label: 'Take off the pocket square', slot: 'square', on: false } });
+      if (L.boutonniere) list.push({ n: K.boutonniere.id === 'pin' ? 'the lapel pin' : 'the flower', fix: { label: 'Take off the ' + (K.boutonniere.id === 'pin' ? 'lapel pin' : 'flower'), slot: 'boutonniere', on: false } });
+      [['tiebar', 'the tie bar'], ['ring', 'the ring'], ['earring', 'the earring'], ['cufflinks', 'the cufflinks']].forEach(function (a) {
+        if (acc[a[0]] && acc[a[0]].on) list.push({ n: a[1], fix: { label: 'Take off ' + a[1], acc: a[0], set: { on: false } } });
+      });
+      const max = occ === 'evening' ? 3 : 2;
+      if (list.length > max) {
+        // suggest the least needed first: the tie bar, a ring, the earring, then the lapel; cufflinks last (double cuffs need them)
+        const order = ['the tie bar', 'the ring', 'the earring', 'the lapel pin', 'the flower', 'the pocket square', 'the cufflinks'];
+        const fixes = list.slice().sort(function (a, b) { return order.indexOf(a.n) - order.indexOf(b.n); }).slice(0, 2).map(function (x) { return x.fix; });
+        add({ id: 'accents', group: 'accessory', score: 0.75, slots: [],
+          text: list.length + ' accents (' + list.map(function (x) { return x.n.replace(/^the /, ''); }).join(', ') + '): each small piece is a point the eye goes to, and ' + list.length + ' compete. ' +
+            (occ === 'evening' ? 'Three is the classic limit for the evening' : 'One or two is the classic limit by day') + '; let the rest go.', fixes: fixes });
+      }
+    }
     if (L.shoes && K.shoes.id === 'spectator') {
       if (p.season !== 'summer') add({ id: 'spectator', group: 'season', score: 0.7, slots: ['shoes'],
         text: 'Spectators are a summer shoe; in winter they look out of season.', fixes: [{ label: 'Loafers instead', slot: 'shoes', kind: 'loafer' }] });
@@ -1041,6 +1080,7 @@
     // metal blazer buttons are worn metal too
     const btn = o && o.jacket && K.jacket && K.jacket.buttons ? G.BUTTONS.find(function (b) { return b[0] === (o.jacket.buttons || 'gold'); }) : null;
     if (btn && btn[2] && match.length) match.push({ key: 'buttons', name: 'Blazer buttons', metals: [], btn: btn[2] });
+    if (o && o.boutonniere && K.boutonniere && K.boutonniere.id === 'pin' && match.length) match.push({ key: 'pin', name: 'Lapel pin', metals: [], btn: o.boutonniere.metal || 'silver' });
     const metalOf = function (a) { return a.btn || acc[a.key].metal; };
     const fam = function (m) { return M[m] && M[m].warm ? 'warm' : 'cool'; };
     const fams = match.map(function (a) { return fam(metalOf(a)); }).filter(function (x, i, arr) { return arr.indexOf(x) === i; });

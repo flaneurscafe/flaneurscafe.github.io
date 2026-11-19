@@ -40,7 +40,7 @@
     const out = {};
     PIECES.forEach(function (p) {
       const x = o[p.key];
-      out[p.key] = x.on === false ? null : { hex: x.hex, name: api.nameOf(x.hex), kind: x.kind, cloth: x.cloth, band: x.band, brim: x.brim, pat: x.pat || { type: 'solid' }, rise: x.rise, length: x.length, hex2: x.hex2, buttons: x.buttons };
+      out[p.key] = x.on === false ? null : { hex: x.hex, name: api.nameOf(x.hex), kind: x.kind, cloth: x.cloth, band: x.band, brim: x.brim, pat: x.pat || { type: 'solid' }, rise: x.rise, length: x.length, hex2: x.hex2, buttons: x.buttons, metal: x.metal };
     });
     // the Proportion checks, with the body's percentiles if measured
     {
@@ -203,9 +203,9 @@
     const order = SEASONS.slice().sort(function (x, y) { return (y[0] === a.season) - (x[0] === a.season); });
     box.innerHTML = undoBar + order.map(function (se) {
       const inSeason = list.filter(function (w) { return w.season === se[0]; }); if (!inSeason.length) return '';
-      return '<section class="dr-season"><h3>' + se[1] + ' <span class="dr-n">' + inSeason.length + '</span></h3>' + G.OCCASIONS.map(function (oc) {
+      return '<section class="dr-season"><h3>' + se[1] + ' <span class="dr-n">' + inSeason.length + '</span></h3><div class="dr-occs">' + G.OCCASIONS.map(function (oc) {
         const items = inSeason.filter(function (w) { return (w.occasion || 'smart') === oc.id; }); if (!items.length) return '';
-        return '<h4 class="dr-occ">' + esc(oc.name) + '</h4><ul class="dr-list">' + items.map(function (w) {
+        return '<div class="dr-occgroup"><h4 class="dr-occ">' + esc(oc.name) + '</h4><ul class="dr-list">' + items.map(function (w) {
           const o = engineOutfit(w.outfit), v = E.verdict(E.checkOutfit(o, analysisFor(w, a)));
           const strip = G.SLOTS.filter(function (k) { return w.outfit[k] && w.outfit[k].on !== false; }).map(function (k) {
             return '<i title="' + esc(api.nameOf(w.outfit[k].hex) + ' ' + G.kind(k, w.outfit[k]).name.toLowerCase()) + '" style="' + chipStyle(w.outfit[k]) + '"></i>';
@@ -214,15 +214,15 @@
           return '<li class="dr-item lv-' + esc(v.level || '') + (isCur ? ' cur' : '') + '" data-id="' + esc(w.id) + '"><div class="dr-strip" aria-hidden="true">' + strip + '</div>' +
             '<div class="dr-text"><strong>' + esc(w.name) + '</strong><span class="dr-verdict">' + esc(v.title || '') + '</span><span class="dr-date">Saved ' + esc(w.saved || '') + (isCur ? ' · being worn' : '') + '</span></div>' +
             '<div class="dr-acts"><button type="button" class="btn small" data-wear>Wear</button><button type="button" class="btn ghost small" data-del aria-label="Delete ' + esc(w.name) + '">Delete</button></div></li>';
-        }).join('') + '</ul>';
-      }).join('') + '</section>';
+        }).join('') + '</ul></div>';
+      }).join('') + '</div></section>';
     }).join('');
     $$('.dr-item', box).forEach(function (li) {
       const id = li.dataset.id;
       $('[data-wear]', li).addEventListener('click', function () {
         const w = list.find(function (x) { return x.id === id; }); if (!w) return;
         snapshot(); api.setOutfit(Object.assign(JSON.parse(JSON.stringify(w.outfit)), { savedId: id, name: w.name }));
-        lastNote = 'Wearing “' + w.name + '” from the wardrobe.'; setView('outfit'); api.save(); render();
+        setView('outfit'); commit('Wearing “' + w.name + '” from the wardrobe.');   // commit: saves, redraws the chart and the rows
       });
       $('[data-del]', li).addEventListener('click', function () {
         const i = list.findIndex(function (x) { return x.id === id; }); if (i < 0) return;
@@ -428,6 +428,9 @@
     const extraRow = cur.buttons ? '<div class="kind-row" role="radiogroup" aria-label="Buttons"><span class="kind-lab">Buttons</span>' + G.BUTTONS.map(function (b) {
         return '<button type="button" role="radio" class="kind btn-opt" data-btn="' + b[0] + '" aria-checked="' + ((x.buttons || 'gold') === b[0]) + '">' + b[1] + '</button>';
       }).join('') + '</div><p class="ed-note">Metal buttons count as metal in the outfit: keep the watch and buckle in the same metal.</p>'
+      : cur.metal ? '<div class="kind-row" role="radiogroup" aria-label="Metal"><span class="kind-lab">Metal</span>' + ['silver', 'gold', 'gunmetal', 'rose'].map(function (m) {
+        return '<button type="button" role="radio" class="kind pin-metal" data-metal="' + m + '" aria-checked="' + ((x.metal || 'silver') === m) + '"><i class="d" style="background:' + G.metalBy[m].hex + '"></i>' + G.metalBy[m].name + '</button>';
+      }).join('') + '</div><p class="ed-note">A lapel pin is worn metal: keep it in the metal of the watch and buckle.</p>'
       : cur.twoTone ? '<div class="kind-row" role="radiogroup" aria-label="Toe cap and heel"><span class="kind-lab">Toe cap and heel</span>' + SPEC2.map(function (c) {
         return '<button type="button" role="radio" class="kind spec2" data-hex2="' + c[1] + '" aria-checked="' + ((x.hex2 || '').toLowerCase() === c[1]) + '"><i class="d" style="background:' + c[1] + '"></i>' + c[0] + '</button>';
       }).join('') + '</div><p class="ed-note">The second colour of the spectator; the main colour, chosen below, is the rest of the upper.</p>' : '';
@@ -435,8 +438,9 @@
       '<button type="button" role="tab" data-t="cloth" aria-selected="' + (tab === 'cloth') + '">' + (k === 'shoes' ? 'Upper' : kindOf(k).pats.length > 1 ? 'Cloth and pattern' : 'Cloth') + '</button></div>' : '') +
       '<div class="ed-body"></div>';
     $$('.ed-tabs button', ed).forEach(function (b) { b.addEventListener('click', function () { tab = b.dataset.t; renderEditor(ed, k, a); }); });
-    $$('.kind:not(.cut):not(.btn-opt):not(.spec2)', ed).forEach(function (b) { b.addEventListener('click', function () { setKind(k, b.dataset.kind); }); });
+    $$('.kind:not(.cut):not(.btn-opt):not(.spec2):not(.pin-metal)', ed).forEach(function (b) { b.addEventListener('click', function () { setKind(k, b.dataset.kind); }); });
     $$('.btn-opt', ed).forEach(function (b) { b.addEventListener('click', function () { snapshot(); piece(k).buttons = b.dataset.btn; commit('Buttons: ' + b.textContent.toLowerCase() + '.'); }); });
+    $$('.pin-metal', ed).forEach(function (b) { b.addEventListener('click', function () { snapshot(); piece(k).metal = b.dataset.metal; piece(k).hex = G.metalBy[b.dataset.metal].hex; commit('Lapel pin: ' + b.textContent.toLowerCase() + '.'); }); });
     $$('.spec2', ed).forEach(function (b) { b.addEventListener('click', function () { snapshot(); piece(k).hex2 = b.dataset.hex2; commit('Toe cap and heel: ' + b.textContent.toLowerCase() + '.'); }); });
     $$('.cut', ed).forEach(function (b) { b.addEventListener('click', function () { snapshot(); piece(k)[cut.key] = b.dataset.cut; commit(cut.label + ': ' + b.textContent.toLowerCase() + '.'); }); });
     $('.ov-keep', ed).addEventListener('click', function () { keepAndFix(k); });
@@ -446,7 +450,7 @@
 
   /* The optional positions not worn now, as one row of Add buttons. */
   // Add buttons name the position; the title lists the types to choose from once it is added.
-  const ADD_NAME = { hat: 'Headwear', tie: 'Neckwear', scarf: 'Scarf', mid: 'Knit or waistcoat', jacket: 'Jacket', coat: 'Coat', square: 'Pocket square', socks: 'Socks', gloves: 'Gloves' };
+  const ADD_NAME = { hat: 'Headwear', tie: 'Neckwear', scarf: 'Scarf', mid: 'Knit or waistcoat', jacket: 'Jacket', coat: 'Coat', square: 'Pocket square', boutonniere: 'Buttonhole', socks: 'Socks', gloves: 'Gloves' };
   function addBar() {
     const off = PIECES.filter(function (p) { return p.optional && !worn(p.key); });
     if (!off.length) return '';
@@ -468,9 +472,11 @@
     if (k === 'tie' && t.needsCollar && !kindOf('shirt').collar) return 'A ' + t.name.toLowerCase() + ' needs a shirt collar: choose a shirt as the layer next to the neck first.';
     return '';
   }
+  const hasLapel = function () { return (worn('jacket') && kindOf('jacket').frame === 'lapel') || (worn('coat') && kindOf('coat').frame === 'lapel'); };
   // Why a position cannot be put on now.
   function blockedWhy(k) {
     if (k === 'square' && !(worn('jacket') && kindOf('jacket').pocket)) return 'A pocket square needs a jacket with a breast pocket.';
+    if (k === 'boutonniere' && !hasLapel()) return 'A buttonhole flower or pin needs a jacket, blazer or coat with lapels.';
     if (k === 'tie' && !kindOf('shirt').collar) return 'Neckwear (a tie, bow tie or cravat) needs a shirt collar. With a ' + lname('shirt') + ', add a scarf instead.';
     return '';
   }
@@ -484,7 +490,7 @@
   /* A change of garment type with what follows from it: the cloth and pattern brought in line, and the
      pieces that depend on it. Used by the type buttons and by fixes that change a type. */
   function applyKind(k, id) {
-    const x = piece(k), t = G.byKey[k].kinds.find(function (q) { return q.id === id; }), notes = [t.name + ' chosen.'];
+    const x = piece(k), t = G.byKey[k].kinds.find(function (q) { return q.id === id; }), notes = [t.name + ' chosen.'], was = kindOf(k);
     x.kind = id;
     if (x.cloth && (!t.cloths || t.cloths.indexOf(x.cloth) < 0)) { x.cloth = t.cloths ? t.cloths[0] : undefined; }
     const pat = VP.norm(x.pat);
@@ -493,6 +499,9 @@
     if (k === 'shirt' && !t.collar && worn('tie') && kindOf('tie').needsCollar) { notes.push('Took off the ' + lname('tie') + ': it needs a shirt collar. Add a scarf instead if you want one.'); piece('tie').on = false; }
     if (k === 'shirt' && !t.collar && S().outfit.acc.cufflinks.on) { S().outfit.acc.cufflinks.on = false; notes.push('Took off the cufflinks: they need shirt cuffs.'); }
     if (k === 'jacket' && !t.pocket && worn('square')) { piece('square').on = false; notes.push('Took off the pocket square: it needs a breast pocket.'); }
+    if ((k === 'jacket' || k === 'coat') && worn('boutonniere') && !hasLapel()) { piece('boutonniere').on = false; notes.push('Took off the buttonhole: it needs a lapel.'); }
+    if (t.metal) { x.metal = x.metal || 'silver'; x.hex = G.metalBy[x.metal].hex; }   // a lapel pin is its metal
+    else if (was.metal) x.hex = '#f7f6f2';                           // from a pin back to a flower: a white carnation
     if (t.twoTone && !x.hex2) x.hex2 = '#f2efe6';                     // spectators start brown and white
     if (t.buttons && !x.buttons) x.buttons = 'gold';                  // a blazer's classic buttons
     return notes;
@@ -1170,6 +1179,7 @@
   function pieceExtra(k, x) {
     const kd = G.kind(k, x);
     if (kd.twoTone && x.hex2) return ' and ' + spec2Name(x.hex2);
+    if (kd.metal) return ' (' + G.metalBy[x.metal || 'silver'].name.toLowerCase() + ')';
     if (kd.buttons) return ', ' + (G.BUTTONS.find(function (b) { return b[0] === (x.buttons || 'gold'); }) || [0, ''])[1].toLowerCase() + ' buttons';
     return '';
   }

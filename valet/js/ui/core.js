@@ -117,6 +117,7 @@
     jacket: { hex: '#1d2a44', kind: 'jacket', pat: { type: 'solid' }, on: true, buttons: 'gold' },
     coat: { hex: '#3d4045', kind: 'overcoat', cloth: 'melton', pat: { type: 'solid' }, on: false },
     gloves: { hex: '#4a3326', kind: 'leather', pat: { type: 'solid' }, on: false },
+    boutonniere: { hex: '#f7f6f2', kind: 'flower', pat: { type: 'solid' }, on: false, metal: 'silver' },
     scarf: { hex: '#3d4045', kind: 'scarf', cloth: 'cashmere', pat: { type: 'solid' }, on: false }, square: { hex: '#f7f6f2', kind: 'square', pat: { type: 'solid' }, on: false },
     trousers: { hex: '#8e9196', kind: 'trousers', pat: { type: 'solid' } },
     socks: { hex: '#1d2a44', kind: 'socks', pat: { type: 'solid' }, on: true }, shoes: { hex: '#4a3326', kind: 'loafer', cloth: 'calf' }, locks: {}, occasion: 'smart',
@@ -157,6 +158,7 @@
       if (out[k].length != null && ['short', 'regular', 'long'].indexOf(out[k].length) < 0) delete out[k].length;
       if (out[k].hex2 != null && !isHex(out[k].hex2)) delete out[k].hex2;                 // a spectator's second colour
       if (out[k].buttons != null && !window.VGARM.BUTTONS.some(function (b) { return b[0] === out[k].buttons; })) delete out[k].buttons;
+      if (out[k].metal != null && !window.VGARM.metalBy[out[k].metal]) out[k].metal = 'silver';           // a lapel pin's metal
       if (!out[k].pat || typeof out[k].pat !== 'object') out[k].pat = { type: 'solid' };
       else if (out[k].pat.hex2 != null && !isHex(out[k].pat.hex2)) { out[k].pat = Object.assign({}, out[k].pat); delete out[k].pat.hex2; }
       // a pattern the garment does not take, or its cloth cannot carry, is worn plain

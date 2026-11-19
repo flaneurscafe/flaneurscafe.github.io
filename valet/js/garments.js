@@ -85,6 +85,14 @@
     { key: 'square', label: 'Pocket square', face: false, near: true, optional: true, needsPocket: true, kinds: [
       { id: 'square', name: 'Pocket square', f: null, cloths: ['linen', 'silktwill', 'woolchallis'], pats: ['solid', 'pindot', 'foulard', 'paisley', 'houndstooth'], maxScale: 'medium' }
     ] },
+    // The lapel buttonhole (B): a single fresh flower, a fabric flower, or a metal lapel pin, worn in the
+    // left lapel's buttonhole of a jacket, blazer or coat with lapels. Near the face, so its colour is
+    // judged like the pocket square's; a pin is worn metal.
+    { key: 'boutonniere', label: 'Buttonhole', face: false, near: true, optional: true, needsLapel: true, kinds: [
+      { id: 'flower', name: 'Flower (boutonnière)', f: null, pats: SOLID_ONLY, maxScale: 'small' },
+      { id: 'fabric', name: 'Fabric flower', f: null, cloths: ['silktwill', 'knitsilk', 'linen'], pats: SOLID_ONLY, maxScale: 'small' },
+      { id: 'pin', name: 'Lapel pin', f: null, metal: true, pats: SOLID_ONLY, maxScale: 'small' }
+    ] },
     { key: 'trousers', label: 'Trousers', face: false, optional: false, kinds: [
       { id: 'trousers', name: 'Trousers', f: 5, cloths: ['flannel', 'worsted', 'fresco', 'cotton', 'linen', 'corduroy', 'moleskin', 'denim', 'seersucker', 'lustre'], pats: ['solid', 'nailhead', 'birdseye', 'herringbone', 'pinstripe', 'chalkstripe', 'candy', 'houndstooth', 'glen', 'windowpane'], maxScale: 'medium' }
     ] },
