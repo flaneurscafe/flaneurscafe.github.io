@@ -99,11 +99,11 @@
     nearFrom: 1.5, nearTo: 7,                      // A/B §10  ΔE2000: a match below 1.5, a near miss up to 7
     halvesL: 12,                                   // B §9–10  L* between top and bottom, or any pair, so they do not blur
     tieL: 12,                                      // B §10  L* between tie and shirt
-    tonalDE: 12,                                   // B §11  a pattern's two colours within ΔE2000 12 count as texture
     sockDeepL: 40, sockDeepC: 0.12,                // B §10  a deep sock colour: L* under 40, OKLCH chroma 0.12 at most
     columnL: 15,                                   // A/B §13  a tonal column: main pieces within 15 L*
     formalWide: 3, formalMistake: 4,               // B §10  formality steps apart: a wide mix, and a mistake
     coatSteps: 5,                                  // B §10  a coat this far below what it covers
+    neutralSnapDE: 6,                              // B §10  a colour this close to a library colour is that colour (a picker step, a photo's drift)
     familyHue: 35,                                 // B §9–10  colours within 35° of hue are one family
     squareSetDE: 5,                                // B §10  a pocket square this close to the tie, same pattern: bought as a set
     patternShareDE: 10,                            // B §11  two patterns share a colour when two of their colours are this close
@@ -406,8 +406,12 @@
   function wardrobeNeutral(hex) {
     const h = hex.toLowerCase(), lib = window.VDATA.colours;
     let hit = lib.find(function (c) { return c.hex.toLowerCase() === h; });
-    // a colour within ΔE 3 of a library colour is that colour to the eye (a picker nudged by one step)
-    if (!hit) { const lab = VC.hexToLab(hex); hit = lib.find(function (c) { return VC.deltaE2000(lab, VC.hexToLab(c.hex)) < 3; }); }
+    // the nearest library colour within neutralSnapDE is that colour: a picker nudged a step, or a colour
+    // sampled from a photo that has drifted a little, keeps its name (and whether it is a neutral)
+    if (!hit) {
+      const lab = VC.hexToLab(hex); let d = PARAMS.neutralSnapDE;
+      lib.forEach(function (c) { const e = VC.deltaE2000(lab, VC.hexToLab(c.hex)); if (e < d) { d = e; hit = c; } });
+    }
     if (hit) return hit.family === 'Neutral';
     const c = okc(hex);
     return c[1] < 0.035 || (c[0] < 0.4 && c[1] < 0.1 && hueDist(c[2], 262) < 22);   // nearly grey, or navy
@@ -438,8 +442,7 @@
     // ΔE 12) also counts as texture even where it is visible: the September revision's
     // "grey-on-grey reads as texture" convention (B).
     out.reads = { 1: P().reads(piece.hex, pat, 1), 3: P().reads(piece.hex, pat, 3) };
-    out.tonal = dE < PARAMS.tonalDE;
-    out.texture = out.tonal || out.reads[3].state !== 'pattern';
+    out.texture = out.reads[3].state !== 'pattern';   // the measured model decides; a low-contrast (tonal) pattern is texture when the eye cannot read it
     out.visible = !out.texture;
     if (out.visible && cls.id === 'semi') out.cls = { id: 'small', label: 'small', hand: cls.hand };
     out.label = t.name + ', ' + (Math.round(pat.scale * 10) / 10) + ' cm';
@@ -636,12 +639,9 @@
       }
     }
 
-    // The under-eye area (Style Guide section 1, September 2026 addendum). Knitwear at the collar
-    // is too far below the eyes to darken them; what matters is that a face with a second dark
-    // zone keeps a light element near it on the darkest days (rule 1).
-    if (p.underEye && p.underEye !== 'none' && near.length && near.every(function (k) { return lum(L[k].mean) < 40; }))
-      add({ id: 'light', score: 0.65, slots: [face.filter(function (k) { return k !== 'hat'; })[0] || face[0]],
-        text: 'Everything near the face is dark, and your eye area is a dark zone of its own. Keep one light element there: a white or light shirt collar, a light layer, or a light square.' });
+    // The under-eye area: removed in 1.8. That dark clothing near the face deepens under-eye shadows is
+    // colour-analysis lore with no study behind it and no established menswear writer stating it, so by
+    // Valet's own definition it is C, and C claims do not judge (How it works, section 16).
 
     // One statement per outfit (Style Guide rule 4 and the bold-day rule). Tier 2 is "the one chosen
     // colour": a second, different tier 2 colour at the face competes with it, and so does a
@@ -672,7 +672,7 @@
     // Why a patterned cloth does not count: tonal, or too fine or faint to read from 3 m.
     const texWhy = function (k) {
       const r = L[k].reads[3];
-      return nm(k) + (L[k].tonal && r.state === 'pattern' ? ' (tonal)' : r.state === 'plain' ? ' (plain from 3 m)' : ' (texture from 3 m)');
+      return nm(k) + (r.state === 'plain' ? ' (plain from 3 m)' : ' (texture from 3 m)');
     };
     if (!allPats.length) {
       add({ id: 'pcount', group: 'pattern', score: 1, slots: [],
@@ -881,8 +881,8 @@
     const shiny = Object.keys(L).filter(function (k) { return C[k] && C[k].sheen === 2; });
     const nearFace = G.NEAR.concat(['hat']);
     shiny.forEach(function (k) {
-      if (nearFace.indexOf(k) >= 0) add({ id: 'sheen', group: 'sheen', score: 0.35, slots: [k], cloth: true,
-        text: what(k) + ': shiny cloth near the face competes with the skin\'s own shine and makes everything look cheaper (Outfit Check, question 4). Choose the matte version.' });
+      if (nearFace.indexOf(k) >= 0) add({ id: 'sheen', group: 'sheen', score: 0.6, slots: [k], cloth: true,
+        text: what(k) + ': shiny cloth near the face reads as cheap cloth: too much shine is the classic mark of polyester and of very fine, glossy suiting (Outfit Check, question 4). A matte version looks better.' });
       else if (k === 'shoes') {
         add({ id: 'sheen', group: 'sheen', score: o.occasion === 'evening' ? 0.85 : 0.55, slots: [k], cloth: true,
           text: 'Patent shoes are for black tie' + (o.occasion === 'evening' ? '; for a formal evening they are right.' : '. Polish calf to a glow instead.') });
@@ -1030,7 +1030,6 @@
     harmony: { name: 'colours that compete', weight: 1, reason: 'sits with the other colours', section: 'colour', kind: 'convention', how: 'r-harmony' },
     hatf: { name: 'a hat far from the occasion', weight: 1, reason: null, kind: 'convention', how: 'r-outer' },
     layer: { name: 'a knit that does not suit the layer under it', weight: 0.6, reason: 'suits the layer under it', section: 'frame', kind: 'convention', how: 'r-frame' },
-    light: { name: 'no light element near dark eyes', weight: 0.7, reason: 'a light element near the eyes', section: 'contrast', kind: 'convention', how: 'r-eyes' },
     metal: { name: 'the metal', weight: 0.6, reason: null, kind: 'convention', how: 'r-metal' },
     near: { name: 'a near match', weight: 1, reason: 'avoids a near match', section: 'colour', kind: 'perceptual', how: 'r-near' },
     neck: { name: 'a tie with no collar', weight: 1.5, reason: null, section: 'frame', kind: 'possibility', how: 'r-frame' },
@@ -1627,7 +1626,7 @@
 
   window.VENGINE = {
     analyseProfile: analyseProfile, bodyRatios: bodyRatios, scoreColour: scoreColour,
-    RULES: RULES, PARAMS: PARAMS, ruleOf: ruleOf, kindOf: kindOf, checkOutfit: checkOutfit, verdict: verdict, penalty: penalty, suggest: suggest, complete: complete, rescue: rescue, themePalette: themePalette, themeStudy: themeStudy, SECTIONS: SECTIONS, sectionOf: sectionOf, watchRange: watchRange, summary: summary, look: look, SLOTS: SLOTS, FACE: FACE, TIER_TEXT: TIER_TEXT, corrected: corrected, HAIR: HAIR,
+    RULES: RULES, PARAMS: PARAMS, ruleOf: ruleOf, kindOf: kindOf, wardrobeNeutral: wardrobeNeutral, checkOutfit: checkOutfit, verdict: verdict, penalty: penalty, suggest: suggest, complete: complete, rescue: rescue, themePalette: themePalette, themeStudy: themeStudy, SECTIONS: SECTIONS, sectionOf: sectionOf, watchRange: watchRange, summary: summary, look: look, SLOTS: SLOTS, FACE: FACE, TIER_TEXT: TIER_TEXT, corrected: corrected, HAIR: HAIR,
     echoes: echoes, hairShown: hairShown, frameWeight: frameWeight, frameTemp: frameTemp, framesOf: framesOf, skinClashes: skinClashes, skinReasons: skinReasons, fitFor: fitFor, seasonProfile: seasonProfile, TAN: TAN
   };
 })();

@@ -1210,3 +1210,4 @@ button.gl-c.pk-no { text-decoration: line-through; text-decoration-color: var(--
 .gl-colour { display: block; width: 100%; }
 .gl-any { display: inline-flex; align-items: center; gap: 0.4rem; margin-top: 0.4rem; font: 0.8rem var(--sans); color: var(--muted); }
 .gl-any { display: flex; width: fit-content; margin-top: 0.8rem; }
+.rule-bubble .rule-badge-note { color: var(--muted); font-size: 0.78rem; }

@@ -355,7 +355,6 @@
       '<li><strong>Metal:</strong> ' + metal + ' Keep one metal through an outfit; a two-tone watch is the exception.</li>' +
       (V.state.outfit && V.state.outfit.acc && V.state.outfit.acc.glasses && V.state.outfit.acc.glasses.on ? '<li><strong>Glasses:</strong> they sit at the face, so the Dresser judges them with the colours there' + (a.underEye === 'deep' ? '; with deep-set eyes, check that the bottom rim does not sit on the shadow' : '') + '.</li>' : '') +
       (a.redness !== 'none' ? '<li><strong>Redness:</strong> reds and pinks near the face pick out the red in the skin, and greens push it redder. Blues and greys are the calm choice.</li>' : '') +
-      (a.underEye !== 'none' ? '<li><strong>Eye area:</strong> on all-dark days keep one light element near the face, such as a white collar.</li>' : '') +
       '</ul>' +
       (sm.tests.length ? '<h2>Daylight tests to run</h2><ul>' + sm.tests.map(function (t) { return '<li><strong>' + esc(t.title) + '.</strong> ' + esc(t.text) + '</li>'; }).join('') + '</ul>' : '');
     h += cardCombos(chip);

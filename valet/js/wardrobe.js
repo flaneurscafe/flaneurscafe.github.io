@@ -1112,7 +1112,9 @@
         const sec = el.closest('section'), h2 = sec && sec.querySelector('h2');
         const bubble = document.createElement('div');
         bubble.className = 'rule-bubble'; bubble.setAttribute('role', 'note');
-        bubble.innerHTML = '<p>' + esc(short) + '</p><button type="button" class="rule-more">How it works, ' + esc(h2 ? h2.textContent.trim() : 'the rule') + ' →</button>';
+        const BADGE = { 'A': 'Badge A: measured perception science.', 'A/B': 'Badge A/B: the measurement is science (A); the threshold that decides the verdict is Valet\'s working value (B).', 'B': 'Badge B: a convention of tailoring or colour, from published writers or the Style Guide.' };
+        const lv = btn.dataset.level || 'B';
+        bubble.innerHTML = '<p>' + esc(short) + '</p>' + (BADGE[lv] ? '<p class="rule-badge-note">' + esc(BADGE[lv]) + '</p>' : '') + '<button type="button" class="rule-more">How it works, ' + esc(h2 ? h2.textContent.trim() : 'the rule') + ' →</button>';
         li.appendChild(bubble); btn.setAttribute('aria-expanded', 'true');
         $('.rule-more', bubble).addEventListener('click', function () {
           const tab = document.querySelector('.tabs [data-tab=how]'); if (tab) tab.click();
@@ -1135,7 +1137,7 @@
         const ctx = E.kindOf(c) === 'context';
         const how = E.RULES[c.id] && E.RULES[c.id].how;
         return '<li class="' + (ctx ? 'info' : c.score < 0.5 ? 'fail' : c.score < 0.85 ? 'warn' : 'pass') + '">' + icon(c.score, c) + '<span>' + badge(c.level) +
-          (how ? '<button type="button" class="rule-help" data-how="' + how + '" aria-expanded="false" aria-label="About this rule, from How it works" title="About this rule">?</button>' : '') + ' ' + esc(c.text) +
+          (how ? '<button type="button" class="rule-help" data-how="' + how + '" data-level="' + esc(c.level || 'B') + '" aria-expanded="false" aria-label="About this rule, from How it works" title="About this rule">?</button>' : '') + ' ' + esc(c.text) +
           (fx.length ? '<span class="fixes">' + fx.map(function (f, j) {
             return '<button type="button" class="btn small' + (j ? ' ghost' : '') + '" data-c="' + base + '" data-f="' + j + '"' + (f.disabled ? ' disabled' : '') + '>' +
               (f.hex ? '<span class="d" style="background:' + f.hex + '"></span>' : '') + esc(f.label) + '</button>';

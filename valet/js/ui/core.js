@@ -402,9 +402,9 @@
       use: 'A tier says whether a colour suits you. The marks say whether it suits the colours beside it. A tier 1 navy is still wrong as trousers under a forest shirt: both are dark, so the two halves blur.'
     },
     'distance': {
-      title: 'From a distance', what: 'How the cloth looks from 1 m (talking), 3 m (across a room) and 10 m. Each square shows the same patch, keeping only the detail the eye can still see at that distance, then enlarged so you can compare.',
+      title: 'From a distance', what: 'How the cloth looks from 1 m (talking), 3 m (across a room) and 10 m (across a street, outdoors in daylight, where fine detail stays visible longer than in a room). Each square shows the same patch, keeping only the detail the eye can still see at that distance, then enlarged so you can compare.',
       how: 'Move the scale slider and watch the squares. Fine and low-contrast detail goes first; colour-only detail goes sooner than light against dark. The words under each square say whether it reads as pattern, texture or plain there.',
-      use: 'Across a room (3 m) decides whether a cloth counts towards the two-pattern limit at the face. This is why a navy birdseye counts as plain cloth and a gingham of the same size does not. The science is in How it works, section 11.'
+      use: 'Across a room (3 m) decides whether a cloth counts towards the two-pattern limit at the face. This is why a navy birdseye counts as plain cloth and a gingham of the same size does not. The checks judge at 3 m in room light; the 10 m square is a preview, not a rule. The science is in How it works, section 11.'
     },
     'season': {
       title: 'Winter and summer', what: 'Skin is the one part of your colouring that changes with the time of year. A tan makes it darker and a little redder; hair and eyes stay as they are here.',

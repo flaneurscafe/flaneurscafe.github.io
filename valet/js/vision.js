@@ -30,7 +30,7 @@
      jacket or shirt, about 40 cm across. Across a street (10 m) is outdoors: overcast daylight,
      about 5,000 lux (dull overcast is near 1,000, bright overcast near 10,000). */
   const LUX = 300, DAYLIGHT_LUX = 5000, FIELD_CM = 40;
-  const DISTANCES = [{ m: 1, label: 'at 1 m', note: 'talking' }, { m: 3, label: 'at 3 m', note: 'across a room' }, { m: 10, label: 'at 10 m', note: 'across a street' }];
+  const DISTANCES = [{ m: 1, label: 'at 1 m', note: 'talking' }, { m: 3, label: 'at 3 m', note: 'across a room' }, { m: 10, label: 'at 10 m', note: 'across a street, in daylight' }];
   function luxAt(m) { return m >= 10 ? DAYLIGHT_LUX : LUX; }
   function luminance(Y, m) { return Math.max(1e-3, Y * (m == null ? LUX : luxAt(m)) / Math.PI); }
   function degrees(cm, m) { return 2 * Math.atan(cm / 200 / m) * 180 / Math.PI; }
