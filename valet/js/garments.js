@@ -3,7 +3,7 @@
 /* Valet — what can be worn where. The outfit is a set of positions, each holding one garment
    type. The types and everything attached to them come from the Style Guide (sections 4 to 7):
    whether a garment frames the face, which patterns are used on it, and the largest pattern
-   scale that suits it. Shared by the rules (engine.js), the outfit editor (wardrobe.js), the
+   scale that suits it. Shared by the rules (engine.js), the outfit editor (ui/dresser.js), the
    Palette tab and the chart. Loads without a DOM. Storage keys are kept from earlier versions:
    'shirt' is the layer next to the neck and 'jacket' the outer layer.
 

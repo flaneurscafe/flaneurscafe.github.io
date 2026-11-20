@@ -46,7 +46,7 @@
   const hasProfile = function () { return !!(V.state.samples.skin || (V.state.named && V.state.named.skin) || Object.keys(V.state.measurements || {}).some(function (k) { return V.state.measurements[k] > 0; })); };
   $('#loadDemo').addEventListener('click', function (e) {
     if (!hasProfile() || V.state.name === D.demo.name) { loadDemo(); return; }
-    confirmed(e.currentTarget, 'Replace your profile? Click again', loadDemo);
+    confirmed(e.currentTarget, V.say('Replace your profile? Click again', 'Replace your profile? Tap again'), loadDemo);
   });
   $('#demoTop').addEventListener('click', function (e) { e.preventDefault(); if (!hasProfile()) loadDemo(); else { showTab('you'); $('#loadDemo').click(); $('#loadDemo').scrollIntoView({ block: 'center' }); } });
   $('#demoFromColour').addEventListener('click', function (e) { e.preventDefault(); loadDemo(); renderColour(); mountChart(); });
@@ -55,7 +55,7 @@
      palette is rebuilt from it with the current rules, and any colour whose tier differs from the
      saved palette is listed. A file with a palette but no colouring gets its colouring from the
      palette, as set by hand. */
-  const VERSION = '1.8';
+  const VERSION = '1.9.1';
   function paletteFor(season) {
     const a = E.analyseProfile(E.seasonProfile(V.state, season)); if (!a) return null;
     const r1 = function (x) { return Math.round(x * 10) / 10; };
@@ -135,7 +135,7 @@
     });
     e.target.value = '';
   });
-  $('#clearBtn').addEventListener('click', function (e) { confirmed(e.currentTarget, 'Erase colouring and measurements? Click again', eraseProfile); });
+  $('#clearBtn').addEventListener('click', function (e) { confirmed(e.currentTarget, V.say('Erase colouring and measurements? Click again', 'Erase colouring and measurements? Tap again'), eraseProfile); });
   function eraseProfile() {
     Object.keys(marks).forEach(function (k) { delete marks[k]; });
     applyState({}); fileNote('');

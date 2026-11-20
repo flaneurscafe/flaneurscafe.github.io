@@ -12,7 +12,7 @@
   function renderFit() {
     const has = Object.keys(V.state.measurements || {}).some(function (k) { return V.state.measurements[k] > 0; });
     $('#fitEmpty').hidden = has; $('#fitBody').hidden = !has;
-    if (has) window.VFIT.render($('#fitBody'), {
+    if (has) window.VFITUI.render($('#fitBody'), {
       state: function () { return V.state; }, save: save, goto: function (t) { if (t === 'you') openMeasures(); else showTab(t); },
       labelOf: function (k) { const m = MEASURES.find(function (x) { return x.key === k; }); return m ? m.label : k; }
     });

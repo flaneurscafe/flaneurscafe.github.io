@@ -4,7 +4,7 @@
    glasses. Nothing may crash, every score must lie in 0..1, no text may show undefined or NaN, and no
    check may name a piece that is not worn. Run: node tests/stress.js. Exits 1 on failure. */
 global.window={}; const path=require('path'); const ROOT=path.join(__dirname,'..');
-for (const f of ['colour','vision','patterns','data','garments','engine','body','proportion']) require(path.join(ROOT,'js',f+'.js'));
+for (const f of ['colour','vision','patterns','data','garments', 'rules', 'engine', 'suggest','body','proportion']) require(path.join(ROOT,'js',f+'.js'));
 const E=window.VENGINE, G=window.VGARM, VP=window.VPAT, D=window.VDATA;
 let seed=1; const rnd=()=>{seed=(seed*16807)%2147483647; return seed/2147483647;}; const pick=a=>a[Math.floor(rnd()*a.length)];
 const hexes=D.colours.map(c=>c.hex).concat(['#f2efe6','#161616','#3b2417']);

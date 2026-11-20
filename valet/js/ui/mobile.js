@@ -16,18 +16,11 @@
 
   const LABEL = { you: 'Your profile and chart', colour: 'Study and chart', proportion: 'Your figure and try-on', outfit: 'Verdict and chart' };
 
-  /* One line on the bar: how things stand on this tab, read from what the tab already shows. */
+  /* One line on the bar: how things stand on this tab, as the tab itself announced it
+     (VAPP.result, in core.js). Tabs without a result show only their label. */
   function summary(tab) {
-    if (tab === 'outfit') {
-      const v = $('#ovVerdict strong'), box = $('#ovVerdict');
-      return { text: v ? v.textContent.trim() : '', level: box ? (box.className.match(/\b(good|ok|fix|bad)\b/) || [])[1] || '' : '' };
-    }
-    if (tab === 'colour') {
-      const n = $('#tryNote'); const t = n ? n.textContent.trim() : '';
-      const first = t.split(/\.\s/)[0];
-      return { text: first ? first.replace(/\.?$/, '.') : 'Put a colour in the study', level: /clash|weak|fails?/i.test(t) ? 'bad' : '' };
-    }
-    return { text: '', level: '' };
+    const r = window.VAPP && window.VAPP.results[tab];
+    return r ? { text: r.text, level: r.level } : { text: '', level: '' };
   }
 
   let backdrop = null;
@@ -48,7 +41,6 @@
   function refresh(aside) {
     const bar = $('.sheet-bar', aside); if (!bar) return;
     const s = summary(tabOf(aside)), el = $('.sb-sum', bar);
-    // write only on a change: the bar sits inside the panel it watches, so every write would wake the watcher again
     if (el.textContent !== s.text) el.textContent = s.text;
     if (bar.dataset.level !== s.level) bar.dataset.level = s.level;
   }
@@ -72,23 +64,17 @@
         (LABEL[tab] || 'Results') + '</strong><span class="sb-sum"></span></span><span class="sb-act">Show</span>';
       bar.addEventListener('click', function () { setOpen(aside, !aside.classList.contains('sheet-open')); });
       aside.insertBefore(bar, aside.firstChild);
-      // keep the bar's summary current as the tab updates itself
-      const watch = tab === 'outfit' ? $('#ovVerdict') : aside;
-      if (watch && window.MutationObserver) new MutationObserver(function (list) {
-        if (list.every(function (m) { return bar.contains(m.target); })) return;   // our own writes
-        refresh(aside);
-      }).observe(watch, { childList: true, subtree: true, characterData: true, attributes: true, attributeFilter: ['class'] });
       refresh(aside);
     });
     document.addEventListener('keydown', function (e) { if (e.key === 'Escape') closeAll(); });
+    // keep each bar's summary current: a tab announces its result when it draws it
+    document.addEventListener('valet:result', function (e) {
+      $$('.tab-panel aside.side').forEach(function (a) { if (tabOf(a) === e.detail.tab) refresh(a); });
+    });
 
-    // switching tabs closes an open sheet and keeps the chosen tab in view in the tab bar
+    // the chosen tab stays in view in the tab bar (switching tabs closes an open sheet: valet:layout, below)
     $$('.tabs [data-tab]').forEach(function (b) {
-      b.addEventListener('click', function () {
-        closeAll();
-        if (narrow.matches && b.scrollIntoView) b.scrollIntoView({ block: 'nearest', inline: 'center' });
-        markSheet();
-      });
+      b.addEventListener('click', function () { if (narrow.matches && b.scrollIntoView) b.scrollIntoView({ block: 'nearest', inline: 'center' }); });
     });
 
     // the header scrolls away up to its tab bar, which then stays at the top
@@ -108,11 +94,6 @@
       top.hidden = !(narrow.matches && how && how.classList.contains('active') && toc && toc.getBoundingClientRect().bottom < 0);
     }, { passive: true });
 
-    // tabs also change without a click (the welcome's demo button opens the Palette): watch the panels
-    if (window.MutationObserver) $$('.tab-panel').forEach(function (p) {
-      new MutationObserver(function () { if (!p.classList.contains('active')) { const a = $('aside.side', p); if (a && a.classList.contains('sheet-open')) setOpen(a, false); } markSheet(); })
-        .observe(p, { attributes: true, attributeFilter: ['class'] });
-    });
     markSheet();
   }
   /* The page leaves room at the bottom for the bar when the open tab has one. */
@@ -120,40 +101,15 @@
     const p = $('.tab-panel.active'), a = p && $('aside.side', p);
     document.body.classList.toggle('has-sheet', !!(a && getComputedStyle(a).display !== 'none'));
   }
-  // a tab that hides its side panel (the Dresser's wardrobe view) says so
+  // the layout changed: a tab was switched (core.js showTab), or a tab hid its side panel (the
+  // Dresser's Saved outfits view)
   document.addEventListener('valet:layout', function () { closeAll(); markSheet(); });
 
   /* ---------- Touch screens (no hover), at any width ----------
-     The instructions were written for a mouse: "point at", "hover", "click". On a touch screen they
-     are rewritten as the page shows them, specific sentences first so that each still says what
-     really happens, then "click" becomes "tap". Tooltips (title text), which a phone never shows,
+     The instructions choose their own wording for a touch screen when they are drawn (VAPP.say and
+     data-touch, in core.js). What is left here: tooltips (title text), which a phone never shows,
      appear in a short message when something that has one but does nothing else is tapped. */
   const touch = window.matchMedia('(hover: none)');
-  const SAY = [
-    [/Hover a colour or cloth to try it on; click to keep it\./g, 'Tap a colour or cloth to wear it; Undo takes it back.'],
-    [/Hover a colour anywhere to try it:/g, 'Tap a colour anywhere to try it:'],
-    [/Point at a square for the nearest named colour; click it to put it in the study,/g, 'Tap a square to put the nearest named colour in the study,'],
-    [/Point at a colour in the palette to see it in the selected place/g, 'Tap a colour in the palette to put it in the selected place'],
-    [/Point at a colour in the palette to try one there/g, 'Tap a colour in the palette to put one there'],
-    [/Point at a colour, or put one in the study, to see why it suits you or not/g, 'Put a colour in the study to see why it suits you or not'],
-    [/; point at it for why/g, '; put it back in the study to see why'],
-    [/the colour you point at, or the one in the selected place/g, 'the colour in the selected place'],
-    [/\bPoint at\b/g, 'Tap'], [/\bpoint at\b/g, 'tap'],
-    [/\bhover a colour\b/g, 'tap a colour'], [/\bHover a colour\b/g, 'Tap a colour'],
-    [/\bClick\b/g, 'Tap'], [/\bclick\b/g, 'tap'], [/\bclicking\b/g, 'tapping'], [/\bClicking\b/g, 'Tapping']
-  ];
-  function retextNode(n) {
-    let t = n.nodeValue, o = t;
-    if (!t || !/[Pp]oint at|[Hh]over|[Cc]lick/.test(t)) return;
-    SAY.forEach(function (r) { t = t.replace(r[0], r[1]); });
-    if (t !== o) n.nodeValue = t;
-  }
-  function retext(root) {
-    if (root.nodeType === 3) { retextNode(root); return; }
-    if (root.nodeType !== 1 || /^(SCRIPT|STYLE|TEXTAREA)$/.test(root.nodeName)) return;
-    const w = document.createTreeWalker(root, NodeFilter.SHOW_TEXT, null);
-    let n; while ((n = w.nextNode())) retextNode(n);
-  }
   let toast = null, toastTimer = 0;
   function showTip(text) {
     if (!toast) { toast = document.createElement('div'); toast.className = 'tip-toast'; toast.setAttribute('role', 'status'); document.body.appendChild(toast); }
@@ -162,10 +118,6 @@
   }
   function setUpTouch() {
     if (!touch.matches) return;
-    retext(document.body);
-    if (window.MutationObserver) new MutationObserver(function (list) {
-      list.forEach(function (m) { if (m.type === 'characterData') retextNode(m.target); else m.addedNodes.forEach(retext); });
-    }).observe(document.body, { childList: true, subtree: true, characterData: true });
     document.addEventListener('click', function (e) {
       const el = e.target.closest && e.target.closest('[title]');
       if (!el || el.closest('button, a, input, select, label, summary, [role=button], [role=radio], [role=tab]')) return;

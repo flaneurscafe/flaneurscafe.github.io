@@ -176,7 +176,7 @@
       const src = derived ? (V.state.summer.mode === 'same' ? 'same as winter' : 'estimated: a light tan') : !raw ? 'not set' : n ? namedLabel(s.key, n) : st.manual[s.key] ? 'set by hand' : (s.key !== 'white' && pigment !== raw ? 'from the photo, corrected' : 'from the photo');
       let body = '';
       if (act && s.key === 'white') {
-        body = '<div class="s-body"><p class="small muted">Click the paper in the photo. There is nothing to set by hand: without a photo, leave this empty.</p>' +
+        body = V.say('<div class="s-body"><p class="small muted">Click the paper in the photo. There is nothing to set by hand: without a photo, leave this empty.</p>', '<div class="s-body"><p class="small muted">Tap the paper in the photo. There is nothing to set by hand: without a photo, leave this empty.</p>') +
           (raw ? '<button type="button" class="btn ghost small" data-clear>Remove the white reference</button>' : '') + '</div>';
       } else if (act) {
         const lch = VC.labToLch(VC.hexToLab(raw || namedHex(s.key, { skin: { id: 'light', tone: 'neutral' }, hair: { id: 'l4' }, eyes: { id: 'grey' } }[s.key]))), sl = SLIDERS[s.key];
@@ -276,7 +276,7 @@
       $('#canvasWrap').hidden = false;
       Object.keys(marks).forEach(function (k) { delete marks[k]; });
       V.activeSampler = 'white'; renderSamplers();
-      $('#photoHint').textContent = 'Click the white paper first, then skin, hair and eyes. For hair, click a strand that still has its colour and set the grey with the slider. The magnifier shows exactly what is being read. The photo is not stored.';
+      $('#photoHint').textContent = V.say('Click the white paper first, then skin, hair and eyes. For hair, click a strand that still has its colour and set the grey with the slider. The magnifier shows exactly what is being read. The photo is not stored.', 'Tap the white paper first, then skin, hair and eyes. For hair, tap a strand that still has its colour and set the grey with the slider. The magnifier shows exactly what is being read. The photo is not stored.');
     };
     img.src = URL.createObjectURL(f);
   });
@@ -477,8 +477,8 @@
       '<p class="small">Summer uses ' + how + (Math.abs(dL) >= 0.5 ? ' (skin ' + Math.abs(Math.round(dL * 10) / 10) + ' L* ' + (dL < 0 ? 'darker' : 'lighter') + ')' : '') + '. ' +
       'Contrast ' + w.contrastLevel + ' (' + Math.round(w.contrast) + ') in winter, ' + su.contrastLevel + ' (' + Math.round(su.contrast) + ') in summer. ' +
       (moves.length ? 'At the face, ' + moves.length + ' colour' + (moves.length > 1 ? 's' : '') + ' change tier.' : 'No colour changes tier: the difference is too small to matter.') + '</p>';
-    if (gain.length) h += '<div class="gl-row"><div class="gl-h"><strong>Better in summer</strong><span>hover a colour for the full reason</span></div><div class="gl-chips">' + gain.map(chip).join('') + '</div></div>';
-    if (lose.length) h += '<div class="gl-row"><div class="gl-h"><strong>Better in winter</strong><span>hover a colour for the full reason</span></div><div class="gl-chips">' + lose.map(chip).join('') + '</div></div>';
+    if (gain.length) h += V.say('<div class="gl-row"><div class="gl-h"><strong>Better in summer</strong><span>hover a colour for the full reason</span></div><div class="gl-chips">', '<div class="gl-row"><div class="gl-h"><strong>Better in summer</strong><span>tap a colour for the full reason</span></div><div class="gl-chips">') + gain.map(chip).join('') + '</div></div>';
+    if (lose.length) h += V.say('<div class="gl-row"><div class="gl-h"><strong>Better in winter</strong><span>hover a colour for the full reason</span></div><div class="gl-chips">', '<div class="gl-row"><div class="gl-h"><strong>Better in winter</strong><span>tap a colour for the full reason</span></div><div class="gl-chips">') + lose.map(chip).join('') + '</div></div>';
     return h;
   }
 

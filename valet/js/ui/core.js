@@ -12,6 +12,24 @@
      - helpers and constants from an earlier part are taken from it at the top of a later part;
      - a function in a later part is called through it (V.update), so it is looked up when called. */
   const V = window.VAPP = {};
+  /* Touch screens. Instructions written for a mouse ("point at", "click") have a second wording for
+     a screen with no hover, chosen when the text is drawn: V.say(mouse, touch) in scripts, and
+     data-touch="…" on a sentence in the page (swapped once, below). Read once at load. */
+  V.touch = !!(window.matchMedia && window.matchMedia('(hover: none)').matches);
+  V.say = function (mouse, touch) { return V.touch ? touch : mouse; };
+  /* A tab's result in one line, for anything that shows it elsewhere (the phone's sheet bar):
+     V.result('outfit', 'Good outfit', 'good'). Kept in V.results, so a part that starts later reads
+     what was announced before it, and sent as the event valet:result. level: good, ok, fix, bad or ''. */
+  V.results = {};
+  V.result = function (tab, text, level) {
+    const r = { tab: tab, text: text || '', level: level || '' }, old = V.results[tab];
+    if (old && old.text === r.text && old.level === r.level) return;
+    V.results[tab] = r;
+    document.dispatchEvent(new CustomEvent('valet:result', { detail: r }));
+  };
+  if (V.touch) Array.prototype.forEach.call(document.querySelectorAll('[data-touch]'), function (el) { el.textContent = el.getAttribute('data-touch'); });
+  // the outfit as data lives in js/outfit.js
+  const O = window.VOUTFIT, isHex = O.isHex, DEFAULT_OUTFIT = O.DEFAULT_OUTFIT, normOutfit = O.normOutfit, normWardrobe = O.normWardrobe;
   Object.assign(V, { cleanProfile, glassesToOutfit, infoBtn, load, newSummer, normOutfit, normWardrobe, openMeasures, save, showTab, showYouPane, upgrade });
 
   const VC = window.VC, E = window.VENGINE, D = window.VDATA, CHART = window.VCHART;
@@ -107,27 +125,6 @@
   ];
   const HELPER_TEXT = { alone: 'One person', easier: 'Easier with two', needed: 'Needs a second person' };
 
-  /* The outfit: one entry per position in garments.js, each { hex, kind, cloth, pat, on } (a hat
-     also has band and brim); pat is a cloth pattern (patterns.js). locks keep pieces fixed when the
-     Dresser suggests or completes; name is the outfit's own name, for the printed card. */
-  const DEFAULT_OUTFIT = {
-    hat: { hex: '#3d4045', kind: 'flatcap', pat: { type: 'solid' }, on: false },
-    shirt: { hex: '#c3d7ee', kind: 'shirt', pat: { type: 'solid' } }, tie: { hex: '#5e1f2c', kind: 'tie', pat: { type: 'solid' }, on: false },
-    mid: { hex: '#3d4045', kind: 'crew', pat: { type: 'solid' }, on: false },
-    jacket: { hex: '#1d2a44', kind: 'jacket', pat: { type: 'solid' }, on: true, buttons: 'silver' },   // a blazer's buttons start in the same metal as the default watch and buckle
-    coat: { hex: '#3d4045', kind: 'overcoat', cloth: 'melton', pat: { type: 'solid' }, on: false },
-    gloves: { hex: '#4a3326', kind: 'leather', pat: { type: 'solid' }, on: false },
-    boutonniere: { hex: '#f7f6f2', kind: 'flower', pat: { type: 'solid' }, on: false, metal: 'silver' },
-    scarf: { hex: '#3d4045', kind: 'scarf', cloth: 'cashmere', pat: { type: 'solid' }, on: false }, square: { hex: '#f7f6f2', kind: 'square', pat: { type: 'solid' }, on: false },
-    trousers: { hex: '#8e9196', kind: 'trousers', pat: { type: 'solid' } },
-    socks: { hex: '#1d2a44', kind: 'socks', pat: { type: 'solid' }, on: true }, shoes: { hex: '#4a3326', kind: 'loafer', cloth: 'calf' }, locks: {}, occasion: 'smart',
-    acc: {
-      glasses: { on: false, frame: 'gold', hex: '#161616' },
-      watch: { on: true, metal: 'silver', size: 38, strap: 'leather', display: 'analogue' }, buckle: { on: true, metal: 'silver' },
-      cufflinks: { on: false, metal: 'silver', stone: 'none', size: 15 }, tiebar: { on: false, metal: 'silver', size: 45 },
-      ring: { on: false, metal: 'silver', stone: 'none', size: 12 }, earring: { on: false, metal: 'silver', stone: 'none', size: 4 }
-    }
-  };
   /* Outfits saved by v0.2 were flat colour strings. */
   /* Profiles from before 1.5 named two acetate frames; they become acetate in that colour. */
   const GLASSES_OLD = { black: '#161616', tortoise: '#5b3a24' };
@@ -155,75 +152,7 @@
     if (Array.isArray(s.wardrobe)) s.wardrobe = s.wardrobe.map(function (w) { return w && typeof w === 'object' ? Object.assign({}, w, { outfit: put(w.outfit) }) : w; });
     return s;
   }
-  /* Until 1.5 a coat was a kind of outer layer in the jacket's place. It moves to its own position,
-     its type read from its cloth; a waxed cotton coat becomes a waxed jacket and stays. */
-  function migrateCoat(o) {
-    if (!o || !o.jacket || typeof o.jacket !== 'object' || o.jacket.kind !== 'coat' || (o.coat && typeof o.coat === 'object')) return o;
-    o = Object.assign({}, o); const j = o.jacket, c = j.cloth;
-    if (c === 'waxed') { o.jacket = Object.assign({}, j, { kind: 'waxed' }); return o; }
-    const kind = c === 'gabardine' ? 'trench' : (c === 'nylonmatte' || c === 'nylongloss') ? 'parka' : 'overcoat';
-    o.coat = Object.assign({}, j, { kind: kind });
-    o.jacket = Object.assign({}, DEFAULT_OUTFIT.jacket, { on: false });
-    if (o.locks && o.locks.jacket) { o.locks = Object.assign({}, o.locks, { coat: true, jacket: false }); }
-    return o;
-  }
-  function normOutfit(o) {
-    o = migrateCoat(o);
-    const d = JSON.parse(JSON.stringify(DEFAULT_OUTFIT)), out = { locks: (o && o.locks) || {} };
-    window.VGARM.SLOTS.forEach(function (k) {
-      const v = o && o[k];
-      out[k] = typeof v === 'string' ? Object.assign({}, d[k], { hex: v }) : Object.assign({}, d[k], v || {});
-      if (!window.VGARM.byKey[k].kinds.some(function (t) { return t.id === out[k].kind; })) out[k].kind = d[k].kind;
-      // colours go into the page's markup, so anything that is not a colour is replaced
-      if (!isHex(out[k].hex)) out[k].hex = d[k].hex;
-      if (out[k].rise != null && ['high', 'mid', 'low'].indexOf(out[k].rise) < 0) delete out[k].rise;
-      if (out[k].length != null && ['short', 'regular', 'long'].indexOf(out[k].length) < 0) delete out[k].length;
-      if (out[k].hex2 != null && !isHex(out[k].hex2)) delete out[k].hex2;                 // a spectator's second colour
-      if (out[k].buttons != null && !window.VGARM.BUTTONS.some(function (b) { return b[0] === out[k].buttons; })) delete out[k].buttons;
-      if (out[k].metal != null && !window.VGARM.metalBy[out[k].metal]) out[k].metal = 'silver';           // a lapel pin's metal
-      if (!out[k].pat || typeof out[k].pat !== 'object') out[k].pat = { type: 'solid' };
-      else if (out[k].pat.hex2 != null && !isHex(out[k].pat.hex2)) { out[k].pat = Object.assign({}, out[k].pat); delete out[k].pat.hex2; }
-      // a pattern the garment does not take, or its cloth cannot carry, is worn plain
-      const kd = window.VGARM.byKey[k].kinds.find(function (t) { return t.id === out[k].kind; }), pt = out[k].pat.type, cl = window.VGARM.cloth(k, out[k]);
-      if (pt && pt !== 'solid' && ((kd && kd.pats.indexOf(pt) < 0) || (cl && !window.VGARM.patOK(cl.id, pt)))) out[k].pat = { type: 'solid' };
-    });
-    if (o && o.jacketOn === false) out.jacket.on = false;
-    // Until v1.3 the scarf was a kind of neckwear: move such a scarf to its own position.
-    if (o && o.tie && o.tie.kind === 'scarf' && !(o.scarf && o.scarf.on)) {
-      out.scarf = Object.assign({}, d.scarf, { hex: o.tie.hex, pat: o.tie.pat || { type: 'solid' }, cloth: o.tie.cloth || d.scarf.cloth, on: o.tie.on !== false });
-      out.tie = Object.assign({}, d.tie, { hex: o.tie.hex, on: false });
-    }
-    out.name = o && typeof o.name === 'string' ? o.name.slice(0, 80) : '';
-    if (o && typeof o.savedId === 'string' && /^[a-z0-9]{1,40}$/i.test(o.savedId)) out.savedId = o.savedId;   // the wardrobe entry it came from
-    out.occasion = window.VGARM.OCCASIONS.some(function (x) { return o && x.id === o.occasion; }) ? o.occasion : 'smart';
-    out.acc = {};
-    Object.keys(d.acc).forEach(function (k) {
-      const x = out.acc[k] = Object.assign({}, d.acc[k], (o && o.acc && o.acc[k]) || {}), G = window.VGARM;
-      if (k === 'glasses') {
-        if (!G.FRAMES.some(function (f) { return f[0] === x.frame; })) x.frame = 'gold';
-        if (!isHex(x.hex)) x.hex = '#161616';
-        delete x.metal; return;
-      }
-      if (!G.metalBy[x.metal]) x.metal = d.acc[k].metal;
-      if (x.stone != null && !G.stoneBy[x.stone]) x.stone = d.acc[k].stone;
-      if (k === 'watch') {
-        if (!G.STRAPS.some(function (t) { return t.id === x.strap; })) x.strap = d.acc.watch.strap;
-        delete x.strapHex; delete x.dial;   // 1.6 kept strap and dial colours; they are not judged
-        if (['analogue', 'digital'].indexOf(x.display) < 0) x.display = 'analogue';
-      }
-    });
-    return out;
-  }
-  /* The saved outfits: each is checked like the outfit being edited, since its fields reach the page. */
-  function normWardrobe(list) {
-    if (!Array.isArray(list)) return [];
-    return list.slice(0, 500).filter(function (w) { return w && typeof w === 'object' && w.outfit && typeof w.id === 'string' && /^[a-z0-9]{1,40}$/i.test(w.id); }).map(function (w) {
-      const o = normOutfit(w.outfit); delete o.savedId; o.locks = {};
-      return { id: w.id, name: String(w.name || '').slice(0, 80) || 'Untitled outfit', saved: /^\d{4}-\d{2}-\d{2}$/.test(w.saved || '') ? w.saved : '',
-        season: ['winter', 'summer', 'all', 'mixed'].indexOf(w.season) >= 0 ? w.season : 'all', occasion: o.occasion, outfit: o };
-    });
-  }
-  const isHex = function (h) { return typeof h === 'string' && /^#[0-9a-f]{6}$/i.test(h); };
+
   /* A profile opened from a file: everything that reaches the page's markup or a lookup is checked,
      so a damaged or hand-edited file cannot break the page or put markup into it. */
   function cleanProfile(s) {
@@ -324,6 +253,7 @@
     if (name === 'fit') V.renderFit();
     V.mountChart();
     try { history.replaceState(null, '', '#' + name); } catch (e) { /* file:// */ }
+    document.dispatchEvent(new Event('valet:layout'));   // the phone layout closes an open sheet
   }
   $$('.tabs button').forEach(function (b) {
     b.addEventListener('click', function () { showTab(b.dataset.tab); });
@@ -398,7 +328,7 @@
     },
     'fit': {
       title: 'Marks against the study', what: 'Every colour in the palette is tried in the selected place of the study (near the face, accent or below the belt), with the other places as they are, and the rules between colours are checked.',
-      how: 'Colours struck through would break a rule there. Colours marked "!" would bend one. Point at any of them and the line beside the chart names the rule. Select another place and the marks change, because the same colour does a different job at the face, as an accent or below the belt.',
+      how: V.say('Colours struck through would break a rule there. Colours marked "!" would bend one. Point at any of them and the line beside the chart names the rule. Select another place and the marks change, because the same colour does a different job at the face, as an accent or below the belt.', 'Colours struck through would break a rule there. Colours marked "!" would bend one. Tap any of them and the line beside the chart names the rule. Select another place and the marks change, because the same colour does a different job at the face, as an accent or below the belt.'),
       use: 'A tier says whether a colour suits you. The marks say whether it suits the colours beside it. A tier 1 navy is still wrong as trousers under a forest shirt: both are dark, so the two halves blur.'
     },
     'distance': {
@@ -425,10 +355,10 @@
   };
   SAMPLERS.forEach(function (s) {
     INFO['s-' + s.key] = {
-      white: { title: 'White reference', what: 'A sheet of plain, matte white printer paper in the photo.', how: 'Hold it beside your face, in the same light, not blown out to pure white. Click on it in the photo.', use: 'Corrects the light’s colour cast and exposure for all other samples.' },
-      skin: { title: 'Skin', what: 'Your skin colour, away from shadow, redness and shine.', how: 'Pick the depth that fits, then the undertone if you know it. Or, in a photo, click the cheek or the middle of the forehead, avoiding shiny highlights, blushing spots and shadow.', use: 'The reference for every colour verdict: contrast, separation, temperature, Chevreul effect.' },
-      hair: { title: 'Hair or brows', what: 'The colour your hair has where it still has pigment. With no hair, your eyebrows, or the beard if that is darker.', how: 'Pick the name that fits, or click a coloured mid-tone strand in the photo, not a highlight and not a grey hair. Then set the share of grey with the slider.', use: 'Sets your face contrast and depth, weighted by how much hair there is.' },
-      eyes: { title: 'Eyes', what: 'The colour of the iris.', how: 'Pick the name that fits. In a photo, zoom in if you can and click the coloured ring, not the black pupil or a reflection.', use: 'Contributes to contrast, depth and chroma.' }
+      white: { title: 'White reference', what: 'A sheet of plain, matte white printer paper in the photo.', how: V.say('Hold it beside your face, in the same light, not blown out to pure white. Click on it in the photo.', 'Hold it beside your face, in the same light, not blown out to pure white. Tap on it in the photo.'), use: 'Corrects the light’s colour cast and exposure for all other samples.' },
+      skin: { title: 'Skin', what: 'Your skin colour, away from shadow, redness and shine.', how: V.say('Pick the depth that fits, then the undertone if you know it. Or, in a photo, click the cheek or the middle of the forehead, avoiding shiny highlights, blushing spots and shadow.', 'Pick the depth that fits, then the undertone if you know it. Or, in a photo, tap the cheek or the middle of the forehead, avoiding shiny highlights, blushing spots and shadow.'), use: 'The reference for every colour verdict: contrast, separation, temperature, Chevreul effect.' },
+      hair: { title: 'Hair or brows', what: 'The colour your hair has where it still has pigment. With no hair, your eyebrows, or the beard if that is darker.', how: V.say('Pick the name that fits, or click a coloured mid-tone strand in the photo, not a highlight and not a grey hair. Then set the share of grey with the slider.', 'Pick the name that fits, or tap a coloured mid-tone strand in the photo, not a highlight and not a grey hair. Then set the share of grey with the slider.'), use: 'Sets your face contrast and depth, weighted by how much hair there is.' },
+      eyes: { title: 'Eyes', what: 'The colour of the iris.', how: V.say('Pick the name that fits. In a photo, zoom in if you can and click the coloured ring, not the black pupil or a reflection.', 'Pick the name that fits. In a photo, zoom in if you can and tap the coloured ring, not the black pupil or a reflection.'), use: 'Contributes to contrast, depth and chroma.' }
     }[s.key];
   });
   function infoBtn(id) {

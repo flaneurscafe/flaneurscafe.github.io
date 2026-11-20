@@ -102,7 +102,7 @@
   }
 
   /* ---- Marks against the study: each palette colour tried in the selected place, with the other
-     places as they are (engine.js, fitFor). Struck through: it would break a rule; "!": it would
+     places as they are (suggest.js, fitFor). Struck through: it would break a rule; "!": it would
      bend one. The line above the chart says which rule and why. ---- */
   let fit = null;
   const FIT_WORD = { ok: 'works with the rest of the study.', care: 'Careful. ', out: 'Clashes. ' };
@@ -119,7 +119,7 @@
     if (on) {
       const others = filled().filter(function (p) { return p.key !== pl.key; }).map(function (p) { return nameOf(study()[p.key]).toLowerCase() + ' ' + p.label.toLowerCase(); });
       sum.innerHTML = '<strong>' + pl.label + '</strong>' + (others.length ? ', with ' + esc(listWords(others)) : ', on its own') + ': <strong>' + fit.n.ok + ' work</strong>' +
-        (fit.n.care ? ', ' + fit.n.care + (fit.n.care === 1 ? ' needs' : ' need') + ' care <span class="fit-key care">!</span>' : '') + ', ' + fit.n.out + ' clash <span class="fit-key out"></span>. Point at any colour and the line beside the chart says why.' +
+        (fit.n.care ? ', ' + fit.n.care + (fit.n.care === 1 ? ' needs' : ' need') + ' care <span class="fit-key care">!</span>' : '') + ', ' + fit.n.out + V.say(' clash <span class="fit-key out"></span>. Point at any colour and the line beside the chart says why.', ' clash <span class="fit-key out"></span>. Tap any colour and the line beside the chart says why.') +
         (fit.stuck.length ? '<br><span class="muted">Whatever goes ' + pl.label.toLowerCase() + ', one problem stays, because it lies between the other places. ' + esc(fit.stuck[0]) + '</span>' : '');
     }
     showTry(null);
@@ -128,12 +128,21 @@
   function showTry(hex) {
     const el = $('#tryNote'); if (!el || !V.analysis) return;
     const pl = activePlace(), cur = study()[pl.key];
-    if (!hex && !cur) { el.innerHTML = pl.label + ' is empty. Point at a colour in the palette to try one there.'; return; }
+    if (!hex && !cur) { V.result('colour', pl.label + ' is empty.', ''); el.innerHTML = pl.label + V.say(' is empty. Point at a colour in the palette to try one there.', ' is empty. Tap a colour in the palette to put one there.'); return; }
     const h = hex || cur, t = E.scoreColour(h, V.analysis).tier;
     let s = (hex ? 'Trying ' : '') + '<strong>' + esc(nameOf(h)) + '</strong> ' + pl.label.toLowerCase() + ' ' + tt(t) + ': ';
-    if (fit) { const j = fit.judge(h, nameOf(h)); s += '<span class="fit-' + j.state + '-t">' + FIT_WORD[j.state] + '</span>' + esc(j.why); }
-    else s += esc(pl.face ? E.TIER_TEXT[t].note : t > 2 ? 'Weak at the face, fine down here.' : 'Fine here.');
+    // the one-line result: the colour, where, its tier, and the first sentence of the verdict
+    let line = (hex ? 'Trying ' : '') + nameOf(h) + ' ' + pl.label.toLowerCase() + ' T' + t + ': ', level = '';
+    if (fit) {
+      const j = fit.judge(h, nameOf(h));
+      s += '<span class="fit-' + j.state + '-t">' + FIT_WORD[j.state] + '</span>' + esc(j.why);
+      line += FIT_WORD[j.state].trim(); level = j.state === 'out' ? 'bad' : '';
+    } else {
+      const note = pl.face ? E.TIER_TEXT[t].note : t > 2 ? 'Weak at the face, fine down here.' : 'Fine here.';
+      s += esc(note); line += note.split('. ')[0].replace(/\.?$/, '.'); level = pl.face && t > 2 ? 'bad' : '';
+    }
     el.innerHTML = s;
+    V.result('colour', line, level);
   }
   function markPalette() {
     const sel = selHex();
@@ -252,7 +261,7 @@
     const icon = function (s) { return s >= 0.85 ? '<span class="ok">✓</span>' : s >= 0.5 ? '<span class="meh">~</span>' : '<span class="no">✕</span>'; };
     const badge = function (lv) { return '<span class="badge ' + lv.replace('/', '') + '">' + lv + '</span>'; };
     return '<ul class="rules">' + rules.map(function (x) {
-      return '<li>' + icon(x.score) + '<span>' + badge(x.level) + ' ' + esc(x.text) + '</span></li>';
+      return '<li>' + icon(x.score) + '<span>' + badge(x.level) + ' ' + esc(x.text).replace(/#[0-9a-fA-F]{6}\b/g, function (h) { return '<span class="hexsw" style="background:' + h + '" role="img" aria-label="colour ' + h + '" title="' + h + '"></span>'; }) + '</span></li>';
     }).join('') + '</ul>';
   }
 
@@ -261,7 +270,7 @@
   let whyOpen = false;
   function renderTester(hexArg) {
     const pl = activePlace(), hex = hexArg || study()[pl.key];
-    if (!hex) { $('#testerOut').innerHTML = '<p class="small muted">Point at a colour, or put one in the study, to see why it suits you or not.</p>'; return; }
+    if (!hex) { $('#testerOut').innerHTML = V.say('<p class="small muted">Point at a colour, or put one in the study, to see why it suits you or not.</p>', '<p class="small muted">Put a colour in the study to see why it suits you or not.</p>'); return; }
     const r = E.scoreColour(hex, V.analysis);
     const head = '<div class="verdict"><span class="t">' + esc(nameOf(hex)) + '</span><span>' + tt(r.tier) + ' <span class="score">' + r.score.toFixed(2) + '</span></span></div>';
     const where = pl.face ? E.TIER_TEXT[r.tier].note
@@ -351,7 +360,7 @@
       '<li><strong>Light-dark step at the face:</strong> the layers near your face should differ by ' + lo + ' to ' + hi + ' in lightness (L*), about as much as your own features do. Less looks flat; much more takes over the face.</li>' +
       '<li><strong>Pattern near the face:</strong> a pattern\'s own light-dark contrast up to ' + hi + '. At most two patterns, at different scales, sharing a colour, with one plain layer.</li>' +
       '<li><strong>Colour:</strong> two neutrals and one colour never fails. One deliberate (T2) colour per outfit. A colour is one piece, not top and trousers together.</li>' +
-      '<li><strong>Below the belt:</strong> shoes the trousers\' depth or darker; belt matches the shoes; socks match the trousers or go darker.</li>' +
+      '<li><strong>Below the belt:</strong> shoes the trousers\' depth or darker; belt matches the shoes; socks take the trousers\' colour, or a distinct tone of it.</li>' +
       '<li><strong>Metal:</strong> ' + metal + ' Keep one metal through an outfit; a two-tone watch is the exception.</li>' +
       (V.state.outfit && V.state.outfit.acc && V.state.outfit.acc.glasses && V.state.outfit.acc.glasses.on ? '<li><strong>Glasses:</strong> they sit at the face, so the Dresser judges them with the colours there' + (a.underEye === 'deep' ? '; with deep-set eyes, check that the bottom rim does not sit on the shadow' : '') + '.</li>' : '') +
       (a.redness !== 'none' ? '<li><strong>Redness:</strong> reds and pinks near the face pick out the red in the skin, and greens push it redder. Blues and greys are the calm choice.</li>' : '') +
@@ -440,7 +449,7 @@
   });
 
 
-  /* Build around one colour (engine.js, themePalette). The theme is kept with the profile. */
+  /* Build around one colour (suggest.js, themePalette). The theme is kept with the profile. */
   function themeHex() {
     const sel = $('#themeBase');
     return sel.value === 'custom' ? $('#themeCustom').value : sel.value;
@@ -487,7 +496,7 @@
       '<div class="next-step with-note"><button type="button" class="btn small" id="themeToStudy">Put ' + esc(nameOf(hex)) + ' in the study</button><span class="ns-note">' + toStudyNote(hex, plan) + '</span></div>';
     $$('#themeOut .theme-chip').forEach(function (b) { b.addEventListener('click', function () { previewColour(null); selectColour(b.dataset.hex); }); hoverPreview(b); });
     $('#themeToStudy').addEventListener('click', function () {
-      // the theme where it can go, with the neutral and accent chosen together (engine.js,
+      // the theme where it can go, with the neutral and accent chosen together (suggest.js,
       // themeStudy); an accent only when the theme is below the belt
       const st = study(), other = plan.place === 'face' ? 'below' : 'face';
       st[plan.place] = hex; st[other] = plan.other; st.accent = plan.accent;
@@ -586,7 +595,7 @@
         '<span class="combo-sw">' + PLACES.map(function (p) { return '<i style="background:' + (c[p.key] || 'transparent') + '"' + (c[p.key] ? '' : ' class="none"') + ' title="' + esc(p.label + ': ' + (c[p.key] ? nameOf(c[p.key]) : 'empty')) + '"></i>'; }).join('') + '</span>' +
         '<span class="combo-name">' + esc(c.name) + '</span><span class="combo-m ' + v.st + '">' + v.mark + '</span></button>' +
         '<button type="button" class="combo-rm" data-i="' + i + '" aria-label="Delete ' + esc(c.name) + '">✕</button></li>';
-    }).join('') + '</ul><p class="small muted">Click one to put it back in the study. ✓ no rule broken, ! worth knowing, ✕ a rule fails; point at it for why.</p>';
+    }).join('') + V.say('</ul><p class="small muted">Click one to put it back in the study. ✓ no rule broken, ! worth knowing, ✕ a rule fails; point at it for why.</p>', '</ul><p class="small muted">Tap one to put it back in the study. ✓ no rule broken, ! worth knowing, ✕ a rule fails; put it back in the study to see why.</p>');
     $$('.combo-open', box).forEach(function (b) {
       b.addEventListener('click', function () {
         const c = list[+b.dataset.i], s2 = study();
@@ -618,7 +627,7 @@
   });
   function renderCore() {
     $('#corePal').innerHTML = '<h3>Your core palette <span class="season-tag">' + (summerOn() ? 'summer' : 'winter') + '</span></h3>' +
-      '<p class="small muted">The best of each tier for your colouring this season, chosen so that no two look alike. It is built from your profile, so the study and the theme never change it. Click a colour to put it in the study, ' + '<span class="wearing">' + esc(activePlace().label.toLowerCase()) + '</span>.</p>' +
+      V.say('<p class="small muted">The best of each tier for your colouring this season, chosen so that no two look alike. It is built from your profile, so the study and the theme never change it. Click a colour to put it in the study, ', '<p class="small muted">The best of each tier for your colouring this season, chosen so that no two look alike. It is built from your profile, so the study and the theme never change it. Tap a colour to put it in the study, ') + '<span class="wearing">' + esc(activePlace().label.toLowerCase()) + '</span>.</p>' +
       coreRows(V.analysis, true);
     $$('#corePal button.gl-c').forEach(function (b) { b.addEventListener('click', function () { previewColour(null); selectColour(b.dataset.hex); }); hoverPreview(b); });
     renderPairs();
@@ -731,7 +740,7 @@
     const f = S.face.find(function (c) { return c.hex === pairFace; });
     const trios = tested();
     box.innerHTML = '<h3>What goes together</h3>' +
-      '<p class="small muted">Your core palette says what suits you, one colour at a time. Choose one for near the face, and every other core colour is tried with it as an accent and below the belt, by the same rules as the study. Point at a colour for the reason.</p>' +
+      V.say('<p class="small muted">Your core palette says what suits you, one colour at a time. Choose one for near the face, and every other core colour is tried with it as an accent and below the belt, by the same rules as the study. Point at a colour for the reason.</p>', '<p class="small muted">Your core palette says what suits you, one colour at a time. Choose one for near the face, and every other core colour is tried with it as an accent and below the belt, by the same rules as the study. Tap a colour for the reason.</p>') +
       '<div class="gl-chips pair-pick" role="radiogroup" aria-label="Colour near the face">' + S.face.map(function (c) { return chip(c, c.hex === pairFace ? 'on' : '', null, ' role="radio" aria-checked="' + (c.hex === pairFace) + '"'); }).join('') + '</div>' +
       '<p class="pair-for">With <strong>' + esc(f.name) + '</strong> near the face:</p>' +
       group('Accent (tie, scarf, pocket square)', sort('accent'), 'accent') + group('Below the belt', sort('below'), 'below') +
@@ -739,7 +748,7 @@
       (trios.length ? '<h4 class="outfit-h">Tested combinations from your core palette</h4><ul class="combos trios">' + trios.map(function (t, i) {
         return '<li><button type="button" class="combo-open" data-t="' + i + '" title="Put it in the study"><span class="combo-sw"><i style="background:' + t.face.hex + '"></i><i style="background:' + t.accent.hex + '"></i><i style="background:' + t.below.hex + '"></i></span>' +
           '<span class="combo-name">' + esc(t.face.name) + ', ' + esc(t.accent.name) + ' accent, ' + esc(t.below.name) + ' below</span><span class="combo-m ok">✓</span></button></li>';
-      }).join('') + '</ul><p class="small muted">Each passes every rule of the study: near the face, the accent, below the belt. Click one to put it in the study, then save it or send it to the Dresser. To test any other pair yourself, put a colour in the study, choose another place, and read the palette: a plain swatch goes with what is there, "!" bends a rule, struck through clashes.</p>' : '');
+      }).join('') + V.say('</ul><p class="small muted">Each passes every rule of the study: near the face, the accent, below the belt. Click one to put it in the study, then save it or send it to the Dresser. To test any other pair yourself, put a colour in the study, choose another place, and read the palette: a plain swatch goes with what is there, "!" bends a rule, struck through clashes.</p>', '</ul><p class="small muted">Each passes every rule of the study: near the face, the accent, below the belt. Tap one to put it in the study, then save it or send it to the Dresser. To test any other pair yourself, put a colour in the study, choose another place, and read the palette: a plain swatch goes with what is there, "!" bends a rule, struck through clashes.</p>') : '');
     $$('.pair-pick button', box).forEach(function (b) { b.addEventListener('click', function () { pairFace = b.dataset.hex; renderPairs(); }); });
     // the colour goes into the study beside this face colour; the study's other place stays,
     // unless the study had another colour near the face, when it is emptied with it

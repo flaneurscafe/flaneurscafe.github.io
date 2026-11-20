@@ -7,12 +7,12 @@
 'use strict';
 const fs = require('fs'), path = require('path');
 global.window = {};
-for (const f of ['colour', 'vision', 'patterns', 'data', 'garments', 'engine']) require(path.join(__dirname, '..', 'js', f + '.js'));
+for (const f of ['colour', 'vision', 'patterns', 'data', 'garments', 'rules', 'engine', 'suggest']) require(path.join(__dirname, '..', 'js', f + '.js'));
 const E = window.VENGINE, src = fs.readFileSync(path.join(__dirname, '..', 'js', 'engine.js'), 'utf8');
 const page = fs.readFileSync(path.join(__dirname, '..', 'index.html'), 'utf8');
 const from = src.indexOf('  function checkOutfit('), to = src.indexOf('  function penalty(');
 const sections = new Set(E.SECTIONS.map(function (s) { return s.id; }));
-const body = src.slice(from, to).replace(src.slice(src.indexOf('  const RULES = {'), src.indexOf('  function sectionOf(')), '');
+const body = src.slice(from, to);   // the RULES table itself is in js/rules.js
 const emitted = [...new Set([...body.matchAll(/id: '([a-z0-9]+)'/g)].map(function (m) { return m[1]; }))].sort();
 const problems = [];
 emitted.forEach(function (id) {

@@ -241,9 +241,6 @@ input[type="color"] { width: 2.4rem; height: 2rem; padding: 0; border: 1px solid
 .chart-host { position: relative; border-radius: var(--radius); border: 1px solid var(--rule); overflow: hidden; background: #fff; }
 .chart-caption { font: 0.76rem var(--sans); color: var(--muted); margin: 0.4rem 0 1rem; }
 
-.garments { display: grid; gap: 0.3rem; margin: 0.7rem 0 0.9rem; }
-.garment { display: flex; align-items: center; gap: 0.4rem; border: 1px solid var(--rule); border-radius: var(--radius); background: var(--paper); padding-right: 0.45rem; }
-.garment.active { border-color: var(--gold); box-shadow: 0 0 0 1px var(--gold); background: var(--sheet); }
 .g-pick { flex: 1; min-width: 0; display: grid; grid-template-columns: auto 1fr auto; align-items: center; gap: 0.65rem; background: none; border: 0; padding: 0.45rem 0.4rem 0.45rem 0.55rem; cursor: pointer; text-align: left; color: inherit; font: inherit; }
 .g-pick > .chip, .ov-pick > .chip { width: var(--sw-row); height: var(--sw-row); border-radius: var(--sw-r); border: var(--sw-edge); flex: none; }
 .g-text { display: flex; flex-direction: column; min-width: 0; line-height: 1.2; }
@@ -370,7 +367,6 @@ svg.ma { width: 100%; height: auto; max-height: 360px; overflow: visible; }
 .ov-piece.open { border-color: var(--gold); box-shadow: 0 0 0 1px var(--gold); background: var(--sheet); }
 .ov-row { display: flex; align-items: center; gap: 0.4rem; padding-right: 0.45rem; }
 .ov-pick { flex: 1; min-width: 0; display: grid; grid-template-columns: auto 1fr auto; align-items: center; gap: 0.65rem; background: none; border: 0; padding: 0.45rem 0.4rem 0.45rem 0.55rem; cursor: pointer; text-align: left; color: inherit; font: inherit; }
-.garment .g-pick { cursor: pointer; text-align: left; color: inherit; font: inherit; }
 .ov-piece.off .g-name { color: var(--muted); }
 .ov-lock { width: 30px; height: 30px; border-radius: 6px; border: 1px solid var(--rule); background: var(--sheet); cursor: pointer; display: grid; place-items: center; flex: none; color: var(--muted); }
 .ov-lock svg { width: 15px; height: 15px; fill: none; stroke: currentColor; stroke-width: 1.5; }
@@ -549,7 +545,6 @@ body.is-summer .season-tag { color: var(--gold); border-color: var(--gold); }
 .keep-row { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 12px; margin: 0 0 10px; padding-bottom: 10px; border-bottom: 1px solid var(--rule); }
 .keep-row .btn { flex: none; white-space: nowrap; }
 .keep-row .ed-note { flex: 1 1 220px; margin: 0; line-height: 1.35; }
-.ov-acc { display: grid; gap: 6px; margin-bottom: 18px; }
 .acc-item { padding: 8px 10px; border: 1px solid var(--rule); border-radius: var(--radius); background: var(--sheet); }
 .acc-item.off { opacity: 0.8; }
 .acc-item.off strong { color: var(--muted); font-weight: 600; }
@@ -561,11 +556,11 @@ body.is-summer .season-tag { color: var(--gold); border-color: var(--gold); }
 /* A piece that is part of a problem says so on its own row (Colour and Outfit tabs). */
 .g-why { display: block; font: 0.74rem/1.3 var(--sans); margin-top: 2px; }
 .g-why-t { font-weight: 400; color: var(--ink); }
-.garment.st-care, .ov-piece.st-care .ov-row { box-shadow: inset 3px 0 0 var(--gold); }
-.garment.st-out, .ov-piece.st-out .ov-row { box-shadow: inset 3px 0 0 var(--accent); }
-.garment.st-care .chip, .garment.st-out .chip, .ov-piece.st-care .chip, .ov-piece.st-out .chip { position: relative; }
-.garment.st-care .chip::before, .ov-piece.st-care .chip::before { content: '!'; position: absolute; left: -5px; top: -5px; width: 1.05rem; height: 1.05rem; border-radius: 50%; background: var(--gold); color: #fff; font: 700 0.7rem/1.05rem var(--sans); text-align: center; }
-.garment.st-out .chip::before, .ov-piece.st-out .chip::before { content: '\2715'; position: absolute; left: -5px; top: -5px; width: 1.05rem; height: 1.05rem; border-radius: 50%; background: var(--accent); color: #fff; font: 700 0.62rem/1.05rem var(--sans); text-align: center; }
+.ov-piece.st-care .ov-row { box-shadow: inset 3px 0 0 var(--gold); }
+.ov-piece.st-out .ov-row { box-shadow: inset 3px 0 0 var(--accent); }
+.ov-piece.st-care .chip, .ov-piece.st-out .chip { position: relative; }
+.ov-piece.st-care .chip::before { content: '!'; position: absolute; left: -5px; top: -5px; width: 1.05rem; height: 1.05rem; border-radius: 50%; background: var(--gold); color: #fff; font: 700 0.7rem/1.05rem var(--sans); text-align: center; }
+.ov-piece.st-out .chip::before { content: '\2715'; position: absolute; left: -5px; top: -5px; width: 1.05rem; height: 1.05rem; border-radius: 50%; background: var(--accent); color: #fff; font: 700 0.62rem/1.05rem var(--sans); text-align: center; }
 
 /* Optional pieces and accessories wait in an Add bar until worn. */
 .add-bar { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; padding: 8px 2px 4px; }
@@ -747,11 +742,12 @@ body.is-summer .season-tag { color: var(--gold); border-color: var(--gold); }
 /* An empty slot: a place in the study with no colour, or a piece that is not worn. A light box with
    a dashed outline in the muted text colour (over 5:1 against the row in both themes) and a "+",
    because clicking it is how the slot is filled. */
-.garment.off .g-pick > .chip, .ov-piece.off .ov-pick > .chip, .place.empty .g-pick > .chip {
+.ov-piece.off .ov-pick > .chip, .place.empty .g-pick > .chip {
+  /* !important: the swatch's colour is an inline style, which only !important can override */
   position: relative; background: var(--sheet) !important; background-image: none !important;
   border: 1.5px dashed var(--muted); box-sizing: border-box;
 }
-.garment.off .g-pick > .chip::after, .ov-piece.off .ov-pick > .chip::after, .place.empty .g-pick > .chip::after {
+.ov-piece.off .ov-pick > .chip::after, .place.empty .g-pick > .chip::after {
   content: '+'; position: absolute; inset: 0; display: grid; place-items: center;
   font: 400 1.25rem/1 var(--sans); color: var(--muted);
 }
@@ -892,7 +888,7 @@ button.gl-c.pk-no { text-decoration: line-through; text-decoration-color: var(--
 .prop-fig .pf-lead { fill: none; stroke: currentColor; stroke-width: 0.6; }
 .print-card .pc-prop td:nth-child(2) { white-space: nowrap; }
 .print-card .pc-prop td:first-child { white-space: normal; width: 30%; }
-.pt-uses { font: 0.78rem var(--sans); color: var(--muted); margin-top: 0.2rem !important; }
+.prop-t .pt-uses { font: 0.78rem var(--sans); color: var(--muted); margin-top: 0.2rem; }   /* above .prop-t p, without !important */
 .prop-try { margin-top: 0.6rem; }
 .prop-try h4 { margin: 0 0 0.3rem; }
 .try-row { display: grid; grid-template-columns: 8.5rem 1fr 3.5rem; gap: 0.5rem; align-items: center; font: 0.82rem var(--sans); margin: 0 0 0.3rem; }
@@ -947,10 +943,6 @@ button.gl-c.pk-no { text-decoration: line-through; text-decoration-color: var(--
   #fcKind button, #propPeriod button { border: 1px solid var(--rule); border-radius: var(--radius); background: var(--paper); padding: 0.5rem 0.4rem; }
   #fcKind button[aria-checked="true"], #propPeriod button[aria-checked="true"] { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); }
 }
-
-/* Glasses: the frame's weight against the face, under the setting on the You tab */
-.g-note { font: 0.82rem/1.45 var(--sans); margin: 0.45rem 0 0; padding: 0.45rem 0.6rem; border-radius: var(--radius); border-left: 3px solid var(--good); background: var(--paper); }
-.g-note.warn { border-left-color: var(--warn); }
 
 /* The licence line in the footer */
 .foot .foot-lic { font-size: 0.78rem; color: var(--muted); margin-top: 0.3rem; }
@@ -1163,11 +1155,12 @@ button.gl-c.pk-no { text-decoration: line-through; text-decoration-color: var(--
 .ov-zone .ov-piece:not(.open) .ov-pick > .chip { width: 34px; height: 34px; }
 .ov-zone .ov-piece:not(.open) .g-name { line-height: 1.2; }
 
-/* The Dresser's checks: what matters most first, all checks one tap away, context as information */
+/* The Dresser's checks: what matters most first, then every check by section, context as information */
 .ck-top { margin-top: 0; }
 .ck-first { margin-bottom: 0.6rem; }
-.ck-all > summary { cursor: pointer; font: 600 0.9rem var(--sans); padding: 0.55rem 0; color: var(--ink); min-height: 44px; display: flex; align-items: center; }
-.ck-all > summary::marker { color: var(--muted); }
+.ck-every { margin-top: 1.1rem; padding-top: 0.9rem; border-top: 1px solid var(--rule); }
+/* a colour with no name, shown as itself inside the sentence */
+.hexsw { display: inline-block; width: 0.9em; height: 0.9em; border-radius: 2px; border: var(--sw-edge); vertical-align: -0.1em; }
 .rules .ck-i { display: inline-grid; place-items: center; width: 1.05rem; height: 1.05rem; border-radius: 50%; border: 1px solid var(--muted); color: var(--muted); font: italic 600 0.7rem var(--serif); flex: none; }
 .rules li.ctx > span:last-child { color: var(--muted); }
 

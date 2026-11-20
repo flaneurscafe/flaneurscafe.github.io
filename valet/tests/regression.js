@@ -8,7 +8,7 @@
 'use strict';
 const fs = require('fs'), path = require('path');
 global.window = {};
-for (const f of ['colour', 'vision', 'patterns', 'data', 'garments', 'engine', 'body', 'proportion']) require(path.join(__dirname, '..', 'js', f + '.js'));
+for (const f of ['colour', 'vision', 'patterns', 'data', 'garments', 'rules', 'engine', 'suggest', 'body', 'proportion']) require(path.join(__dirname, '..', 'js', f + '.js'));
 const E = window.VENGINE, G = window.VGARM, VP = window.VPAT, D = window.VDATA;
 const FILE = path.join(__dirname, 'regression.json');
 let seed = 20261120; const rnd = () => { seed = (seed * 16807) % 2147483647; return seed / 2147483647; }; const pick = a => a[Math.floor(rnd() * a.length)];

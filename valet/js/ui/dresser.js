@@ -1,14 +1,18 @@
 /* SPDX-FileCopyrightText: 2026 Budgie Perruche <https://flaneurs.cafe/contact/>
    SPDX-License-Identifier: GPL-3.0-or-later */
-/* Valet — the Dresser tab (formerly Dresser). Every piece can be given a colour and a cloth; the outfit is then
-   verified against the colour and pattern rules, each failing rule offers a fix, and open pieces
-   can be suggested or filled in around the ones that are locked. Started by the interface (js/ui/main.js) with an API. */
+/* Valet — the Dresser tab: drawing and editing. Every piece can be given a colour and a cloth; the
+   outfit is then verified against the colour and pattern rules, each failing rule offers a fix, and
+   open pieces can be suggested or filled in around the ones that are locked. The outfit as data (its
+   defaults, making it safe, its season, the form the engine reads) is in js/outfit.js; the rules are
+   in js/engine.js. Started by the interface (js/ui/main.js) with an API; window.VWARD. */
 (function () {
   'use strict';
-  const VC = window.VC, E = window.VENGINE, D = window.VDATA, VP = window.VPAT;
+  const VC = window.VC, E = window.VENGINE, D = window.VDATA, VP = window.VPAT, O = window.VOUTFIT;
   const $ = function (s, r) { return (r || document).querySelector(s); };
   const $$ = function (s, r) { return Array.prototype.slice.call((r || document).querySelectorAll(s)); };
   const esc = function (s) { return String(s).replace(/[&<>"]/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]; }); };
+  // A check names a colour that has no name by its code (#c27676); show the colour itself, with the code kept for a mouse-over and a screen reader.
+  const escs = function (s) { return esc(s).replace(/#[0-9a-fA-F]{6}\b/g, function (h) { return '<span class="hexsw" style="background:' + h + '" role="img" aria-label="colour ' + h + '" title="' + h + '"></span>'; }); };
 
   /* One row per position (garments.js). The row is named by what is worn there now; the
      position is the small line above it. */
@@ -35,27 +39,8 @@
   const tt = function (t) { return '<span class="tt t' + t + '" title="Tier ' + t + ': ' + E.TIER_TEXT[t].note.replace(/"/g, '') + '">T' + t + '</span>'; };
   const piece = function (k) { return S().outfit[k]; };
   const worn = function (k) { return piece(k).on !== false; };
-  function engineOutfit(o) {
-    o = o || S().outfit;
-    const out = {};
-    PIECES.forEach(function (p) {
-      const x = o[p.key];
-      out[p.key] = x.on === false ? null : { hex: x.hex, name: api.nameOf(x.hex), kind: x.kind, cloth: x.cloth, band: x.band, brim: x.brim, pat: x.pat || { type: 'solid' }, rise: x.rise, length: x.length, hex2: x.hex2, buttons: x.buttons, metal: x.metal };
-    });
-    // the Proportion checks, with the body's percentiles if measured
-    {
-      out.propOn = true;
-      if (window.VBODY && S().measurements && S().measurements.height > 0) { const dd = window.VBODY.derive(S().measurements, S().shape); out.body = Object.assign({ faceClass: dd.faceClass }, dd.pct); } else out.body = {};
-      out.frame = window.VPROP ? window.VPROP.frameSize(S().measurements) : null;
-      out.shape = S().shape || {};
-      out.hairStyle = S().hairStyle;
-    }
-    out.occasion = o.occasion || 'smart';
-    out.m = S().measurements || {};
-    out.acc = JSON.parse(JSON.stringify(o.acc || {}));
-    out.acc.wrist = +(S().measurements && S().measurements.wrist) || null;
-    return out;
-  }
+  // the outfit as the rule engine reads it (js/outfit.js), with the profile's measurements
+  function engineOutfit(o) { return O.engineOutfit(o || S().outfit, S(), api.nameOf); }
   /* Whether each worn piece is, right now, part of a problem it could fix: the same judgement as
      the marks on the colour swatches (fitFor), for the colour the piece already has. A piece is
      flagged only when another colour in its place would do better, so a problem between two
@@ -93,20 +78,8 @@
     undo.push(JSON.stringify(o)); if (undo.length > 30) undo.shift();
   }
   function commit(note) { const fixed = fitPatterns(); lastNote = [note, fixed].filter(Boolean).join(' '); api.commit(); render(); }
-  /* A pattern has to exist in its cloth (garments.js, CLOTH_PATS): whatever changed a piece's type,
-     cloth or pattern (a button, a fix, Keep this), a pattern its cloth cannot carry becomes plain. */
-  function clothWord(c) { return c.name.replace(/ \(shiny\)$/, '').replace(/^Cotton twill \(chino\)$/, 'cotton twill').toLowerCase(); }
-  function fitPatterns() {
-    const notes = [];
-    G.SLOTS.forEach(function (k) {
-      const x = S().outfit[k]; if (!x) return;
-      const pat = VP.norm(x.pat), c = G.cloth(k, x);
-      if (pat.type === 'solid' || !c || G.patOK(c.id, pat.type)) return;
-      x.pat = { type: 'solid' };
-      if (x.on !== false) notes.push('The ' + lname(k) + ' is now plain: ' + VP.byId[pat.type].name.toLowerCase() + ' is not made in ' + clothWord(c) + '.');
-    });
-    return notes.join(' ');
-  }
+  // a pattern its cloth cannot carry becomes plain (js/outfit.js)
+  function fitPatterns() { return O.fitPatterns(S().outfit); }
 
   /* ---------- Rendering ---------- */
   function render() {
@@ -133,7 +106,7 @@
      year; both: mixed, which the season rule fails), then by the occasion. Each verdict is worked out again when the wardrobe is
      shown, so it follows your colouring if that changes. */
   let view = 'outfit', removed = null, wNote = '';
-  const SEASONS = [['winter', 'Winter'], ['summer', 'Summer'], ['all', 'All year'], ['mixed', 'Winter and summer cloth mixed']];
+  const SEASONS = O.SEASONS, seasonOf = O.seasonOf, clothWord = O.clothWord;
   function wardrobe() { const st = S(); if (!Array.isArray(st.wardrobe)) st.wardrobe = []; return st.wardrobe; }
   /* The colouring a saved outfit is judged with: a summer outfit with your summer colouring and the
      summer season, a winter one with winter's; an all-year outfit with the season you are in now. */
@@ -144,30 +117,13 @@
     if (!aCache[w.season]) aCache[w.season] = api.analysisFor(w.season);
     return aCache[w.season] || aNow;
   }
-  function seasonOf(o) {
-    let w = 0, su = 0;
-    G.SLOTS.forEach(function (k) {
-      const x = o[k]; if (!x || x.on === false) return;
-      const c = G.cloth(k, x), kd = G.kind(k, x), sea = (kd && kd.season) || (c && c.season);
-      if (sea === 'winter') w++; else if (sea === 'summer') su++;
-    });
-    // both winter and summer cloth: the season rule fails it, so it is not filed as all year
-    return w && su ? 'mixed' : w ? 'winter' : su ? 'summer' : 'all';
-  }
-  function autoName(o) {
-    const parts = ['jacket', 'mid', 'shirt', 'trousers'].filter(function (k) { return o[k] && o[k].on !== false; }).slice(0, 2);
-    return parts.map(function (k) { return api.nameOf(o[k].hex) + ' ' + G.kind(k, o[k]).name.toLowerCase(); }).join(', ');
-  }
-  function snapshotOutfit() {
-    const o = JSON.parse(JSON.stringify(S().outfit)); delete o.savedId; o.locks = {}; return o;
-  }
   function saveOutfit(asNew) {
-    const list = wardrobe(), cur = S().outfit, o = snapshotOutfit();
-    const name = (cur.name || '').trim() || autoName(o);
+    const list = wardrobe(), cur = S().outfit, o = O.snapshotOutfit(cur);
+    const name = (cur.name || '').trim() || O.autoName(o, api.nameOf);
     const existing = !asNew && cur.savedId ? list.find(function (w) { return w.id === cur.savedId; }) : null;
     if (existing) { existing.outfit = o; existing.name = name; existing.season = seasonOf(o); existing.occasion = o.occasion; existing.saved = new Date().toISOString().slice(0, 10); lastNote = 'Updated in Saved outfits: ' + name + '.'; }
     else {
-      const id = 'w' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
+      const id = O.newId();
       list.push({ id: id, name: name, season: seasonOf(o), occasion: o.occasion || 'smart', saved: new Date().toISOString().slice(0, 10), outfit: o });
       cur.savedId = id; lastNote = 'Saved: ' + name + '.';
     }
@@ -248,14 +204,7 @@
   function importWardrobe(data) {
     if (!data || data.app !== 'valet' || !Array.isArray(data.wardrobe)) { wNote = 'That file has no saved Valet outfits in it.'; return; }
     const incoming = api.normWardrobe(data.wardrobe), list = wardrobe();
-    const sig = function (w) { return JSON.stringify([w.name, w.outfit]); };
-    const have = {}; list.forEach(function (w) { have[sig(w)] = true; });
-    let added = 0, same = 0;
-    incoming.forEach(function (w) {
-      if (have[sig(w)]) { same++; return; }
-      if (list.some(function (x) { return x.id === w.id; })) w.id = 'w' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
-      list.push(w); have[sig(w)] = true; added++;
-    });
+    const r = O.mergeWardrobe(list, incoming), added = r.added, same = r.same;
     if (!incoming.length) wNote = 'The file holds no saved outfits.';
     else wNote = 'Imported ' + added + ' outfit' + (added === 1 ? '' : 's') + (same ? '; ' + same + ' already saved' + (same === 1 ? ' was' : ' were') + ' skipped' : '') + '.';
     if (added) api.save();
@@ -297,6 +246,7 @@
   function renderVerdict(v, checks, clashes, o, a) {
     const hd = headline(v, clashes), title = hd.title, text = hd.text, level = hd.level;
     $('#ovVerdict').className = 'ov-verdict ' + level;
+    window.VAPP.result('outfit', title, level);
     $('#ovVerdict').innerHTML = '<div><strong>' + title + '</strong><span>' + esc(text) + '</span></div>' +
       '<span class="ov-counts"><span class="no">' + v.fails + ' fail' + (v.fails === 1 ? '' : 's') + '</span><span class="meh">' + v.warns + ' to note</span></span>' +
       (clashes && clashes.length ? clashList(clashes, o, a) : '') +
@@ -361,7 +311,7 @@
       const st = worst < 0.5 ? 'no' : worst < 0.85 ? 'meh' : 'ok';
       return '<button type="button" class="ovw ' + st + '" data-sec="' + sec.id + '" title="' + esc(sec.q) + '"><span class="ovw-i">' + (st === 'ok' ? '✓' : st === 'meh' ? '~' : '✕') + '</span>' + sec.title.replace(/^\d\. /, '') + '</button>';
     }).join('');
-    $$('.ovw', box).forEach(function (b) { b.addEventListener('click', function () { const all = $('#ckAll'); if (all) { all.open = true; allOpen = true; } const t = $('#sec-' + b.dataset.sec); if (t) t.scrollIntoView({ behavior: 'smooth', block: 'start' }); }); });
+    $$('.ovw', box).forEach(function (b) { b.addEventListener('click', function () { const t = $('#sec-' + b.dataset.sec); if (t) t.scrollIntoView({ behavior: 'smooth', block: 'start' }); }); });
   }
 
   function chipStyle(x) {
@@ -681,9 +631,9 @@
   const photo = { base: null, white: null, whiteAt: null, raw: null, at: null, mode: 'cloth', open: false };
   function photoHtml() {
     return '<details class="photo-pick"' + (photo.open ? ' open' : '') + '><summary>From a photo</summary>' +
-      '<p class="ed-note">A photo of the garment, ideally by a window with a sheet of white printer paper beside it. Click the paper first, which corrects the colour of the light; then click the cloth. The photo stays on this page and is not stored, so you can read several pieces from one picture.</p>' +
+      window.VAPP.say('<p class="ed-note">A photo of the garment, ideally by a window with a sheet of white printer paper beside it. Click the paper first, which corrects the colour of the light; then click the cloth. The photo stays on this page and is not stored, so you can read several pieces from one picture.</p>', '<p class="ed-note">A photo of the garment, ideally by a window with a sheet of white printer paper beside it. Tap the paper first, which corrects the colour of the light; then tap the cloth. The photo stays on this page and is not stored, so you can read several pieces from one picture.</p>') +
       '<div class="pp-bar"><label class="btn small ghost pp-choose">' + (photo.base ? 'Choose another photo' : 'Choose a photo') + '<input type="file" accept="image/*" class="pp-file" hidden></label>' +
-      (photo.base ? '<div class="seg pp-mode" role="radiogroup" aria-label="What the next click reads"><button type="button" role="radio" data-m="white" aria-checked="' + (photo.mode === 'white') + '">White paper</button><button type="button" role="radio" data-m="cloth" aria-checked="' + (photo.mode === 'cloth') + '">Cloth</button></div>' : '') + '</div>' +
+      (photo.base ? window.VAPP.say('<div class="seg pp-mode" role="radiogroup" aria-label="What the next click reads"><button type="button" role="radio" data-m="white" aria-checked="', '<div class="seg pp-mode" role="radiogroup" aria-label="What the next tap reads"><button type="button" role="radio" data-m="white" aria-checked="') + (photo.mode === 'white') + '">White paper</button><button type="button" role="radio" data-m="cloth" aria-checked="' + (photo.mode === 'cloth') + '">Cloth</button></div>' : '') + '</div>' +
       (photo.base ? '<div class="pp-wrap"><canvas class="pp-cv"></canvas></div>' : '') +
       '<div class="pp-out"></div></details>';
   }
@@ -711,7 +661,7 @@
   function photoResult(body, k) {
     const out = $('.pp-out', body); if (!out) return;
     if (!photo.base) { out.innerHTML = ''; return; }
-    if (!photo.raw) { out.innerHTML = '<p class="small muted">' + (photo.white ? 'Light corrected from the paper. Now click the cloth.' : 'Click the white paper, or skip it and click the cloth.') + '</p>'; return; }
+    if (!photo.raw) { out.innerHTML = '<p class="small muted">' + (photo.white ? window.VAPP.say('Light corrected from the paper. Now click the cloth.', 'Light corrected from the paper. Now tap the cloth.') : window.VAPP.say('Click the white paper, or skip it and click the cloth.', 'Tap the white paper, or skip it and tap the cloth.')) + '</p>'; return; }
     const hex = photo.white ? VC.rgbToHex(VC.whiteBalance(VC.hexToRgb(photo.raw), VC.hexToRgb(photo.white))) : photo.raw;
     const lab = VC.hexToLab(hex);
     const near = D.colours.map(function (c) { return { hex: c.hex, name: c.name, dE: VC.deltaE2000(lab, VC.hexToLab(c.hex)) }; }).sort(function (p1, p2) { return p1.dE - p2.dE; })[0];
@@ -780,7 +730,7 @@
     const fitS = E.fitFor(engineOutfit(), a, k);
     const sug = E.suggest(engineOutfit(), a, k, 14).map(function (q) { return Object.assign(q, { j: fitS.judge(q.hex, q.name) }); })
       .filter(function (q) { return q.j.state !== 'out'; }).slice(0, 8);
-    // What still works in this place, given the other pieces (engine.js, fitFor).
+    // What still works in this place, given the other pieces (suggest.js, fitFor).
     const fit = S().fitMark !== false ? E.fitFor(engineOutfit(), a, k) : null;
     const sw = function (hex, name, tier, extra) {
       const j = fit && fit.byHex[hex.toLowerCase()];
@@ -796,7 +746,7 @@
       });
     const ok = VC.rgbToOklch(VC.hexToRgb(x.hex));
     body.innerHTML =
-      '<h4>Suggested for this outfit</h4><p class="ed-note">The best colours for this piece, given everything else you are wearing; colours that would clash are left out, and "!" marks one that bends a rule. Hover to see it on the chart; click to wear it.</p>' +
+      window.VAPP.say('<h4>Suggested for this outfit</h4><p class="ed-note">The best colours for this piece, given everything else you are wearing; colours that would clash are left out, and "!" marks one that bends a rule. Hover to see it on the chart; click to wear it.</p>', '<h4>Suggested for this outfit</h4><p class="ed-note">The best colours for this piece, given everything else you are wearing; colours that would clash are left out, and "!" marks one that bends a rule. Tap one to wear it; Undo takes it back.</p>') +
       '<div class="sug-row">' + sug.map(function (s) {
         const care = s.j.state === 'care';
         return '<button type="button" class="sug' + (care ? ' fit-care' : '') + '" data-hex="' + s.hex + '"' + (care ? ' title="' + esc(s.j.why) + '"' : '') + '><span class="d" style="background:' + s.hex + '"></span><span><strong>' + esc(s.name) + '</strong> ' + tt(s.tier) +
@@ -1087,14 +1037,13 @@
     out.push({ label: 'Make the ' + lbl + ' plain', run: setPat({ type: 'solid' }, 'Made the ' + lbl + ' plain.') });
     return out.slice(0, 2);
   }
-  /* The checks, in the Outfit Check card's order (engine.js SECTIONS): each section has its
+  /* The checks, in the Outfit Check card's order (rules.js SECTIONS): each section has its
      question, its checks worst first, and fixes where one exists. */
   /* The checks. First what matters most: at most two findings, an impossible combination before a
      failure and a failure before a note, a measured rule before a convention, then by weight. Then
      every check, by the card's sections, one tap away (open by default when nothing is flagged, and
      kept open once opened). Context (advice about your frames, face or build) is information: it is
      marked i and never sets a section's status. */
-  let allOpen = false;
   /* A check's sentence is a button ending in "Why": it opens the opening of the passage in How it works that explains the rule (taken
      from the page itself, so it cannot drift from it), with a link to the whole passage. */
   function wireRuleHelp(root) {
@@ -1137,8 +1086,8 @@
         const ctx = E.kindOf(c) === 'context';
         const how = E.RULES[c.id] && E.RULES[c.id].how;
         return '<li class="' + (ctx ? 'ctx' : c.score < 0.5 ? 'fail' : c.score < 0.85 ? 'warn' : 'pass') + '">' + icon(c.score, c) + '<span>' +
-          (how ? '<button type="button" class="rule-help" data-how="' + how + '" data-level="' + esc(c.level || 'B') + '" aria-expanded="false">' + badge(c.level) + ' ' + esc(c.text) +
-            ' <span class="rule-why">Why<span class="rule-chev" aria-hidden="true"></span></span></button>' : badge(c.level) + ' ' + esc(c.text)) +
+          (how ? '<button type="button" class="rule-help" data-how="' + how + '" data-level="' + esc(c.level || 'B') + '" aria-expanded="false">' + badge(c.level) + ' ' + escs(c.text) +
+            ' <span class="rule-why">Why<span class="rule-chev" aria-hidden="true"></span></span></button>' : badge(c.level) + ' ' + escs(c.text)) +
           (fx.length ? '<span class="fixes">' + fx.map(function (f, j) {
             return '<button type="button" class="btn small' + (j ? ' ghost' : '') + '" data-c="' + base + '" data-f="' + j + '"' + (f.disabled ? ' disabled' : '') + '>' +
               (f.hex ? '<span class="d" style="background:' + f.hex + '"></span>' : '') + esc(f.label) + '</button>';
@@ -1157,8 +1106,7 @@
     }).join('');
     const more = flagged.length - top.length;
     $('#ovChecks').innerHTML = (top.length ? '<h3 class="ck-h ck-top">What matters most</h3><ul class="rules ck ck-first">' + top.map(row).join('') + '</ul>' : '') +
-      '<details class="ck-all" id="ckAll"' + (allOpen || !top.length ? ' open' : '') + '><summary>All checks' + (more > 0 ? ' (' + more + ' more to note or fix)' : '') + '</summary>' + sections + '</details>';
-    $('#ckAll').addEventListener('toggle', function () { allOpen = $('#ckAll').open; });
+      '<div class="ck-all" id="ckAll">' + (top.length ? '<h3 class="ck-h ck-every">Every check, by the card\'s questions' + (more > 0 ? '<span class="ck-q">' + more + ' more to note or fix below</span>' : '') + '</h3>' : '') + sections + '</div>';
     wireRuleHelp($('#ovChecks'));
     $$('#ovChecks [data-c]').forEach(function (b) {
       const f = fixMap[+b.dataset.c][+b.dataset.f]; if (!f || f.disabled) return;
@@ -1256,7 +1204,7 @@
       const worst = mine[0].score, mark = worst < 0.5 ? '✕' : worst < 0.85 ? '!' : '✓';
       const notes = mine.filter(function (c) { return c.score < 0.85; });
       return '<li class="' + (worst < 0.5 ? 'no' : worst < 0.85 ? 'meh' : 'ok') + '"><span class="oc-m">' + mark + '</span><span><strong>' + esc(sec.title.replace(/^\d\. /, '')) + '</strong>' +
-        (notes.length ? notes.map(function (c) { return '<span class="oc-why">' + esc(c.text) + '</span>'; }).join('') : '') + '</span></li>';
+        (notes.length ? notes.map(function (c) { return '<span class="oc-why">' + escs(c.text) + '</span>'; }).join('') : '') + '</span></li>';
     }).join('');
     const chart = $('#chartOutfit svg.chart-svg');
     return '<h1>' + esc(name || 'Outfit card') + '</h1>' +
@@ -1296,7 +1244,7 @@
         '<div class="oc-verdict ' + hd.level + '"><strong>' + esc(hd.title) + '.</strong> <span class="oc-count">' + v.fails + ' fail' + (v.fails === 1 ? '' : 's') + ', ' + v.warns + ' to note</span></div>' +
         '<table class="oc-table"><thead><tr><th></th><th>Piece</th><th>Colour</th><th>Cloth</th><th>Pattern</th><th>Tier</th></tr></thead><tbody>' + rows + '</tbody></table>' +
         (accs.length ? '<p class="wd-acc">' + accs.join('; ') + '.</p>' : '') +
-        (watch.length ? '<ul class="wd-notes">' + watch.map(function (c) { return '<li>' + (c.score < 0.5 ? '✕ ' : '! ') + esc(firstSentence(c.text)) + '</li>'; }).join('') + '</ul>' : '') +
+        (watch.length ? '<ul class="wd-notes">' + watch.map(function (c) { return '<li>' + (c.score < 0.5 ? '✕ ' : '! ') + escs(firstSentence(c.text)) + '</li>'; }).join('') + '</ul>' : '') +
         '<p class="wd-saved">Saved ' + esc(w.saved || '') + '.</p></div>';
     };
     const body = order.map(function (se) {

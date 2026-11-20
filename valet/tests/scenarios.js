@@ -4,7 +4,7 @@
    Run with Node from the project folder: node tests/scenarios.js (VERBOSE=1 lists each). Exits 1 on failure.
    When a rule changes on purpose, change its scenario with it. */
 global.window={}; const path=require('path'); const ROOT=path.join(__dirname,'..');
-for (const f of ['colour','vision','patterns','data','garments','engine','body','proportion']) require(path.join(ROOT,'js',f+'.js'));
+for (const f of ['colour','vision','patterns','data','garments', 'rules', 'engine', 'suggest','body','proportion']) require(path.join(ROOT,'js',f+'.js'));
 const E=window.VENGINE, G=window.VGARM, D=window.VDATA;
 const aW=E.analyseProfile(Object.assign({},D.demo,{season:'winter'})), aS=E.analyseProfile(Object.assign({},D.demo,{season:'summer'}));
 const P=(hex,kind,cloth,extra)=>Object.assign({hex,name:hex,kind,cloth,pat:{type:'solid'}},extra||{});
@@ -73,7 +73,12 @@ T('watch and buckle do not count as accents', W(base({occasion:'business',square
 
 // ---- the logic critiques (1.7): each case that was wrong before, and stays fixed ----
 const col=n=>D.colours.find(c=>c.name===n).hex;
-T('royal blue socks are not a deep colour', base({socks:P(col('Royal blue'),'socks')}), [[/^socks: .*leg line breaks/,true]]);
+T('royal blue socks with grey flannel for business: outside the family, not deep', base({socks:P(col('Royal blue'),'socks'),occasion:'business'}), [[/^socks: .*outside the trousers' colour family/,true]]);
+T('light blue socks with navy trousers for business: a distinct tone, passes (GG)', base({socks:P(col('Light blue'),'socks'),trousers:P(col('Navy'),'trousers','worsted'),occasion:'business'}), [[/^socks:/,false]]);
+T('socks that match brown shoes, not grey trousers: fails', base({socks:P(col('Chocolate'),'socks')}), [[/^socks: .*match the shoes/,true]]);
+T('muted green socks with grey flannel, smart casual: passes', base({socks:P(col('Olive'),'socks')}), [[/^socks:/,false]]);
+T('a tie with jeans: neckwear clash (GG)', base({tie:P(col('Burgundy'),'tie','grenadine'),trousers:P('#2b3a55','trousers','denim')}), [[/^denimtie: /,true]]);
+T('neon green socks: electric, noted', base({socks:P('#39ff14','socks')}), [[/^socks: /,true]]);
 T('burgundy socks with black trousers pass as a deep colour', base({socks:P(col('Burgundy'),'socks'),trousers:P(col('Black'),'trousers','worsted')}), [[/^socks:/,false]]);
 T('pinstripe jacket, plain trousers: not a suit', base({jacket:P(col('Navy'),'jacket','worsted',{pat:{type:'pinstripe',scale:1.2,hex2:'#1f2c47'}}),trousers:P(col('Navy'),'trousers','worsted')}), [[/^orphan: .*not one pattern/,true]]);
 T('stripes of 1.0 and 1.8 cm are not one suit, and are not called one', base({jacket:P(col('Navy'),'jacket','worsted',{pat:{type:'pinstripe',scale:1.0,hex2:'#f7f6f2'}}),trousers:P(col('Navy'),'trousers','worsted',{pat:{type:'pinstripe',scale:1.8,hex2:'#f7f6f2'}}),shoes:P(col('White'),'trainer','canvas')}), [[/^orphan:/,true],[/^shoe: A suit with trainers/,false]]);

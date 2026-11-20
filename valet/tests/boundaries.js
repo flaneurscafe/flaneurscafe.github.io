@@ -6,7 +6,7 @@
 'use strict';
 const path = require('path');
 global.window = {};
-for (const f of ['colour', 'vision', 'patterns', 'data', 'garments', 'engine', 'body']) require(path.join(__dirname, '..', 'js', f + '.js'));
+for (const f of ['colour', 'vision', 'patterns', 'data', 'garments', 'rules', 'engine', 'suggest', 'body']) require(path.join(__dirname, '..', 'js', f + '.js'));
 const E = window.VENGINE, D = window.VDATA, VC = window.VC, PARAMS = E.PARAMS;
 const col = n => D.colours.find(c => c.name === n).hex;
 const P = (hex, kind, cloth, extra) => Object.assign({ hex, name: hex, kind, cloth, pat: { type: 'solid' } }, extra || {});
@@ -42,7 +42,7 @@ const has = (id, re) => cs => cs.some(c => c.id === id && c.score < 0.85 && (!re
   flip('near match, upper edge', 'nearTo', d, o, has('near'), true);
   flip('near match, lower edge', 'nearFrom', d, o, has('near'), false); }
 // deep socks: lightness and chroma limits (a muted dark colour passes as deep)
-{ const o = base({ socks: P(col('Burgundy'), 'socks'), trousers: P(col('Charcoal'), 'trousers', 'flannel') });
+{ const o = base({ socks: P(col('Burgundy'), 'socks'), trousers: P(col('Charcoal'), 'trousers', 'flannel'), occasion: 'business' });   // the deep allowance matters in business dress
   flip('deep socks, lightness', 'sockDeepL', L(o.socks.hex), o, cs => !cs.some(c => c.id === 'socks' && c.score < 0.85), true);
   flip('deep socks, chroma', 'sockDeepC', okc(o.socks.hex)[1], o, cs => !cs.some(c => c.id === 'socks' && c.score < 0.85), true); }
 // tonal column: spread of the main pieces' lightness within columnL
