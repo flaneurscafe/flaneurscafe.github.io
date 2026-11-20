@@ -92,6 +92,17 @@ check('sizes give a European jacket size of half the chest', S.some(s => /Europe
 check('sizes give a European trouser size from the waist', S.some(s => /European size/.test(s.label) && s.group === 'Trousers' && /^50/.test(s.value)), S.filter(s => s.group === 'Trousers').map(s => s.value));
 const few = F.sizes({ height: 185 });
 check('with only a height, the missing measurements are named', few.some(s => s.needs && s.needs.indexOf('chest') >= 0));
+require(path.join(__dirname, '..', 'js', 'patterns.js')); require(path.join(__dirname, '..', 'js', 'garments.js'));
+const unsized = [];
+window.VGARM.POSITIONS.forEach(p => p.kinds.forEach(k => { if (!F.forDresser(p.key, k.id)) unsized.push(p.key + ':' + k.id); }));
+check('every Dresser garment is sized on Fit, or says why not', !unsized.length, unsized);
+check('every Fit check names the Dresser garments it covers', Object.keys(F.CHECKS).every(k => F.CHECKS[k].covers), Object.keys(F.CHECKS).filter(k => !F.CHECKS[k].covers));
+const M2 = Object.assign({}, M, { arm: 64, backNeckFloor: 159, waistHeight: 111 });
+check('the new checks judge: a waistcoat, a polo, a casual jacket, a short coat and a tie', ['waistcoat', 'polo', 'casual', 'shortcoat', 'tie'].every(k => F.CHECKS[k]) &&
+  F.checkGarment('casual', { chest: 120, sleeve: 65, length: 70 }, {}, M2, 'modern', {}).every(r => r && r.state) &&
+  F.checkGarment('shortcoat', { length: 90 }, {}, M2, 'modern', {})[0].state === 'right' &&
+  F.checkGarment('tie', { width: 8 }, {}, M, 'modern', { prop: { tieWidth: { lo: 7.5, hi: 9 } } })[0].state === 'right' &&
+  F.checkGarment('tie', { width: 5 }, {}, M, 'modern', { prop: { tieWidth: { lo: 7.5, hi: 9 } } })[0].style === true);
 check('clean() repairs an empty fit-check state', !!F.clean(null) && typeof F.clean(null) === 'object');
 
 console.log(failed ? failed + ' of ' + n + ' unit checks failed' : 'units: ' + n + ' checks pass (colour, vision, patterns, body, proportion, fit)');

@@ -4,7 +4,7 @@
    its parts should be on this frame, within a period whose pieces were cut to go together.
 
    Every target is graded B: where a garment should end and how wide its parts should be is tailoring
-   convention (Flusser, Dressing the Man, ch. 3; the classic fitting rules), even though turning it
+   convention (Flusser, Dressing the Man, 2002, ch. 3, pp. 34–61; the classic fitting rules), even though turning it
    into centimetres for this body is plain geometry. Following the rule of the whole project, nothing
    graded C is used: the periods come from tailoring histories, not from makers' own descriptions.
    Every target is a range, widened by how sure the measurements behind it are.
@@ -34,7 +34,7 @@
       openingFrac: [0.6, 0.7],      // trouser hem, flat across, as a share of the shoe's length
       knitOver: [3, 6],             // a knit's hem below the waistband
       breakWord: 'a slight break: the hem just touches the shoe at the front',
-      turnUp: function (h) { return h < 172 ? [3.5, 4] : h < 185 ? [4, 4.5] : [4.5, 5]; }
+      turnUp: function (h) { return h < 178 ? [4, 4.2] : [4.3, 4.5]; }   // Flusser p. 61: 1⅝ in under 5 ft 10 in, 1¾ in if taller
     },
     '1930s': {
       name: '1930s drape',
@@ -138,12 +138,12 @@
       let seat = '';
       if (v.inseam) {
         const above = hemHi - v.inseam;   // the shortest length: how far its hem sits above the crotch
-        seat = above <= 1 ? ' At either end it covers the seat.' : above <= 5 ? ' At the shorter end it covers about three quarters of the seat, the least it should.' : ' Check the shorter end in a mirror: it may stop short of the seat.';
+        seat = above <= 1 ? ' At either end it covers the seat.' : above <= 5 ? ' At the shorter end it may not quite cover the seat, which a jacket should; choose the longer end if it does not.' : ' Check the shorter end in a mirror: it may stop short of the seat.';
       }
       add({ id: 'jacketLength', group: 'Jacket', label: 'Length, centre back from the base of the collar', lo: lo, hi: hi,
         text: 'Half your back-neck-to-floor height (' + r1(v.backNeckFloor) + ' / 2 = ' + r1(base) + ')' + (lean < 0 ? ', at the shorter end because your legs are shorter than most for your height: a jacket that ends higher leaves them more length' : lean > 0 ? ', at the longer end, which your longer legs carry' : '') +
           '. The hem lands ' + Math.round(hemLo) + ' to ' + Math.round(hemHi) + ' cm from the floor.' + seat,
-        why: 'Roughly half of the figure is jacket and half trouser, and the seat stays covered.',
+        why: 'Roughly half of the figure is jacket and half trouser, and the jacket covers the curve of the seat (Flusser, Dressing the Man, pp. 40–41).',
         uses: ['backNeckFloor', 'inseam'], est: estOf(['backNeckFloor', 'inseam']) });
     } else need('jacketLength', 'Jacket', 'Length', ['height or back-neck to floor']);
 
@@ -151,7 +151,7 @@
       const at = v.backNeckFloor - v.waistHeight, u = Math.max(0.5, unc(['backNeckFloor', 'waistHeight']) / 2);
       add({ id: 'button', group: 'Jacket', label: 'Waist button, its height from the floor', lo: rr(v.waistHeight - P.buttonBelow[1] - u), hi: rr(v.waistHeight - P.buttonBelow[0] + u),
         text: 'At your natural waist (' + Math.round(v.waistHeight) + ' cm from the floor), or up to ' + P.buttonBelow[1] + ' cm below it. On the jacket that is about ' + Math.round(at + (P.buttonBelow[0] + P.buttonBelow[1]) / 2) + ' cm down the back from the base of the collar.',
-        why: 'The button marks where the jacket is narrowest. At the waist it gives the longest leg line; lower, it makes the legs look shorter.',
+        why: 'The button divides the body so that torso and legs look their longest; Flusser places it half an inch below the natural waist (Dressing the Man, pp. 41–42).',
         uses: ['backNeckFloor', 'waistHeight'], est: estOf(['backNeckFloor', 'waistHeight']) });
     }
 
@@ -160,7 +160,7 @@
       const slope = shape.shoulders === 'sloping' ? ' Sloping shoulders: some padding keeps the line level.' : shape.shoulders === 'square' ? ' Square shoulders: a soft, natural shoulder is enough.' : '';
       add({ id: 'shoulder', group: 'Jacket', label: 'Shoulder, seam to seam across the back (laid flat)', lo: rr(v.shoulder + P.shoulderAdd[0] + (big ? 0.5 : 0)), hi: rr(v.shoulder + P.shoulderAdd[1] + (big ? 1 : 0)),
         text: 'Your shoulder, ' + r1(v.shoulder) + ' cm, plus ' + P.shoulderAdd[0] + ' to ' + P.shoulderAdd[1] + ' cm' + (big ? ', a little more because your face is broad for your height: the shoulders frame the head' : '') + '.' + slope,
-        why: 'The shoulders frame the head: too narrow and the head looks larger, too wide and it looks small (Flusser).',
+        why: 'The shoulders frame the head: too narrow and the head looks larger, too wide and it looks small (Flusser, Dressing the Man, p. 37).',
         uses: ['shoulder', 'faceWidth'], est: [] });
     } else need('shoulder', 'Jacket', 'Shoulder', ['shoulder']);
 
@@ -169,7 +169,7 @@
       add({ id: 'gorge', group: 'Jacket', label: 'Gorge, where collar and lapel meet', unit: '',
         text: (P.lapelFrac[0] >= 0.55 ? 'High, as the period cut it, angled up towards the shoulder. ' : '') +
           (high ? 'A high gorge suits you: it lifts the eye and lengthens the lapel line, which a shorter figure gains from.' : low ? 'Mid or a little lower suits your height; a very high gorge looks pinched on a tall man.' : 'Mid height, roughly level with the collarbone.') ,
-        why: 'The gorge sets how long the lapel line looks: higher lengthens the figure, lower shortens it.', uses: ['height'], est: [] });
+        why: 'The gorge sets how long the lapel line looks: higher lengthens the figure, lower shortens it; it follows the build, not fashion (Flusser, Dressing the Man, pp. 42–43).', uses: ['height'], est: [] });
     }
     if (shape.posture === 'forward' || shape.posture === 'erect') {
       const fwd = shape.posture === 'forward';
@@ -187,13 +187,19 @@
       lapel = [rr(span * P.lapelFrac[0]), rr(span * P.lapelFrac[1])];
       add({ id: 'lapel', group: 'Jacket', label: 'Lapel, at its widest', lo: lapel[0], hi: lapel[1],
         text: 'From the collar to the shoulder line is about ' + r1(span) + ' cm on your jacket; the lapel takes ' + Math.round(P.lapelFrac[0] * 100) + ' to ' + Math.round(P.lapelFrac[1] * 100) + ' % of it' + (P.lapelFrac[0] >= 0.55 ? ', a wide lapel, as the period cut it' : P.lapelFrac[1] <= 0.45 ? ', a narrow lapel, as the period cut it' : ', about halfway') + '.',
-        why: "The jacket's shoulder sets the lapel: a broad man needs a fuller lapel, a narrow one a slimmer lapel (Flusser).",
+        why: "The jacket's shoulder sets the lapel: a broad man needs a fuller lapel, a narrow one a slimmer lapel (Flusser, Dressing the Man, p. 43).",
         uses: ['shoulder', 'neck'], est: [] });
     } else need('lapel', 'Jacket', 'Lapel width', missing(['shoulder', 'neck']));
 
-    if (v.arm) add({ id: 'sleeve', group: 'Jacket', label: 'Sleeve, from the shoulder seam', lo: rr(v.arm - 2), hi: rr(v.arm - 0.5),
-      text: 'Just short of the wrist bone, so 0.6 to 1.3 cm of shirt cuff shows below it.', why: 'A line of cuff finishes the sleeve, as a line of collar finishes the neck.',
-      uses: ['arm'], est: [] });
+    // Flusser, pp. 44 and 59: the sleeve ends where the wrist breaks with the hand, and no less than half an
+    // inch of shirt cuff shows; on long arms three quarters of an inch to an inch
+    if (v.arm) {
+      const ap = d.pct.arm, cuff = ap != null && ap >= 70 ? [1.9, 2.5] : ap != null && ap <= 30 ? [1.3, 1.6] : [1.3, 1.9];
+      add({ id: 'sleeve', group: 'Jacket', label: 'Sleeve, from the shoulder seam', lo: rr(v.arm - cuff[1]), hi: rr(v.arm - cuff[0]),
+        text: 'Where the wrist meets the hand, so ' + cuff[0] + ' to ' + cuff[1] + ' cm of shirt cuff shows below it' + (ap != null && ap >= 70 ? ': a little more, because your arms are longer than most.' : '.'),
+        why: 'A line of cuff finishes the sleeve, as a line of collar finishes the neck: no less than half an inch, more on long arms (Flusser, Dressing the Man, pp. 44, 59).',
+        uses: ['arm'], est: [] });
+    }
 
     /* ---------- Shirt and tie ---------- */
     if (lapel) add({ id: 'tieWidth', group: 'Shirt and tie', label: 'Tie, at its widest', lo: lapel[0], hi: lapel[1],
@@ -218,7 +224,7 @@
             : 'A semi-spread suits a face of your proportions' + (d.faceClass === 'middle' && (fs >= 65 || fs <= 35) ? ' (it leans ' + (fs >= 65 ? 'broad' : 'long') + ', but within what a tape measure can tell)' : '') + '; point lengths of about 7 to 8 cm.') +
         (bald ? ' Without hair the collar is the frame: choose a taller band, which stands up on its own.' : '') +
         ' About 1 to 1.5 cm of collar shows above the jacket collar at the back.',
-        why: 'The collar frames the face and should counterbalance it, not repeat it (Flusser).',
+        why: 'The collar frames the face and should counterbalance it, not repeat it (Flusser, Dressing the Man, pp. 46, 123–125).',
         uses: ['faceWidth', 'faceLength'], est: [], note: fs == null ? 'Add your face length for the face-shape part.' : '' });
     } else need('collar', 'Shirt and tie', 'Collar', ['faceWidth']);
 
@@ -242,7 +248,7 @@
       const lo = rr(shoe * P.openingFrac[0] + full), hi = rr(shoe * P.openingFrac[1] + full);
       add({ id: 'opening', group: 'Trousers', label: 'Leg opening, the hem laid flat', lo: lo, hi: hi,
         text: 'About ' + Math.round(P.openingFrac[0] * 100) + ' to ' + Math.round(P.openingFrac[1] * 100) + ' % of your shoe\'s length (a shoe is about ' + Math.round(shoe) + ' cm)' + (full ? ', a little wider for a fuller seat, so the leg does not taper too hard' : '') + '. Around: ' + Math.round(lo * 2) + ' to ' + Math.round(hi * 2) + ' cm.',
-        why: 'The hem should cover a good part of the shoe: too narrow and the foot looks long, too wide and it disappears.',
+        why: 'The bottom should cover about two thirds of the shoe and be wide enough to conceal the laces (Flusser, Dressing the Man, pp. 48, 61): too narrow and a large foot looks larger, too wide and a small one looks smaller.',
         uses: ['foot', 'seat'], est: [] });
     } else need('opening', 'Trousers', 'Leg opening', ['foot']);
 
@@ -250,7 +256,7 @@
       const tu = P.turnUp(H);
       add({ id: 'hem', group: 'Trousers', label: 'Length and turn-ups', lo: tu ? tu[0] : null, hi: tu ? tu[1] : null,
         text: P.breakWord.charAt(0).toUpperCase() + P.breakWord.slice(1) + '. ' + (tu ? 'Turn-ups ' + tu[0] + ' to ' + tu[1] + ' cm deep for your height.' : 'Usually no turn-ups in this period.'),
-        why: 'A deeper turn-up on a taller man keeps it in scale; a narrower leg breaks sooner, so it is cut a little shorter.', uses: ['height'], est: [] });
+        why: 'A deeper turn-up on a taller man keeps it in scale (Flusser, Dressing the Man, p. 61: 1⅝ inches under 5 ft 10 in, 1¾ if taller); a narrower leg breaks sooner, so it is cut a little shorter.', uses: ['height'], est: [] });
     }
 
     /* ---------- Knitwear and waistcoat: their length follows the trousers of the period ---------- */
@@ -263,7 +269,7 @@
         uses: ['backNeckFloor', 'waistHeight'], est: estOf(['backNeckFloor', 'waistHeight']) });
       add({ id: 'waistcoat', group: 'Knitwear and waistcoat', label: 'Waistcoat, front point below the waistband', lo: 1, hi: 3,
         text: 'Its points cover the waistband by 1 to 3 cm, so no shirt shows between.' + (P.waistband[0] >= 0 ? ' With braces and high trousers this is the period\'s line.' : ' Over mid-rise trousers that means a longer waistcoat than a 1930s one.'),
-        why: 'The waistcoat and trousers meet at the waistband; a gap breaks the figure in two.', uses: [], est: [] });
+        why: 'The waistcoat and trousers meet at the waistband; a gap breaks the figure in two. The waistband must be covered by the waistcoat (Flusser, Dressing the Man, p. 60).', uses: [], est: [] });
     }
 
     /* ---------- Coat ---------- */
@@ -303,7 +309,7 @@
       const rep = fs === 'big' ? [6, 9] : fs === 'small' ? [3, 5] : [4, 7];
       add({ id: 'pattern', group: 'Pattern', label: 'A medium pattern on a jacket, one repeat', lo: rep[0], hi: rep[1],
         text: (fs === 'big' ? 'The upper end of medium: a broad frame carries a larger repeat, and a small one reads as busy on it.' : fs === 'small' ? 'The lower end of medium: a large repeat swamps a slight frame.' : 'The middle of medium, about a lapel\'s width or a little less.') + ' Shirts and ties stay small whatever the frame.',
-        why: 'A pattern is read against the area it fills: the same check looks larger on a narrow chest than a broad one.', uses: ['height', 'shoulder'], est: [] });
+        why: 'A pattern is read against the area it fills: the same check looks larger on a narrow chest than a broad one, and small patterns exaggerate a tall man\'s length (Flusser, Dressing the Man, pp. 50, 54).', uses: ['height', 'shoulder'], est: [] });
     }
 
     // the page reads top down, and at each level from the inner layer out: face and hat, then shirt

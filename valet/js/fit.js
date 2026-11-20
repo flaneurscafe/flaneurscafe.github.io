@@ -93,6 +93,28 @@
     // Accessories and the rest
     if (has('wrist')) { const w = watchRange(m.wrist); add({ group: 'Accessories', label: 'Watch case', value: w[0] + '–' + w[1] + ' mm', level: 'B', how: 'Inside the width of the wrist, and thin enough to slip under a shirt cuff.' }); }
     else need('Accessories', 'Watch case', ['wrist']);
+    // Belt (B): most makers label a belt with the trouser waist it fits, measured to the middle hole; some
+    // label its whole length, about two inches more. Flusser, p. 226: the end finishes between the
+    // trousers' first and second loop, and a dress belt is 1¼ to 1½ inches wide.
+    if (has('waist')) {
+      const bw = Math.round(inch(m.waist) / 2) * 2;
+      add({ group: 'Accessories', label: 'Belt', value: bw + ' in (' + Math.round(bw * IN) + ' cm)', level: 'B',
+        how: 'Your trouser waist in inches, rounded to the even size belts come in: the size most makers label, measured to the middle hole. A maker that labels the whole length runs about two sizes up (' + (bw + 2) + '). Buckled, the end should finish between the first and second belt loop.' });
+    } else need('Accessories', 'Belt', ['waist']);
+    // Gloves (B): sized by the hand's circumference over the knuckles, in inches, in half sizes; the
+    // letters are bands of them (makers differ by half a size).
+    if (has('hand')) {
+      const g = Math.round(inch(m.hand) * 2) / 2, L = g < 7.75 ? 'S' : g < 8.75 ? 'M' : g < 9.75 ? 'L' : 'XL';
+      add({ group: 'Accessories', label: 'Gloves', value: String(g).replace('.5', '½') + ' (' + L + ')', level: 'B',
+        how: 'Your hand around the knuckles, ' + m.hand + ' cm, in inches and rounded to the half size gloves come in; S is about 7 to 7½, M 8 to 8½, L 9 to 9½. Leather gives a little with wear, so between two sizes take the smaller in leather and the larger in knitted or lined gloves.' });
+    } else need('Accessories', 'Gloves', ['hand']);
+    // Socks (B): sold in bands of shoe sizes; the band is read off the shoe size worked out above.
+    if (has('foot')) {
+      const eu = Math.round((m.foot + 1.5) * 1.5 * 2) / 2;
+      const band = eu < 39 ? ['35–38', '3–5½'] : eu < 43 ? ['39–42', '6–8½'] : eu < 47 ? ['43–46', '9–11½'] : ['47–50', '12–14'];
+      add({ group: 'Accessories', label: 'Socks', value: 'EU ' + band[0] + ' (UK ' + band[1] + ')', level: 'B',
+        how: 'Socks are sold in bands of shoe sizes; this is the band for your shoe size, EU about ' + eu + '. Bands differ a little between makers; at the edge of one, the larger keeps the heel in place.' });
+    } else need('Accessories', 'Socks', ['foot']);
     if (has('head')) {
       const us = Math.round(inch(m.head) / Math.PI * 8) / 8;
       const F = ['', '⅛', '¼', '⅜', '½', '⅝', '¾', '⅞'];
@@ -120,7 +142,7 @@
      may name a Proportion target (prop) or give its own range (rng). low and high are what to say
      outside a range: [state, text, alter]. alter says how a tailor can mend it: 'easy', 'some', 'no'. */
   const CHECKS = {
-    jacket: { name: 'Jacket', cut: true, fields: [
+    jacket: { name: 'Jacket', covers: 'Jacket, blazer, suit jacket', cut: true, fields: [
       { key: 'chest', label: 'Chest, around', body: 'chest', flat: true, step: 4, around: true,
         cuts: { slim: [6, 10], modern: [10, 14], classic: [14, 19] },
         tight: [6, 'Too tight for any cut: the lapels bow and the front pulls into an X when buttoned.', 'some'],
@@ -146,7 +168,7 @@
         styleText: function (d, lo, hi) { return (d < 0 ? 'Narrower' : 'Wider') + ' than the lapels of the period chosen on Proportion (' + lo + ' to ' + hi + ' cm). A matter of period, not of fit: another size will not change it. The periods it suits are listed below.'; },
         ok: 'In proportion to your shoulders for the period chosen on Proportion.' }
     ] },
-    coat: { name: 'Overcoat', cut: true, fields: [
+    coat: { name: 'Overcoat', covers: 'Overcoat, Chesterfield, covert coat, trench coat', cut: true, fields: [
       // worn over a jacket: the ease is the jacket's plus about 8 cm of room for it (B), so each cut assumes a
       // jacket of the same cut beneath (a slim overcoat will not go over a classic jacket)
       { key: 'chest', label: 'Chest, around', body: 'chest', flat: true, step: 4, around: true,
@@ -166,7 +188,7 @@
         high: ['long', 'Long for the length you want: a coat can be shortened, but the vents and pockets set the limit.', 'some'],
         ok: 'Right for your build and the period.' }
     ] },
-    shirt: { name: 'Shirt', cut: true, fields: [
+    shirt: { name: 'Shirt', covers: 'Dress shirt', cut: true, fields: [
       { key: 'collar', label: 'Collar', body: 'neck',
         bands: [[-99, 0.5, 'tight', 'Tight: it will not close comfortably. Collars cannot be enlarged.', 'no'], [0.5, 2.5, 'right', 'Right: about 1.25 cm (half an inch) over the neck, so one finger fits.', null], [2.5, 99, 'loose', 'Loose: the collar gapes and a tie knot pulls it in. Collars cannot be made smaller.', 'no']] },
       { key: 'chest', label: 'Chest, around', body: 'chest', flat: true, step: 5, around: true,
@@ -176,7 +198,7 @@
       { key: 'sleeve', label: 'Sleeve, centre back to cuff', target: function (m) { return m.shoulder && m.arm ? m.shoulder / 2 + m.arm + 2.5 : null; }, needs: ['shoulder', 'arm'],
         bands: [[-99, -2, 'short', 'Short: the cuff will not show below a jacket sleeve. Cannot be lengthened.', 'no'], [-2, 2, 'right', 'Right: the cuff covers the wrist bone.', null], [2, 99, 'long', 'Long: the cuff slides over the hand. Many shirtmakers shorten sleeves.', 'easy']] }
     ] },
-    knit: { name: 'Knit', cut: true, fields: [
+    knit: { name: 'Knit', covers: 'Crew neck, V-neck, cardigan, shawl-collar cardigan, roll neck, knitted polo', cut: true, fields: [
       { key: 'chest', label: 'Chest, around', body: 'chest', flat: true, step: 5, around: true,
         cuts: { slim: [2, 6], modern: [6, 11], classic: [11, 18] },
         tight: [2, 'Clings: the shirt buttons and seams show through, and it will not go under a jacket.', 'no'],
@@ -192,7 +214,102 @@
         high: ['long', 'Long: more than a rib cuff can gather; it bunches at the wrist.', 'no'],
         ok: 'The cuff sits at the wrist bone.' }
     ] },
-    trousers: { name: 'Trousers', cut: true, fields: [
+    /* The garments the Dresser offers that the checks above did not cover. Ease and length ranges
+       are working values in the same spirit as the others (B), each said in How it works, section 14. */
+    polo: { name: 'Polo or T-shirt', covers: 'Polo shirt, T-shirt', cut: true, fields: [
+      { key: 'chest', label: 'Chest, around', body: 'chest', flat: true, step: 5, around: true,
+        cuts: { slim: [4, 9], modern: [9, 14], classic: [14, 20] },
+        tight: [4, 'Clings: every line of the body shows, and the jersey stretches across the chest.', 'no'],
+        loose: [20, 'Fuller than a classic cut: it billows when tucked in and tents when not.', 'no'] },
+      { key: 'shoulder', label: 'Shoulders, seam to seam', rng: function (m) { return m.shoulder ? [m.shoulder - 1, m.shoulder + 2.5] : null; }, needs: ['shoulder'],
+        low: ['tight', 'Narrow: the seam rides up toward the neck and the sleeves pull.', 'no'],
+        high: ['loose', 'Wide: the seam drops down the arm, which reads as a size too big.', 'no'],
+        ok: 'The seam sits at the shoulder bone.' },
+      { key: 'length', label: 'Length, back of the collar to the hem', prop: 'knit', periodSoft: true,
+        low: ['short', 'Short: worn out, the waistband shows when you reach. Cannot be lengthened.', 'no'],
+        high: ['long', 'Long: worn out it covers the seat, so it can only be tucked in.', 'some'],
+        soft: [8, 'Longer than a knit for the period\'s trousers: fine tucked in, and worn out over lower trousers.'],
+        ok: 'Worn out, the hem covers the waistband; long enough to stay tucked in.' }
+    ] },
+    waistcoat: { name: 'Waistcoat', covers: 'Waistcoat, odd or of a suit', cut: true, fields: [
+      // worn under the jacket and over the shirt, so closer than a jacket (B); Flusser, p. 60: full enough to
+      // sit in, with no looseness at the waist
+      { key: 'chest', label: 'Chest, around', body: 'chest', flat: true, step: 4, around: true,
+        cuts: { slim: [2, 5], modern: [5, 9], classic: [9, 13] },
+        tight: [2, 'Tight: the buttons pull and it will not let you sit comfortably. The back strap and seams give a little.', 'some'],
+        loose: [13, 'Loose: it stands away from the shirt and shows under the jacket. A tailor can take in the back.', 'easy'] },
+      { key: 'length', label: 'Length, back of the collar to the hem', prop: 'knit', periodSoft: true,
+        low: ['short', 'Short: shirt or belt shows between it and the trousers. Cannot be lengthened.', 'no'],
+        high: ['long', 'Long: its points reach past the hip bone and bunch under the jacket.', 'no'],
+        soft: [6, 'Longer than the period\'s waistband needs: right over mid-rise trousers, long over high-waisted ones.'],
+        ok: 'It covers the waistband of the period\'s trousers; the front points go a little lower.' }
+    ] },
+    casual: { name: 'Casual jacket', covers: 'Overshirt, waxed jacket, field jacket, Harrington', cut: true, fields: [
+      // worn over a shirt or a knit, not over a jacket (B)
+      { key: 'chest', label: 'Chest, around', body: 'chest', flat: true, step: 4, around: true,
+        cuts: { slim: [10, 15], modern: [15, 21], classic: [21, 28] },
+        tight: [10, 'Too tight to go over a knit: it pulls across the chest and will not close.', 'no'],
+        loose: [28, 'Boxy even for a casual cut: it hangs like a coat. A tailor can do little.', 'some'] },
+      { key: 'shoulder', label: 'Shoulders, seam to seam', rng: function (m) { return m.shoulder ? [m.shoulder, m.shoulder + 4] : null; }, needs: ['shoulder'],
+        low: ['tight', 'Narrow: the sleeve pulls over a knit. Shoulders cannot be let out.', 'no'],
+        high: ['loose', 'Wide: the seam drops down the arm. Cannot be altered.', 'no'],
+        ok: 'At or just beyond your shoulders, with room for a knit.' },
+      { key: 'sleeve', label: 'Sleeve, from the shoulder seam', rng: function (m) { return m.arm ? [m.arm, m.arm + 3] : null; }, needs: ['arm'],
+        low: ['short', 'Short: the shirt cuff shows when you reach. Cannot be lengthened.', 'no'],
+        high: ['long', 'Long: it covers the hand. Cuffed sleeves are hard to shorten.', 'some'],
+        ok: 'It covers the shirt cuff with the arms hanging.' },
+      // from just over the waistband (a Harrington) to the length of a tailored jacket (a waxed jacket)
+      { key: 'length', label: 'Length, back of the collar to the hem', rng: function (m) { return m.backNeckFloor && m.waistHeight ? [m.backNeckFloor - m.waistHeight + 2, m.backNeckFloor / 2 + 3] : null; }, needs: ['backNeckFloor', 'waistHeight'],
+        low: ['short', 'Short: it rides above the waistband when you reach. Cannot be lengthened.', 'no'],
+        high: ['long', 'Longer than a tailored jacket: it reads as a coat. Check it as a short coat.', 'some'],
+        ok: 'Between just over the waistband and the length of a tailored jacket, as the style wants.' }
+    ] },
+    shortcoat: { name: 'Short coat', covers: 'Peacoat, duffle coat, parka', cut: true, fields: [
+      { key: 'chest', label: 'Chest, around', body: 'chest', flat: true, step: 4, around: true,
+        cuts: { slim: [14, 19], modern: [19, 25], classic: [25, 34] },
+        tight: [14, 'Too tight to go over a jacket or a thick knit.', 'no'],
+        loose: [34, 'Fuller than even a classic cut: it hangs like a tent.', 'some'] },
+      { key: 'shoulder', label: 'Shoulders, seam to seam', rng: function (m) { return m.shoulder ? [m.shoulder + 1.5, m.shoulder + 5] : null; }, needs: ['shoulder'],
+        low: ['tight', 'Narrow: over a jacket the sleeve head will pinch. Shoulders cannot be let out.', 'no'],
+        high: ['loose', 'Wide even for a coat: the seam drops down the arm. Cannot be altered.', 'no'],
+        ok: 'Just beyond your shoulders, so a jacket fits under it.' },
+      { key: 'sleeve', label: 'Sleeve, from the shoulder seam', rng: function (m) { return m.arm ? [m.arm + 0.5, m.arm + 2.5] : null; }, needs: ['arm'],
+        low: ['short', 'Short: the jacket sleeve will show below it.', 'some'],
+        high: ['long', 'Long: it covers the hand. A coat sleeve shortens easily.', 'easy'],
+        ok: 'It covers the jacket sleeve and the shirt cuff.' },
+      // over a jacket by a hand at least, and above where an overcoat starts (proportion.js: the knee)
+      { key: 'length', label: 'Length, back of the collar to the hem', rng: function (m) { return m.backNeckFloor && m.height ? [m.backNeckFloor / 2 + 6, m.backNeckFloor - (m.height * 0.278 + 8)] : null; }, needs: ['backNeckFloor', 'height'],
+        low: ['short', 'Short: a jacket would show below it. Cannot be lengthened.', 'no'],
+        high: ['long', 'As long as an overcoat: check it as an overcoat instead.', 'some'],
+        ok: 'It covers a jacket and ends above the knee.' }
+    ] },
+    tie: { name: 'Tie', covers: 'Tie', fields: [
+      // the tie's width follows the lapel (Flusser, pp. 43, 46): the Proportion target for your shoulders and the period
+      { key: 'width', label: 'Width, at its widest', prop: 'tieWidth', style: true, needs: ['shoulder'],
+        styleText: function (d, lo, hi) { return (d < 0 ? 'Narrower' : 'Wider') + ' than the lapel width for your shoulders and the period chosen on Proportion (' + lo + ' to ' + hi + ' cm). A matter of style, not of size: wear it with lapels to match.'; },
+        ok: 'In proportion to the lapels for your shoulders and the period.' }
+    ] },
+    bowtie: { name: 'Bow tie', covers: 'Bow tie', fields: [
+      // Flusser, p. 162: no wider than the face, and within the collar; the outer corners of the eyes are
+      // taken as about 0.7 of the face's width (Valet does not measure them: a working value)
+      { key: 'width', label: 'Width of the tied bow, tip to tip', rng: function (m) { return m.faceWidth ? [Math.round(m.faceWidth * 0.7 * 2) / 2, m.faceWidth] : null; }, needs: ['faceWidth'],
+        low: ['short', 'Narrower than the outer corners of your eyes: a small bow under a broad face looks pinched.', 'no'],
+        high: ['long', 'Wider than your face: the bow reaches past it, and past the collar.', 'no'],
+        ok: 'Between the outer corners of your eyes and the sides of your face.' },
+      { key: 'neckMax', label: 'Largest neck it adjusts to', rng: function (m) { return m.neck ? [m.neck + 1.25, 99] : null; }, needs: ['neck'], tol: 0.5,
+        low: ['tight', 'It will not reach round your buttoned collar.', 'no'],
+        high: ['loose', '', null], ok: 'It reaches round your buttoned collar.' },
+      { key: 'neckMin', label: 'Smallest neck it adjusts to', rng: function (m) { return m.neck ? [20, m.neck + 1.25] : null; }, needs: ['neck'], tol: 0.5,
+        low: ['tight', '', null],
+        high: ['loose', 'It will not tighten to your collar: the bow will sag.', 'no'], ok: 'It tightens to your collar.' }
+    ] },
+    gloves: { name: 'Gloves', covers: 'Leather, suede and knitted gloves', fields: [
+      { key: 'palm', label: 'Palm, around the knuckles', rng: function (m) { return m.hand ? [m.hand - 0.5, m.hand + 1] : null; }, needs: ['hand'], tol: 0.4, around: true,
+        low: ['tight', 'Tight: the seams strain and the fingers bend stiffly. Leather gives a little with wear, knitted gloves more.', 'some'],
+        high: ['loose', 'Loose: the leather wrinkles across the back of the hand and the fingertips are empty.', 'no'],
+        ok: 'Snug around the knuckles, with room to make a fist.' }
+    ] },
+    trousers: { name: 'Trousers', covers: 'Trousers, suit trousers, jeans', cut: true, fields: [
       { key: 'waist', label: 'Waist, around', body: 'waist', flat: true, around: true,
         bands: [[-99, -1, 'tight', 'Tight. A tailor can let out the back seam by what is folded inside, often 2 to 4 cm.', 'some'], [-1, 2.5, 'right', 'Right: on your waist, with a belt barely needed.', null], [2.5, 6, 'loose', 'Loose: the belt will gather the cloth. Easy to take in at the back seam.', 'easy'], [6, 99, 'loose', 'Much too large at the waist; the seat and thighs will be too large as well.', 'some']] },
       { key: 'seat', label: 'Seat, around', body: 'seat', flat: true, step: 4, around: true,
@@ -210,20 +327,40 @@
         high: ['loose', 'Wider than your shoe and the period want. A tailor can taper the leg.', 'easy'],
         ok: 'It covers the back of the shoe and rests on it.' }
     ] },
-    shoes: { name: 'Shoes', fields: [
+    shoes: { name: 'Shoes', covers: 'Every shoe and boot', fields: [
       // the inside of the shoe is longer than the foot: about a centimetre and a half for the toes to move (B)
       { key: 'insole', label: 'Inside length, heel to toe', rng: function (m) { return m.foot ? [m.foot + 1, m.foot + 1.8] : null; }, needs: ['foot'], tol: 0.4,
         low: ['tight', 'Short: the toes will touch the front. Leather gives a little in width, never in length.', 'no'],
         high: ['loose', 'Long: the heel slips and the front creases deeply. An insole helps only a little.', 'some'],
         ok: 'Room for the toes, and the heel stays put.' }
     ] },
-    hat: { name: 'Hat', fields: [
+    hat: { name: 'Hat', covers: 'Every hat and cap', fields: [
       { key: 'inner', label: 'Inside, around the sweatband', rng: function (m) { return m.head ? [m.head, m.head + 1] : null; }, needs: ['head'], tol: 0.4, around: true,
         low: ['tight', 'Tight: it presses on the forehead. A hatter can stretch a felt hat by about half a size.', 'some'],
         high: ['loose', 'Loose: it slips down. A strip of foam behind the sweatband takes up half a size.', 'easy'],
         ok: 'Snug without pressing.' }
     ] }
   };
+  /* Every garment the Dresser offers (garments.js, position:kind) and the check that sizes it here, or,
+     for one with no check, why not. tests/units.js checks that no Dresser garment is missing, so a
+     garment added there must be sized here or say why it is not. */
+  const FOR_DRESSER = {
+    'hat:*': 'hat', 'shoes:*': 'shoes',
+    'shirt:shirt': 'shirt', 'shirt:rollneck': 'knit', 'shirt:knitpolo': 'knit', 'shirt:polo': 'polo', 'shirt:tee': 'polo',
+    'tie:tie': 'tie', 'tie:bowtie': 'bowtie', 'tie:cravat': 'Worn loosely inside an open collar; one size.',
+    'scarf:scarf': 'One size.',
+    'mid:crew': 'knit', 'mid:vneck': 'knit', 'mid:cardigan': 'knit', 'mid:shawl': 'knit', 'mid:waistcoat': 'waistcoat',
+    'jacket:jacket': 'jacket', 'jacket:blazer': 'jacket', 'jacket:overshirt': 'casual', 'jacket:waxed': 'casual', 'jacket:field': 'casual', 'jacket:harrington': 'casual',
+    'coat:overcoat': 'coat', 'coat:chesterfield': 'coat', 'coat:covert': 'coat', 'coat:trench': 'coat',
+    'coat:peacoat': 'shortcoat', 'coat:duffle': 'shortcoat', 'coat:parka': 'shortcoat',
+    'square:square': 'One size.', 'boutonniere:*': 'One size.',
+    'trousers:trousers': 'trousers', 'socks:socks': 'Sold in bands of shoe sizes: see Your sizes.',
+    'gloves:*': 'gloves'
+  };
+  function forDresser(pos, id) {
+    const v = FOR_DRESSER[pos + ':' + id] || FOR_DRESSER[pos + ':*'];
+    return v == null ? null : CHECKS[v] ? { kind: v } : { none: v };
+  }
   /* The cut a garment has on you follows from its ease: the same jacket is slim on a broad man and
      classic on a narrow one. want is the cut you are after: 'slim', 'modern' or 'classic'. */
   const CUT_NAME = { slim: 'slim', modern: 'modern (tailored)', classic: 'classic' };
@@ -382,7 +519,24 @@
       ['Shoulders and sleeves', 'Shoulder seam at the shoulder bone, cuffs at the wrist.'],
       ['Under a jacket', 'Thin enough that the jacket still buttons without strain.']
     ] },
-    { name: 'Overcoat', items: [
+    { name: 'Waistcoat', items: [
+      ['Back strap fastened', 'Fit it with the strap at the back done up: it shapes the waist and keeps the waistcoat from riding up.'],
+      ['Waistband covered', 'Its points cover the trousers\' waistband, so no shirt or belt buckle shows; braces help keep it so. The points stop before the hip bone.'],
+      ['Sitting down', 'Full enough in the chest to sit comfortably, with no looseness at the waist. The bottom button is left undone.'],
+      ['Under the jacket', 'No more than the top button shows above the buttoned jacket.']
+    ] },
+    { name: 'Polo or T-shirt', items: [
+      ['Shoulder seam', 'At the shoulder bone, not climbing to the neck or down the arm.'],
+      ['Sleeves', 'Short sleeves that end just above the elbow look more finished than ones at mid-biceps; they lie close without gripping.'],
+      ['Length', 'Worn out, it covers the waistband and stops before the seat is hidden.'],
+      ['Collar', 'A polo collar stands around the neck to frame the face rather than lying flat.']
+    ] },
+    { name: 'Casual jacket', items: [
+      ['Over a knit', 'Try it over the thickest knit you will wear under it; it should still close without pulling.'],
+      ['Sleeves', 'They cover the shirt cuff with the arms hanging, and do not ride up far when you reach.'],
+      ['Collar', 'The collar stands around the neck and frames the face.']
+    ] },
+    { name: 'Overcoat or short coat', items: [
       ['Over a jacket', 'Try it on over the jacket you will wear under it. It buttons without pulling, and the jacket sleeves do not bunch inside.'],
       ['Sleeves', 'They cover the jacket sleeve and the shirt cuff with the arms hanging.'],
       ['Collar', 'It hugs the jacket collar at the back of the neck, and turned up it closes around the throat.']
@@ -392,6 +546,15 @@
       ['Width', 'The widest part of the foot sits at the widest part of the shoe, with no bulge at the sides.'],
       ['Heel', 'The heel lifts very little when you walk; a leather sole will slip a little at first.']
     ]},
+    { name: 'Bow tie', items: [
+      ['Width', 'Tied, the bow ends between the outer corners of your eyes and the sides of your face, and inside the collar points.'],
+      ['Tie it yourself', 'A self-tie bow, adjusted to your collar size, sits better than a pre-tied one; check it still shortens enough.']
+    ] },
+    { name: 'Gloves', items: [
+      ['Make a fist', 'The leather stretches across the knuckles without straining the seams.'],
+      ['Fingertips', 'The fingers reach the ends without pushing into them or leaving empty tips.'],
+      ['Wrist', 'The cuff covers the wrist and tucks under a coat sleeve.']
+    ] },
     { name: 'Hat', items: [
       ['Fit', 'Snug all round without a red line on the forehead afterwards; it should not move when you nod.'],
       ['Height on the head', 'The brim sits about two fingers above the eyebrows, level or a little tilted.']
@@ -429,6 +592,11 @@
       { id: 'us', name: 'US (7, 7⅛, 7¼… as 7.125, 7.25)', body: 'head', hat: true, toCm: function (n) { return n * Math.PI * IN; } }]
   };
   LABELS.coat = LABELS.jacket;   // overcoats are sold by the jacket size they go over
+  LABELS.shortcoat = LABELS.jacket;
+  LABELS.waistcoat = LABELS.jacket;   // waistcoats are sold by the jacket size they go with
+  // gloves are labelled with the hand they fit, in inches around the knuckles (B)
+  LABELS.gloves = [{ id: 'in', name: 'Glove size (7, 7½, 8… as 7.5)', body: 'hand', glove: true, toCm: function (n) { return n * IN; } },
+    { id: 'letter', name: 'Letter (1 = S, 2 = M, 3 = L, 4 = XL)', body: 'hand', glove: true, toCm: function (n) { return (6.25 + Math.round(n)) * IN; } }];
   function checkLabel(kind, sysId, n, m, want) {
     const sys = (LABELS[kind] || []).find(function (s) { return s.id === sysId; });
     if (!sys || !(n > 0)) return null;
@@ -447,6 +615,10 @@
     } else if (sys.shoe) {
       state = d > 0.4 ? 'tight' : d < -0.8 ? 'loose' : 'right';
       text = 'Made for a foot of about ' + r1(made) + ' cm; yours is ' + body + '. ' + (state === 'tight' ? 'Your toes will reach the front: go up half a size.' : state === 'loose' ? 'Your heel will slip: go down half a size.' : 'The right length on paper.') + ' Lasts differ between makers by half a size or more, and width matters as much: try them on, late in the day.';
+      return { state: state, text: text };
+    } else if (sys.glove) {
+      state = d > 0.7 ? 'tight' : d < -1.3 ? 'loose' : 'right';
+      text = 'Made for a hand of about ' + r1(made) + ' cm around the knuckles; yours is ' + body + '. ' + (state === 'tight' ? 'Tight: go up half a size; leather gives only a little.' : state === 'loose' ? 'Loose: go down half a size.' : 'The right size.') + ' Finger lengths differ between makers, so try them on.';
       return { state: state, text: text };
     } else if (sys.hat) {
       state = d > 0.5 ? 'tight' : d < -1 ? 'loose' : 'right';
@@ -486,5 +658,5 @@
     return out;
   }
 
-  window.VFIT = { CUT_NAME: CUT_NAME, CUT_ORDER: CUT_ORDER, clean: clean, CLEAN: CLEAN, MAX_SIZES: MAX_SIZES, checkLabel: checkLabel, LABELS: LABELS, sizes: sizes, collar: collar, watchRange: watchRange, lengthLetter: lengthLetter, CHECKS: CHECKS, checkGarment: checkGarment, verdictOf: verdictOf, bestSize: bestSize, periodFit: periodFit, TRYON: TRYON };
+  window.VFIT = { CUT_NAME: CUT_NAME, CUT_ORDER: CUT_ORDER, clean: clean, CLEAN: CLEAN, MAX_SIZES: MAX_SIZES, checkLabel: checkLabel, LABELS: LABELS, sizes: sizes, collar: collar, watchRange: watchRange, lengthLetter: lengthLetter, CHECKS: CHECKS, FOR_DRESSER: FOR_DRESSER, forDresser: forDresser, checkGarment: checkGarment, verdictOf: verdictOf, bestSize: bestSize, periodFit: periodFit, TRYON: TRYON };
 })();

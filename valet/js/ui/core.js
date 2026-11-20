@@ -102,6 +102,11 @@
       helper: 'alone', helperNote: 'Easy alone.',
       garment: 'From a watch strap that fits: measure from the buckle pin to the hole you use, plus the length of the watch case and lugs.',
       use: 'Watch case size (Accessories on the Dresser).' },
+    { key: 'hand', label: 'Hand', what: 'Hand circumference around the palm, over the knuckles, without the thumb.',
+      how: 'Open your writing hand, fingers together, and wrap a soft tape around the widest part of the palm, just below the knuckles, leaving the thumb out. Snug, not tight.',
+      helper: 'alone', helperNote: 'Easy alone.',
+      garment: 'Not from a glove: leather stretches and makers differ. A glove that fits is the check, not the source.',
+      use: 'Glove size (Fit & size).' },
     { key: 'head', label: 'Head', what: 'Head circumference where a hat sits.',
       how: 'Tape around the head across the middle of the forehead and just above the ears, level all round, snug.',
       helper: 'alone', helperNote: 'Easy alone in a mirror.',
@@ -365,7 +370,7 @@
     'echo': {
       title: 'Echo', what: 'Colours from the library that repeat the colour of your eyes or your hair.',
       how: 'Use one near the feature it repeats: a tie or shirt for the eyes, a jacket, knit or shoes for the hair. Colours tagged T3 or T4 echo you but belong away from the face.',
-      use: 'A classic technique in the tailoring literature (Flusser 2002). It rests on how the eye groups what it sees: colours that are alike are seen as belonging together (grouping by similarity, Wertheimer 1923), so a repeated colour reads as chosen and sends the eye back to the feature it matches.'
+      use: 'A classic technique in the tailoring literature (Flusser, Dressing the Man, 2002, pp. 23–24, 28–31). It rests on how the eye groups what it sees: colours that are alike are seen as belonging together (grouping by similarity, Wertheimer 1923), so a repeated colour reads as chosen and sends the eye back to the feature it matches.'
     },
     'useWhite': {
       title: 'White reference correction',

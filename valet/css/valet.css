@@ -635,6 +635,12 @@ body.is-summer .season-tag { color: var(--gold); border-color: var(--gold); }
 .fit-row.miss dd { color: var(--muted); font-style: italic; }
 .fit-controls { display: flex; flex-wrap: wrap; gap: 0.8rem 1.6rem; align-items: flex-start; margin: 0.6rem 0 0.8rem; }
 .fit-controls .flabel { display: block; margin-bottom: 0.25rem; }
+/* fourteen garments: a grid of buttons rather than one long segmented bar */
+#fcKind { display: grid; grid-template-columns: repeat(auto-fill, minmax(7.6rem, 1fr)); gap: 0.35rem; width: 100%; max-width: 46rem; border: 0; background: none; overflow: visible; }
+#fcKind button { border: 1px solid var(--rule); border-radius: var(--radius); background: var(--paper); padding: 0.45rem 0.4rem; }
+#fcKind button[aria-checked="true"] { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); }
+.fc-covers { margin: 0.35rem 0 0; }
+.fit-controls > div:first-child { flex: 1 1 100%; }
 .fc-cuthelp { margin: 0.3rem 0 0; max-width: 22rem; }
 .fc-form { display: grid; grid-template-columns: repeat(auto-fill, minmax(15rem, 1fr)); gap: 0.6rem 1.2rem; margin: 0.5rem 0 0.8rem; font: 0.84rem var(--sans); }
 .fc-form label { display: flex; flex-direction: column; gap: 0.25rem; }

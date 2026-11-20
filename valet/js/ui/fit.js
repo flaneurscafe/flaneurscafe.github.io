@@ -53,7 +53,8 @@
     const mode = hasLabel ? fc.mode : 'measure';
     h += '<h3>Will it fit?</h3>' +
       '<div class="fit-controls">' +
-      '<div><span class="flabel">Garment</span><div class="seg" role="radiogroup" id="fcKind">' + Object.keys(CHECKS).map(function (k) { return '<button type="button" role="radio" data-v="' + k + '" aria-checked="' + (fc.kind === k) + '">' + CHECKS[k].name + '</button>'; }).join('') + '</div></div>' +
+      '<div><span class="flabel">Garment</span><div class="seg" role="radiogroup" id="fcKind">' + Object.keys(CHECKS).map(function (k) { return '<button type="button" role="radio" data-v="' + k + '" aria-checked="' + (fc.kind === k) + '">' + CHECKS[k].name + '</button>'; }).join('') + '</div>' +
+        (def.covers ? '<p class="small muted fc-covers">For the Dresser\'s ' + esc(def.covers.charAt(0).toLowerCase() + def.covers.slice(1)) + '.</p>' : '') + '</div>' +
       (def.cut ? '<div><span class="flabel">The cut you want</span><div class="seg" role="radiogroup" id="fcWant">' + CUT_ORDER.map(function (c) { return '<button type="button" role="radio" data-v="' + c + '" aria-checked="' + (fc.want === c) + '">' + c.charAt(0).toUpperCase() + c.slice(1) + '</button>'; }).join('') + '</div>' +
         '<p class="small muted fc-cuthelp">' + CUT_NAME[fc.want].replace(/^./, function (c) { return c.toUpperCase(); }) + ': ' + CUT_HELP[fc.want] + '.</p></div>' : '') +
       (hasLabel ? '<div><span class="flabel">Check by</span><div class="seg" role="radiogroup" id="fcMode"><button type="button" role="radio" data-v="measure" aria-checked="' + (mode === 'measure') + '">Its measurements</button><button type="button" role="radio" data-v="label" aria-checked="' + (mode === 'label') + '">Its size label</button></div></div>' : '') +

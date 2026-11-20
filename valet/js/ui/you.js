@@ -363,9 +363,9 @@
   function plausible(key, v) {
     const H = V.state.measurements.height || 178;
     const R = { height: [140, 215], chest: [0.42, 0.78], waist: [0.33, 0.8], seat: [0.42, 0.8], neck: [0.17, 0.28], shoulder: [0.2, 0.32],
-      arm: [0.28, 0.42], inseam: [0.38, 0.52], backNeckFloor: [0.8, 0.9], waistHeight: [0.53, 0.67], faceWidth: [11, 17], faceLength: [9.5, 15.5], wrist: [13, 23], head: [50, 66], foot: [0.13, 0.17] }[key];
+      arm: [0.28, 0.42], inseam: [0.38, 0.52], backNeckFloor: [0.8, 0.9], waistHeight: [0.53, 0.67], faceWidth: [11, 17], faceLength: [9.5, 15.5], wrist: [13, 23], hand: [17, 29], head: [50, 66], foot: [0.13, 0.17] }[key];
     if (!R) return null;
-    const abs = ['height', 'faceWidth', 'faceLength', 'wrist', 'head'].indexOf(key) >= 0;
+    const abs = ['height', 'faceWidth', 'faceLength', 'wrist', 'hand', 'head'].indexOf(key) >= 0;
     const lo = abs ? R[0] : R[0] * H, hi = abs ? R[1] : R[1] * H;
     if (v < lo || v > hi) return 'That is outside the usual range for ' + (key === 'height' ? 'adults' : 'your height') + ' (' + Math.round(lo) + '–' + Math.round(hi) + ' cm). Check the units and where the tape sat.';
     return null;

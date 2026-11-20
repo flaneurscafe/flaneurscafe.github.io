@@ -578,7 +578,7 @@
         text: 'Light warm shoes clash with a cool outfit even at floor level. Keep brown shoes dark.' });
     }
 
-    // Socks (Gentleman's Gazette, section 10 of How it works): the trousers are the anchor, never the
+    // Socks (Flusser, Dressing the Man, p. 173; Gentleman's Gazette; section 10 of How it works): the trousers are the anchor, never the
     // shoes. In business and evening dress the sock stays in the trousers' colour family, ideally a
     // distinct tone of it, lighter or darker (light blue with navy); an exact match is safe, and a deep,
     // muted colour is the one step outside the family (burgundy with grey). Below that, a muted
@@ -688,7 +688,7 @@
         text: nm(topP) + ' (' + A.label + ') and ' + nm('trousers') + ' (' + Bt.label + ') meet at the hips at nearly the same scale: patterns of similar size interfere. Vary the scale by about two or more, or make one plain.' });
     }
     /* Echo (B): a pattern's colour picked up elsewhere in the outfit, subtly, ties it together
-       (Gentleman's Gazette; Permanent Style). It helps but is not required, and the sources warn against
+       (Flusser, Dressing the Man, p. 70; Gentleman's Gazette; Permanent Style). It helps but is not required, and the sources warn against
        obvious matching (Boyer), so this never lowers a verdict: a tick when it is done, a suggestion when
        it is not. Whether the colours relate at all is judged with every colour, under colours together. */
     {
@@ -807,7 +807,7 @@
     if (L.tie && rise === 'high' && !L.mid) ad({ id: 'ptie', score: 0.85, slots: [],
       text: 'With high-rise trousers a standard-length tie hangs past the waistband; tie a larger knot, or wear a knit or waistcoat over it, as the 1930s did.' });
     // the collar against the face: the outfit does not record the collar's cut, so this is the
-    // advice for the shirt you choose, from the face's proportions (Flusser: counterbalance, not repeat)
+    // advice for the shirt you choose, from the face's proportions (Flusser, Dressing the Man, pp. 124–125: counterbalance, not repeat)
     // broad or long only beyond the tape's error (body.js); the percentile alone is not trusted
     const fs = pc.faceClass === 'broad' ? 70 : pc.faceClass === 'long' ? 30 : null, bald = o.hairStyle === 'none';
     if (L.shirt && K.shirt && K.shirt.collar && ((fs != null && (fs >= 70 || fs <= 30)) || bald)) ad({ id: 'pcollar', score: 1, slots: ['shirt'],

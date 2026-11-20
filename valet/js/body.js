@@ -17,7 +17,7 @@
   /* How sure a measurement taken at home is (cm, one way). Lengths down the body are hard to take
      alone; a second person roughly halves the error. */
   const UNC = { height: 0.7, chest: 1.5, waist: 1.5, seat: 1.5, neck: 0.7, shoulder: 1.5, arm: 1.5, inseam: 2, backNeckFloor: 2,
-    waistHeight: 1.5, wrist: 0.4, head: 0.7, foot: 0.4, faceWidth: 0.4, faceLength: 0.4 };
+    waistHeight: 1.5, wrist: 0.4, hand: 0.4, head: 0.7, foot: 0.4, faceWidth: 0.4, faceLength: 0.4 };
 
   /* Where a value sits among the survey's men: a percentile from 1 to 99, interpolated between the
      tabled points; null when the measure is not tabled or the value is missing. */
