@@ -30,7 +30,7 @@
   if (V.touch) Array.prototype.forEach.call(document.querySelectorAll('[data-touch]'), function (el) { el.textContent = el.getAttribute('data-touch'); });
   // the outfit as data lives in js/outfit.js
   const O = window.VOUTFIT, isHex = O.isHex, DEFAULT_OUTFIT = O.DEFAULT_OUTFIT, normOutfit = O.normOutfit, normWardrobe = O.normWardrobe;
-  Object.assign(V, { cleanProfile, glassesToOutfit, infoBtn, load, newSummer, normOutfit, normWardrobe, openMeasures, save, showTab, showYouPane, upgrade });
+  Object.assign(V, { showPalPane, cleanProfile, glassesToOutfit, infoBtn, load, newSummer, normOutfit, normWardrobe, openMeasures, save, showTab, showYouPane, upgrade });
 
   const VC = window.VC, E = window.VENGINE, D = window.VDATA, CHART = window.VCHART;
   const $ = function (s, r) { return (r || document).querySelector(s); };
@@ -243,8 +243,14 @@
   }
 
   /* ---------- Tabs ---------- */
+  /* Proportion and Fit are one entry in the menu, "Proportion & fit", with a switch at the top of each:
+     the menu button opens the one used last. The Palette has four panes under one switch (showPalPane). */
+  const SHAPE = ['proportion', 'fit'];
   function showTab(name) {
-    $$('.tabs button').forEach(function (b) { b.setAttribute('aria-selected', String(b.dataset.tab === name)); });
+    const group = SHAPE.indexOf(name) >= 0;
+    if (group) V.shapeSub = name;
+    $$('.tabs button').forEach(function (b) { b.setAttribute('aria-selected', String(b.dataset.tab === name || (group && b.dataset.group === 'shape'))); });
+    $$('.sub-tabs [data-sub]').forEach(function (b) { b.setAttribute('aria-selected', String(b.dataset.sub === name)); });
     $$('.tab-panel').forEach(function (p) { p.classList.toggle('active', p.id === 'tab-' + name); });
     V.activeTab = name;
     if (name === 'colour') V.renderColour();
@@ -252,12 +258,27 @@
     if (name === 'proportion') V.renderProportion();
     if (name === 'fit') V.renderFit();
     V.mountChart();
-    try { history.replaceState(null, '', '#' + name); } catch (e) { /* file:// */ }
+    try { history.replaceState(null, '', '#' + name + (name === 'colour' && V.palPane && V.palPane !== 'colours' ? '/' + V.palPane : '')); } catch (e) { /* file:// */ }
     document.dispatchEvent(new Event('valet:layout'));   // the phone layout closes an open sheet
   }
   $$('.tabs button').forEach(function (b) {
-    b.addEventListener('click', function () { showTab(b.dataset.tab); });
+    b.addEventListener('click', function () { showTab(b.dataset.group === 'shape' ? (V.shapeSub || 'proportion') : b.dataset.tab); });
   });
+  $$('.sub-tabs [data-sub]').forEach(function (b) { b.addEventListener('click', function () { showTab(b.dataset.sub); }); });
+  /* The Palette's panes: Your colours, Pairings, Colour map, Build around one colour. Each is a way of
+     choosing colours for the study, which stays beside them (on a phone, in the bottom sheet). */
+  function showPalPane(name) {
+    const panes = $$('#tab-colour .pal-pane');
+    if (!panes.some(function (p) { return p.dataset.pane === name; })) name = 'colours';
+    V.palPane = name;
+    panes.forEach(function (p) { p.hidden = p.dataset.pane !== name; });
+    $$('#palTabs [data-pane]').forEach(function (b) { b.setAttribute('aria-selected', String(b.dataset.pane === name)); });
+    if (V.activeTab === 'colour') {
+      if (name === 'map' || name === 'theme') V.renderColour();      // a canvas drawn while hidden has no size
+      try { history.replaceState(null, '', '#colour' + (name !== 'colours' ? '/' + name : '')); } catch (e) { /* file:// */ }
+    }
+  }
+  $$('#palTabs [data-pane]').forEach(function (b) { b.addEventListener('click', function () { showPalPane(b.dataset.pane); }); });
   /* The measurements card is folded by default; links that send you to it open it. */
   /* The You tab has two parts: colouring, and measurements and shape. */
   function showYouPane(name) {

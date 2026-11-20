@@ -13,13 +13,13 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Valet — dressing from theory</title>
 <meta name="description" content="Valet: a browser tool that works out which colours suit you from colour science and tailoring theory, and charts an outfit's lightness against your own colouring. Nothing leaves your browser.">
-<link rel="stylesheet" href="css/valet.css?v=1.9.2">
+<link rel="stylesheet" href="css/valet.css?v=1.10">
 </head>
 <body>
 <header class="masthead">
   <div class="brand">
     <h1>Valet</h1>
-    <p class="tagline">Dressing from theory, not from cases <button type="button" class="ver" id="verTag" title="What Valet is and how to use it">v1.9.2</button></p>
+    <p class="tagline">Dressing from theory, not from cases <button type="button" class="ver" id="verTag" title="What Valet is and how to use it">v1.10</button></p>
   </div>
   <div class="season-bar"><span class="flabel" id="seasonLabel">Season</span>
     <div class="seg" id="season" role="radiogroup" aria-labelledby="seasonLabel">
@@ -33,9 +33,7 @@
     <span class="tab-sep" role="none" aria-hidden="true"></span>
     <button role="tab" data-tab="colour">Palette</button>
     <span class="tab-sep" role="none" aria-hidden="true"></span>
-    <button role="tab" data-tab="proportion">Proportion</button>
-    <span class="tab-dot" role="none" aria-hidden="true">·</span>
-    <button role="tab" data-tab="fit">Fit</button>
+    <button role="tab" data-tab="proportion" data-group="shape">Proportion &amp; fit</button>
     <span class="tab-sep" role="none" aria-hidden="true"></span>
     <button role="tab" data-tab="outfit">Dresser</button>
     <span class="tab-sep" role="none" aria-hidden="true"></span>
@@ -143,6 +141,7 @@
 
   <!-- ============ PROPORTION and FIT ============ -->
   <section id="tab-proportion" class="tab-panel" role="tabpanel">
+    <div class="seg sub-tabs" role="tablist" aria-label="Proportion and fit"><button type="button" role="tab" data-sub="proportion" aria-selected="true">Proportion</button><button type="button" role="tab" data-sub="fit" aria-selected="false">Fit</button></div>
     <div class="needs-profile" id="propEmpty"><p>Proportion works from your measurements. Add at least your height on the <a href="#" data-goto="measures">You</a> tab, under Measurements and shape; back-neck to floor, inside leg, waist height, shoulder, neck, foot and face width fill in the rest. Each one shows how to take it.</p></div>
     <div class="split" id="propBody" hidden>
       <div class="sheet prop-sheet">
@@ -166,6 +165,7 @@
     </div>
   </section>
   <section id="tab-fit" class="tab-panel" role="tabpanel">
+    <div class="seg sub-tabs" role="tablist" aria-label="Proportion and fit"><button type="button" role="tab" data-sub="proportion" aria-selected="false">Proportion</button><button type="button" role="tab" data-sub="fit" aria-selected="true">Fit</button></div>
     <div class="needs-profile" id="fitEmpty"><p>Add your measurements on the <a href="#" data-goto="measures">You</a> tab first: height, chest, waist, neck and the rest. Each one shows how to take it.</p></div>
     <div class="sheet fit-sheet" id="fitBody" hidden></div>
   </section>
@@ -182,9 +182,11 @@
         <h2>Your palette</h2>
         <p class="lede">Where each named colour can go on you, worked out from your measured colouring. <span data-touch="Tap a colour to put it in the study beside the chart; the palette then marks how every other colour sits with what is in the study.">Click a colour to put it in the study beside the chart; the palette then marks how every other colour sits with what is in the study.</span></p>
         <p class="tt-legend"><span><span class="tt t1">T1</span> anywhere, even at the face</span><span><span class="tt t2">T2</span> the one deliberate colour</span><span><span class="tt t3">T3</span> below the belt</span><span><span class="tt t4">T4</span> away from the face</span></p>
-        <div class="core-pal" id="corePal"></div>
-        <div class="core-pal pairs" id="pairs"></div>
         <p class="pal-print"><button type="button" class="btn ghost small" id="printCardBtn">Print or save as PDF</button> <span class="ns-note" id="printCardNote">A palette card to keep: your tiers, rules of thumb, the combinations that work and what goes with what.</span></p>
+        <div class="seg sub-tabs pal-tabs" role="tablist" aria-label="Palette" id="palTabs"><button type="button" role="tab" data-pane="colours" aria-selected="true">Your colours</button><button type="button" role="tab" data-pane="pairs" aria-selected="false">Pairings</button><button type="button" role="tab" data-pane="map" aria-selected="false">Colour map</button><button type="button" role="tab" data-pane="theme" aria-selected="false">Build around one colour</button></div>
+        <div class="pal-pane" data-pane="colours" role="tabpanel">
+        <div class="core-pal" id="corePal"></div>
+
         <div class="pal-bar">
           <span class="flabel" id="palViewLabel">Show</span>
           <div class="seg" id="palView" role="radiogroup" aria-labelledby="palViewLabel">
@@ -196,7 +198,12 @@
         <p class="pal-fitkey" id="palFitKey"><span class="fit-key out"></span> <strong>Crossed through:</strong> this colour would break a rule with what is already in the study, in the selected place. <span class="fit-key care">!</span> <strong>Marked !</strong> it would bend one. <span data-touch="Tap any colour for the reason.">Point at any colour for the reason.</span> The T1 to T4 badge is separate: it says how the colour suits your face on its own.</p>
         <p class="pal-fitsum" id="palFitSum" hidden></p>
         <div id="palette"></div>
+        </div>
+        <div class="pal-pane" data-pane="pairs" role="tabpanel" hidden>
+        <div class="core-pal pairs" id="pairs"></div>
+        </div>
 
+        <div class="pal-pane" data-pane="map" role="tabpanel" hidden>
         <h2>Colour map</h2>
         <p class="lede small">Every colour, not only the named ones, laid out by hue (left to right) and lightness (top to bottom), each judged against your face. It shows the shape of what suits you: the large squares are your colours. Use the Strength slider to see how that shape changes from greyed, muted colours to vivid ones; it changes only this map. <span data-touch="Tap a square to put the nearest named colour in the study, ">Point at a square for the nearest named colour; click it to put it in the study, </span><span class="wearing">near the face</span>.</p>
         <div class="map-controls">
@@ -204,13 +211,15 @@
           <span class="hint" id="mapHint"></span>
         </div>
         <div class="map-wrap">
-          <canvas id="colourMap" role="img" aria-label="Grid of colours by hue and lightness; the size of each square shows its tier at your face. The named palette above gives the same verdicts as text."></canvas>
+          <canvas id="colourMap" role="img" aria-label="Grid of colours by hue and lightness; the size of each square shows its tier at your face. The named colours, under Your colours, give the same verdicts as text."></canvas>
           <span class="map-ring" id="mapRing" hidden></span>
           <div class="map-tip" id="mapTip" hidden></div>
         </div>
         <div class="map-legend"><span><i></i>large: T1, anywhere</span><span><i class="t2"></i>large with a white dot: T2, the one deliberate colour</span><span><i class="t34"></i>small: T3 and T4, away from the face</span><span><i class="none"></i>empty: a colour screens cannot show at this strength</span></div>
         <div class="map-hues" aria-hidden="true"><span>red</span><span>orange</span><span>yellow</span><span>green</span><span>teal</span><span>sky</span><span>blue</span><span>violet</span><span>magenta</span></div>
 
+        </div>
+        <div class="pal-pane" data-pane="theme" role="tabpanel" hidden>
         <h2>Build around one colour</h2>
         <p class="lede small">The old tailors' way: choose one colour you want to wear this season, and Valet builds the rest around it for you. It says where the colour itself can go on you (at the face, or only away from it), offers its versions that do suit you when it does not, and lists the neutrals and colours that go with it, and what to keep apart from it. <span data-touch="Tap any colour to put it in the study.">Click any colour to put it in the study.</span></p>
         <div class="theme-controls">
@@ -222,6 +231,7 @@
         </div>
         <div id="themeOut"></div>
         <label class="check small theme-print"><input type="checkbox" id="printTheme"> Put <span id="printThemeName">this colour</span> on the palette card too, when you print it or save it as a PDF (the button at the top of the palette).</label>
+        </div>
       </div>
 
       <aside class="side">
@@ -599,8 +609,8 @@
           <p><span data-touch="Tap a colour anywhere to try it: the piece moves on the chart and the checks update.">Hover a colour anywhere to try it: the piece moves on the chart and the checks update.</span> On the Palette tab the rows are the study's places (near the face, accent, below the belt) rather than pieces.</p>
           <h3 id="h-study">The Palette tab and its study</h3>
           <p>The Palette tab is about you and colour; the Dresser is about dressing. The palette sorts every named colour by where it can go on you. Beside it, the <strong>study</strong> holds up to three colours by where they sit: <em>near the face</em> (a shirt, knit or jacket), an <em>accent</em> (a tie, scarf or pocket square) and <em>below the belt</em> (trousers). Choose a place and the palette is marked against what is already in the study, so you can see, for example, that forest near the face rules out forest or navy below the belt and leaves grey. The rules are the outfit rules of section 10, without the ones about layers and cloth. The study never changes your outfit; <em>Send to the Dresser</em> puts its colours on the matching pieces there.</p>
-          <p>Above the palette, <strong>your core palette</strong> picks the best of each tier for the season: base neutrals, colours for the face, deliberate colours, colours for below the belt, and the colours that echo your eyes and hair, spread so that no two look alike. It is rebuilt from your profile every time, so playing in the study never changes it.</p>
-          <p>A tier says how a colour suits <em>you</em>; it says nothing about which colours go with each other. <strong>What goes together</strong>, under the core palette, answers that for the core colours: choose one for near the face, and every other core colour is tried with it as an accent and below the belt, by the study's rules, and sorted into goes with it, with care, and not with it (mauve takes a burgundy accent, a neighbour on the colour wheel, but not marine, which is neither a neighbour nor an opposite, so the two compete). Below it, a few tested combinations of three, each passing every rule, half with a neutral near the face and half with a colour.</p>
+          <p>The Palette has four parts under one switch, each a way of choosing colours for the study, which stays beside them (on a phone, in the bottom sheet): <em>Your colours</em>, <em>Pairings</em>, the <em>Colour map</em> and <em>Build around one colour</em>. At the top of Your colours, <strong>your core palette</strong> picks the best of each tier for the season: base neutrals, colours for the face, deliberate colours, colours for below the belt, and the colours that echo your eyes and hair, spread so that no two look alike. It is rebuilt from your profile every time, so playing in the study never changes it.</p>
+          <p>A tier says how a colour suits <em>you</em>; it says nothing about which colours go with each other. <strong>What goes together</strong>, under Pairings, answers that for the core colours: choose one for near the face, and every other core colour is tried with it as an accent and below the belt, by the study's rules, and sorted into goes with it, with care, and not with it (mauve takes a burgundy accent, a neighbour on the colour wheel, but not marine, which is neither a neighbour nor an opposite, so the two compete). Below it, a few tested combinations of three, each passing every rule, half with a neutral near the face and half with a colour.</p>
           <p>Your palette is what suits you; the study is a <strong>combination</strong> drawn from it, the colours of one outfit. A combination you like can be named and saved under the study. Saved combinations are kept with your profile and in its file, and each is judged again whenever you open the list, against your colouring and the season you are in, by the same rules as the study: ✓ no rule broken, ! something worth knowing, ✕ a rule fails. <span data-touch="Tapping one puts it back in the study, so it can be changed, sent to the Dresser or compared with the next on the chart.">Clicking one puts it back in the study, so it can be changed, sent to the Dresser or compared with the next on the chart.</span> The printed palette card keeps only what works: the saved, tested and current combinations that pass every rule this season (a saved one that fails is left out and counted), and for each core colour near the face, the core colours that go with it. Under Build around one colour, tick <em>Put [colour] on the palette card too</em> to add that colour: where it can go on you (near the face, or below the belt only, with its versions that suit the face), and, with it in that place, which core colours go in the other places, a combination that works and what to keep apart from it. <em>Clear the study</em> empties all three places, so the palette is marked only where a colour clashes with your skin.</p>
           <p><strong>Why this colour</strong><span data-touch=" scores the colour in the selected place, at your face rule by rule."> scores the colour you point at, or the one in the selected place, at your face rule by rule.</span> <strong>The study together</strong> lists the rules between the study's colours. <strong>Print or save as PDF</strong> makes a palette card: your colouring, the four tiers with every colour named, rules of thumb worked out from your numbers, the daylight tests, and the study if one is open. Printed colours are approximate, so the card names every colour.</p>
           <p><strong>Colour.</strong> The chart sits on white, in both light and dark themes, so its text and rules read clearly. A surround changes how every colour in front of it looks (section 6): against white, colours look a little darker and richer than they will against a grey day or a dark room. The chart is for lightness and steps, so judge the colour itself on cloth.</p>
@@ -631,7 +641,7 @@
         </section>
         <section id="h-fit">
           <h2>14. Fit before you buy</h2>
-          <p>The Fit tab checks whether a garment will fit you before you buy it: a jacket, overcoat, shirt, knit, trousers, shoes or a hat. Fit is judged garment by garment, so it has its own page rather than a place in the Dresser, which judges how pieces go together.</p>
+          <p>Fit, under Proportion &amp; fit, checks whether a garment will fit you before you buy it: a jacket, overcoat, shirt, knit, trousers, shoes or a hat. Fit is judged garment by garment, so it has its own place beside Proportion rather than in the Dresser, which judges how pieces go together.</p>
           <p><strong>What it compares.</strong> The measurements a shop gives for a size, from its size chart: the garment's own measurements, not the body sizes it is said to fit. Up to four sizes from one chart can be entered side by side; the page names the best of them, with the mildest verdict and the smallest misses. Each measurement is judged in the most reliable way available:</p>
           <ul>
             <li><span class="badge A">A</span> <strong>Against one of yours that fits.</strong> Measure a garment of the same kind that fits well, the same way, and fill in the first column. It carries your build and the ease you like, so it beats any rule: within 2 cm around, or 1.5 cm in length, it should fit as yours does. This is the method tailors and made-to-measure shops ask for.</li>
@@ -646,7 +656,7 @@
 
         <section id="h-fitsize">
           <h2>15. Your sizes and the try-on</h2>
-          <p>The Fit tab turns the measurements from the You tab into sizes, checks a garment before you buy it (section 14), and lists what to look for at a try-on. Everything is a starting point: brands cut differently, and a garment's own measurements beat any label. Numbers also miss what a fitting sees. Most bodies are a little asymmetric (one shoulder lower, one arm longer), posture varies beyond the three shape settings on the Proportion tab, and two cloths cut to the same measurements hang differently. Treat the sizes and checks as a compass for the fitting room, not a replacement for it.</p>
+          <p>Fit turns the measurements from the You tab into sizes, checks a garment before you buy it (section 14), and lists what to look for at a try-on. Everything is a starting point: brands cut differently, and a garment's own measurements beat any label. Numbers also miss what a fitting sees. Most bodies are a little asymmetric (one shoulder lower, one arm longer), posture varies beyond the three shape settings on the Proportion tab, and two cloths cut to the same measurements hang differently. Treat the sizes and checks as a compass for the fitting room, not a replacement for it.</p>
           <ul>
             <li><span class="badge A">A</span> <strong>German and Italian jacket sizes</strong> are half the chest in centimetres (100 cm is size 50). German long sizes, for tall slim men, are numbered 2 × size − 2 (52 becomes 102); short sizes half the size (26).</li>
             <li><span class="badge B">B</span> <strong>UK and US jacket sizes</strong> are the chest in inches; the letter (Short, Regular, Long) follows height. Some brands advise an inch smaller for a slimmer fit.</li>
@@ -845,7 +855,7 @@
       </ol>
       <p class="small">The lightness chart beside each tab shows your colouring and the outfit on one scale of light to dark. <span data-touch="Tap any colour to try it; every “?” explains its control.">Point at any colour to try it; every “?” explains its control.</span> <em>Save to a file</em> on the You tab keeps your colouring, palette and outfit; <em>How it works</em> gives the theory and its sources.</p>
       <p><strong>What it cannot do.</strong> A colour reading from a photo is only as good as the light it was taken in. Numbers cannot see one shoulder lower than the other, feel how a cloth hangs, or know how a house cuts its sizes, so the sizes are ranges to take into a fitting room, not a replacement for one. And it covers everyday dress, from casual to evening; the codes of black tie, white tie and morning dress are not checked. How it works, section 1, says more.</p>
-      <p class="small muted">Version 1.9.2. Proportion and Fit are still being refined: their numbers are tailoring rules and survey averages, so treat them as a starting point and trust a garment that fits you.</p>
+      <p class="small muted">Version 1.10. Proportion and Fit are still being refined: their numbers are tailoring rules and survey averages, so treat them as a starting point and trust a garment that fits you.</p>
       <div class="wl-foot" id="welcomeFoot"></div>
       <div class="ov-actions">
         <button type="button" class="btn" id="welcomeStart">Set my colouring</button>
@@ -857,28 +867,28 @@
 </div>
 
 <div id="printCard" class="print-card" aria-hidden="true"></div>
-<script src="js/colour.js?v=1.9.2"></script>
-<script src="js/vision.js?v=1.9.2"></script>
-<script src="js/patterns.js?v=1.9.2"></script>
-<script src="js/measure-art.js?v=1.9.2"></script>
-<script src="js/data.js?v=1.9.2"></script>
-<script src="js/garments.js?v=1.9.2"></script>
-<script src="js/rules.js?v=1.9.2"></script>
-<script src="js/engine.js?v=1.9.2"></script>
-<script src="js/suggest.js?v=1.9.2"></script>
-<script src="js/outfit.js?v=1.9.2"></script>
-<script src="js/chart.js?v=1.9.2"></script>
-<script src="js/body.js?v=1.9.2"></script>
-<script src="js/proportion.js?v=1.9.2"></script>
-<script src="js/fit.js?v=1.9.2"></script>
-<script src="js/ui/dresser.js?v=1.9.2"></script>
-<script src="js/ui/core.js?v=1.9.2"></script>
-<script src="js/ui/you.js?v=1.9.2"></script>
-<script src="js/ui/palette.js?v=1.9.2"></script>
-<script src="js/ui/chart-host.js?v=1.9.2"></script>
-<script src="js/ui/fit.js?v=1.9.2"></script>
-<script src="js/ui/shape.js?v=1.9.2"></script>
-<script src="js/ui/main.js?v=1.9.2"></script>
-<script src="js/ui/mobile.js?v=1.9.2"></script>
+<script src="js/colour.js?v=1.10"></script>
+<script src="js/vision.js?v=1.10"></script>
+<script src="js/patterns.js?v=1.10"></script>
+<script src="js/measure-art.js?v=1.10"></script>
+<script src="js/data.js?v=1.10"></script>
+<script src="js/garments.js?v=1.10"></script>
+<script src="js/rules.js?v=1.10"></script>
+<script src="js/engine.js?v=1.10"></script>
+<script src="js/suggest.js?v=1.10"></script>
+<script src="js/outfit.js?v=1.10"></script>
+<script src="js/chart.js?v=1.10"></script>
+<script src="js/body.js?v=1.10"></script>
+<script src="js/proportion.js?v=1.10"></script>
+<script src="js/fit.js?v=1.10"></script>
+<script src="js/ui/dresser.js?v=1.10"></script>
+<script src="js/ui/core.js?v=1.10"></script>
+<script src="js/ui/you.js?v=1.10"></script>
+<script src="js/ui/palette.js?v=1.10"></script>
+<script src="js/ui/chart-host.js?v=1.10"></script>
+<script src="js/ui/fit.js?v=1.10"></script>
+<script src="js/ui/shape.js?v=1.10"></script>
+<script src="js/ui/main.js?v=1.10"></script>
+<script src="js/ui/mobile.js?v=1.10"></script>
 </body>
 </html>

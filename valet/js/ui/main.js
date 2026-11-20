@@ -55,7 +55,7 @@
      palette is rebuilt from it with the current rules, and any colour whose tier differs from the
      saved palette is listed. A file with a palette but no colouring gets its colouring from the
      palette, as set by hand. */
-  const VERSION = '1.9.2';
+  const VERSION = '1.10';
   function paletteFor(season) {
     const a = E.analyseProfile(E.seasonProfile(V.state, season)); if (!a) return null;
     const r1 = function (x) { return Math.round(x * 10) / 10; };
@@ -189,9 +189,17 @@
     season: function () { return V.state.season; }
   });
   // open the tab named in the address (#proportion, #fit…)
-  if (['you', 'colour', 'outfit', 'how', 'proportion', 'fit'].indexOf(hash) >= 0) showTab(hash);
-  else if (hash === 'palette') showTab('colour');
-  else if (hash === 'measurements') { showTab('you'); showYouPane('body'); }
+  /* The address names a tab, and for the Palette a pane (#colour/pairs). It is read at load and whenever
+     it changes while Valet is open (a link inside the page, a bookmark, the browser's back button). */
+  function route(h) {
+    const top = h.split('/')[0], sub = h.split('/')[1];
+    if (top === 'colour' || top === 'palette') { V.showPalPane(sub || 'colours'); showTab('colour'); return true; }
+    if (['you', 'outfit', 'how', 'proportion', 'fit'].indexOf(top) >= 0) { showTab(top); return true; }
+    if (top === 'measurements') { showTab('you'); showYouPane('body'); return true; }
+    return false;
+  }
+  route(hash);
+  window.addEventListener('hashchange', function () { route((location.hash || '').slice(1)); });
   /* ---------- Welcome: what Valet is and how to use it ----------
      Shown once on the first visit, then from the version tag in the masthead. Escape, the close
      button or a click outside it closes it; focus goes back where it was. */

@@ -83,7 +83,6 @@ h3 { font-size: 1.05rem; margin: 0 0 0.6rem; }
 .tabs button[aria-selected="true"] { color: var(--ink); border-bottom-color: var(--accent); }
 .tabs button:disabled { opacity: 0.45; cursor: default; }
 .tab-sep { flex: none; width: 1px; margin: 0.7rem 0.3rem 0.75rem; background: var(--rule); }
-.tab-dot { flex: none; align-self: center; color: var(--muted); font: 600 1rem var(--sans); margin: 0 -0.1rem; user-select: none; }
 
 main { max-width: 1240px; margin: 0 auto; padding: 1.5rem; }
 .tab-panel { display: none; }
@@ -1230,3 +1229,16 @@ ul.sources { list-style: none; padding-left: 0; }
 .src-key { font-size: 0.92em; color: var(--muted); }
 .ck-kind { margin: 0.5rem 0 0; font: 600 0.72rem var(--sans); color: var(--muted); }
 .ck-kind + .rules.ck { margin-top: 0.15rem; }
+
+/* Sub-tabs: Proportion & fit (two), the Palette (four), in the style of the You tab's switch */
+.sub-tabs { margin: 0 0 1.1rem; }
+.sub-tabs button { font-size: 0.92rem; padding: 0.45rem 0.9rem; }
+.pal-tabs { margin-top: 0.4rem; }
+.pal-pane > h2:first-child { margin-top: 0.4rem; }
+@media (max-width: 860px) {
+  .sub-tabs button { min-height: 44px; }
+  .pal-tabs { display: grid; grid-template-columns: 1fr 1fr; width: 100%; }
+  .pal-tabs button + button { border-left: 0; }
+  .pal-tabs button:nth-child(odd) { border-right: 1px solid var(--rule); }
+  .pal-tabs button:nth-child(-n+2) { border-bottom: 1px solid var(--rule); }
+}
