@@ -27,10 +27,12 @@
 
   /* Viewing conditions (working values, badge B). A well-lit room of about 300 lux: a matte
      surface of luminance factor Y reaches Y × 300 / π cd/m². The field is the front of a
-     jacket or shirt, about 40 cm across. */
-  const LUX = 300, FIELD_CM = 40;
+     jacket or shirt, about 40 cm across. Across a street (10 m) is outdoors: overcast daylight,
+     about 5,000 lux (dull overcast is near 1,000, bright overcast near 10,000). */
+  const LUX = 300, DAYLIGHT_LUX = 5000, FIELD_CM = 40;
   const DISTANCES = [{ m: 1, label: 'at 1 m', note: 'talking' }, { m: 3, label: 'at 3 m', note: 'across a room' }, { m: 10, label: 'at 10 m', note: 'across a street' }];
-  function luminance(Y) { return Math.max(1e-3, Y * LUX / Math.PI); }
+  function luxAt(m) { return m >= 10 ? DAYLIGHT_LUX : LUX; }
+  function luminance(Y, m) { return Math.max(1e-3, Y * (m == null ? LUX : luxAt(m)) / Math.PI); }
   function degrees(cm, m) { return 2 * Math.atan(cm / 200 / m) * 180 / Math.PI; }
   /* Spatial frequency, in cycles per degree, of something that repeats `cycles` times per `cm`. */
   function cpd(cycles, cm, m) { return cycles / degrees(cm, m); }
@@ -38,7 +40,7 @@
   function threshold(f, Y, m) {
     const X0 = Math.max(0.5, Math.min(60, degrees(FIELD_CM, m)));
     const u = Math.max(0.2, f);
-    return 1 / csf(u, luminance(Y), X0);
+    return 1 / csf(u, luminance(Y, m), X0);
   }
 
   /* Colour without lightness difference. Mullen (1985): red-green and blue-yellow sensitivity is
@@ -58,5 +60,5 @@
   }
 
   window.VVIS = { csf: csf, threshold: threshold, chromaPass: chromaPass, limitFor: limitFor, degrees: degrees, cpd: cpd, luminance: luminance,
-    DISTANCES: DISTANCES, LUX: LUX, FIELD_CM: FIELD_CM, CHROMA_HALF: CHROMA_HALF };
+    DISTANCES: DISTANCES, LUX: LUX, DAYLIGHT_LUX: DAYLIGHT_LUX, FIELD_CM: FIELD_CM, CHROMA_HALF: CHROMA_HALF };
 })();

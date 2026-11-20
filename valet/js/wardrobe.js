@@ -278,6 +278,7 @@
   const what = function (c) { return c.name + ' ' + c.piece; };
   /* The verdict's title and text, with a clash against the skin taking over. */
   function headline(v, clashes) {
+    if (v.impossible) return { level: v.level, title: v.title, text: v.text };   // what cannot be worn comes before how it looks
     const hard = (clashes || []).filter(function (c) { return !c.soft; }), locks = S().outfit.locks;
     const kept = hard.filter(function (c) { return locks[c.slot]; });
     const list = function (xs) { return xs.length < 3 ? xs.join(' and ') : xs.slice(0, -1).join(', ') + ' and ' + xs[xs.length - 1]; };
@@ -354,13 +355,13 @@
   function renderOverview(checks) {
     const box = $('#ovOverview'); if (!box) return;
     box.innerHTML = E.SECTIONS.map(function (sec) {
-      const mine = checks.filter(function (c) { return E.sectionOf(c) === sec.id; });
+      const mine = checks.filter(function (c) { return E.sectionOf(c) === sec.id && E.kindOf(c) !== 'context'; });
       if (!mine.length) return '';
       const worst = Math.min.apply(null, mine.map(function (c) { return c.score; }));
       const st = worst < 0.5 ? 'no' : worst < 0.85 ? 'meh' : 'ok';
       return '<button type="button" class="ovw ' + st + '" data-sec="' + sec.id + '" title="' + esc(sec.q) + '"><span class="ovw-i">' + (st === 'ok' ? '✓' : st === 'meh' ? '~' : '✕') + '</span>' + sec.title.replace(/^\d\. /, '') + '</button>';
     }).join('');
-    $$('.ovw', box).forEach(function (b) { b.addEventListener('click', function () { const t = $('#sec-' + b.dataset.sec); if (t) t.scrollIntoView({ behavior: 'smooth', block: 'start' }); }); });
+    $$('.ovw', box).forEach(function (b) { b.addEventListener('click', function () { const all = $('#ckAll'); if (all) { all.open = true; allOpen = true; } const t = $('#sec-' + b.dataset.sec); if (t) t.scrollIntoView({ behavior: 'smooth', block: 'start' }); }); });
   }
 
   function chipStyle(x) {
@@ -377,11 +378,11 @@
      layers from the innermost on the left to the outermost on the right. A position not worn keeps
      its place as an empty slot, so a piece is added where it is worn. */
   const ZONES = [
-    { id: 'head', label: 'Head', keys: ['hat'] },
-    { id: 'upper', label: 'Head to belt', keys: ['shirt', 'tie', 'mid', 'jacket', 'square', 'boutonniere', 'coat', 'scarf'] },
-    { id: 'hands', label: 'Hands', keys: ['gloves'] },
-    { id: 'legs', label: 'Legs', keys: ['trousers'] },
-    { id: 'feet', label: 'Feet', keys: ['socks', 'shoes'] }
+    { id: 'head', label: 'Head', keys: ['hat'], acc: ['glasses', 'earring'] },
+    { id: 'upper', label: 'Head to belt', keys: ['shirt', 'tie', 'mid', 'jacket', 'square', 'boutonniere', 'coat', 'scarf'], acc: ['tiebar'] },
+    { id: 'hands', label: 'Hands', keys: ['gloves'], acc: ['watch', 'cufflinks', 'ring'] },
+    { id: 'legs', label: 'Waist and legs', keys: ['trousers'], acc: ['buckle'] },
+    { id: 'feet', label: 'Feet', keys: ['socks', 'shoes'], acc: [] }
   ];
   function renderPieces(a) {
     const box = $('#ovPieces');
@@ -395,13 +396,14 @@
         (why ? '<span class="slot-why" id="why-' + p.key + '">' + esc(why) + '</span>' : '') + '</button>';
     };
     const byKey = {}; PIECES.forEach(function (p) { byKey[p.key] = p; });
-    const zones = ZONES.map(function (z) { return { label: z.label, id: z.id, list: z.keys.filter(function (k) { return byKey[k]; }).map(function (k) { return byKey[k]; }) }; });
+    const zones = ZONES.map(function (z) { return { label: z.label, id: z.id, acc: z.acc, list: z.keys.filter(function (k) { return byKey[k]; }).map(function (k) { return byKey[k]; }) }; });
     // anything a later version adds that has no place yet goes at the end, so nothing is lost
     const rest = PIECES.filter(function (p) { return !placed[p.key]; });
     if (rest.length) zones.push({ label: 'Other', id: 'other', list: rest });
     box.innerHTML = zones.map(function (z) {
       return '<section class="ov-zone" data-zone="' + z.id + '"><h4 class="ov-zone-lab">' + z.label + (z.list.length > 1 ? ' <span class="ov-zone-dir">inner \u2192 outer</span>' : '') + '</h4>' +
-        '<div class="ov-zone-grid">' + z.list.map(slot).join('') + '</div></section>';
+        '<div class="ov-zone-grid">' + z.list.map(slot).join('') + '</div>' +
+        (z.acc && z.acc.length ? '<div class="ov-zone-grid ov-zone-acc" data-acc-zone="' + z.id + '" aria-label="Accessories at this level"></div>' : '') + '</section>';
     }).join('');
     function tileHtml(p) {
       const st = stAll[p.key];
@@ -565,20 +567,56 @@
   }
 
   /* ---------- Accessories ---------- */
+  /* Accessories in the body-level rows (renderPieces makes a place under each row's pieces): a
+     compact tile for one that is worn, opening to its controls; a dashed slot for one that is not,
+     with the reason when it cannot be added. Anything a later version adds without a level goes to
+     the row of the hands. */
+  let openAcc = null;
+  const ACC_ZONE = {}; ZONES.forEach(function (z) { (z.acc || []).forEach(function (k) { ACC_ZONE[k] = z.id; }); });
+  function accSummary(d, x) {
+    if (d.glasses) return glassesWord(x).replace(/^Glasses: /, '');
+    const parts = [G.metalBy[x.metal] ? G.metalBy[x.metal].name.toLowerCase() : ''];
+    if (d.stone && x.stone && x.stone !== 'none' && G.stoneBy[x.stone]) parts.push(G.stoneBy[x.stone].name.toLowerCase());
+    if (d.size && x.size) parts.push(x.size + ' mm');
+    if (d.watch) { const t = (G.STRAPS || []).find(function (q) { return q.id === x.strap; }); if (t) parts.push(t.name.toLowerCase()); if (x.display === 'digital') parts.push('digital'); }
+    return parts.filter(Boolean).join(', ');
+  }
   function renderAcc() {
-    const box = $('#ovAcc'); if (!box) return;
+    const host = $('#ovPieces'); if (!host) return;
+    const box = host;
     const acc = S().outfit.acc, wrist = +(S().measurements && S().measurements.wrist) || null;
     const accBlocked = function (d) { return (d.needs === 'tie' && !(worn('tie') && kindOf('tie').id === 'tie')) ? 'Needs a tie.' : (d.needs === 'cuffs' && !kindOf('shirt').tieable) ? 'Needs a shirt with cuffs.' : ''; };
     const offs = G.ACCESSORIES.filter(function (d) { return !acc[d.key].on; });
     const a = api.analysis(), accChecks = a ? E.checkOutfit(engineOutfit(), a).filter(function (c) { return c.group === 'accessory' && c.score < 0.85; }) : [];
-    box.innerHTML = G.ACCESSORIES.filter(function (d) { return acc[d.key].on; }).map(function (d) {
+    const html = {};
+    G.ACCESSORIES.forEach(function (d) {
+      const z = ACC_ZONE[d.key] || 'hands';
+      html[z] = html[z] || '';
+      if (!acc[d.key].on) {
+        const why = accBlocked(d);
+        html[z] += '<button type="button" class="add-btn slot-add" data-acc="' + d.key + '"' + (why ? ' disabled aria-describedby="whya-' + d.key + '"' : '') + '><span class="slot-plus" aria-hidden="true">+</span><span class="slot-name">' + d.name + '</span>' +
+          (why ? '<span class="slot-why" id="whya-' + d.key + '">' + esc(why) + '</span>' : '') + '</button>';
+        return;
+      }
+      if (openAcc !== d.key) {
+        const mine = accChecks.filter(function (c) { return c.acc === d.key; }).sort(function (p1, p2) { return p1.score - p2.score; })[0];
+        const st = mine ? (mine.score < 0.5 ? 'out' : 'care') : null;
+        html[z] += '<div class="acc-tile' + (st ? ' st-' + st : '') + '" data-a="' + d.key + '"><button type="button" class="acc-pick" aria-expanded="false"><strong>' + d.name + '</strong><span class="g-colour">' + esc(accSummary(d, acc[d.key])) + '</span>' +
+          (st ? '<span class="acc-flag">' + (st === 'out' ? '✕' : '!') + ' ' + esc(mine.text.split('. ')[0].slice(0, 70)) + '</span>' : '') + '</button>' +
+          '<button type="button" class="btn ghost small acc-rm">Take off</button></div>';
+        return;
+      }
+      html[z] += itemHtml(d);
+    });
+    $$('[data-acc-zone]', host).forEach(function (el) { el.innerHTML = html[el.dataset.accZone] || ''; });
+    function itemHtml(d) {
       const mine = accChecks.filter(function (c) { return c.acc === d.key; }).sort(function (p1, p2) { return p1.score - p2.score; })[0];
       const st = mine ? { state: mine.score < 0.5 ? 'out' : 'care', why: mine.text } : null;
       const x = acc[d.key], on = !!x.on, blocked = (d.needs === 'tie' && !(worn('tie') && kindOf('tie').id === 'tie')) ? 'Needs a tie.' : (d.needs === 'cuffs' && !kindOf('shirt').tieable) ? 'Needs a shirt with cuffs.' : '';
       const hint = d.key === 'watch' ? (wrist ? 'suits ' + E.watchRange(wrist).join('–') + ' mm for your wrist' : 'classic 36–40 mm') :
         { cufflinks: 'classic 12–18 mm', tiebar: 'about ¾ of the tie: up to 60 mm on an 8 cm tie', ring: 'classic up to 15 mm', earring: 'up to about 5 mm' }[d.key];
-      return '<div class="acc-item' + (on ? '' : ' off') + (st ? ' st-' + st.state : '') + '" data-a="' + d.key + '">' +
-        '<div class="acc-head"><span><strong>' + d.name + '</strong>' + statusLine(st) + '</span><button type="button" class="btn ghost small acc-rm">Remove</button></div>' +
+      return '<div class="acc-item acc-open' + (on ? '' : ' off') + (st ? ' st-' + st.state : '') + '" data-a="' + d.key + '">' +
+        '<div class="acc-head"><button type="button" class="acc-pick" aria-expanded="true"><strong>' + d.name + '</strong></button>' + statusLine(st) + '<button type="button" class="btn ghost small acc-rm">Take off</button></div>' +
         (blocked ? '<span class="ed-note fit-care-t">' + blocked + '</span>' : '') +
         (on && d.glasses ? glassesHtml(x) + (d.note ? '<p class="ed-note">' + esc(d.note) + '</p>' : '') :
          on ? '<span class="acc-fields">' +
@@ -587,14 +625,16 @@
           (d.size ? '<label>' + d.size.label + ' <input type="number" class="acc-size" min="' + d.size.min + '" max="' + d.size.max + '" step="1" value="' + (x.size || '') + '"> mm</label><span class="ed-note">' + hint + '</span>' : '') +
           '</span>' + (d.watch ? watchHtml(x) : '') + (d.note ? '<p class="ed-note">' + esc(d.note) + '</p>' : '') : '') +
         '</div>';
-    }).join('') + (offs.length ? '<div class="add-bar"><span class="add-lab">Add</span>' + offs.map(function (d) {
-      const why = accBlocked(d);
-      return '<button type="button" class="add-btn" data-acc="' + d.key + '"' + (why ? ' disabled title="' + esc(why) + '"' : '') + '><span aria-hidden="true">+</span> ' + d.name + '</button>';
-    }).join('') + '</div>' : '');
-    $$('[data-acc]', box).forEach(function (b) { b.addEventListener('click', function () { snapshot(); acc[b.dataset.acc].on = true; commit(''); }); });
+    }
+
+    $$('[data-acc]', box).forEach(function (b) { b.addEventListener('click', function () { snapshot(); acc[b.dataset.acc].on = true; openAcc = b.dataset.acc; commit(''); }); });
+    $$('.acc-tile, .acc-item', box).forEach(function (el) {
+      const k = el.dataset.a;
+      $('.acc-pick', el).addEventListener('click', function () { openAcc = openAcc === k ? null : k; renderAcc(); });
+      $('.acc-rm', el).addEventListener('click', function () { snapshot(); acc[k].on = false; if (openAcc === k) openAcc = null; commit(''); });
+    });
     $$('.acc-item', box).forEach(function (el) {
       const k = el.dataset.a, x = acc[k];
-      $('.acc-rm', el).addEventListener('click', function () { snapshot(); x.on = false; commit(''); });
       const m = $('.acc-metal', el); if (m) m.addEventListener('change', function () { snapshot(); x.metal = m.value; commit(''); });
       const st = $('.acc-stone', el); if (st) st.addEventListener('change', function () { snapshot(); x.stone = st.value; commit(''); });
       const sz = $('.acc-size', el); if (sz) sz.addEventListener('change', function () { const v = +sz.value; if (v > 0) { snapshot(); x.size = v; commit(''); } });
@@ -618,10 +658,10 @@
     return '<div class="seg gl-frame" role="radiogroup" aria-label="Frame">' + G.FRAMES.map(function (f) {
         return '<button type="button" role="radio" data-frame="' + f[0] + '" aria-checked="' + (fr === f[0]) + '">' + f[1] + '</button>';
       }).join('') + '</div>' +
-      (fr === 'acetate' ? '<span class="w-lab">Frame colour</span><div class="chips w-chips">' + G.FRAME_COLOURS.map(function (c) {
+      (fr === 'acetate' ? '<div class="gl-colour"><span class="w-lab">Frame colour</span><div class="chips w-chips">' + G.FRAME_COLOURS.map(function (c) {
         const sel = c[1] === cur;
         return '<button type="button" class="chip' + (sel ? ' sel' : '') + '" aria-pressed="' + sel + '" data-frame-hex="' + c[1] + '"><i class="d" style="background:' + c[1] + '"></i>' + c[0] + '</button>';
-      }).join('') + '</div><label class="gl-any">Any colour <input type="color" class="gl-hex" value="' + cur + '"></label>' : '');
+      }).join('') + '</div><label class="gl-any">Any colour <input type="color" class="gl-hex" value="' + cur + '"></label></div>' : '');
   }
   /* The watch beyond its case: the strap and the display, the two things that set its register
      (a rubber strap or a digital display is sportswear). Strap and dial colours are taste, not judged. */
@@ -985,7 +1025,7 @@
 
   /* ---------- Checks and fixes ---------- */
   function fixesFor(c, a) {
-    if (c.score >= 0.85) return [];
+    if (c.score >= 0.85 && !(c.id === 'pecho' && c.score < 1)) return [];   // a passing check needs no fix; an echo hint offers its pick-up
     const locks = S().outfit.locks, out = [];
     // a fix never touches a piece you have locked (one you own)
     if (c.fixes) return c.fixes.filter(function (f) { return !(f.slot && locks[f.slot]); }).slice(0, 2).map(function (f) {
@@ -1035,7 +1075,7 @@
       const down = { small: 1.5, medium: 4, large: 9 }[G.kind(k, piece(k)).maxScale] || 1.5;
       out.push({ label: 'Scale the ' + lbl + ' down to ' + down + ' cm', run: setPat({ type: pat.type, scale: down, hex2: pat.hex2 }, 'The ' + lbl + ' pattern is now ' + down + ' cm.') });
     }
-    if (c.id === 'pshare' || c.id === 'pcontrast') {
+    if (c.id === 'pecho' || c.id === 'pcontrast') {
       // a second colour that is shared with the rest of the outfit and sits closer to the ground
       const others = engineOutfit(), L0 = VC.hexToLab(x.hex)[0], hi = api.analysis().contrast * 1.5 + 15, cand = [];
       Object.keys(others).forEach(function (o) { if (o !== k && others[o] && typeof others[o] === 'object' && others[o].hex) { cand.push(others[o].hex); const op = VP.norm(others[o].pat); if (op.type !== 'solid') cand.push(op.hex2); } });
@@ -1043,27 +1083,75 @@
         .sort(function (h1, h2) { return Math.abs(VC.hexToLab(h1)[0] - L0) - Math.abs(VC.hexToLab(h2)[0] - L0); });
       if (ok[0]) out.push({ label: 'Second colour: ' + api.nameOf(ok[0]), hex: ok[0], run: setPat({ type: pat.type, scale: pat.scale, hex2: ok[0] }, 'The ' + lbl + ' pattern now uses ' + api.nameOf(ok[0]) + '.') });
     }
+    if (c.id === 'pecho') return out.slice(0, 1);   // a hint offers the echo, not a plain piece
     out.push({ label: 'Make the ' + lbl + ' plain', run: setPat({ type: 'solid' }, 'Made the ' + lbl + ' plain.') });
     return out.slice(0, 2);
   }
   /* The checks, in the Outfit Check card's order (engine.js SECTIONS): each section has its
      question, its checks worst first, and fixes where one exists. */
+  /* The checks. First what matters most: at most two findings, an impossible combination before a
+     failure and a failure before a note, a measured rule before a convention, then by weight. Then
+     every check, by the card's sections, one tap away (open by default when nothing is flagged, and
+     kept open once opened). Context (advice about your frames, face or build) is information: it is
+     marked i and never sets a section's status. */
+  let allOpen = false;
+  /* The "?" beside a check: the opening of the passage in How it works that explains the rule (taken
+     from the page itself, so it cannot drift from it), with a link to the whole passage. */
+  function wireRuleHelp(root) {
+    $$('.rule-help', root).forEach(function (btn) {
+      btn.addEventListener('click', function (ev) {
+        ev.stopPropagation();
+        const li = btn.closest('li'), open = li.querySelector('.rule-bubble');
+        $$('.rule-bubble', root).forEach(function (b) { b.remove(); });
+        $$('.rule-help[aria-expanded="true"]', root).forEach(function (b) { b.setAttribute('aria-expanded', 'false'); });
+        if (open) return;                                   // a second tap closes it
+        const el = document.getElementById(btn.dataset.how); if (!el) return;
+        const txt = el.textContent.replace(/\s+/g, ' ').replace(/^\s*(A\/B|A|B|C)(\s+(A|B))?\s+/, '').trim();
+        let short = txt;
+        if (txt.length > 320) { const cut = txt.slice(0, 320), stop = cut.lastIndexOf('. '); short = (stop > 120 ? cut.slice(0, stop + 1) : cut.replace(/\s+\S*$/, '') + '…'); }
+        const sec = el.closest('section'), h2 = sec && sec.querySelector('h2');
+        const bubble = document.createElement('div');
+        bubble.className = 'rule-bubble'; bubble.setAttribute('role', 'note');
+        bubble.innerHTML = '<p>' + esc(short) + '</p><button type="button" class="rule-more">How it works, ' + esc(h2 ? h2.textContent.trim() : 'the rule') + ' →</button>';
+        li.appendChild(bubble); btn.setAttribute('aria-expanded', 'true');
+        $('.rule-more', bubble).addEventListener('click', function () {
+          const tab = document.querySelector('.tabs [data-tab=how]'); if (tab) tab.click();
+          setTimeout(function () { el.scrollIntoView({ block: 'center' }); el.classList.add('rule-flash'); setTimeout(function () { el.classList.remove('rule-flash'); }, 2200); }, 60);
+        });
+      });
+    });
+  }
   function renderChecks(checks, a) {
-    const icon = function (s) { return s >= 0.85 ? '<span class="ok">✓</span>' : s >= 0.5 ? '<span class="meh">~</span>' : '<span class="no">✕</span>'; };
+    const icon = function (s, c) { return c && E.kindOf(c) === 'context' ? '<span class="info" aria-label="information">i</span>' : s >= 0.85 ? '<span class="ok">✓</span>' : s >= 0.5 ? '<span class="meh">~</span>' : '<span class="no">✕</span>'; };
     const badge = function (lv) { return '<span class="badge ' + lv.replace('/', '') + '">' + lv + '</span>'; };
     const fixMap = [];
-    $('#ovChecks').innerHTML = E.SECTIONS.map(function (sec) {
-      const list = checks.filter(function (c) { return E.sectionOf(c) === sec.id; }).sort(function (x, y) { return x.score - y.score; });
-      if (!list.length) return '';
-      return '<h3 class="ck-h" id="sec-' + sec.id + '">' + sec.title + '<span class="ck-q">' + esc(sec.q) + '</span></h3><ul class="rules ck">' + list.map(function (c) {
+    const rank = function (c) {
+      const k = E.kindOf(c), w = (E.RULES[c.id] && E.RULES[c.id].weight) || 1;
+      return (k === 'possibility' && c.score < 0.5 ? 0 : c.score < 0.5 ? 100 : 200) + (k === 'perceptual' ? 0 : 10) - (1 - c.score) * w;
+    };
+    const flagged = checks.filter(function (c) { return c.score < 0.85 && E.kindOf(c) !== 'context'; }).sort(function (x, y) { return rank(x) - rank(y); });
+    const row = function (c) {
         const fx = fixesFor(c, a), base = fixMap.length; fixMap.push(fx);
-        return '<li class="' + (c.score < 0.5 ? 'fail' : c.score < 0.85 ? 'warn' : 'pass') + '">' + icon(c.score) + '<span>' + badge(c.level) + ' ' + esc(c.text) +
+        const ctx = E.kindOf(c) === 'context';
+        const how = E.RULES[c.id] && E.RULES[c.id].how;
+        return '<li class="' + (ctx ? 'info' : c.score < 0.5 ? 'fail' : c.score < 0.85 ? 'warn' : 'pass') + '">' + icon(c.score, c) + '<span>' + badge(c.level) +
+          (how ? '<button type="button" class="rule-help" data-how="' + how + '" aria-expanded="false" aria-label="About this rule, from How it works" title="About this rule">?</button>' : '') + ' ' + esc(c.text) +
           (fx.length ? '<span class="fixes">' + fx.map(function (f, j) {
             return '<button type="button" class="btn small' + (j ? ' ghost' : '') + '" data-c="' + base + '" data-f="' + j + '"' + (f.disabled ? ' disabled' : '') + '>' +
               (f.hex ? '<span class="d" style="background:' + f.hex + '"></span>' : '') + esc(f.label) + '</button>';
           }).join('') + '</span>' : '') + '</span></li>';
-      }).join('') + '</ul>';
+    };
+    const top = flagged.slice(0, 2);
+    const sections = E.SECTIONS.map(function (sec) {
+      const list = checks.filter(function (c) { return E.sectionOf(c) === sec.id; }).sort(function (x, y) { return x.score - y.score; });
+      if (!list.length) return '';
+      return '<h3 class="ck-h" id="sec-' + sec.id + '">' + sec.title + '<span class="ck-q">' + esc(sec.q) + '</span></h3><ul class="rules ck">' + list.map(row).join('') + '</ul>';
     }).join('');
+    const more = flagged.length - top.length;
+    $('#ovChecks').innerHTML = (top.length ? '<h3 class="ck-h ck-top">What matters most</h3><ul class="rules ck ck-first">' + top.map(row).join('') + '</ul>' : '') +
+      '<details class="ck-all" id="ckAll"' + (allOpen || !top.length ? ' open' : '') + '><summary>All checks' + (more > 0 ? ' (' + more + ' more to note or fix)' : '') + '</summary>' + sections + '</details>';
+    $('#ckAll').addEventListener('toggle', function () { allOpen = $('#ckAll').open; });
+    wireRuleHelp($('#ovChecks'));
     $$('#ovChecks [data-c]').forEach(function (b) {
       const f = fixMap[+b.dataset.c][+b.dataset.f]; if (!f || f.disabled) return;
       if (f.hex) previewOn(b, f.slot, function () { return { hex: f.hex }; });

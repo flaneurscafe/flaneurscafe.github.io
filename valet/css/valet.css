@@ -1162,3 +1162,51 @@ button.gl-c.pk-no { text-decoration: line-through; text-decoration-color: var(--
 .ov-zone .ov-piece:not(.open) .g-text > :first-child { padding-right: 2.1rem; }
 .ov-zone .ov-piece:not(.open) .ov-pick > .chip { width: 34px; height: 34px; }
 .ov-zone .ov-piece:not(.open) .g-name { line-height: 1.2; }
+
+/* The Dresser's checks: what matters most first, all checks one tap away, context as information */
+.ck-top { margin-top: 0; }
+.ck-first { margin-bottom: 0.6rem; }
+.ck-all > summary { cursor: pointer; font: 600 0.9rem var(--sans); padding: 0.55rem 0; color: var(--ink); min-height: 44px; display: flex; align-items: center; }
+.ck-all > summary::marker { color: var(--muted); }
+.rules .info { display: inline-grid; place-items: center; width: 1.05rem; height: 1.05rem; border-radius: 50%; border: 1px solid var(--muted); color: var(--muted); font: italic 600 0.7rem var(--serif); flex: none; }
+.rules li.info > span:last-child { color: var(--muted); }
+
+/* Accessories in the body-level rows, under that level's pieces */
+.ov-zone-acc { margin-top: 0.4rem; }
+.acc-tile { display: flex; flex-direction: column; gap: 0.35rem; padding: 0.5rem 0.6rem; border: 1px solid var(--rule); border-radius: var(--radius); background: var(--paper); }
+.acc-tile .acc-pick { all: unset; cursor: pointer; display: flex; flex-direction: column; gap: 0.1rem; font: 0.86rem var(--sans); color: var(--ink); }
+.acc-tile .acc-pick:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; border-radius: 4px; }
+.acc-tile .acc-rm { align-self: flex-start; }
+.acc-tile .acc-flag { font-size: 0.74rem; color: var(--warn); margin-top: 0.15rem; }
+.acc-tile.st-out { border-color: var(--bad); }
+.acc-tile.st-out .acc-flag { color: var(--bad); }
+.acc-tile.st-care { border-color: var(--warn); }
+.ov-zone-acc .acc-item.acc-open { grid-column: 1 / -1; margin: 0; }
+.acc-head .acc-pick { all: unset; cursor: pointer; font: 600 0.95rem var(--sans); margin-right: auto; }
+.acc-head .acc-pick:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.acc-head { display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap; }
+@media (max-width: 860px) { .acc-tile .acc-rm { min-height: 40px; } .acc-tile .acc-pick { min-height: 40px; justify-content: center; } }
+.acc-tile .g-colour { white-space: normal; }
+
+/* The "?" beside a check, and the bubble with the passage from How it works that explains the rule */
+.rule-help { display: inline-grid; place-items: center; width: 1.25rem; height: 1.25rem; margin: 0 0.15rem 0 0.3rem; padding: 0; border-radius: 50%;
+  border: 1px solid var(--rule); background: var(--sheet); color: var(--muted); font: 600 0.72rem var(--sans); cursor: pointer; vertical-align: 0.1em; }
+.rule-help:hover, .rule-help[aria-expanded="true"] { border-color: var(--accent); color: var(--accent); }
+.rule-help:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.rule-bubble { position: relative; flex-basis: 100%; margin: 0.5rem 0 0.2rem; padding: 0.6rem 0.75rem; background: var(--sheet); border: 1px solid var(--rule);
+  border-radius: var(--radius); font: 0.84rem/1.45 var(--sans); color: var(--ink); }
+.rule-bubble::before { content: ""; position: absolute; top: -6px; left: 1.4rem; width: 10px; height: 10px; background: var(--sheet);
+  border-left: 1px solid var(--rule); border-top: 1px solid var(--rule); transform: rotate(45deg); }
+.rule-bubble p { margin: 0 0 0.4rem; }
+.rule-more { all: unset; cursor: pointer; color: var(--accent); font-weight: 600; text-decoration: underline; text-underline-offset: 2px; }
+.rule-more:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.rule-flash { animation: ruleflash 2.2s ease-out; border-radius: 4px; }
+@keyframes ruleflash { 0%, 40% { background: color-mix(in srgb, var(--gold) 28%, transparent); } 100% { background: transparent; } }
+@media (max-width: 860px) { .rule-help { width: 32px; height: 32px; font-size: 0.85rem; } .rule-more { display: inline-block; padding: 0.4rem 0; } }
+.rules li > .rule-bubble { grid-column: 1 / -1; }
+
+/* labels over an accessory's chips (glasses' frame colour, the watch's strap colour), on their own line */
+.w-lab { display: block; font: 0.8rem var(--sans); color: var(--muted); margin: 0.6rem 0 0.3rem; }
+.gl-colour { display: block; width: 100%; }
+.gl-any { display: inline-flex; align-items: center; gap: 0.4rem; margin-top: 0.4rem; font: 0.8rem var(--sans); color: var(--muted); }
+.gl-any { display: flex; width: fit-content; margin-top: 0.8rem; }

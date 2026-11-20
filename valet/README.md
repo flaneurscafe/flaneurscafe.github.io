@@ -30,6 +30,8 @@ The GPL lets anyone use Valet in open-source work. To use it in a closed or comm
 
 Issues and suggestions are welcome. Because Valet is also offered under a separate commercial licence, please get in touch before sending larger changes, so we can agree how they are licensed.
 
+Every outfit rule has one entry in the `RULES` table in `js/engine.js`: its name in verdicts, its weight, the reason a suggestion gives when it mends the rule, and its section. A new rule needs an entry there; Each entry also gives the rule's kind (perceptual, convention, possibility or context), which decides how it counts in a verdict; thresholds are named in `PARAMS` beside it, with their badge and the section of How it works that explains them. `node tests/run.js` (Node.js only, no other dependencies) checks that every rule has a complete entry, runs the rule scenarios in `tests/scenarios.js` and a stress test of thousands of random outfits; it also runs on GitHub for every change. When you change a rule on purpose, change its scenario with it.
+
 ## Credits
 
 - Body percentiles: ANSUR II, the 2012 US Army anthropometric survey (4,082 men), public data.
