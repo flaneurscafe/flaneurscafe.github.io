@@ -1095,7 +1095,7 @@
      kept open once opened). Context (advice about your frames, face or build) is information: it is
      marked i and never sets a section's status. */
   let allOpen = false;
-  /* The "?" beside a check: the opening of the passage in How it works that explains the rule (taken
+  /* A check's sentence is a button ending in "Why": it opens the opening of the passage in How it works that explains the rule (taken
      from the page itself, so it cannot drift from it), with a link to the whole passage. */
   function wireRuleHelp(root) {
     $$('.rule-help', root).forEach(function (btn) {
@@ -1124,7 +1124,7 @@
     });
   }
   function renderChecks(checks, a) {
-    const icon = function (s, c) { return c && E.kindOf(c) === 'context' ? '<span class="info" aria-label="information">i</span>' : s >= 0.85 ? '<span class="ok">✓</span>' : s >= 0.5 ? '<span class="meh">~</span>' : '<span class="no">✕</span>'; };
+    const icon = function (s, c) { return c && E.kindOf(c) === 'context' ? '<span class="ck-i" aria-label="information">i</span>' : s >= 0.85 ? '<span class="ok">✓</span>' : s >= 0.5 ? '<span class="meh">~</span>' : '<span class="no">✕</span>'; };
     const badge = function (lv) { return '<span class="badge ' + lv.replace('/', '') + '">' + lv + '</span>'; };
     const fixMap = [];
     const rank = function (c) {
@@ -1136,8 +1136,9 @@
         const fx = fixesFor(c, a), base = fixMap.length; fixMap.push(fx);
         const ctx = E.kindOf(c) === 'context';
         const how = E.RULES[c.id] && E.RULES[c.id].how;
-        return '<li class="' + (ctx ? 'info' : c.score < 0.5 ? 'fail' : c.score < 0.85 ? 'warn' : 'pass') + '">' + icon(c.score, c) + '<span>' + badge(c.level) +
-          (how ? '<button type="button" class="rule-help" data-how="' + how + '" data-level="' + esc(c.level || 'B') + '" aria-expanded="false" aria-label="About this rule, from How it works" title="About this rule">?</button>' : '') + ' ' + esc(c.text) +
+        return '<li class="' + (ctx ? 'ctx' : c.score < 0.5 ? 'fail' : c.score < 0.85 ? 'warn' : 'pass') + '">' + icon(c.score, c) + '<span>' +
+          (how ? '<button type="button" class="rule-help" data-how="' + how + '" data-level="' + esc(c.level || 'B') + '" aria-expanded="false">' + badge(c.level) + ' ' + esc(c.text) +
+            ' <span class="rule-why">Why<span class="rule-chev" aria-hidden="true"></span></span></button>' : badge(c.level) + ' ' + esc(c.text)) +
           (fx.length ? '<span class="fixes">' + fx.map(function (f, j) {
             return '<button type="button" class="btn small' + (j ? ' ghost' : '') + '" data-c="' + base + '" data-f="' + j + '"' + (f.disabled ? ' disabled' : '') + '>' +
               (f.hex ? '<span class="d" style="background:' + f.hex + '"></span>' : '') + esc(f.label) + '</button>';
