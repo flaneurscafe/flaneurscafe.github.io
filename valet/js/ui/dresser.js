@@ -1044,34 +1044,9 @@
      every check, by the card's sections, one tap away (open by default when nothing is flagged, and
      kept open once opened). Context (advice about your frames, face or build) is information: it is
      marked i and never sets a section's status. */
-  /* A check's sentence is a button ending in "Why": it opens the opening of the passage in How it works that explains the rule (taken
-     from the page itself, so it cannot drift from it), with a link to the whole passage. */
-  function wireRuleHelp(root) {
-    $$('.rule-help', root).forEach(function (btn) {
-      btn.addEventListener('click', function (ev) {
-        ev.stopPropagation();
-        const li = btn.closest('li'), open = li.querySelector('.rule-bubble');
-        $$('.rule-bubble', root).forEach(function (b) { b.remove(); });
-        $$('.rule-help[aria-expanded="true"]', root).forEach(function (b) { b.setAttribute('aria-expanded', 'false'); });
-        if (open) return;                                   // a second tap closes it
-        const el = document.getElementById(btn.dataset.how); if (!el) return;
-        const txt = el.textContent.replace(/\s+/g, ' ').replace(/^\s*(A\/B|A|B|C)(\s+(A|B))?\s+/, '').trim();
-        let short = txt;
-        if (txt.length > 320) { const cut = txt.slice(0, 320), stop = cut.lastIndexOf('. '); short = (stop > 120 ? cut.slice(0, stop + 1) : cut.replace(/\s+\S*$/, '') + '…'); }
-        const sec = el.closest('section'), h2 = sec && sec.querySelector('h2');
-        const bubble = document.createElement('div');
-        bubble.className = 'rule-bubble'; bubble.setAttribute('role', 'note');
-        const BADGE = { 'A': 'Badge A: measured perception science.', 'A/B': 'Badge A/B: the measurement is science (A); the threshold that decides the verdict is Valet\'s working value (B).', 'B': 'Badge B: a convention of tailoring or colour, from published writers or the Style Guide.' };
-        const lv = btn.dataset.level || 'B';
-        bubble.innerHTML = '<p>' + esc(short) + '</p>' + (BADGE[lv] ? '<p class="rule-badge-note">' + esc(BADGE[lv]) + '</p>' : '') + '<button type="button" class="rule-more">How it works, ' + esc(h2 ? h2.textContent.trim() : 'the rule') + ' →</button>';
-        li.appendChild(bubble); btn.setAttribute('aria-expanded', 'true');
-        $('.rule-more', bubble).addEventListener('click', function () {
-          const tab = document.querySelector('.tabs [data-tab=how]'); if (tab) tab.click();
-          setTimeout(function () { el.scrollIntoView({ block: 'center' }); el.classList.add('rule-flash'); setTimeout(function () { el.classList.remove('rule-flash'); }, 2200); }, 60);
-        });
-      });
-    });
-  }
+  /* A check's sentence is a button ending in "Why": the bubble it opens is js/ui/why.js, shared with
+     Proportion and Fit. */
+
   function renderChecks(checks, a) {
     const icon = function (s, c) { return c && E.kindOf(c) === 'context' ? '<span class="ck-i" aria-label="information">i</span>' : s >= 0.85 ? '<span class="ok">✓</span>' : s >= 0.5 ? '<span class="meh">~</span>' : '<span class="no">✕</span>'; };
     const badge = function (lv) { return '<span class="badge ' + lv.replace('/', '') + '">' + lv + '</span>'; };
@@ -1107,7 +1082,6 @@
     const more = flagged.length - top.length;
     $('#ovChecks').innerHTML = (top.length ? '<h3 class="ck-h ck-top">What matters most</h3><ul class="rules ck ck-first">' + top.map(row).join('') + '</ul>' : '') +
       '<div class="ck-all" id="ckAll">' + (top.length ? '<h3 class="ck-h ck-every">Every check, by the card\'s questions' + (more > 0 ? '<span class="ck-q">' + more + ' more to note or fix below</span>' : '') + '</h3>' : '') + sections + '</div>';
-    wireRuleHelp($('#ovChecks'));
     $$('#ovChecks [data-c]').forEach(function (b) {
       const f = fixMap[+b.dataset.c][+b.dataset.f]; if (!f || f.disabled) return;
       if (f.hex) previewOn(b, f.slot, function () { return { hex: f.hex }; });

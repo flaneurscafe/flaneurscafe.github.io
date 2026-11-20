@@ -39,7 +39,7 @@
       const pf = periodFit(fc.kind, res, allProps);
       if (!pf) return '';
       const list = function (ids) { return ids.length ? ids.map(PN).join(', ') : 'none'; };
-      return '<div class="fc-periods"><strong>Periods it suits on you</strong> <span class="badge B">B</span>' +
+      return '<div class="fc-periods why-host"><strong>Periods it suits on you</strong> <span class="badge B">B</span> ' + window.VWHY.button(window.VWHY.MAP.periods, 'B') +
         '<p>' + (pf.fields.length > 1 ? (pf.all.length ? 'All of it: ' + esc(list(pf.all)) + '.' : 'No single period: its measurements belong to different ones.') : '') + '</p><ul>' +
         pf.fields.map(function (x) { return '<li>' + esc(x.label) + ' ' + x.value + ' cm: ' + esc(list(x.fits)) + '</li>'; }).join('') +
         '</ul><p class="small muted">From the measurements that change with the period; within a centimetre of a period\'s range counts. Period ranges are tendencies, so read this as "in the range for", not "authentic to".</p></div>';
@@ -64,7 +64,7 @@
       h += '<div class="fc-form"><label>Size system <select id="fcSys">' + LABELS[fc.kind].map(function (s) { return '<option value="' + s.id + '"' + (L.sys === s.id ? ' selected' : '') + '>' + s.name + '</option>'; }).join('') + '</select></label>' +
         '<label>Size on the label <input type="number" id="fcN" step="any" min="1" value="' + esc(L.n) + '"></label></div>' +
         (res ? (res.missing ? '<p class="small muted">Needs your ' + res.missing.map(labelOf).join(' and ').toLowerCase() + ' (You tab).</p>'
-          : '<div class="fc-res"><p class="fc-line ' + res.state + '"><strong>' + STATE_WORD[res.state] + '.</strong> ' + esc(res.text) + '</p></div>') : '<p class="small muted">Enter the size on the label.</p>');
+          : '<div class="fc-res why-host"><p class="fc-line ' + res.state + '"><strong>' + STATE_WORD[res.state] + '.</strong> ' + esc(res.text) + ' ' + window.VWHY.button(window.VWHY.MAP.label, 'B') + '</p></div>') : '<p class="small muted">Enter the size on the label.</p>');
     } else {
       const list = fc.sizes[fc.kind], ref = fc.ref[fc.kind];
       const hasRef = Object.keys(ref).length > 0;
@@ -100,7 +100,8 @@
           if (r.implausible) return '<li><strong>' + r.label + ':</strong> ' + r.garment + ' cm is not a garment measurement; check the number and the units.</li>';
           if (r.halfHint) return '<li><strong>' + r.label + ':</strong> ' + r.garment + ' cm is far less than your body, so it is probably measured flat, across one side: tick <em>measured flat</em> to double it.</li>';
           if (r.missing) return '<li><strong>' + r.label + ':</strong> needs your ' + r.missing.map(labelOf).join(' and ').toLowerCase() + ' (You tab).</li>';
-          return '<li class="fc-line ' + r.state + '"><strong>' + r.label + '</strong> <span class="fc-num">' + r.garment + ' cm; ' + AGAINST[r.against] + ' ' + r.target + (r.diff ? ' (' + (r.diff > 0 ? '+' : '') + r.diff + ')' : '') + '</span><br><strong>' + STATE_WORD[r.state] + '.</strong> ' + esc(r.text.replace(/^(Right|Long|Short|Tight|Loose|Close)[:,] /, '').replace(/^./, function (c) { return c.toUpperCase(); })) + (r.alter && r.state !== 'right' ? ' <em>(' + ALTER_WORD[r.alter] + ')</em>' : '') + '</li>';
+          const src = r.against === 'rule' ? [window.VWHY.MAP.rule[r.key] || 'f-lengths', 'B'] : window.VWHY.MAP.against[r.against] || [null];
+          return '<li class="fc-line why-host ' + r.state + '"><strong>' + r.label + '</strong> <span class="fc-num">' + r.garment + ' cm; ' + AGAINST[r.against] + ' ' + r.target + (r.diff ? ' (' + (r.diff > 0 ? '+' : '') + r.diff + ')' : '') + '</span><br><strong>' + STATE_WORD[r.state] + '.</strong> ' + esc(r.text.replace(/^(Right|Long|Short|Tight|Loose|Close)[:,] /, '').replace(/^./, function (c) { return c.toUpperCase(); })) + (r.alter && r.state !== 'right' ? ' <em>(' + ALTER_WORD[r.alter] + ')</em>' : '') + ' ' + window.VWHY.button(src[0], src[1]) + '</li>';
         }).join('') + '</ul>' + periodsHtml(res);
         if (list.length === 1) return (v ? '<div class="ov-verdict mini ' + v.level + '"><div><strong>' + v.title + '</strong><span>' + esc(v.text) + '</span></div></div>' : '') + body;
         return '<details class="fc-size"' + (i === best || best < 0 ? ' open' : '') + '><summary><strong>' + esc(nameOf(i)) + '</strong>' + (v ? ' <span class="fc-tag ' + v.level + '">' + esc(v.title) + '</span>' : '') + '</summary>' + body + '</details>';
@@ -115,7 +116,7 @@
     h += '<h3>Your sizes</h3><p class="small">Worked out from your measurements. A starting point: brands cut differently, and the check above is the reliable test.</p><div class="fit-sizes">' + groups.map(function (g) {
       return '<div class="fit-group"><h4>' + g + '</h4><dl>' + sz.filter(function (x) { return x.group === g; }).map(function (x) {
         return x.needs ? '<div class="fit-row miss"><dt>' + x.label + '</dt><dd>needs ' + x.needs.map(labelOf).join(' and ').toLowerCase() + '</dd></div>'
-          : '<div class="fit-row"><dt>' + x.label + ' ' + x.level.split('/').map(function (l) { return '<span class="badge ' + l + '">' + l + '</span>'; }).join(' ') + '</dt><dd><strong>' + esc(x.value) + '</strong><span>' + esc(x.how) + '</span></dd></div>';
+          : '<div class="fit-row why-host"><dt>' + x.label + ' ' + x.level.split('/').map(function (l) { return '<span class="badge ' + l + '">' + l + '</span>'; }).join(' ') + '</dt><dd><strong>' + esc(x.value) + '</strong><span>' + esc(x.how) + ' ' + window.VWHY.button(window.VWHY.MAP.size[x.label], x.level) + '</span></dd></div>';
       }).join('') + '</dl></div>';
     }).join('') + '</div>' +
       (sz.some(function (x) { return x.needs; }) ? '<p class="small muted">Missing measurements can be added on the <a href="#" data-goto-fit="you">You</a> tab.</p>' : '');

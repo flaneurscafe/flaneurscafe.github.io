@@ -4,7 +4,7 @@
 'use strict';
 const { execFileSync } = require('child_process'), path = require('path');
 let failed = 0;
-['version.js', 'units.js', 'outfit.js', 'rules.js', 'boundaries.js', 'scenarios.js', 'stress.js', 'regression.js'].forEach(function (f) {
+['version.js', 'units.js', 'outfit.js', 'rules.js', 'why.js', 'boundaries.js', 'scenarios.js', 'stress.js', 'regression.js'].forEach(function (f) {
   try { process.stdout.write(execFileSync(process.execPath, [path.join(__dirname, f)], { encoding: 'utf8' })); }
   catch (e) { failed++; process.stdout.write((e.stdout || '') + (e.stderr || '')); console.log('FAILED: ' + f); }
 });

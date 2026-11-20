@@ -43,9 +43,9 @@
       groups.map(function (g) {
         return '<div class="prop-group"><h4>' + esc(g) + '</h4><ul class="prop-list">' + res.list.filter(function (t) { return t.group === g; }).map(function (t) {
           if (t.needs) return '<li class="prop-t needs"><strong>' + esc(t.label) + '</strong><span class="small muted">Needs: ' + esc(t.needs.map(function (k) { const x = MEASURES.find(function (q) { return q.key === k; }); return x ? x.label.toLowerCase() : k; }).join(', ')) + '.</span></li>';
-          return '<li class="prop-t" data-t="' + t.id + '"><div class="pt-head"><span class="badge ' + t.grade + '">' + t.grade + '</span><strong>' + esc(t.label) + '</strong>' +
+          return '<li class="prop-t why-host" data-t="' + t.id + '"><div class="pt-head"><span class="badge ' + t.grade + '">' + t.grade + '</span><strong>' + esc(t.label) + '</strong>' +
             (fmt(t) ? '<span class="pt-val">' + fmt(t) + '</span>' : '') + (t.est.length ? '<span class="pt-est" title="Uses a measurement estimated from your height">estimate</span>' : '') + '</div>' +
-            '<p>' + esc(t.text) + '</p><p class="small muted">' + esc(t.why) + (t.note ? ' ' + esc(t.note) : '') + '</p>' +
+            '<p>' + esc(t.text) + '</p><p class="small muted">' + esc(t.why) + (t.note ? ' ' + esc(t.note) : '') + ' ' + window.VWHY.button(window.VWHY.MAP.target[t.id], t.grade) + '</p>' +
             (t.uses.length ? '<p class="pt-uses">From: ' + t.uses.map(function (k) { const x = MEASURES.find(function (q) { return q.key === k; }); const nmk = x ? x.label.toLowerCase() : k; return res.d.est[k] ? '<em>' + esc(nmk) + ' (estimated)</em>' : (V.state.measurements[k] > 0 ? esc(nmk) : '<em>' + esc(nmk) + ' (not measured)</em>'); }).join(', ') + '.</p>' : '') + '</li>';
         }).join('') + '</ul></div>';
       }).join('');
