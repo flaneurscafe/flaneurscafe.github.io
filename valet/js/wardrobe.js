@@ -1148,7 +1148,12 @@
     const sections = E.SECTIONS.map(function (sec) {
       const list = checks.filter(function (c) { return E.sectionOf(c) === sec.id; }).sort(function (x, y) { return x.score - y.score; });
       if (!list.length) return '';
-      return '<h3 class="ck-h" id="sec-' + sec.id + '">' + sec.title + '<span class="ck-q">' + esc(sec.q) + '</span></h3><ul class="rules ck">' + list.map(row).join('') + '</ul>';
+      // what the eye measures first, then the conventions, each under a caption when a section has both
+      const measured = list.filter(function (c) { return E.kindOf(c) === 'perceptual'; }), rest = list.filter(function (c) { return E.kindOf(c) !== 'perceptual'; });
+      const both = measured.length && rest.length;
+      const ul = function (l, cap) { return l.length ? (both ? '<p class="ck-kind">' + cap + '</p>' : '') + '<ul class="rules ck">' + l.map(row).join('') + '</ul>' : ''; };
+      return '<h3 class="ck-h" id="sec-' + sec.id + '">' + sec.title + '<span class="ck-q">' + esc(sec.q) + '</span></h3>' +
+        ul(measured, 'Measured: what the eye sees') + ul(rest, 'Convention: what tailoring expects');
     }).join('');
     const more = flagged.length - top.length;
     $('#ovChecks').innerHTML = (top.length ? '<h3 class="ck-h ck-top">What matters most</h3><ul class="rules ck ck-first">' + top.map(row).join('') + '</ul>' : '') +

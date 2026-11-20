@@ -438,9 +438,9 @@
     out.cls = cls; out.typeName = t.name; out.family = t.family;
     out.dL = Math.abs(VC.hexToLab(piece.hex)[0] - VC.hexToLab(pat.hex2)[0]);
     // What it reads as across a room (3 m, the distance the Style Guide judges at), from the
-    // visibility model in patterns.js (A, with B words). A tonal pattern (two colours within
-    // ΔE 12) also counts as texture even where it is visible: the September revision's
-    // "grey-on-grey reads as texture" convention (B).
+    // visibility model in patterns.js (A, with B words). There is no separate rule for tonal
+    // patterns: a low-contrast pattern counts as texture exactly when the model says the eye
+    // cannot read it at 3 m, and as a pattern when it can.
     out.reads = { 1: P().reads(piece.hex, pat, 1), 3: P().reads(piece.hex, pat, 3) };
     out.texture = out.reads[3].state !== 'pattern';   // the measured model decides; a low-contrast (tonal) pattern is texture when the eye cannot read it
     out.visible = !out.texture;
@@ -1072,7 +1072,7 @@
     { id: 'contrast', title: '2. Contrast', q: 'Is there a clear light-dark step at the face, and between top and bottom?' },
     { id: 'frame', title: '3. Frame', q: 'What frames the face?' },
     { id: 'sheen', title: '4. Sheen', q: 'Is anything glossy?' },
-    { id: 'pattern', title: '5. Pattern', q: 'Two patterns at most near the face, different scales, one plain layer, a shared colour?', group: 'pattern' },
+    { id: 'pattern', title: '5. Pattern', q: 'Two patterns at most near the face, at different scales, with one plain layer?', group: 'pattern' },
     { id: 'metal', title: '6. Metal and accessories', q: 'One metal, accessories of the right size?', group: 'accessory' },
     { id: 'feet', title: 'Feet', q: 'Shoes the trousers\' depth or darker, socks that continue the leg?' },
     { id: 'colour', title: 'Colours together', q: 'Two neutrals and one colour; no near misses; one statement?' },

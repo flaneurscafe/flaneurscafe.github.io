@@ -1219,3 +1219,21 @@ button.gl-c.pk-no { text-decoration: line-through; text-decoration-color: var(--
 .gl-any { display: inline-flex; align-items: center; gap: 0.4rem; margin-top: 0.4rem; font: 0.8rem var(--sans); color: var(--muted); }
 .gl-any { display: flex; width: fit-content; margin-top: 0.8rem; }
 .rule-bubble .rule-badge-note { color: var(--muted); font-size: 0.78rem; }
+
+/* Numbered sources and citations in How it works. A citation links to its entry; a menswear website
+   (a writer's blog or a shop's advice page) has a dashed box, in the text and in the list. */
+.cite { white-space: nowrap; font-size: 0.86em; }
+.cite a { color: var(--accent); text-decoration: none; padding: 0 1px; }
+.cite a:hover { text-decoration: underline; }
+.cite a.web { color: var(--muted); border: 1px dashed currentColor; border-radius: 3px; padding: 0 3px; margin: 0 1px; }
+.cite a.web:hover { color: var(--accent); text-decoration: none; }
+.cite a:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; border-radius: 3px; }
+ul.sources { list-style: none; padding-left: 0; }
+.sources li { position: relative; padding-left: 2.6rem; scroll-margin-top: 6rem; }
+.sources .ref-n { position: absolute; left: 0; top: 0.05em; width: 2.1rem; text-align: right; font: 600 0.8rem var(--sans); color: var(--muted); }
+.sources li.web .ref-n { width: auto; right: auto; left: 0.2rem; border: 1px dashed currentColor; border-radius: 3px; padding: 0 3px; }
+.sources .who { display: block; color: var(--muted); font-size: 0.85em; margin-top: 0.1rem; }
+.sources li:target { background: color-mix(in srgb, var(--gold) 18%, transparent); border-radius: 4px; }
+.src-key { font-size: 0.92em; color: var(--muted); }
+.ck-kind { margin: 0.5rem 0 0; font: 600 0.72rem var(--sans); color: var(--muted); }
+.ck-kind + .rules.ck { margin-top: 0.15rem; }
