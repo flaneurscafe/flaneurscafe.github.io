@@ -669,8 +669,9 @@
     const shareColour = function (A, B) { return A.colours.some(function (x) { return B.colours.some(function (y) { return VC.deltaE2000(VC.hexToLab(x), VC.hexToLab(y)) < PARAMS.patternShareDE; }); }); };
     for (let i = 0; i < pats.length; i++) for (let j = i + 1; j < pats.length; j++) {
       const A = L[pats[i]], B = L[pats[j]], ratio = Math.max(A.pat.scale, B.pat.scale) / Math.min(A.pat.scale, B.pat.scale);
-      // two patterns of a different kind (a stripe and a check) and in different colours stay apart even at one
-      // scale (Put This On: "color makes up for that"); alike in kind or colour, they interfere
+      // A/B: the eye's channels are tuned to orientation as well as size (Blakemore and Campbell 1969), and
+      // colour is seen partly apart from lightness (Mullen 1985), so two patterns of a different kind (a stripe
+      // and a check) and in different colours interfere less at one scale: a note. Alike in kind or colour, they fail.
       const apart = A.family !== B.family && !shareColour(A, B);
       if (ratio < 1.8 && apart) add({ id: 'pscale', group: 'pattern', level: 'A/B', score: 0.6, slots: [pats[j]],
         text: nm(pats[i]) + ' (' + A.label + ') and ' + nm(pats[j]) + ' (' + B.label + ') are at nearly the same scale, but different in kind and colour, which keeps them apart. A clearer difference in scale (about two or more) is the safer choice.' });

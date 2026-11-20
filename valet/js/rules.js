@@ -46,7 +46,9 @@
      ("Fails on …"), how much it weighs when outfits are compared, what a suggested colour is said to do
      when it mends the rule (null: a colour cannot change it, as with a watch's size), and the section of
      the Outfit Check card it belongs to (otherwise its group decides), and its kind:
-       perceptual  the eye's response, measured (badge A or A/B in How it works): graded;
+       perceptual  the eye's response, measured (badge A or A/B in How it works): graded. The kind
+                   follows what is measured; a B note on its threshold in PARAMS (face, step) says only
+                   where the number comes from, which is what the A/B badge means, not a contradiction;
        convention  a tailoring or colour convention (B): graded, and labelled so;
        possibility a combination that cannot be worn (a pocket square with no breast pocket): the
                    editor and the suggestions prevent it, and if one gets through (an imported file)
