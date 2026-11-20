@@ -1252,3 +1252,12 @@ ul.sources { list-style: none; padding-left: 0; }
 .why-btn[aria-expanded="true"] .rule-chev { transform: rotate(45deg); margin-top: -3px; }
 .fit-row.why-host > .rule-bubble { grid-column: 1 / -1; }
 @media (max-width: 860px) { .why-btn { padding: 0.35rem 0.6rem; font-size: 0.8rem; } }
+/* Sources on Proportion and Fit: the references themselves, numbered as in section 19 */
+.src-bubble .src-head { display: flex; align-items: center; gap: 0.4rem; margin: 0 0 0.35rem; }
+.src-list { list-style: none; margin: 0 0 0.4rem; padding: 0; }
+.src-list li { display: grid; grid-template-columns: 1.6rem 1fr; gap: 0.2rem; padding: 0.25rem 0; border-top: 1px dashed var(--rule); font-size: 0.82rem; }
+.src-list li:first-child { border-top: 0; }
+.src-list .src-n { color: var(--muted); font-variant-numeric: tabular-nums; }
+.src-list a { overflow-wrap: anywhere; }
+.src-kind { margin: 0.3rem 0 0.2rem; font-weight: 600; font-size: 0.82rem; }
+.src-note { margin: 0 0 0.4rem; color: var(--muted); font-size: 0.8rem; }

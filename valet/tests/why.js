@@ -29,5 +29,15 @@ Object.keys(W.MAP.rule).forEach(function (k) { need('Fit field rule "' + k + '"'
 need('Fit size label', W.MAP.label); need('Fit periods', W.MAP.periods);
 // and nothing mapped that no longer exists
 Object.keys(W.MAP.target).forEach(function (id) { if (!ids.has(id)) problems.push('mapped target "' + id + '" is no longer a Proportion target'); });
+// every item says what it rests on: references that exist in section 19, or what it is instead
+const keys = [...ids].map(id => 'target:' + id).concat(F.sizes(m, {}).map(x => 'size:' + x.label), AG.filter(k => k !== 'rule').map(k => 'against:' + k),
+  Object.keys(W.MAP.rule).map(k => 'rule:' + k), ['label', 'periods']);
+keys.forEach(function (k) {
+  count++; const e = W.SOURCES[k];
+  if (!e) { problems.push(k + ': no entry in SOURCES (js/ui/why.js)'); return; }
+  (e.refs || []).forEach(function (n) { if (page.indexOf('<li id="ref-' + n + '"') < 0) problems.push(k + ': reference ' + n + ' is not in section 19'); });
+  if (!(e.refs && e.refs.length) && !W.KIND[e.kind]) problems.push(k + ': no reference, and no kind saying what it is instead');
+});
+Object.keys(W.SOURCES).forEach(function (k) { if (keys.indexOf(k) < 0) problems.push(k + ': an entry for an item that no longer exists'); });
 if (problems.length) { console.log('why: ' + problems.length + ' problem(s)\n  ' + problems.join('\n  ')); process.exit(1); }
-console.log('why: every Sources and Why points at a passage (' + count + ' checked)');
+console.log('why: every Sources and Why points at a passage, and every item says what it rests on (' + count + ' checked)');
