@@ -188,6 +188,9 @@ input[type="color"] { width: 2.4rem; height: 2rem; padding: 0; border: 1px solid
 .dim-head strong { font-weight: 600; }
 .scale { position: relative; height: 8px; border-radius: 4px; margin-top: 0.3rem; background: var(--rule); }
 .scale .mark { position: absolute; top: -4px; width: 4px; height: 16px; border-radius: 2px; background: var(--ink); transform: translateX(-50%); }
+.scale .tick { position: absolute; top: 0; bottom: 0; width: 2px; background: var(--paper); opacity: 0.85; transform: translateX(-50%); }
+button.conf { font: inherit; cursor: pointer; }
+.scale-key { margin-top: 0.2rem; }
 .scale.temp { background: linear-gradient(90deg, #5b7fbf, #c9c3b8, #d08a3c); }
 .scale.contrast { background: linear-gradient(90deg, #c9c3b8, #3a3a3a); }
 .scale.depth { background: linear-gradient(90deg, #f1e7da, #3b2a22); }

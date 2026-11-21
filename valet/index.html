@@ -13,13 +13,13 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Valet — dressing from theory</title>
 <meta name="description" content="Valet: a browser tool that works out which colours suit you from colour science and tailoring theory, and charts an outfit's lightness against your own colouring. Nothing leaves your browser.">
-<link rel="stylesheet" href="css/valet.css?v=1.11.4">
+<link rel="stylesheet" href="css/valet.css?v=1.11.5">
 </head>
 <body>
 <header class="masthead">
   <div class="brand">
     <h1>Valet</h1>
-    <p class="tagline">Dressing from theory, not from cases <button type="button" class="ver" id="verTag" title="What Valet is and how to use it">v1.11.4</button></p>
+    <p class="tagline">Dressing from theory, not from cases <button type="button" class="ver" id="verTag" title="What Valet is and how to use it">v1.11.5</button></p>
   </div>
   <div class="season-bar"><span class="flabel" id="seasonLabel">Season</span>
     <div class="seg" id="season" role="radiogroup" aria-labelledby="seasonLabel">
@@ -385,6 +385,8 @@
             <dd>The average lightness of what is seen, weighted by area: skin 1, eyes 0.08, and hair 0.08 (brows only), 0.45 (short) or 0.85 (long). A fair, bald head is light; the same face under long dark hair is medium.</dd>
             <dt>Temperature lean <span class="badge B">B</span></dt>
             <dd>The hue angle of your skin in CIELAB. Skin hues sit roughly between 45° (pinker, cooler) and 70° (more golden, warmer); Valet maps 57° to neutral and ±8° to fully cool or warm. This is the least reliable of the four. The camera limits above act on exactly this number, and skin hue also moves with tanning and with depth, so a single neutral point for everyone is crude. It carries a confidence label, and verdicts that rest on a low-confidence reading say so.</dd>
+            <dt>Confidence of the temperature</dt>
+            <dd id="c-confidence">How far to trust the temperature, judged by what it was read from. <strong>Low</strong>: skin chosen by name or by hand, or a photo without usable white paper, so the camera's cast stays in. <strong>Medium</strong>: a daylight photo with the white paper. <strong>Good</strong>: the same, with the hue far from neutral. It does not say how warm or cool you are. Even at medium, a reading close to neutral can tip either way. Below good, the profile lists a daylight test (navy against camel at the jaw); at low, the palette also names the colours whose tier would change if it reads cool or warm. A reading near neutral at low confidence does not mean you are neutral; it means neither has been shown yet.</dd>
             <dt>Chroma <span class="badge A">A</span></dt>
             <dd>How vivid your own colouring is: the plain mean C* of your features. Unweighted on purpose: the eyes are small, but they are where people look.</dd>
           </dl>
@@ -896,7 +898,7 @@
         <summary>What it cannot do</summary>
         <p>A colour reading from a photo is only as good as the light it was taken in. Numbers cannot see one shoulder lower than the other, feel how a cloth hangs, or know how a house cuts its sizes, so the sizes are ranges to take into a fitting room, not a replacement for one. And it covers everyday dress, from casual to evening; the codes of black tie, white tie and morning dress are not checked. How it works, section 1, says more.</p>
       </details>
-      <p class="small muted">Version 1.11.4. Proportion and Fit are still being refined: their numbers are tailoring rules and survey averages, so treat them as a starting point and trust a garment that fits you.</p>
+      <p class="small muted">Version 1.11.5. Proportion and Fit are still being refined: their numbers are tailoring rules and survey averages, so treat them as a starting point and trust a garment that fits you.</p>
       <div class="wl-foot" id="welcomeFoot"></div>
       <div class="ov-actions">
         <button type="button" class="btn" id="welcomeStart">Set my colouring</button>
@@ -908,29 +910,29 @@
 </div>
 
 <div id="printCard" class="print-card" aria-hidden="true"></div>
-<script src="js/colour.js?v=1.11.4"></script>
-<script src="js/vision.js?v=1.11.4"></script>
-<script src="js/patterns.js?v=1.11.4"></script>
-<script src="js/measure-art.js?v=1.11.4"></script>
-<script src="js/data.js?v=1.11.4"></script>
-<script src="js/garments.js?v=1.11.4"></script>
-<script src="js/rules.js?v=1.11.4"></script>
-<script src="js/engine.js?v=1.11.4"></script>
-<script src="js/suggest.js?v=1.11.4"></script>
-<script src="js/outfit.js?v=1.11.4"></script>
-<script src="js/chart.js?v=1.11.4"></script>
-<script src="js/body.js?v=1.11.4"></script>
-<script src="js/proportion.js?v=1.11.4"></script>
-<script src="js/fit.js?v=1.11.4"></script>
-<script src="js/ui/why.js?v=1.11.4"></script>
-<script src="js/ui/dresser.js?v=1.11.4"></script>
-<script src="js/ui/core.js?v=1.11.4"></script>
-<script src="js/ui/you.js?v=1.11.4"></script>
-<script src="js/ui/palette.js?v=1.11.4"></script>
-<script src="js/ui/chart-host.js?v=1.11.4"></script>
-<script src="js/ui/fit.js?v=1.11.4"></script>
-<script src="js/ui/shape.js?v=1.11.4"></script>
-<script src="js/ui/main.js?v=1.11.4"></script>
-<script src="js/ui/mobile.js?v=1.11.4"></script>
+<script src="js/colour.js?v=1.11.5"></script>
+<script src="js/vision.js?v=1.11.5"></script>
+<script src="js/patterns.js?v=1.11.5"></script>
+<script src="js/measure-art.js?v=1.11.5"></script>
+<script src="js/data.js?v=1.11.5"></script>
+<script src="js/garments.js?v=1.11.5"></script>
+<script src="js/rules.js?v=1.11.5"></script>
+<script src="js/engine.js?v=1.11.5"></script>
+<script src="js/suggest.js?v=1.11.5"></script>
+<script src="js/outfit.js?v=1.11.5"></script>
+<script src="js/chart.js?v=1.11.5"></script>
+<script src="js/body.js?v=1.11.5"></script>
+<script src="js/proportion.js?v=1.11.5"></script>
+<script src="js/fit.js?v=1.11.5"></script>
+<script src="js/ui/why.js?v=1.11.5"></script>
+<script src="js/ui/dresser.js?v=1.11.5"></script>
+<script src="js/ui/core.js?v=1.11.5"></script>
+<script src="js/ui/you.js?v=1.11.5"></script>
+<script src="js/ui/palette.js?v=1.11.5"></script>
+<script src="js/ui/chart-host.js?v=1.11.5"></script>
+<script src="js/ui/fit.js?v=1.11.5"></script>
+<script src="js/ui/shape.js?v=1.11.5"></script>
+<script src="js/ui/main.js?v=1.11.5"></script>
+<script src="js/ui/mobile.js?v=1.11.5"></script>
 </body>
 </html>

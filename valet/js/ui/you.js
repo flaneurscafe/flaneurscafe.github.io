@@ -483,9 +483,11 @@
   }
 
   /* ---------- Profile card ---------- */
-  function scaleRow(label, valueText, pos, cls, ends, extra) {
-    return '<div class="dim"><div class="dim-head"><span>' + label + '</span><strong>' + valueText + (extra || '') + '</strong></div>' +
-      '<div class="scale ' + cls + '"><span class="mark" style="left:' + Math.max(0, Math.min(100, pos)) + '%"></span></div>' +
+  // ticks: where the words change (light, medium, deep…), so the mark can be read against them
+  function scaleRow(label, valueText, pos, cls, ends, extra, ticks) {
+    return '<div class="dim why-host"><div class="dim-head"><span>' + label + '</span><strong>' + valueText + (extra || '') + '</strong></div>' +
+      '<div class="scale ' + cls + '">' + (ticks || []).map(function (t) { return '<span class="tick" style="left:' + t + '%"></span>'; }).join('') +
+      '<span class="mark" style="left:' + Math.max(0, Math.min(100, pos)) + '%"></span></div>' +
       '<div class="scale-ends"><span>' + ends[0] + '</span><span>' + ends[1] + '</span></div></div>';
   }
   /* The face on a lightness scale: where skin, hair or brows and eyes sit, the step that sets the
@@ -564,10 +566,12 @@
       (V.state.note ? '<p class="note small">' + esc(V.state.note) + '</p>' : '') +
       '<div class="profile-swatches">' + sw + '</div>' +
       '<div class="dim"><div class="dim-head"><span>Contrast <span class="badge A">A</span> <span class="badge B">B</span></span><strong>' + a.contrastLevel + ' (' + Math.round(a.contrast) + ')</strong></div>' + ladder(a) + '</div>' +
-      scaleRow('Depth <span class="badge A">A</span>', a.depthLevel + ' (L* ' + Math.round(a.depth) + ')', 100 - a.depth, 'depth', ['light', 'deep']) +
-      scaleRow('Temperature <span class="badge B">B</span>', a.tempLevel + ' (h ' + Math.round(a.skinHue) + '°) ', (a.lean + 1) * 50, 'temp', ['cool', 'warm'],
-        ' <span class="conf ' + a.confidence + '">confidence ' + a.confidence + '</span>') +
-      scaleRow('Chroma <span class="badge A">A</span>', a.chromaLevel + ' (C* ' + Math.round(a.chroma) + ')', a.chroma / 40 * 100, 'chroma', ['muted', 'clear']) +
+      // the ticks are the engine's own bands (engine.js, analyseProfile): depth 62 and 45, lean ±0.35, chroma 14 and 24
+      scaleRow('Depth <span class="badge A">A</span>', a.depthLevel + ' (L* ' + Math.round(a.depth) + ')', 100 - a.depth, 'depth', ['light', 'deep'], '', [38, 55]) +
+      scaleRow('Temperature <span class="badge B">B</span>', a.tempLevel + ' (skin hue ' + Math.round(a.skinHue) + '°) ', (a.lean + 1) * 50, 'temp', ['cool', 'warm'],
+        ' <button type="button" class="conf why-btn ' + a.confidence + '" data-how="c-confidence" data-level="B" aria-expanded="false" title="What the confidence means">confidence ' + a.confidence + ' ?</button>', [32.5, 67.5]) +
+      scaleRow('Chroma <span class="badge A">A</span>', a.chromaLevel + ' (C* ' + Math.round(a.chroma) + ')', a.chroma / 40 * 100, 'chroma', ['muted', 'clear'], '', [35, 60]) +
+      '<p class="small muted scale-key">The ticks on each bar mark where the word changes: light, medium, deep; cool, neutral, warm; muted, moderate, clear.</p>' +
       '<p class="small muted">Skin redness a* ' + Math.round(a.lab.skin[1]) + ', yellowness b* ' + Math.round(a.lab.skin[2]) + ': the temperature hue is the angle between the two, so a ruddy skin and a sallow one can share it (How it works, section 7). ' +
         'Strongest step: ' + esc(a.contrastPair) + (a.contrastEdge && a.contrastEdge.assumed ? ' (assumed, not sampled)' : '') + ', as ' + a.hairLabel + '.' +
         (a.hairStyle === 'none' && a.hex.hair ? ' Brows are a thin line, not a frame, so their step counts at 80%.' : '') +
