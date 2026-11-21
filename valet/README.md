@@ -13,6 +13,14 @@ Try it: <https://flaneurs.cafe/valet/>
 
 There is nothing to build or install. Open `index.html` in a browser, from a web server or straight from the folder. Everything runs in the browser and nothing is uploaded: the photo stays on your computer, and your profile is kept in the browser's local storage until you save it to a file. The page makes no network requests.
 
+## How it was made
+
+Valet was built by one person working with an AI assistant, Claude (made by Anthropic), from the first version to this one. The idea and the framework are mine: that style advice can be split into perception science, convention and folklore, that each rule must say which it is, and that measurement beats convention where they disagree. So are the decisions about what goes in, my own Style Guide and Outfit Check card that many conventions started from, and the testing on my own wardrobe. Claude did most of the work of turning that into a working tool. It found the rules in studies, in books and on menswear sites and wrote each one into the framework with its source and evidence badge. It also wrote the code, the tests and most of the text of *How it works*. Working alone, I would not have had the time to do that.
+
+The machine's word is not what any verdict rests on. Every rule names its source, and the sources were checked against the originals: *Dressing the Man* page by page, every website against the page itself, every study against the paper. Claims that did not survive that check were dropped, including some proposed by AI, and errors made in earlier versions of Valet itself. Every deciding number is named, with its evidence badge, in `js/rules.js`. The tests check that each rule, its threshold and its explanation agree, and that 800 recorded outfits keep their verdicts. Nothing is hidden: you can read every rule and its reasons in *How it works*, and argue with it.
+
+So far the testing is mine alone: I check its verdicts against my own wardrobe, my own face in daylight and my own eye. That catches plain mistakes, but it is one face, one wardrobe and one judge, so it says little about whether a threshold is right for anyone else. A proper test of Valet's thresholds against what many people actually see has not been done yet (How it works, section 1, describes how it could be). Until then, treat its verdicts as reasoned advice, not measurements of beauty.
+
 ## Licence
 
 Valet is free software.
