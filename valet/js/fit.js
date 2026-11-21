@@ -496,8 +496,9 @@
     { name: 'Jacket', items: [
       ['Shoulders first', 'The seam ends at the shoulder bone, and the sleeve hangs straight without a dent below the shoulder. Shoulders are the one part a tailor cannot really change, so a size that is wrong here is the wrong size.'],
       ['Collar against the shirt collar', 'The jacket collar sits on the shirt collar with no gap at the back of the neck, and about 1 to 1.5 cm of shirt collar shows above it.'],
+      ['The back', 'Smooth from the collar to the waist: no horizontal ripple just below the collar, and no folds pulling from the collar toward the armpits. A tape cannot see this; a mirror behind you can.'],
       ['Buttoned', 'No X-shaped pull around the button, and the lapels lie flat on the chest. Room for a flat hand inside, not a fist.'],
-      ['Sleeves', 'They end just before the wrist bone, with 1 to 1.5 cm of shirt cuff showing when the arms hang.'],
+      ['Sleeves', 'They end just before the wrist bone, with 1 to 1.5 cm of shirt cuff showing when the arms hang, and hang without a twist: no diagonal fold from the back of the shoulder toward the elbow.'],
       ['Length', 'It covers the seat; with the arms hanging, the hem is about where the cupped fingers are.'],
       ['Raise your arms', 'The whole jacket should not ride up to the ears; some lift is normal, a lot means the armholes are too low.']
     ] },
@@ -512,6 +513,7 @@
       ['Seat', 'Smooth, no folds under the seat and no pull across it when you sit.'],
       ['Front', 'Pockets lie flat; pleats, if any, close when you stand.'],
       ['Length', 'At the front the hem rests on the shoe in a slight break, or just touches it; at the back it reaches the top of the heel.'],
+      ['Crease', 'Standing, the front crease falls straight to the middle of the shoe, not to one side of it.'],
       ['Leg', 'The leg narrows toward the hem without clinging to the calf.']
     ] },
     { name: 'Knitwear', items: [
@@ -560,6 +562,23 @@
       ['Height on the head', 'The brim sits about two fingers above the eyebrows, level or a little tilted.']
     ] }
   ];
+
+  /* What the numbers cannot see, for the garment being checked: its try-on list, and the faults to
+     watch for with the shape set on the You tab (tailoring convention, B; the same shape notes as
+     Proportion). Fit checks with no list of their own (the tie) return null. */
+  const TRYON_FOR = { jacket: 'Jacket', coat: 'Overcoat or short coat', shortcoat: 'Overcoat or short coat', shirt: 'Shirt', knit: 'Knitwear',
+    polo: 'Polo or T-shirt', waistcoat: 'Waistcoat', casual: 'Casual jacket', bowtie: 'Bow tie', gloves: 'Gloves', trousers: 'Trousers', shoes: 'Shoes', hat: 'Hat' };
+  function tryonFor(kind, shape) {
+    const g = TRYON.find(function (t) { return t.name === TRYON_FOR[kind]; }); if (!g) return null;
+    shape = shape || {};
+    const tailored = ['jacket', 'coat', 'shortcoat', 'casual'].indexOf(kind) >= 0, mine = [];
+    if (tailored && shape.posture === 'forward') mine.push(['With your posture (head and shoulders forward)', 'Watch for the collar standing away from the neck and the hem riding up at the back while the front swings open. Ask for a longer back and a shorter front.']);
+    if (tailored && shape.posture === 'erect') mine.push(['With your posture (very upright)', 'Watch for pulling across the front and slack across the back. Ask for a longer front and a shorter back.']);
+    if (tailored && shape.shoulders === 'sloping') mine.push(['With sloping shoulders', 'Watch for folds running from the collar down toward the armpits, and an empty dent at the end of the shoulder. A little more padding mends it; a tailor can change the slope of a shoulder a little, though not its width.']);
+    if (tailored && shape.shoulders === 'square') mine.push(['With square shoulders', 'Watch for a fold across the back just below the collar, and the collar standing away. A softer, less padded shoulder mends it; a tailor can change the slope a little, though not the width.']);
+    if (kind === 'shirt' && shape.posture === 'forward') mine.push(['With your posture (head forward)', 'Watch for the collar standing away from the back of the neck; a size up in the collar does not mend that, a different collar cut does.']);
+    return { name: g.name, items: g.items, mine: mine };
+  }
 
   /* ---------- From the label: what a size is cut for, against you ----------
      German and Italian jacket sizes are half the chest they are cut for (A); UK and US sizes are
@@ -658,5 +677,5 @@
     return out;
   }
 
-  window.VFIT = { CUT_NAME: CUT_NAME, CUT_ORDER: CUT_ORDER, clean: clean, CLEAN: CLEAN, MAX_SIZES: MAX_SIZES, checkLabel: checkLabel, LABELS: LABELS, sizes: sizes, collar: collar, watchRange: watchRange, lengthLetter: lengthLetter, CHECKS: CHECKS, FOR_DRESSER: FOR_DRESSER, forDresser: forDresser, checkGarment: checkGarment, verdictOf: verdictOf, bestSize: bestSize, periodFit: periodFit, TRYON: TRYON };
+  window.VFIT = { CUT_NAME: CUT_NAME, CUT_ORDER: CUT_ORDER, clean: clean, CLEAN: CLEAN, MAX_SIZES: MAX_SIZES, checkLabel: checkLabel, LABELS: LABELS, sizes: sizes, collar: collar, watchRange: watchRange, lengthLetter: lengthLetter, CHECKS: CHECKS, FOR_DRESSER: FOR_DRESSER, forDresser: forDresser, checkGarment: checkGarment, verdictOf: verdictOf, bestSize: bestSize, periodFit: periodFit, TRYON: TRYON, tryonFor: tryonFor };
 })();

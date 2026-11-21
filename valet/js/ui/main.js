@@ -55,7 +55,7 @@
      palette is rebuilt from it with the current rules, and any colour whose tier differs from the
      saved palette is listed. A file with a palette but no colouring gets its colouring from the
      palette, as set by hand. */
-  const VERSION = '1.11.3';
+  const VERSION = '1.11.4';
   function paletteFor(season) {
     const a = E.analyseProfile(E.seasonProfile(V.state, season)); if (!a) return null;
     const r1 = function (x) { return Math.round(x * 10) / 10; };

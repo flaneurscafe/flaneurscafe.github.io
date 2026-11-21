@@ -663,6 +663,9 @@ body.is-summer .season-tag { color: var(--gold); border-color: var(--gold); }
 .fit-try summary { font: 600 0.88rem var(--sans); cursor: pointer; }
 .fit-try ul { margin: 0.4rem 0 0.3rem; padding-left: 1.1rem; font-size: 0.9rem; }
 .fit-try li { margin-bottom: 0.3rem; }
+/* the garment being checked: its try-on list, open below its check, personal items first */
+.fit-try-now { margin: 0.8rem 0 0.4rem; border: 1px solid var(--rule); border-radius: var(--radius); padding: 0.45rem 0.8rem; }
+.fit-try li.fit-mine { list-style: '→ '; }
 
 /* ---- Stacked fields, the armed "erase" button, and narrow screens ---- */
 .field + .field { margin-top: 0.7rem; }

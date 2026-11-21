@@ -103,6 +103,10 @@ check('the new checks judge: a waistcoat, a polo, a casual jacket, a short coat 
   F.checkGarment('shortcoat', { length: 90 }, {}, M2, 'modern', {})[0].state === 'right' &&
   F.checkGarment('tie', { width: 8 }, {}, M, 'modern', { prop: { tieWidth: { lo: 7.5, hi: 9 } } })[0].state === 'right' &&
   F.checkGarment('tie', { width: 5 }, {}, M, 'modern', { prop: { tieWidth: { lo: 7.5, hi: 9 } } })[0].style === true);
+check('every Fit check but the tie has a try-on list, and the shape adds its faults',
+  Object.keys(F.CHECKS).every(k => k === 'tie' ? !F.tryonFor(k) : !!F.tryonFor(k)) &&
+  F.tryonFor('jacket', { posture: 'forward', shoulders: 'sloping' }).mine.length === 2 && F.tryonFor('trousers', { posture: 'forward' }).mine.length === 0,
+  Object.keys(F.CHECKS).filter(k => k !== 'tie' && !F.tryonFor(k)));
 check('clean() repairs an empty fit-check state', !!F.clean(null) && typeof F.clean(null) === 'object');
 
 console.log(failed ? failed + ' of ' + n + ' unit checks failed' : 'units: ' + n + ' checks pass (colour, vision, patterns, body, proportion, fit)');

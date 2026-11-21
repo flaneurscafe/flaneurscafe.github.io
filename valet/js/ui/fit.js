@@ -114,6 +114,12 @@
         'The rest against your body plus the ease of the cut, or a tailoring rule.</p>';
     }
 
+    // what the numbers cannot see, for this garment: open, beside its check
+    const tf = F.tryonFor(fc.kind, st.shape);
+    if (tf) h += '<details class="fit-try fit-try-now" open><summary>What the numbers cannot see: ' + esc(tf.name.toLowerCase()) + ', at the try-on</summary><ul>' +
+      tf.mine.map(function (i) { return '<li class="fit-mine"><strong>' + i[0] + '.</strong> ' + esc(i[1]) + '</li>'; }).join('') +
+      tf.items.map(function (i) { return '<li><strong>' + i[0] + '.</strong> ' + esc(i[1]) + '</li>'; }).join('') + '</ul></details>';
+
     h += '<h3>Your sizes</h3><p class="small">Worked out from your measurements. A starting point: brands cut differently, and the check above is the reliable test.</p><div class="fit-sizes">' + groups.map(function (g) {
       return '<div class="fit-group"><h4>' + g + '</h4><dl>' + sz.filter(function (x) { return x.group === g; }).map(function (x) {
         return x.needs ? '<div class="fit-row miss"><dt>' + x.label + '</dt><dd>needs ' + x.needs.map(labelOf).join(' and ').toLowerCase() + '</dd></div>'
