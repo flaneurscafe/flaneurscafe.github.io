@@ -102,7 +102,7 @@
         note: 'Worn metal, so only its metal is chosen, below.' }
     ] },
     { key: 'trousers', label: 'Trousers', face: false, optional: false, kinds: [
-      { id: 'trousers', name: 'Trousers', f: 5, cloths: ['flannel', 'worsted', 'fresco', 'cotton', 'linen', 'corduroy', 'moleskin', 'denim', 'seersucker', 'lustre'], pats: ['solid', 'nailhead', 'birdseye', 'herringbone', 'pinstripe', 'chalkstripe', 'candy', 'houndstooth', 'glen', 'windowpane'], maxScale: 'medium' }
+      { id: 'trousers', name: 'Trousers', f: 5, cloths: ['flannel', 'worsted', 'tweed', 'fresco', 'cotton', 'linen', 'corduroy', 'moleskin', 'denim', 'seersucker', 'lustre'], pats: ['solid', 'nailhead', 'birdseye', 'herringbone', 'pinstripe', 'chalkstripe', 'candy', 'houndstooth', 'glen', 'windowpane'], maxScale: 'medium' }
     ] },
     { key: 'socks', label: 'Socks', face: false, optional: true, kinds: [
       { id: 'socks', name: 'Socks', f: null, pats: ['solid', 'birdseye', 'pindot', 'breton', 'herringbone'], maxScale: 'small' }

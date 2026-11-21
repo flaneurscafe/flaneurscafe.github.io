@@ -29,6 +29,10 @@ T('light grey shirt, very fair skin: still too close to the skin', base({shirt:P
 const WP=()=>({type:'windowpane',hex2:'#c9cbcd',scale:7});
 T('windowpane suit: jacket and trousers are one medium pattern', base({occasion:'business',jacket:P('#8e9196','jacket','flannel',{pat:WP()}),trousers:P('#8e9196','trousers','flannel',{pat:WP()})}), [[/^pmed:/,false]]);
 T('windowpane jacket over glen trousers: two medium patterns', base({jacket:P('#8e9196','jacket','flannel',{pat:WP()}),trousers:P('#3d4045','trousers','flannel',{pat:{type:'glen',hex2:'#8e9196',scale:6}})}), [[/^pmed:/,true]]);
+// ---- tweed trousers (1.11.8) ----
+const HB=()=>({type:'herringbone',hex2:'#8a6a4a',scale:1});
+T('tweed suit in winter: one pattern, right season', base({occasion:'smart',jacket:P('#6b4f36','jacket','tweed',{pat:HB()}),trousers:P('#6b4f36','trousers','tweed',{pat:HB()})}), [[/^pmed:/,false],[/^season:/,false]]);
+T('tweed trousers in summer: the season check notes them', base({jacket:P('#1d2a44','jacket','linen'),trousers:P('#6b4f36','trousers','tweed')}), [[/^season:/,true]], aS);
 // ---- coat ----
 T('parka over business dress is noted', base({occasion:'business',coat:P('#2d3b2a','parka','nylonmatte')}), [[/^coat:/,true]]);
 T('parka on a casual day is fine', base({occasion:'casual',coat:P('#2d3b2a','parka','nylonmatte')}), [[/^coat:/,false]]);
