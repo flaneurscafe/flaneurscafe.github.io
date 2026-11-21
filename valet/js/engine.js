@@ -687,9 +687,12 @@
       else if (pats.length === 2) add({ id: 'pscale', group: 'pattern', level: 'A/B', score: 1, slots: [],
         text: nm(pats[i]) + ' and ' + nm(pats[j]) + ' are at different scales (' + A.label + ' against ' + B.label + '), so each keeps its own identity.' });
     }
+    // a suit is one cloth: its jacket and trousers are one pattern, not two (hips, medium patterns, busy)
+    const suitPat = suitWorn(o, L, K, (function () { const c = {}; ['jacket', 'trousers'].forEach(function (k) { c[k] = G.cloth(k, o[k]); }); return c; })());
+    const onePats = suitPat ? allPats.filter(function (k) { return k !== 'trousers'; }) : allPats;
     // the top layer and the trousers meet at the hips; the same scale interferes there too (unless a suit)
     const topP = L.jacket ? 'jacket' : L.mid ? 'mid' : null;
-    if (topP && L[topP].visible && L.trousers && L.trousers.visible && !(topP === 'jacket' && suitWorn(o, L, K, (function () { const c = {}; ['jacket', 'trousers'].forEach(function (k) { c[k] = G.cloth(k, o[k]); }); return c; })()))) {
+    if (topP && L[topP].visible && L.trousers && L.trousers.visible && !(topP === 'jacket' && suitPat)) {
       const A = L[topP], Bt = L.trousers, ratio = Math.max(A.pat.scale, Bt.pat.scale) / Math.min(A.pat.scale, Bt.pat.scale);
       if (ratio < 1.8) add({ id: 'phip', group: 'pattern', level: 'A/B', score: 0.5, slots: ['trousers'],
         text: nm(topP) + ' (' + A.label + ') and ' + nm('trousers') + ' (' + Bt.label + ') meet at the hips at nearly the same scale: patterns of similar size interfere. Vary the scale by about two or more, or make one plain.' });
@@ -713,7 +716,7 @@
       else if (echoed.length) add({ id: 'pecho', group: 'pattern', score: 1, slots: [],
         text: 'The ' + colourName(echoed[0].hex) + ' in the ' + nm(echoed[0].k).toLowerCase() + ' is picked up by the ' + nm(echoed[0].o).toLowerCase() + ': a repeated colour ties the outfit together.' });
     }
-    const medium = allPats.filter(function (k) { return L[k].cls.id === 'medium'; });
+    const medium = onePats.filter(function (k) { return L[k].cls.id === 'medium'; });
     if (medium.length > 1) add({ id: 'pmed', group: 'pattern', score: 0.5, slots: medium.slice(1),
       text: 'Two medium-scale patterns (' + medium.map(nm).join(', ') + '). The medium pattern is the one statement of an outfit.' });
     // Which patterns and what scale each garment type takes (Style Guide, section 7), from garments.js.
@@ -735,7 +738,7 @@
       if (FACE.indexOf(k) >= 0 && L[k].dL > hi) add({ id: 'pcontrast', group: 'pattern', level: 'A/B', score: 0.6, slots: [k],
         text: nm(k) + ': the pattern\'s own light-dark contrast (' + round(L[k].dL) + ') is stronger than your face carries (up to ' + round(hi) + '). It will take the attention.' });
     });
-    if (allPats.length > 3) add({ id: 'pbusy', group: 'pattern', score: 0.5, slots: allPats.slice(3), text: allPats.length + ' patterned pieces in one outfit: busy.' });
+    if (onePats.length > 3) add({ id: 'pbusy', group: 'pattern', score: 0.5, slots: onePats.slice(3), text: onePats.length + ' patterned pieces in one outfit: busy' + (suitPat ? ', counting the suit once.' : '.') });
 
     /* --- a brimmed hat: its band sits at the face; its brim follows the frame (B) --- */
     if (L.hat && K.hat.brim) hatChecks(o.hat, K.hat, p, add, nm, o.m || {});

@@ -25,6 +25,10 @@ function T(name, o, expect, a){ count++;
 const aFair=E.analyseProfile({samples:{white:null,skin:'#f0d3c3',hair:'#7a5c4a',eyes:'#6d8293'},manual:{skin:true,hair:true,eyes:true},useWhite:true,hairStyle:'none',grey:0,underEye:'deep',redness:'mild'});
 T('white shirt under a navy jacket, very fair skin: passes at the face', base({shirt:P('#f7f6f2','shirt','poplin'),occasion:'business'}), [[/^face:/,false]], aFair);
 T('light grey shirt, very fair skin: still too close to the skin', base({shirt:P('#c9cbcd','shirt','poplin')}), [[/^face:/,true]], aFair);
+// ---- a patterned suit is one cloth (1.11.7) ----
+const WP=()=>({type:'windowpane',hex2:'#c9cbcd',scale:7});
+T('windowpane suit: jacket and trousers are one medium pattern', base({occasion:'business',jacket:P('#8e9196','jacket','flannel',{pat:WP()}),trousers:P('#8e9196','trousers','flannel',{pat:WP()})}), [[/^pmed:/,false]]);
+T('windowpane jacket over glen trousers: two medium patterns', base({jacket:P('#8e9196','jacket','flannel',{pat:WP()}),trousers:P('#3d4045','trousers','flannel',{pat:{type:'glen',hex2:'#8e9196',scale:6}})}), [[/^pmed:/,true]]);
 // ---- coat ----
 T('parka over business dress is noted', base({occasion:'business',coat:P('#2d3b2a','parka','nylonmatte')}), [[/^coat:/,true]]);
 T('parka on a casual day is fine', base({occasion:'casual',coat:P('#2d3b2a','parka','nylonmatte')}), [[/^coat:/,false]]);
