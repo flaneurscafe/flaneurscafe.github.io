@@ -25,7 +25,9 @@
       outfit: normOutfit(s.outfit || V.state.outfit),
       // a profile without a wardrobe (the demo, an old file) keeps the one you have
       wardrobe: normWardrobe(Array.isArray(s.wardrobe) ? s.wardrobe : V.state.wardrobe), study: s.study || V.state.study, shape: s.shape && typeof s.shape === 'object' ? s.shape : {},
-      period: s.period || V.state.period || 'classic', combos: Array.isArray(s.combos) ? s.combos.filter(function (c) { return c && typeof c.name === 'string' && ['face', 'accent', 'below'].every(function (k) { return c[k] == null || /^#[0-9a-f]{6}$/i.test(c[k]); }); }).slice(0, 24) : (V.state.combos || []), theme: s.theme || V.state.theme, fitCheck: window.VFIT.clean(s.fitCheck || V.state.fitCheck)
+      period: s.period || V.state.period || 'classic', combos: Array.isArray(s.combos) ? s.combos.filter(function (c) { return c && typeof c.name === 'string' && ['face', 'accent', 'below'].every(function (k) { return c[k] == null || /^#[0-9a-f]{6}$/i.test(c[k]); }); }).slice(0, 24) : (V.state.combos || []), theme: s.theme || V.state.theme, fitCheck: window.VFIT.clean(s.fitCheck || V.state.fitCheck),
+      // like the wardrobe: a profile without colours from photos keeps the ones you have
+      myColours: window.VPHOTOS.cleanColours(Array.isArray(s.myColours) ? s.myColours : V.state.myColours)
     };
     syncInputs(); update();
   }
@@ -55,7 +57,7 @@
      palette is rebuilt from it with the current rules, and any colour whose tier differs from the
      saved palette is listed. A file with a palette but no colouring gets its colouring from the
      palette, as set by hand. */
-  const VERSION = '1.11.8';
+  const VERSION = '1.12';
   function paletteFor(season) {
     const a = E.analyseProfile(E.seasonProfile(V.state, season)); if (!a) return null;
     const r1 = function (x) { return Math.round(x * 10) / 10; };
@@ -187,6 +189,10 @@
     normWardrobe: normWardrobe, version: VERSION,
     analysisFor: function (season) { return E.analyseProfile(E.seasonProfile(V.state, season)); },
     season: function () { return V.state.season; }
+  });
+  VPHOTOS.init({
+    state: function () { return V.state; }, analysis: function () { return V.analysis; }, save: save,
+    changed: function () { save(); syncChart(); VWARD.render(); }
   });
   // open the tab named in the address (#proportion, #fit…)
   /* The address names a tab, and for the Palette a pane (#colour/pairs). It is read at load and whenever

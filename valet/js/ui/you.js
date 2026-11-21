@@ -283,15 +283,8 @@
 
   function patchRadius() { return Math.max(3, Math.round(canvas.width / 300)); }
   function samplePatch(x, y) {
-    const r = patchRadius();
-    const x0 = Math.max(0, x - r), y0 = Math.max(0, y - r);
-    const w = Math.min(canvas.width - x0, 2 * r + 1), h = Math.min(canvas.height - y0, 2 * r + 1);
-    const data = ctx.getImageData(x0, y0, w, h).data;
-    const acc = [0, 0, 0]; let n = 0;
-    for (let i = 0; i < data.length; i += 4) {
-      acc[0] += VC.srgbToLinear(data[i]); acc[1] += VC.srgbToLinear(data[i + 1]); acc[2] += VC.srgbToLinear(data[i + 2]); n++;
-    }
-    return VC.rgbToHex(acc.map(function (v) { return VC.linearToSrgb(v / n); }));
+    // a plain average of the small patch aimed at (js/ui/photos.js); nothing trimmed
+    return window.VPHOTOS.patch(ctx, x, y, patchRadius(), 0);
   }
   function canvasPoint(e) {
     const rect = canvas.getBoundingClientRect();

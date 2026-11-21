@@ -109,5 +109,30 @@ check('every Fit check but the tie has a try-on list, and the shape adds its fau
   Object.keys(F.CHECKS).filter(k => k !== 'tie' && !F.tryonFor(k)));
 check('clean() repairs an empty fit-check state', !!F.clean(null) && typeof F.clean(null) === 'object');
 
-console.log(failed ? failed + ' of ' + n + ' unit checks failed' : 'units: ' + n + ' checks pass (colour, vision, patterns, body, proportion, fit)');
+/* ---------- js/ui/photos.js: reading a patch, and My colours made safe ---------- */
+require(path.join(__dirname, '..', 'js', 'ui', 'photos.js'));
+const PH = window.VPHOTOS;
+// a fake canvas: a 9×9 grey patch with one black and one white pixel (a shadow and a glint)
+const fakeCtx = (function () {
+  const w = 9, h = 9, d = new Uint8ClampedArray(w * h * 4);
+  for (let i = 0; i < w * h; i++) { d[i * 4] = d[i * 4 + 1] = d[i * 4 + 2] = 128; d[i * 4 + 3] = 255; }
+  d.fill(0, 0, 3); d.fill(255, 4, 7);
+  return { canvas: { width: w, height: h }, getImageData: function () { return { data: d }; } };
+})();
+check('patch: trimmed for cloth, the shadow and the glint are left out', PH.patch(fakeCtx, 4, 4, 4, 0.1) === '#808080', PH.patch(fakeCtx, 4, 4, 4, 0.1));
+check('patch: untrimmed (the You tab), every pixel counts', PH.patch(fakeCtx, 4, 4, 4, 0) !== '#808080');
+const cleaned = PH.cleanColours([
+  { id: 'a1', name: '  Albrecht navy ', hex: '#1C2B4C', paper: true, photo: 'p1', added: '2026-11-21T10:00' },
+  { id: 'a1', name: 'duplicate id', hex: '#000000' },
+  { id: 'bad id!', name: 'x', hex: '#000000' },
+  { id: 'b2', name: '<b>', hex: 'navy' },
+  { id: 'c3', hex: '#ffffff', photo: '../x' }, null, 'text']);
+check('cleanColours keeps only safe entries', cleaned.length === 2, cleaned);
+check('cleanColours trims the name, lowers the hex, cuts the date', cleaned[0].name === 'Albrecht navy' && cleaned[0].hex === '#1c2b4c' && cleaned[0].added === '2026-11-21');
+check('cleanColours names an unnamed colour and drops a bad photo link', cleaned[1].name === 'My colour' && cleaned[1].photo === null && cleaned[1].paper === false);
+check('cleanColours of anything but a list is empty', PH.cleanColours({}).length === 0 && PH.cleanColours(null).length === 0);
+check('cleanColours keeps at most 200', PH.cleanColours(Array.from({ length: 250 }, (x, i) => ({ id: 'k' + i, hex: '#123456' }))).length === 200);
+check('nameOf finds one of my colours by its hex, in any case', PH.nameOf('#1C2B4C', { myColours: cleaned }) === 'Albrecht navy' && PH.nameOf('#abcdef', { myColours: cleaned }) === null && PH.nameOf('#1c2b4c', {}) === null);
+
+console.log(failed ? failed + ' of ' + n + ' unit checks failed' : 'units: ' + n + ' checks pass (colour, vision, patterns, body, proportion, fit, photos)');
 process.exit(failed ? 1 : 0);

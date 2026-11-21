@@ -623,93 +623,36 @@
       '<p class="ed-note">Mechanical or quartz cannot be seen, so it is not judged; a digital display or a rubber strap can be, as sportswear.</p></div>';
   }
 
-  /* ---------- Colour from a photo ----------
-     One photo is kept in memory for the session (never stored), so several pieces can be read from
-     the same picture. A click averages a patch wide enough to cover the weave, ignoring the darkest
-     and brightest tenth (shadows in folds, shine). Clicking white paper first corrects the light
-     the same way the You tab does (Bradford white balance). */
-  const photo = { base: null, white: null, whiteAt: null, raw: null, at: null, mode: 'cloth', open: false };
-  function photoHtml() {
-    return '<details class="photo-pick"' + (photo.open ? ' open' : '') + '><summary>From a photo</summary>' +
-      window.VAPP.say('<p class="ed-note">A photo of the garment, ideally by a window with a sheet of white printer paper beside it. Click the paper first, which corrects the colour of the light; then click the cloth. The photo stays on this page and is not stored, so you can read several pieces from one picture.</p>', '<p class="ed-note">A photo of the garment, ideally by a window with a sheet of white printer paper beside it. Tap the paper first, which corrects the colour of the light; then tap the cloth. The photo stays on this page and is not stored, so you can read several pieces from one picture.</p>') +
-      '<div class="pp-bar"><label class="btn small ghost pp-choose">' + (photo.base ? 'Choose another photo' : 'Choose a photo') + '<input type="file" accept="image/*" class="pp-file" hidden></label>' +
-      (photo.base ? window.VAPP.say('<div class="seg pp-mode" role="radiogroup" aria-label="What the next click reads"><button type="button" role="radio" data-m="white" aria-checked="', '<div class="seg pp-mode" role="radiogroup" aria-label="What the next tap reads"><button type="button" role="radio" data-m="white" aria-checked="') + (photo.mode === 'white') + '">White paper</button><button type="button" role="radio" data-m="cloth" aria-checked="' + (photo.mode === 'cloth') + '">Cloth</button></div>' : '') + '</div>' +
-      (photo.base ? '<div class="pp-wrap"><canvas class="pp-cv"></canvas></div>' : '') +
-      '<div class="pp-out"></div></details>';
+  /* ---------- My colours: read from photos of your own clothes ----------
+     The colours themselves, the photos and the window that reads them are in js/ui/photos.js. Here
+     they are shown for one piece, newest first, each with its tier and, like the library, marked when
+     it would clash with the rest of the outfit; "From photos…" opens the window for this piece. */
+  const MINE_SHOWN = 24;
+  function mineHtml(k, x, a) {
+    const list = S().myColours || [];
+    const fit = S().fitMark !== false ? E.fitFor(engineOutfit(), a, k) : null;
+    const one = function (c) {
+      const tier = E.scoreColour(c.hex, a).tier, j = fit ? fit.judge(c.hex, c.name) : null;
+      return '<button type="button" class="swatch t' + tier + (c.hex === x.hex.toLowerCase() ? ' sel' : '') + (j && j.state !== 'ok' ? ' fit-' + j.state : '') + '" data-hex="' + c.hex + '" title="' + esc(c.name) + ': tier ' + tier + (c.paper ? '' : ', read without white paper') + (j && j.why ? '. ' + esc(j.why) : '') + '">' +
+        '<span class="chip" style="background:' + c.hex + '">' + tt(tier) + '</span><span class="sname">' + esc(c.name) + '</span></button>';
+    };
+    return '<h4>My colours</h4>' +
+      (list.length ? '<div class="swatches lib mine">' + list.slice(0, MINE_SHOWN).map(one).join('') + '</div>' +
+        (list.length > MINE_SHOWN ? '<p class="small muted">The newest ' + MINE_SHOWN + ' of ' + list.length + '; all of them are in From photos.</p>' : '')
+        : '<p class="ed-note">Colours read from photos of your own clothes, kept and named, so every piece can wear them again.</p>') +
+      '<button type="button" class="btn small ghost mine-open">From photos…</button>';
   }
-  function photoRadius() { return Math.max(4, Math.round(photo.base.width / 70)); }
-  function photoSample(x, y) {
-    const c = photo.base.getContext('2d'), r = photoRadius();
-    const x0 = Math.max(0, x - r), y0 = Math.max(0, y - r), w = Math.min(photo.base.width - x0, 2 * r + 1), h = Math.min(photo.base.height - y0, 2 * r + 1);
-    const d = c.getImageData(x0, y0, w, h).data, px = [];
-    for (let i = 0; i < d.length; i += 4) {
-      const lin = [VC.srgbToLinear(d[i]), VC.srgbToLinear(d[i + 1]), VC.srgbToLinear(d[i + 2])];
-      px.push({ lin: lin, Y: 0.2126 * lin[0] + 0.7152 * lin[1] + 0.0722 * lin[2] });
-    }
-    px.sort(function (p1, p2) { return p1.Y - p2.Y; });
-    const keep = px.slice(Math.floor(px.length * 0.1), Math.ceil(px.length * 0.9)), acc = [0, 0, 0];
-    keep.forEach(function (q) { acc[0] += q.lin[0]; acc[1] += q.lin[1]; acc[2] += q.lin[2]; });
-    return VC.rgbToHex(acc.map(function (v) { return VC.linearToSrgb(v / keep.length); }));
-  }
-  function photoDraw(body) {
-    const cv = $('.pp-cv', body); if (!cv || !photo.base) return;
-    cv.width = photo.base.width; cv.height = photo.base.height;
-    const c = cv.getContext('2d'); c.drawImage(photo.base, 0, 0);
-    const r = photoRadius(), mark = function (pt, col) { if (!pt) return; c.lineWidth = Math.max(2, r / 3); c.strokeStyle = '#fff'; c.beginPath(); c.arc(pt.x, pt.y, r + c.lineWidth, 0, Math.PI * 2); c.stroke(); c.strokeStyle = col; c.beginPath(); c.arc(pt.x, pt.y, r, 0, Math.PI * 2); c.stroke(); };
-    mark(photo.whiteAt, '#2e5480'); mark(photo.at, '#7a2433');
-  }
-  function photoResult(body, k) {
-    const out = $('.pp-out', body); if (!out) return;
-    if (!photo.base) { out.innerHTML = ''; return; }
-    if (!photo.raw) { out.innerHTML = '<p class="small muted">' + (photo.white ? window.VAPP.say('Light corrected from the paper. Now click the cloth.', 'Light corrected from the paper. Now tap the cloth.') : window.VAPP.say('Click the white paper, or skip it and click the cloth.', 'Tap the white paper, or skip it and tap the cloth.')) + '</p>'; return; }
-    const hex = photo.white ? VC.rgbToHex(VC.whiteBalance(VC.hexToRgb(photo.raw), VC.hexToRgb(photo.white))) : photo.raw;
-    const lab = VC.hexToLab(hex);
-    const near = D.colours.map(function (c) { return { hex: c.hex, name: c.name, dE: VC.deltaE2000(lab, VC.hexToLab(c.hex)) }; }).sort(function (p1, p2) { return p1.dE - p2.dE; })[0];
-    const t = E.scoreColour(hex, api.analysis()).tier, tn = E.scoreColour(near.hex, api.analysis()).tier;
-    const warn = [];
-    if (!photo.white) warn.push('No white paper read, so the colour of the light is in this reading: indoor bulbs make cloth look warmer and yellower than it is.');
-    if (lab[0] < 10) warn.push('Very dark: the photo may be underexposed, and dark cloth often reads darker in photos than in hand.');
-    if (lab[0] > 96) warn.push('Nearly white: the photo may be overexposed here.');
-    const pat = VP.norm(piece(k).pat);
-    out.innerHTML = '<div class="pp-res"><span class="d" style="background:' + hex + '"></span><span><strong>Read: ' + hex.toUpperCase() + '</strong> ' + tt(t) +
-      '<br><span class="small">Nearest named colour: ' + esc(near.name) + ' ' + tt(tn) + ' (ΔE ' + (Math.round(near.dE * 10) / 10) + (near.dE < 3 ? ', hard to tell apart' : near.dE < 7 ? ', close' : ', not a close match') + ')</span></span></div>' +
-      '<p class="pp-fit">' + fitLine(k, hex) + '</p>' +
-      (warn.length ? '<p class="small muted">' + warn.join(' ') + '</p>' : '') +
-      '<div class="pp-acts"><button type="button" class="btn small pp-use" data-hex="' + hex + '">Wear this colour</button>' +
-      '<button type="button" class="btn small ghost pp-use" data-hex="' + near.hex + '">Wear ' + esc(near.name) + '</button>' +
-      (pat.type !== 'solid' ? '<button type="button" class="btn small ghost pp-second" data-hex="' + hex + '">Use as the pattern\'s second colour</button>' : '') + '</div>';
-    $$('.pp-use', out).forEach(function (b) { previewOn(b, k, function () { return { hex: b.dataset.hex }; }); b.addEventListener('click', function () { api.preview(null); setColour(k, b.dataset.hex); }); });
-    const sec = $('.pp-second', out);
-    if (sec) sec.addEventListener('click', function () { snapshot(); piece(k).pat = { type: pat.type, scale: pat.scale, hex2: sec.dataset.hex }; commit(kindOf(k).name + ': second colour from the photo.'); });
-  }
-  function photoWire(body, k) {
-    const det = $('.photo-pick', body); if (!det) return;
-    det.addEventListener('toggle', function () { photo.open = det.open; });
-    $('.pp-file', body).addEventListener('change', function (e) {
-      const f = e.target.files && e.target.files[0]; if (!f) return;
-      const img = new Image();
-      img.onload = function () {
-        const sc = Math.min(1, 1000 / Math.max(img.width, img.height)), cv = document.createElement('canvas');
-        cv.width = Math.round(img.width * sc); cv.height = Math.round(img.height * sc);
-        cv.getContext('2d').drawImage(img, 0, 0, cv.width, cv.height);
-        URL.revokeObjectURL(img.src);
-        Object.assign(photo, { base: cv, white: null, whiteAt: null, raw: null, at: null, mode: 'white', open: true });
-        render();
-      };
-      img.src = URL.createObjectURL(f);
+  function mineWire(body, k) {
+    const b = $('.mine-open', body); if (!b) return;
+    b.addEventListener('click', function () {
+      const pat = VP.norm(piece(k).pat);
+      window.VPHOTOS.open({
+        piece: kindOf(k).name, patterned: pat.type !== 'solid',
+        fit: function (hex) { return fitLine(k, hex); },
+        wear: function (hex) { setColour(k, hex); },
+        second: function (hex) { snapshot(); piece(k).pat = { type: pat.type, scale: pat.scale, hex2: hex }; commit(kindOf(k).name + ': second colour from a photo.'); }
+      });
     });
-    $$('.pp-mode button', body).forEach(function (b) { b.addEventListener('click', function () { photo.mode = b.dataset.m; $$('.pp-mode button', body).forEach(function (q) { q.setAttribute('aria-checked', String(q === b)); }); }); });
-    const cv = $('.pp-cv', body);
-    if (cv) cv.addEventListener('click', function (e) {
-      const rc = cv.getBoundingClientRect(), pt = { x: Math.round((e.clientX - rc.left) * cv.width / rc.width), y: Math.round((e.clientY - rc.top) * cv.height / rc.height) };
-      const hex = photoSample(pt.x, pt.y);
-      if (photo.mode === 'white') {
-        photo.white = hex; photo.whiteAt = pt; photo.mode = 'cloth';
-        $$('.pp-mode button', body).forEach(function (q) { q.setAttribute('aria-checked', String(q.dataset.m === 'cloth')); });
-      } else { photo.raw = hex; photo.at = pt; }
-      photoDraw(body); photoResult(body, k);
-    });
-    photoDraw(body); photoResult(body, k);
   }
 
   function previewOn(el, k, getter) {
@@ -752,7 +695,7 @@
         return '<button type="button" class="sug' + (care ? ' fit-care' : '') + '" data-hex="' + s.hex + '"' + (care ? ' title="' + esc(s.j.why) + '"' : '') + '><span class="d" style="background:' + s.hex + '"></span><span><strong>' + esc(s.name) + '</strong> ' + tt(s.tier) +
           '<small>' + (care ? '<span class="fit-care-t">Careful:</span> ' + esc(firstSentence(s.j.why)) : esc(s.why)) + '</small></span></button>';
       }).join('') + '</div>' +
-      photoHtml() +
+      mineHtml(k, x, a) +
       '<h4>All colours</h4>' +
       '<div class="lib-bar"><input type="search" class="lib-q" placeholder="Search: navy, claret, anthracite…" value="' + esc(filter.q) + '" aria-label="Search colours">' +
       '<div class="fam-chips">' + FAMILIES.map(function (f) { return '<button type="button" data-fam="' + f[0] + '" aria-pressed="' + (filter.fam === f[0]) + '">' + f[1] + '</button>'; }).join('') + '</div>' +
@@ -774,7 +717,7 @@
       previewOn(b, k, function () { return { hex: b.dataset.hex }; });
       b.addEventListener('click', function () { setColour(k, b.dataset.hex); });
     });
-    photoWire(body, k);
+    mineWire(body, k);
     const q = $('.lib-q', body);
     q.addEventListener('input', function () { filter.q = q.value; colourEditor(body, k, x, a, p); const n = $('.lib-q', body); n.focus(); n.setSelectionRange(n.value.length, n.value.length); });
     $$('[data-fam]', body).forEach(function (b) { b.addEventListener('click', function () { filter.fam = b.dataset.fam; colourEditor(body, k, x, a, p); }); });

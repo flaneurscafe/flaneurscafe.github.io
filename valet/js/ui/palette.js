@@ -45,7 +45,8 @@
 
   function nameOf(hex) {
     const c = D.colours.find(function (x) { return x.hex.toLowerCase() === hex.toLowerCase(); });
-    return c ? c.name : hex.toUpperCase();
+    // a named library colour, else one of my colours read from a photo, else its code
+    return c ? c.name : window.VPHOTOS.nameOf(hex, V.state) || hex.toUpperCase();
   }
 
   /* ---- Your palette: the named library, by tier (where a colour can go) or by colour family ---- */

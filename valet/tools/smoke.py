@@ -4,7 +4,8 @@
 
 Opens index.html in a headless Chrome, on a wide window and on a phone-sized one, loads the demo
 profile, opens every tab and presses every visible button in it (except ones that delete, reset,
-import, export, print or save), then opens Fit and presses each garment. Reports any error the page
+import, export, print or save), opens and closes the Colours from photos window, then opens Fit
+and presses each garment. Reports any error the page
 writes to the console. Nothing is saved; it uses a fresh browser each time.
 
 Needs Python 3 and Playwright, once:  pip install playwright && python -m playwright install chromium
@@ -31,6 +32,15 @@ async def run(browser, name, ctx):
               if (b.offsetParent && !%s.test(b.textContent || '')) { b.click(); n++; } }); return n; }""" % SKIP)
         await pg.wait_for_timeout(300)
         print(f'{name}: {t}, {n} buttons')
+    # Dresser: the Colours from photos window opens from a piece and closes with Escape
+    await pg.evaluate("document.querySelector('.tabs [data-tab=outfit]').click()"); await pg.wait_for_timeout(300)
+    await pg.evaluate("document.querySelector('.ov-piece[data-k=jacket] .ov-pick').click()"); await pg.wait_for_timeout(300)
+    await pg.evaluate("document.querySelector('.mine-open').click()"); await pg.wait_for_timeout(300)
+    shown = await pg.evaluate("!document.querySelector('#photoOv').hidden")
+    await pg.keyboard.press('Escape'); await pg.wait_for_timeout(200)
+    gone = await pg.evaluate("document.querySelector('#photoOv').hidden")
+    if not (shown and gone): errs.append('Colours from photos: did not open and close')
+    print(f'{name}: Colours from photos opened and closed')
     # Fit: each garment
     await pg.evaluate("document.querySelector('.tabs [data-tab=proportion]').click()"); await pg.wait_for_timeout(300)
     await pg.evaluate("[...document.querySelectorAll('.tab-panel.active button')].find(b => b.textContent.trim() === 'Fit').click()"); await pg.wait_for_timeout(400)

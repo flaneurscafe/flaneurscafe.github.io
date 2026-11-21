@@ -28,6 +28,7 @@ Valet is one page, `index.html`, plus plain JavaScript files that it loads in or
 | The explanation and its sources | `index.html`, `<article id="howArticle">` | |
 | What a tab shows | `js/ui/you.js`, `palette.js`, `shape.js` (Proportion), `fit.js`, `dresser.js` | `VAPP` |
 | The "Why" and "Sources" bubbles | `js/ui/why.js` | |
+| Reading colour from a photo; Colours from photos and My colours | `js/ui/photos.js` (the window, kept photos); the strip in `dresser.js` | `VPHOTOS` |
 | Start-up, the welcome window, How it works' contents list | `js/ui/main.js` | |
 | The phone layout | `js/ui/mobile.js`, and `@media` blocks in `css/valet.css` | |
 

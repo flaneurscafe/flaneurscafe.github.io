@@ -209,7 +209,8 @@
     samples: { white: null, skin: null, hair: null, eyes: null }, manual: {},
     useWhite: true, measurements: {}, redness: 'none', underEye: 'none', hairStyle: 'short', grey: 0, named: {}, fitMark: true,
     season: 'winter', summer: newSummer(),
-    outfit: normOutfit(null), wardrobe: [], study: null, shape: {}, period: 'classic'
+    outfit: normOutfit(null), wardrobe: [], study: null, shape: {}, period: 'classic',
+    myColours: []   // colours read from photos of your own clothes (js/ui/photos.js)
   };
   V.previewing = null;   // a piece shown on the chart while hovering, not saved
   V.activeSampler = 'skin';
@@ -231,6 +232,7 @@
     if (s.period != null && !(s.period in window.VPROP.PERIODS)) s.period = 'classic';
     s.outfit = normOutfit(s.outfit);
     s.wardrobe = normWardrobe(s.wardrobe);
+    s.myColours = window.VPHOTOS.cleanColours(s.myColours);
     s.grey = Math.max(0, Math.min(100, +s.grey || 0)); s.named = s.named || {};
     s.fitMark = s.fitMark !== false;
     s.season = s.season === 'summer' ? 'summer' : 'winter'; s.summer = newSummer(s.summer);
