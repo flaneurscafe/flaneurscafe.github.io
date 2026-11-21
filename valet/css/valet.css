@@ -813,6 +813,10 @@ body.ov-open { overflow: hidden; }
 .ov-lede { font: 1rem/1.5 var(--serif); margin: 0; }
 .ov-steps { margin: 0 0 0.8rem; padding-left: 1.3rem; }
 .ov-steps li { margin: 0 0 0.55rem; line-height: 1.45; }
+/* the welcome: three steps to begin, the rest one click away */
+.wl-more { margin: 0.4rem 0; border-top: 1px solid var(--rule); padding-top: 0.4rem; }
+.wl-more > summary { cursor: pointer; font: 600 0.9rem var(--sans); padding: 0.35rem 0; min-height: 44px; display: flex; align-items: center; }
+.wl-more[open] > summary { margin-bottom: 0.3rem; }
 .ovb .small { font-size: 0.85rem; line-height: 1.45; }
 .ov-actions { display: flex; gap: 0.6rem; flex-wrap: wrap; margin-top: 1rem; }
 @media (prefers-reduced-motion: no-preference) { .ov:not([hidden]) .ovp { animation: ov-in 160ms ease-out; } }

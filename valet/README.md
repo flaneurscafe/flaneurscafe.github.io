@@ -30,6 +30,8 @@ The GPL lets anyone use Valet in open-source work. To use it in a closed or comm
 
 Issues and suggestions are welcome. Because Valet is also offered under a separate commercial licence, please get in touch before sending larger changes, so we can agree how they are licensed.
 
+**[MAINTAINING.md](MAINTAINING.md)** is the guide for looking after Valet by hand: a map of the code, how a check becomes a verdict, the anatomy of a rule, a checklist for changing or adding one (with a worked example), the browser check and the release steps. In brief:
+
 Every outfit rule has one entry in the `RULES` table in `js/rules.js`: its name in verdicts, its weight, the reason a suggestion gives when it mends the rule, its section, and its kind (perceptual, convention, possibility or context), which decides how it counts in a verdict. A new rule needs an entry there. Thresholds are named in `PARAMS` beside it, with their badge and the section of How it works that explains them. The checks themselves are in `js/engine.js`.
 
 `node tests/run.js` (Node.js only, no other dependencies) runs every test:
@@ -38,7 +40,7 @@ Every outfit rule has one entry in the `RULES` table in `js/rules.js`: its name 
 - every rule has a complete entry (`tests/rules.js`), and every named threshold is wired to its rule and compares in the right direction (`tests/boundaries.js`);
 - the rule scenarios (`tests/scenarios.js`), a stress test of thousands of random outfits (`tests/stress.js`), and a regression test that compares 800 fixed outfits with a stored record (`tests/regression.js`).
 
-It also runs on GitHub for every change. When you change a rule on purpose, change its scenario with it, and record the new behaviour with `node tests/regression.js --update`, so the change shows in the same commit. To release, set the version with `node tools/release.js 1.9.1`: it writes it to every place it appears, including the `?v=` on each script, so returning visitors get the new files.
+It also runs on GitHub for every change. When you change a rule on purpose, change its scenario with it, and record the new behaviour with `node tests/regression.js --update`, so the change shows in the same commit. To release, set the version with `node tools/release.js <version>`: it writes it to every place it appears, including the `?v=` on each script, so returning visitors get the new files.
 
 ### How the code is organised
 

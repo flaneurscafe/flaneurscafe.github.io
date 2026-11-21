@@ -628,7 +628,10 @@
   function renderCore() {
     $('#corePal').innerHTML = '<h3>Your core palette <span class="season-tag">' + (summerOn() ? 'summer' : 'winter') + '</span></h3>' +
       V.say('<p class="small muted">The best of each tier for your colouring this season, chosen so that no two look alike. It is built from your profile, so the study and the theme never change it. Click a colour to put it in the study, ', '<p class="small muted">The best of each tier for your colouring this season, chosen so that no two look alike. It is built from your profile, so the study and the theme never change it. Tap a colour to put it in the study, ') + '<span class="wearing">' + esc(activePlace().label.toLowerCase()) + '</span>.</p>' +
-      coreRows(V.analysis, true);
+      coreRows(V.analysis, true) +
+      // the third step of the welcome's path: from the palette to an outfit
+      '<div class="next-step with-note"><button type="button" class="btn small" id="toDresser">Next: try an outfit</button><span class="ns-note">The Dresser checks a whole outfit. Choose the best colours there gives each piece the colour that works best with the rest; or put colours in the study here and send them over.</span></div>';
+    $('#toDresser').addEventListener('click', function () { showTab('outfit'); });
     $$('#corePal button.gl-c').forEach(function (b) { b.addEventListener('click', function () { previewColour(null); selectColour(b.dataset.hex); }); hoverPreview(b); });
     renderPairs();
   }

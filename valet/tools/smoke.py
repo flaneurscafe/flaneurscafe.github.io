@@ -1,0 +1,56 @@
+# SPDX-FileCopyrightText: 2026 Budgie Perruche <https://flaneurs.cafe/contact/>
+# SPDX-License-Identifier: GPL-3.0-or-later
+"""Valet: a quick browser check. Optional; the Node tests do not need it.
+
+Opens index.html in a headless Chrome, on a wide window and on a phone-sized one, loads the demo
+profile, opens every tab and presses every visible button in it (except ones that delete, reset,
+import, export, print or save), then opens Fit and presses each garment. Reports any error the page
+writes to the console. Nothing is saved; it uses a fresh browser each time.
+
+Needs Python 3 and Playwright, once:  pip install playwright && python -m playwright install chromium
+Run from the project folder:          python tools/smoke.py
+Exit code 1 if there was an error.
+"""
+import asyncio, pathlib, sys
+from playwright.async_api import async_playwright
+
+PAGE = (pathlib.Path(__file__).resolve().parent.parent / 'index.html').as_uri()
+SKIP = r'/delete|remove|clear|reset|import|export|print|save|photo|undo|start over/i'
+
+async def run(browser, name, ctx):
+    c = await browser.new_context(**ctx); pg = await c.new_page(); errs = []
+    pg.on('pageerror', lambda e: errs.append('error: ' + str(e)))
+    pg.on('console', lambda m: errs.append('console: ' + m.text) if m.type == 'error' else None)
+    await pg.goto(PAGE); await pg.wait_for_timeout(600)
+    await pg.evaluate("document.querySelector('#welcomeDemo').click()"); await pg.wait_for_timeout(800)
+    tabs = await pg.evaluate("[...document.querySelectorAll('.tabs [data-tab]')].map(b => b.dataset.tab)")
+    for t in tabs:
+        await pg.evaluate(f"document.querySelector('.tabs [data-tab={t}]').click()"); await pg.wait_for_timeout(400)
+        n = await pg.evaluate("""() => { let n = 0;
+            document.querySelectorAll('.tab-panel.active button').forEach(b => {
+              if (b.offsetParent && !%s.test(b.textContent || '')) { b.click(); n++; } }); return n; }""" % SKIP)
+        await pg.wait_for_timeout(300)
+        print(f'{name}: {t}, {n} buttons')
+    # Fit: each garment
+    await pg.evaluate("document.querySelector('.tabs [data-tab=proportion]').click()"); await pg.wait_for_timeout(300)
+    await pg.evaluate("[...document.querySelectorAll('.tab-panel.active button')].find(b => b.textContent.trim() === 'Fit').click()"); await pg.wait_for_timeout(400)
+    k = await pg.evaluate("[...document.querySelectorAll('.tab-panel.active button')].filter(b => b.offsetParent).length")
+    for i in range(k):
+        await pg.evaluate("""(i) => { const b = [...document.querySelectorAll('.tab-panel.active button')].filter(b => b.offsetParent)[i];
+            if (b && !%s.test(b.textContent || '')) b.click(); }""" % SKIP, i)
+        await pg.wait_for_timeout(100)
+    print(f'{name}: Fit, {k} buttons')
+    await c.close()
+    return errs
+
+async def main():
+    async with async_playwright() as p:
+        b = await p.chromium.launch()
+        errs = await run(b, 'wide', {'viewport': {'width': 1280, 'height': 900}})
+        errs += await run(b, 'phone', {'viewport': {'width': 390, 'height': 844}, 'has_touch': True, 'is_mobile': True})
+        await b.close()
+    for e in errs: print(e)
+    print('no errors' if not errs else f'{len(errs)} errors')
+    sys.exit(1 if errs else 0)
+
+asyncio.run(main())

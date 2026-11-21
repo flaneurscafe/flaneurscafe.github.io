@@ -13,13 +13,13 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Valet — dressing from theory</title>
 <meta name="description" content="Valet: a browser tool that works out which colours suit you from colour science and tailoring theory, and charts an outfit's lightness against your own colouring. Nothing leaves your browser.">
-<link rel="stylesheet" href="css/valet.css?v=1.10.1">
+<link rel="stylesheet" href="css/valet.css?v=1.11">
 </head>
 <body>
 <header class="masthead">
   <div class="brand">
     <h1>Valet</h1>
-    <p class="tagline">Dressing from theory, not from cases <button type="button" class="ver" id="verTag" title="What Valet is and how to use it">v1.10.1</button></p>
+    <p class="tagline">Dressing from theory, not from cases <button type="button" class="ver" id="verTag" title="What Valet is and how to use it">v1.11</button></p>
   </div>
   <div class="season-bar"><span class="flabel" id="seasonLabel">Season</span>
     <div class="seg" id="season" role="radiogroup" aria-labelledby="seasonLabel">
@@ -301,6 +301,29 @@
     <div class="how-layout">
       <nav class="toc" id="howToc"></nav>
       <article id="howArticle">
+
+        <section id="h-short">
+          <h2>In short</h2>
+          <p class="lede">The whole of Valet on one page. The numbered sections below give every rule in full, with its numbers and sources.</p>
+          <p><strong>The idea.</strong> Style advice usually teaches by example, which helps only as far as you resemble the man in the picture. Valet measures your colouring instead, from a photo or from names, and applies rules that hold for any face. Every verdict says why it holds, so you can judge it yourself, and break a rule on purpose when you want to.</p>
+          <p><strong>Every rule says what it rests on.</strong> <span class="badge A">A</span> perception science, measured and replicated. <span class="badge B">B</span> convention, the agreed practice of tailoring. <span class="badge A">A</span><span class="badge B">B</span> both: the measurement is science, the threshold that turns it into a verdict is a working value. <span class="badge C">C</span> popular systems never validated, which Valet explains but never uses to judge you. Where convention and measurement disagree, the measurement wins.</p>
+          <p><strong>What an outfit is checked for</strong>, in the order of the Outfit Check card:</p>
+          <ul>
+            <li><a href="#r-face">Colour against your skin</a> <span class="badge A">A</span><span class="badge B">B</span>: every colour near the face should be tier 1 or 2 for you. The tiers come from how a colour separates from your skin and matches your contrast, depth, warmth and vividness (sections 3 to 8).</li>
+            <li><a href="#r-temp">One temperature</a> <span class="badge B">B</span> above the waist: no warm piece among cool ones, or the reverse.</li>
+            <li><a href="#r-step">A light-dark step</a> <span class="badge A">A</span><span class="badge B">B</span> near the face, sized to your own contrast, so the face has an edge.</li>
+            <li><a href="#r-frame">A frame</a> <span class="badge B">B</span>: a collar, lapels, a roll neck or a scarf around the face.</li>
+            <li><a href="#r-sheen">No shine</a> <span class="badge B">B</span> near the face.</li>
+            <li><a href="#r-pnear">Patterns</a> <span class="badge A">A</span><span class="badge B">B</span>: at most two near the face, at <a href="#r-pscale">different scales</a>, with one plain layer, judged as they look across a room.</li>
+            <li><a href="#r-metal">One metal</a> <span class="badge B">B</span> through the outfit.</li>
+            <li><a href="#r-below">The feet</a> <span class="badge B">B</span>: shoes the trousers' depth or darker, <a href="#r-socks">socks</a> taken from the trousers, not the shoes.</li>
+            <li><a href="#r-formality">Formality and season</a> <span class="badge B">B</span>: pieces of one register, right for the occasion, in cloth for the time of year.</li>
+          </ul>
+          <p>Further checks cover how the colours sit together, the outfit's lines on your body and the accessories; an accessory is checked only when it is worn (sections 10 to 13). A check either <em>fails</em>, and comes with a fix, or is <em>to note</em>. Advice about what an outfit cannot change, such as your frames or your build, is shown as information and never counted.</p>
+          <p><strong>Left out on purpose.</strong> The four colour seasons, the vein test for undertone, face shapes for choosing glasses, and vertical stripes as slimming: each is either untested or contradicted by experiment. <a href="#h-seasons">Section 16</a> gives the evidence for each.</p>
+          <p><strong>Beyond the outfit.</strong> Proportion turns your measurements into where each garment should end and how wide its parts should be, for today's cut or a period from the 1930s to the 1970s; Fit checks a garment against you before you buy (sections 13 to 15). Both give ranges to take into a fitting room, not a replacement for one.</p>
+          <p><strong>Its limits.</strong> Valet is a compass, not a mirror or a tailor. A photo is only as good as its light: if a colour looks right in daylight in front of a mirror and wrong here, trust the daylight. Everything stays in your browser (section 17).</p>
+        </section>
 
         <section id="h-idea">
           <h2>1. The idea</h2>
@@ -847,19 +870,31 @@
   <div class="ovp">
     <div class="ovh"><h2 id="welcomeTitle">Welcome to Valet</h2><button type="button" class="btn ghost small" id="welcomeClose" aria-label="Close">Close ✕</button></div>
     <div class="ovb">
-      <p class="ov-lede">Valet works out which colours suit you, from colour science and the classic menswear rules, and checks whole outfits against them: colour, contrast, pattern, cloth, formality and season. It runs in this browser and keeps nothing anywhere else.</p>
-      <p><strong>What it takes.</strong> A minute to begin: your skin alone gives a first reading, and every feature can be chosen by name instead of photographed. The sixteen measurements are optional and only feed Proportion, Fit and the outfit's proportion notes; three of them (shoulder width, arm and back-neck to floor) need a second person.<span id="welcomeDemoLine"> Or <a href="#" id="welcomeDemoLink">look around with the demo profile</a> first.</span></p>
-      <h3>How to use it</h3>
-      <ol class="ov-steps">
+      <p class="ov-lede">Valet tells you which colours suit you and why, and checks whole outfits against the classic menswear rules. It runs in this browser and keeps nothing anywhere else.</p>
+      <h3>Start here</h3>
+      <ol class="ov-steps wl-path">
+        <li><strong>Your colouring</strong>, on the You tab: about a minute. A photo in daylight with a sheet of white paper beside your face, or choose skin, hair and eyes by name. Your skin alone gives a first reading.</li>
+        <li><strong>Your palette</strong>: every colour placed by where it can go on you, from right at the face to below the belt, each with its reason.</li>
+        <li><strong>Try an outfit</strong> in the Dresser: put one together, or let Valet choose the colours, and read what works and what to change.</li>
+      </ol>
+      <p class="small">Each step ends with a button to the next.<span id="welcomeDemoLine"> Just looking? <a href="#" id="welcomeDemoLink">Look around with the demo profile</a>.</span></p>
+      <details class="wl-more">
+        <summary>Everything Valet does</summary>
+        <p>A minute to begin: your skin alone gives a first reading, and every feature can be chosen by name instead of photographed. The sixteen measurements are optional and only feed Proportion, Fit and the outfit's proportion notes; three of them (shoulder width, arm and back-neck to floor) need a second person.</p>
+        <ol class="ov-steps">
         <li><strong>You.</strong> Set your colouring. Take a photo in daylight with a sheet of white paper beside your face and sample paper, skin, hair (or brows) and eyes; or choose each by name. Add glasses, redness or deep-set eyes if they apply. Winter or summer, at the top, switches to your tanned skin.</li>
         <li><strong>Palette.</strong> Every named colour by where it can go on you: <span class="tt t1">T1</span> anywhere, <span class="tt t2">T2</span> the one deliberate colour, <span class="tt t3">T3</span> below the belt, <span class="tt t4">T4</span> away from the face. Your core palette sits on top. Put colours in the study to see which go together, or build around one colour.</li>
         <li><strong>Proportion.</strong> With your measurements (You tab), where each garment should end and how wide its parts should be, for your build and a period from the 1930s to today.</li>
         <li><strong>Fit.</strong> Before you buy: a shop's measurements or size label against you, or against one of yours that fits. Your sizes, and what to check at a try-on.</li>
         <li><strong>Dresser.</strong> Put an outfit together piece by piece, head to feet: what each piece is, its cloth, colour and pattern, and the accessories. The checks ask the same questions in order (temperature, contrast, frame, sheen, pattern, metal, then the feet); lock what you own and let Valet choose the rest. Save the outfits you like under Saved outfits, grouped by season and occasion, or print a one-page card.</li>
       </ol>
-      <p class="small">The lightness chart beside each tab shows your colouring and the outfit on one scale of light to dark. <span data-touch="Tap any colour to try it; every “?” explains its control.">Point at any colour to try it; every “?” explains its control.</span> <em>Save to a file</em> on the You tab keeps your colouring, palette and outfit; <em>How it works</em> gives the theory and its sources.</p>
-      <p><strong>What it cannot do.</strong> A colour reading from a photo is only as good as the light it was taken in. Numbers cannot see one shoulder lower than the other, feel how a cloth hangs, or know how a house cuts its sizes, so the sizes are ranges to take into a fitting room, not a replacement for one. And it covers everyday dress, from casual to evening; the codes of black tie, white tie and morning dress are not checked. How it works, section 1, says more.</p>
-      <p class="small muted">Version 1.10.1. Proportion and Fit are still being refined: their numbers are tailoring rules and survey averages, so treat them as a starting point and trust a garment that fits you.</p>
+        <p class="small">The lightness chart beside each tab shows your colouring and the outfit on one scale of light to dark. <span data-touch="Tap any colour to try it; every “?” explains its control.">Point at any colour to try it; every “?” explains its control.</span> <em>Save to a file</em> on the You tab keeps your colouring, palette and outfit; <em>How it works</em> gives the theory and its sources.</p>
+      </details>
+      <details class="wl-more">
+        <summary>What it cannot do</summary>
+        <p>A colour reading from a photo is only as good as the light it was taken in. Numbers cannot see one shoulder lower than the other, feel how a cloth hangs, or know how a house cuts its sizes, so the sizes are ranges to take into a fitting room, not a replacement for one. And it covers everyday dress, from casual to evening; the codes of black tie, white tie and morning dress are not checked. How it works, section 1, says more.</p>
+      </details>
+      <p class="small muted">Version 1.11. Proportion and Fit are still being refined: their numbers are tailoring rules and survey averages, so treat them as a starting point and trust a garment that fits you.</p>
       <div class="wl-foot" id="welcomeFoot"></div>
       <div class="ov-actions">
         <button type="button" class="btn" id="welcomeStart">Set my colouring</button>
@@ -871,29 +906,29 @@
 </div>
 
 <div id="printCard" class="print-card" aria-hidden="true"></div>
-<script src="js/colour.js?v=1.10.1"></script>
-<script src="js/vision.js?v=1.10.1"></script>
-<script src="js/patterns.js?v=1.10.1"></script>
-<script src="js/measure-art.js?v=1.10.1"></script>
-<script src="js/data.js?v=1.10.1"></script>
-<script src="js/garments.js?v=1.10.1"></script>
-<script src="js/rules.js?v=1.10.1"></script>
-<script src="js/engine.js?v=1.10.1"></script>
-<script src="js/suggest.js?v=1.10.1"></script>
-<script src="js/outfit.js?v=1.10.1"></script>
-<script src="js/chart.js?v=1.10.1"></script>
-<script src="js/body.js?v=1.10.1"></script>
-<script src="js/proportion.js?v=1.10.1"></script>
-<script src="js/fit.js?v=1.10.1"></script>
-<script src="js/ui/why.js?v=1.10.1"></script>
-<script src="js/ui/dresser.js?v=1.10.1"></script>
-<script src="js/ui/core.js?v=1.10.1"></script>
-<script src="js/ui/you.js?v=1.10.1"></script>
-<script src="js/ui/palette.js?v=1.10.1"></script>
-<script src="js/ui/chart-host.js?v=1.10.1"></script>
-<script src="js/ui/fit.js?v=1.10.1"></script>
-<script src="js/ui/shape.js?v=1.10.1"></script>
-<script src="js/ui/main.js?v=1.10.1"></script>
-<script src="js/ui/mobile.js?v=1.10.1"></script>
+<script src="js/colour.js?v=1.11"></script>
+<script src="js/vision.js?v=1.11"></script>
+<script src="js/patterns.js?v=1.11"></script>
+<script src="js/measure-art.js?v=1.11"></script>
+<script src="js/data.js?v=1.11"></script>
+<script src="js/garments.js?v=1.11"></script>
+<script src="js/rules.js?v=1.11"></script>
+<script src="js/engine.js?v=1.11"></script>
+<script src="js/suggest.js?v=1.11"></script>
+<script src="js/outfit.js?v=1.11"></script>
+<script src="js/chart.js?v=1.11"></script>
+<script src="js/body.js?v=1.11"></script>
+<script src="js/proportion.js?v=1.11"></script>
+<script src="js/fit.js?v=1.11"></script>
+<script src="js/ui/why.js?v=1.11"></script>
+<script src="js/ui/dresser.js?v=1.11"></script>
+<script src="js/ui/core.js?v=1.11"></script>
+<script src="js/ui/you.js?v=1.11"></script>
+<script src="js/ui/palette.js?v=1.11"></script>
+<script src="js/ui/chart-host.js?v=1.11"></script>
+<script src="js/ui/fit.js?v=1.11"></script>
+<script src="js/ui/shape.js?v=1.11"></script>
+<script src="js/ui/main.js?v=1.11"></script>
+<script src="js/ui/mobile.js?v=1.11"></script>
 </body>
 </html>
