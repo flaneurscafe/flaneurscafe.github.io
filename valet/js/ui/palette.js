@@ -53,12 +53,16 @@
   const FAMILIES = [['Neutral', 'Neutrals'], ['Blue', 'Blues'], ['Green', 'Greens'], ['Red', 'Reds and pinks'], ['Yellow', 'Yellows and oranges'], ['Purple', 'Purples']];
   const TIER_HEAD = { 1: 'Anywhere, even at the face', 2: 'The one deliberate colour', 3: 'Below the belt', 4: 'Away from the face' };
   /* A tier is a pass mark, not a ranking, so the two long ones are split for reading (display only;
-     no verdict uses this). Tier 1: the strongest first (score 0.9 or more, a reading aid, not a rule).
+     no verdict uses this). Tier 1: the strongest first: score 0.9 or more, and at most the best 21 (three
+     rows of the card), so the split still says something on a deep skin, where nearly everything scores high.
      Tier 2: the wardrobe neutrals apart, since they sit here for being a little weak at the face, not
      for being loud, and the Dresser never counts them as the outfit's one colour. */
-  const T1_STRONG = 0.9;
+  const T1_STRONG = 0.9, T1_MAX = 21;
   function tierGroups(t, items) {
-    if (t === 1) return [['Strongest for you', items.filter(function (s) { return s.score >= T1_STRONG; })], ['Also safe', items.filter(function (s) { return s.score < T1_STRONG; })]];
+    if (t === 1) {   // items arrive sorted best first
+      const strong = items.filter(function (s, i) { return s.score >= T1_STRONG && i < T1_MAX; });
+      return [['Strongest for you', strong], ['Also safe', items.slice(strong.length)]];
+    }
     if (t === 2) return [['Neutrals: fine at the face beside a darker or stronger layer; never counted as the outfit\'s one colour', items.filter(function (s) { return E.wardrobeNeutral(s.hex); })],
       ['Colours: one per outfit, as its deliberate colour', items.filter(function (s) { return !E.wardrobeNeutral(s.hex); })]];
     return [[null, items]];
@@ -394,11 +398,11 @@
       '<h2>Rules of thumb for you</h2><ul>' +
       '<li><strong>Light-dark step at the face:</strong> the layers near your face should differ by ' + lo + ' to ' + hi + ' in lightness (L*), about as much as your own features do. Less looks flat; much more takes over the face.</li>' +
       '<li><strong>Pattern near the face:</strong> a pattern\'s own light-dark contrast up to ' + hi + '. At most two patterns, at different scales, sharing a colour, with one plain layer.</li>' +
-      '<li><strong>Colour:</strong> two neutrals and one colour never fails. One deliberate (T2) colour per outfit. A colour is one piece, not top and trousers together.</li>' +
+      '<li><strong>Colour:</strong> two neutrals and one colour never fails. One deliberate (T2) colour per outfit; two shades of one colour (salmon and burgundy, sky and navy) count as one. A colour is one piece, not top and trousers together.</li>' +
       '<li><strong>Below the belt:</strong> shoes the trousers\' depth or darker; belt matches the shoes; socks take the trousers\' colour, or a distinct tone of it.</li>' +
       '<li><strong>Metal:</strong> ' + metal + ' Keep one metal through an outfit; a two-tone watch is the exception.</li>' +
       (V.state.outfit && V.state.outfit.acc && V.state.outfit.acc.glasses && V.state.outfit.acc.glasses.on ? '<li><strong>Glasses:</strong> they sit at the face, so the Dresser judges them with the colours there' + (a.underEye === 'deep' ? '; with deep-set eyes, check that the bottom rim does not sit on the shadow' : '') + '.</li>' : '') +
-      (a.redness !== 'none' ? '<li><strong>Redness:</strong> light or strong reds and pinks near the face pick out the red in the skin, and bright greens push it redder; dark, muted ones (burgundy, forest) do much less, which is why they can stay in the tiers above. Blues and greys are the calm choice.</li>' : '') +
+      (a.redness !== 'none' ? '<li><strong>Redness:</strong> reds and pinks near the face pick out the red in the skin, and greens push it redder, the more so the stronger and lighter they are. A very pale pink barely does it, and dark, muted ones (burgundy, forest) do much less, which is why they can stay in the tiers above. Blues and greys are the calm choice.</li>' : '') +
       '</ul>' +
       (sm.tests.length ? '<h2>Daylight tests to run</h2><ul>' + sm.tests.map(function (t) { return '<li><strong>' + esc(t.title) + '.</strong> ' + esc(t.text) + '</li>'; }).join('') + '</ul>' : '');
     h += cardCombos(chip);
