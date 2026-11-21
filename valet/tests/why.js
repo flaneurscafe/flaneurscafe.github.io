@@ -17,7 +17,7 @@ const problems = []; let count = 0;
 const need = (what, id) => { count++; if (!id) problems.push(what + ': not mapped in js/ui/why.js'); else if (!exists(id)) problems.push(what + ': passage "' + id + '" is not in How it works'); };
 // a full set of measurements, so every target and size row is produced
 const m = { height: 180, chest: 100, waist: 86, seat: 100, neck: 40, shoulder: 46, arm: 63, inseam: 84, backNeckFloor: 155, head: 58, foot: 27, wrist: 17.5,
-  waistHeight: 108, faceWidth: 14, faceLength: 12, sleeve: 63, thigh: 58, calf: 38 };
+  waistHeight: 108, faceWidth: 14, faceLength: 12, sleeve: 63, thigh: 58, calf: 38, hand: 21 };
 const ids = new Set();
 Object.keys(P.PERIODS).forEach(function (pid) { P.targets(m, {}, pid).list.forEach(function (t) { ids.add(t.id); }); });
 ids.forEach(function (id) { need('Proportion target "' + id + '"', W.MAP.target[id]); });
@@ -26,6 +26,14 @@ F.sizes(m, {}).forEach(function (x) { need('Fit size row "' + x.label + '"', W.M
 const AG = Object.keys(eval('(' + uifit.match(/const AGAINST = (\{[^}]*\})/)[1] + ')'));
 AG.forEach(function (k) { need('Fit result against "' + k + '"', k === 'rule' ? 'f-lengths' : (W.MAP.against[k] || [])[0]); });
 Object.keys(W.MAP.rule).forEach(function (k) { need('Fit field rule "' + k + '"', W.MAP.rule[k]); });
+// every field that is judged by a rule of its own (not against yours, a target or the body) must be mapped:
+// otherwise its Sources button falls back to the lengths passage and has nothing to say
+Object.keys(F.CHECKS).forEach(function (kind) {
+  const vals = {}; F.CHECKS[kind].fields.forEach(function (f) { vals[f.key] = 30; });
+  F.checkGarment(kind, vals, {}, m, 'modern', {}).filter(function (r) { return r.against === 'rule'; }).forEach(function (r) {
+    if (!W.MAP.rule[r.key]) { count++; problems.push('Fit "' + kind + '", field "' + r.key + '": judged by a rule, but not in MAP.rule (js/ui/why.js)'); }
+  });
+});
 need('Fit size label', W.MAP.label); need('Fit periods', W.MAP.periods);
 // and nothing mapped that no longer exists
 Object.keys(W.MAP.target).forEach(function (id) { if (!ids.has(id)) problems.push('mapped target "' + id + '" is no longer a Proportion target'); });

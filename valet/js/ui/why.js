@@ -26,7 +26,7 @@
     // Fit, Will it fit?: what a measurement was checked against -> its passage and badge (section 14)
     against: { yours: ['f-yours', 'A'], proportion: ['f-targets', 'B'], body: ['f-ease', 'B'] },
     // ... and a field's own rule, by the measurement (sections 14 and 15)
-    rule: { insole: 'f-hats', inner: 'f-hats', shoulder: 'f-lengths', sleeve: 'f-lengths' },
+    rule: { insole: 'f-hats', inner: 'f-hats', shoulder: 'f-lengths', sleeve: 'f-lengths', length: 'f-lengths', width: 'f-bowtie', neckMax: 'f-bowtie', neckMin: 'f-bowtie', palm: 'f-gloves' },
     label: 'f-labels', periods: 'f-periods'
   };
   /* What each Proportion and Fit item rests on: references by their number in How it works, section 19,
@@ -43,7 +43,7 @@
     'target:glasses': { kind: 'uncited', note: 'The opticians\u2019 rule of thumb.' },
     'target:frameDepth': { refs: [50], kind: 'working', note: 'Flusser, Dressing the Man, pp. 124\u2013125: the collar counterbalances the face; Valet applies the same to the lens by analogy, and the millimetres are Valet\u2019s.' },
     'target:brim': { kind: 'uncited' },
-    'target:collar': { refs: [50], note: 'Flusser, Dressing the Man, p. 46: think of the face as a picture and the collar as its frame; pp. 123\u2013125: the points\u2019 length and spread counterbalance the face\u2019s shape.' },
+    'target:collar': { refs: [50], note: 'Flusser, Dressing the Man, p. 123: think of the face as a picture and what surrounds it as the frame; p. 46: a small face takes a small collar; pp. 123\u2013125: the points\u2019 length and spread counterbalance the face\u2019s shape.' },
     'target:tieWidth': { refs: [50], note: 'Flusser, Dressing the Man, p. 46: the tie\u2019s width is set by the lapel (a notch lapel 3\u215c to 4\u00bc inches).' },
     'target:tieLength': { refs: [73], note: 'The tip at the waistband, and shorter ties for high-waisted trousers; the period figures are tendencies.' },
     'target:knit': { kind: 'uncited', note: 'A period tendency, from tailoring histories.' },
@@ -84,6 +84,11 @@
     'rule:shoulder': { kind: 'uncited' },
     'rule:insole': { kind: 'definition', note: 'Paris points are a definition; the 1.5 cm a last adds to the foot is a makers\u2019 convention.' },
     'rule:inner': { kind: 'definition' },
+    'rule:length': { kind: 'working', note: 'The lengths of a casual jacket and a short coat are Valet\u2019s working values; the tailored jacket\u2019s, half the collar-to-floor height, is Flusser\u2019s (Dressing the Man, pp. 40\u201341).' },
+    'rule:width': { refs: [50], kind: 'working', note: 'Flusser, Dressing the Man, p. 162: no wider than the face. The lower bound, the outer corners of the eyes taken as 0.7 of the face\u2019s width, is Valet\u2019s.' },
+    'rule:neckMax': { kind: 'uncited', note: 'A bow tie closes round the buttoned collar: the neck plus the collar\u2019s allowance (section 15).' },
+    'rule:neckMin': { kind: 'uncited', note: 'A bow tie tightens to the buttoned collar, or it sags.' },
+    'rule:palm': { kind: 'uncited', note: 'The glovers\u2019 convention: the hand around the knuckles. The tolerance is Valet\u2019s.' },
     'label': { refs: [52, 72], kind: 'definition' },
     'periods': { kind: 'uncited', note: 'Period tendencies from tailoring histories, given as ranges; check them against period garments.' }
   };

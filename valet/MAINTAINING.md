@@ -166,6 +166,7 @@ If you have Python, `tools/smoke.py` does the clicking for you and reports conso
 2. `node tests/run.js` must say **all tests pass**.
 3. Add an entry to the revision notes: what changed, why, and whether any verdict changed.
 4. Commit, with the same summary.
+5. To give someone a copy, make a zip without the git history (which carries every commit and your email address): `git archive --format=zip --prefix=valet/ HEAD -o valet.zip`.
 
 ## 8. Things that are easy to break
 

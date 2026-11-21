@@ -13,13 +13,13 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Valet — dressing from theory</title>
 <meta name="description" content="Valet: a browser tool that works out which colours suit you from colour science and tailoring theory, and charts an outfit's lightness against your own colouring. Nothing leaves your browser.">
-<link rel="stylesheet" href="css/valet.css?v=1.11">
+<link rel="stylesheet" href="css/valet.css?v=1.11.1">
 </head>
 <body>
 <header class="masthead">
   <div class="brand">
     <h1>Valet</h1>
-    <p class="tagline">Dressing from theory, not from cases <button type="button" class="ver" id="verTag" title="What Valet is and how to use it">v1.11</button></p>
+    <p class="tagline">Dressing from theory, not from cases <button type="button" class="ver" id="verTag" title="What Valet is and how to use it">v1.11.1</button></p>
   </div>
   <div class="season-bar"><span class="flabel" id="seasonLabel">Season</span>
     <div class="seg" id="season" role="radiogroup" aria-labelledby="seasonLabel">
@@ -105,7 +105,7 @@
         <div class="you-pane" id="measureSection" role="tabpanel" aria-labelledby="youTabBody" hidden>
         <h2>Your measurements and shape</h2>
         <p class="lede">In centimetres, all optional. They feed Proportion, Fit and the Dresser's proportion notes; the wrist alone sets the watch size, and the hand the glove size. Take what you can: each target says which measurements it uses. Seven can be taken alone, six are easier with help, and three (shoulder width, arm and back-neck to floor) need a second person; each "?" says which.</p>
-        <p class="lede small">Press <strong>?</strong> beside any measurement for a drawing of where the tape goes, on the body or on a garment, and whether you need a second person.</p>
+        <p class="lede small">Press <strong>?</strong> beside any measurement for how to take it, on the body or on a garment, and whether you need a second person; most have a drawing of where the tape goes.</p>
         <div class="measure-grid" id="measureGrid"></div>
         <div class="measure-guide" id="measureGuide" aria-live="polite" hidden></div>
         <h3>Shape</h3>
@@ -664,7 +664,8 @@
         </section>
         <section id="h-fit">
           <h2>14. Fit before you buy</h2>
-          <p>Fit, under Proportion &amp; fit, checks whether a garment will fit you before you buy it. It covers every garment the Dresser offers that comes in sizes, and under each choice names the Dresser's garments it is for: a jacket or blazer; an overcoat, Chesterfield, covert or trench coat; a short coat (peacoat, duffle coat, parka); a casual jacket (overshirt, waxed, field or Harrington jacket); a dress shirt; a polo shirt or T-shirt; a knit (crew neck, V-neck, cardigans, roll neck, knitted polo); a waistcoat; a tie; a bow tie; trousers; shoes; a hat; and gloves. A belt, a watch and socks are sized under <em>Your sizes</em>. Socks are sized under <em>Your sizes</em> by the band of shoe sizes they come in. Left out: scarves, pocket squares and the buttonhole, which come in one size; and the cravat, worn loosely in an open collar. The bow tie is checked for its width, no wider than the face <span class="cite">[<a href="#ref-50">50</a>, p. 162]</span> and no narrower than the outer corners of the eyes, which Valet puts at about 0.7 of the face's width (a working value: it does not measure the eyes), and for whether it adjusts to your collar. Gloves are checked against your hand. Each result and each of your sizes has a <strong>Sources</strong> button, which lists the references it rests on, or says that it is a definition, a working value or a convention without a published source yet. Fit is judged garment by garment, so it has its own place beside Proportion rather than in the Dresser, which judges how pieces go together.</p>
+          <p>Fit, under Proportion &amp; fit, checks whether a garment will fit you before you buy it. It covers every garment the Dresser offers that comes in sizes, and under each choice names the Dresser's garments it is for: a jacket or blazer; an overcoat, Chesterfield, covert or trench coat; a short coat (peacoat, duffle coat, parka); a casual jacket (overshirt, waxed, field or Harrington jacket); a dress shirt; a polo shirt or T-shirt; a knit (crew neck, V-neck, cardigans, roll neck, knitted polo); a waistcoat; a tie; a bow tie; trousers; shoes; a hat; and gloves. A belt, a watch and socks (by the band of shoe sizes they come in) are sized under <em>Your sizes</em>. Left out: scarves, pocket squares and the buttonhole, which come in one size; and the cravat, worn loosely in an open collar. Gloves are checked against your hand (below, under <em>Gloves</em>). Each result and each of your sizes has a <strong>Sources</strong> button, which lists the references it rests on, or says that it is a definition, a working value or a convention without a published source yet. Fit is judged garment by garment, so it has its own place beside Proportion rather than in the Dresser, which judges how pieces go together.</p>
+          <p id="f-bowtie"><span class="badge B">B</span> <strong>The bow tie</strong> is checked for its width, no wider than the face <span class="cite">[<a href="#ref-50">50</a>, p. 162]</span> and no narrower than the outer corners of the eyes, which Valet puts at about 0.7 of the face's width (a working value: it does not measure the eyes), and for whether it adjusts to your collar: it must close round the buttoned collar, your neck plus about 1.25 cm, and tighten to it.</p>
           <p><strong>What it compares.</strong> The measurements a shop gives for a size, from its size chart: the garment's own measurements, not the body sizes it is said to fit. Up to four sizes from one chart can be entered side by side; the page names the best of them, with the mildest verdict and the smallest misses. Each measurement is judged in the most reliable way available:</p>
           <ul>
             <li id="f-yours"><span class="badge A">A</span> <strong>Against one of yours that fits.</strong> Measure a garment of the same kind that fits well, the same way, and fill in the first column. It carries your build and the ease you like, so it beats any rule: within 2 cm around, or 1.5 cm in length, it should fit as yours does. This is the method made-to-measure shops ask for; a bespoke tailor measures the body itself.</li>
@@ -894,7 +895,7 @@
         <summary>What it cannot do</summary>
         <p>A colour reading from a photo is only as good as the light it was taken in. Numbers cannot see one shoulder lower than the other, feel how a cloth hangs, or know how a house cuts its sizes, so the sizes are ranges to take into a fitting room, not a replacement for one. And it covers everyday dress, from casual to evening; the codes of black tie, white tie and morning dress are not checked. How it works, section 1, says more.</p>
       </details>
-      <p class="small muted">Version 1.11. Proportion and Fit are still being refined: their numbers are tailoring rules and survey averages, so treat them as a starting point and trust a garment that fits you.</p>
+      <p class="small muted">Version 1.11.1. Proportion and Fit are still being refined: their numbers are tailoring rules and survey averages, so treat them as a starting point and trust a garment that fits you.</p>
       <div class="wl-foot" id="welcomeFoot"></div>
       <div class="ov-actions">
         <button type="button" class="btn" id="welcomeStart">Set my colouring</button>
@@ -906,29 +907,29 @@
 </div>
 
 <div id="printCard" class="print-card" aria-hidden="true"></div>
-<script src="js/colour.js?v=1.11"></script>
-<script src="js/vision.js?v=1.11"></script>
-<script src="js/patterns.js?v=1.11"></script>
-<script src="js/measure-art.js?v=1.11"></script>
-<script src="js/data.js?v=1.11"></script>
-<script src="js/garments.js?v=1.11"></script>
-<script src="js/rules.js?v=1.11"></script>
-<script src="js/engine.js?v=1.11"></script>
-<script src="js/suggest.js?v=1.11"></script>
-<script src="js/outfit.js?v=1.11"></script>
-<script src="js/chart.js?v=1.11"></script>
-<script src="js/body.js?v=1.11"></script>
-<script src="js/proportion.js?v=1.11"></script>
-<script src="js/fit.js?v=1.11"></script>
-<script src="js/ui/why.js?v=1.11"></script>
-<script src="js/ui/dresser.js?v=1.11"></script>
-<script src="js/ui/core.js?v=1.11"></script>
-<script src="js/ui/you.js?v=1.11"></script>
-<script src="js/ui/palette.js?v=1.11"></script>
-<script src="js/ui/chart-host.js?v=1.11"></script>
-<script src="js/ui/fit.js?v=1.11"></script>
-<script src="js/ui/shape.js?v=1.11"></script>
-<script src="js/ui/main.js?v=1.11"></script>
-<script src="js/ui/mobile.js?v=1.11"></script>
+<script src="js/colour.js?v=1.11.1"></script>
+<script src="js/vision.js?v=1.11.1"></script>
+<script src="js/patterns.js?v=1.11.1"></script>
+<script src="js/measure-art.js?v=1.11.1"></script>
+<script src="js/data.js?v=1.11.1"></script>
+<script src="js/garments.js?v=1.11.1"></script>
+<script src="js/rules.js?v=1.11.1"></script>
+<script src="js/engine.js?v=1.11.1"></script>
+<script src="js/suggest.js?v=1.11.1"></script>
+<script src="js/outfit.js?v=1.11.1"></script>
+<script src="js/chart.js?v=1.11.1"></script>
+<script src="js/body.js?v=1.11.1"></script>
+<script src="js/proportion.js?v=1.11.1"></script>
+<script src="js/fit.js?v=1.11.1"></script>
+<script src="js/ui/why.js?v=1.11.1"></script>
+<script src="js/ui/dresser.js?v=1.11.1"></script>
+<script src="js/ui/core.js?v=1.11.1"></script>
+<script src="js/ui/you.js?v=1.11.1"></script>
+<script src="js/ui/palette.js?v=1.11.1"></script>
+<script src="js/ui/chart-host.js?v=1.11.1"></script>
+<script src="js/ui/fit.js?v=1.11.1"></script>
+<script src="js/ui/shape.js?v=1.11.1"></script>
+<script src="js/ui/main.js?v=1.11.1"></script>
+<script src="js/ui/mobile.js?v=1.11.1"></script>
 </body>
 </html>
