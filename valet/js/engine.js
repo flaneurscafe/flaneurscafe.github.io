@@ -232,11 +232,18 @@
     });
 
     // 2. Merging (A)
-    const sMerge = dE < PARAMS.mergeFrom ? 0 : dE < PARAMS.mergeTo ? (dE - PARAMS.mergeFrom) / (PARAMS.mergeTo - PARAMS.mergeFrom) : 1;
+    let sMerge = dE < PARAMS.mergeFrom ? 0 : dE < PARAMS.mergeTo ? (dE - PARAMS.mergeFrom) / (PARAMS.mergeTo - PARAMS.mergeFrom) : 1;
+    // A white or near-white lighter than the skin is the exception (B): CIEDE2000 weighs lightness
+    // differences less near white, so white comes out "close" to fair skin, yet a white collar is the
+    // classic frame of the face [Flusser p. 123]. Its weak separation is a note, never a failing.
+    const whiteish = ok[1] < PARAMS.whiteC && lab[0] >= p.lab.skin[0] + PARAMS.whiteAboveL;
+    if (whiteish) sMerge = Math.max(sMerge, PARAMS.whiteMergeFloor);
     if (sMerge < 1) {
       rules.push({
         id: 'merge', level: 'A/B', score: sMerge,   // the distance is measured (A); 10 and 20 are where Valet draws the line (B)
-        text: 'Close to your skin tone overall (ΔE2000 ' + round(dE, 1) + '): the face tends to blend into the garment.'
+        text: whiteish
+          ? 'Close to your skin tone by the formula (ΔE2000 ' + round(dE, 1) + '), but a white lighter than the skin still frames the face; best as the light half of a step under a darker layer.'
+          : 'Close to your skin tone overall (ΔE2000 ' + round(dE, 1) + '): the face tends to blend into the garment.'
       });
     }
 

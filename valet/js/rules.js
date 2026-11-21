@@ -15,6 +15,7 @@
     bandLoMin: 8, bandLoFactor: 0.5,               // B §4  lower bound = max(8, 0.5 × contrast)
     bandHiFactor: 1.5, bandHiAdd: 15,              // B §4  upper bound = 1.5 × contrast + 15
     mergeFrom: 10, mergeTo: 20,                    // B §5  ΔE2000 from no separation to full
+    whiteC: 0.02, whiteAboveL: 5, whiteMergeFloor: 0.6,  // B §5  a white (OKLCH chroma under 0.02, 5 L* or more above the skin) is at worst tier 2 for separation, never failed
     chromaExcess: 35,                              // B §7  C* above your own colouring that arrives before you
     tier1Score: 0.8, tier1Floor: 0.7,              // B §8  tier 1: score, and weakest rule
     tier2Score: 0.62, tier2Floor: 0.45,            // B §8  tier 2

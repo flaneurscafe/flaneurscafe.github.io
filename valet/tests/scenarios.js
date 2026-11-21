@@ -21,6 +21,10 @@ function T(name, o, expect, a){ count++;
   const res=expect.map(([re,should])=>{ const hit=txt.some(t=>re.test(t)); return hit===should?null:(should?'MISSING '+re:'UNEXPECTED '+re+' -> '+txt.filter(t=>re.test(t))[0].slice(0,130)); }).filter(Boolean);
   if (res.length){ fails++; console.log('✗', name, '\n   ', res.join('\n    ')); } else if (process.env.VERBOSE) console.log('✓', name);
 }
+// ---- white near a very fair skin (1.11.2): close by CIEDE2000, but never failed at the face ----
+const aFair=E.analyseProfile({samples:{white:null,skin:'#f0d3c3',hair:'#7a5c4a',eyes:'#6d8293'},manual:{skin:true,hair:true,eyes:true},useWhite:true,hairStyle:'none',grey:0,underEye:'deep',redness:'mild'});
+T('white shirt under a navy jacket, very fair skin: passes at the face', base({shirt:P('#f7f6f2','shirt','poplin'),occasion:'business'}), [[/^face:/,false]], aFair);
+T('light grey shirt, very fair skin: still too close to the skin', base({shirt:P('#c9cbcd','shirt','poplin')}), [[/^face:/,true]], aFair);
 // ---- coat ----
 T('parka over business dress is noted', base({occasion:'business',coat:P('#2d3b2a','parka','nylonmatte')}), [[/^coat:/,true]]);
 T('parka on a casual day is fine', base({occasion:'casual',coat:P('#2d3b2a','parka','nylonmatte')}), [[/^coat:/,false]]);

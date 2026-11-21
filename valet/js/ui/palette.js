@@ -52,6 +52,34 @@
   let palView = 'tier';
   const FAMILIES = [['Neutral', 'Neutrals'], ['Blue', 'Blues'], ['Green', 'Greens'], ['Red', 'Reds and pinks'], ['Yellow', 'Yellows and oranges'], ['Purple', 'Purples']];
   const TIER_HEAD = { 1: 'Anywhere, even at the face', 2: 'The one deliberate colour', 3: 'Below the belt', 4: 'Away from the face' };
+  /* A tier is a pass mark, not a ranking, so the two long ones are split for reading (display only;
+     no verdict uses this). Tier 1: the strongest first (score 0.9 or more, a reading aid, not a rule).
+     Tier 2: the wardrobe neutrals apart, since they sit here for being a little weak at the face, not
+     for being loud, and the Dresser never counts them as the outfit's one colour. */
+  const T1_STRONG = 0.9;
+  function tierGroups(t, items) {
+    if (t === 1) return [['Strongest for you', items.filter(function (s) { return s.score >= T1_STRONG; })], ['Also safe', items.filter(function (s) { return s.score < T1_STRONG; })]];
+    if (t === 2) return [['Neutrals: fine at the face beside a darker or stronger layer; never counted as the outfit\'s one colour', items.filter(function (s) { return E.wardrobeNeutral(s.hex); })],
+      ['Colours: one per outfit, as its deliberate colour', items.filter(function (s) { return !E.wardrobeNeutral(s.hex); })]];
+    return [[null, items]];
+  }
+  /* While the undertone reading is low confidence, the colours whose tier would change if the
+     navy-against-camel test reads clearly cool, or clearly warm. */
+  function tempDepends(a) {
+    if (!a || a.confidence !== 'low') return null;
+    const cool = Object.assign({}, a, { tempLevel: 'cool', lean: -0.5, _sc: {} }), warm = Object.assign({}, a, { tempLevel: 'warm', lean: 0.5, _sc: {} });
+    const out = { cool: [], warm: [] };
+    D.colours.forEach(function (c) {
+      const t = E.scoreColour(c.hex, a).tier, tc = E.scoreColour(c.hex, cool).tier, tw = E.scoreColour(c.hex, warm).tier;
+      if (tc !== t) out.cool.push(c.name + ' T' + t + ' becomes T' + tc);
+      if (tw !== t) out.warm.push(c.name + ' T' + t + ' becomes T' + tw);
+    });
+    return out.cool.length || out.warm.length ? out : null;
+  }
+  function tempDependsText(dep, a) {
+    return 'Your undertone reads ' + (a || V.analysis).tempLevel + ' with low confidence, so some tiers depend on the daylight test (navy against camel). ' +
+      (dep.cool.length ? 'If it reads cool: ' + dep.cool.join('; ') + '. ' : '') + (dep.warm.length ? 'If it reads warm: ' + dep.warm.join('; ') + '.' : '');
+  }
   function swatchHtml(s, sel) {
     return '<button class="swatch t' + s.tier + (s.hex.toLowerCase() === sel ? ' sel' : '') + '" data-hex="' + s.hex + '" title="' + esc(s.name) + ': tier ' + s.tier + ', score ' + s.score.toFixed(2) + '">' +
       '<span class="chip" style="background:' + s.hex + '">' + tt(s.tier) + '</span>' +
@@ -61,16 +89,20 @@
   function renderPalette() {
     const scored = D.colours.map(function (c) { return Object.assign({ name: c.name, family: c.family }, E.scoreColour(c.hex, V.analysis)); });
     const sel = selHex();
-    const block = function (title, note, items) {
+    const sw = function (items) { return '<div class="swatches">' + items.map(function (s) { return swatchHtml(s, sel); }).join('') + '</div>'; };
+    const block = function (title, note, items, t) {
+      const groups = t ? tierGroups(t, items).filter(function (g) { return g[1].length; }) : [[null, items]];
       return '<div class="tier"><h3>' + title + ' <span class="count">' + items.length + '</span></h3>' + (note ? '<p>' + note + '</p>' : '') +
-        (items.length ? '<div class="swatches">' + items.map(function (s) { return swatchHtml(s, sel); }).join('') + '</div>' : '<p class="empty-tier">None in the library.</p>') + '</div>';
+        (items.length ? groups.map(function (g) { return (g[0] && groups.length > 1 ? '<p class="tier-sub">' + esc(g[0]) + '</p>' : '') + sw(g[1]); }).join('') : '<p class="empty-tier">None in the library.</p>') + '</div>';
     };
     const atFace = scored.filter(function (s) { return s.tier <= 2; }).length;
     let html = '<p class="pal-sum">' + (summerOn() ? '<strong>Summer.</strong> ' : '') + atFace + ' of the ' + scored.length + ' named colours work at your face. ' + (scored.length - atFace) + ' belong below the belt or in small doses.</p>';
     if (palView === 'tier') {
       html += [1, 2, 3, 4].map(function (t) {
-        return block(tt(t) + ' ' + TIER_HEAD[t], E.TIER_TEXT[t].note, scored.filter(function (s) { return s.tier === t; }).sort(function (a, b) { return b.score - a.score; }));
+        return block(tt(t) + ' ' + TIER_HEAD[t], E.TIER_TEXT[t].note, scored.filter(function (s) { return s.tier === t; }).sort(function (a, b) { return b.score - a.score; }), t);
       }).join('');
+      const dep = tempDepends(V.analysis);
+      if (dep) html += '<p class="small muted tier-dep">' + esc(tempDependsText(dep)) + '</p>';
     } else {
       html += FAMILIES.map(function (f) {
         return block(f[1], '', scored.filter(function (s) { return s.family === f[0]; }).sort(function (a, b) { return b.lab[0] - a.lab[0]; }));
@@ -336,14 +368,15 @@
     const bald = a.hairStyle === 'none';
     // the step between layers at the face, as the Dresser measures it (engine.js, checkOutfit)
     const lo = Math.round(a.band[0]), hi = Math.round(a.band[1]);
-    const metal = a.lean < 0.35 ? 'Silver, steel, white gold or gunmetal; your colouring is cool, so gold is a stray warm note.'
-      : a.lean > 0.65 ? 'Yellow gold or rose gold agree with your warm colouring; silver is the cooler alternative.'
-        : 'Either; keep one metal through the outfit.';
+    // the same bands as the engine's metal check (cool under -0.35, warm over 0.35)
+    const metal = a.tempLevel === 'cool' ? 'Silver, steel, white gold or gunmetal; your colouring is cool, so gold is a stray warm note.'
+      : a.tempLevel === 'warm' ? 'Yellow gold or rose gold agree with your warm colouring; silver is the cooler alternative.'
+        : 'Either suits a neutral undertone' + (a.confidence === 'low' ? '; while that reading is low confidence, silver is the safer choice' : '') + '.';
     const sm = E.summary(a);
     const moves = D.colours.map(function (c) { return { name: c.name, hex: c.hex, a: E.scoreColour(c.hex, a).tier, b: other ? E.scoreColour(c.hex, other).tier : null }; })
       .filter(function (x) { return x.b && x.a !== x.b && Math.min(x.a, x.b) <= 2; });
     let h = '<h1>Palette card' + (V.state.name ? ': ' + esc(V.state.name) : '') + '</h1>' +
-      '<p class="pc-sub">Valet, ' + new Date().toLocaleDateString(undefined, { year: 'numeric', month: 'long', day: 'numeric' }) + '. Colours for ' + season + '. Printed colours are approximate: go by the names, and check cloth in daylight.</p>' +
+      '<p class="pc-sub">Valet, ' + new Date().toLocaleDateString(undefined, { year: 'numeric', month: 'long', day: 'numeric' }) + '. For your ' + season + ' colouring (' + (season === 'summer' ? 'with a tan' : 'untanned') + '). Printed colours are approximate: go by the names, and check cloth in daylight.</p>' +
       '<h2>Your colouring</h2><div class="pc-feats">' +
       '<span class="pc-feat"><span class="pc-dot" style="background:' + a.hex.skin + '"></span>Skin</span>' +
       (a.hex.hair ? '<span class="pc-feat"><span class="pc-dot" style="background:' + a.hex.hair + '"></span>' + (bald ? 'Brows' : 'Hair') + '</span>' : '') +
@@ -352,9 +385,11 @@
       '<h2>Where each colour can go</h2>' +
       [1, 2, 3, 4].map(function (t) {
         const list = scored.filter(function (s) { return s.tier === t; }).sort(function (x, y) { return y.score - x.score; });
+        const groups = tierGroups(t, list).filter(function (g) { return g[1].length; });
         return '<div class="pc-tier"><h3>T' + t + ' ' + TIER_HEAD[t] + ': ' + E.TIER_TEXT[t].note + '</h3>' +
-          (list.length ? '<div class="pc-sw">' + list.map(function (s) { return chip(s.hex, s.name); }).join('') + '</div>' : '<p>None in the library.</p>') + '</div>';
+          (list.length ? groups.map(function (g) { return (g[0] && groups.length > 1 ? '<p class="pc-sub2">' + esc(g[0]) + '</p>' : '') + '<div class="pc-sw">' + g[1].map(function (s) { return chip(s.hex, s.name); }).join('') + '</div>'; }).join('') : '<p>None in the library.</p>') + '</div>';
       }).join('') +
+      (tempDepends(a) ? '<p>' + esc(tempDependsText(tempDepends(a), a)) + '</p>' : '') +
       (moves.length ? '<h3>In ' + otherName + '</h3><p>' + moves.map(function (x) { return esc(x.name) + ' T' + x.a + ' becomes T' + x.b; }).join('; ') + '.</p>' : '') +
       '<h2>Rules of thumb for you</h2><ul>' +
       '<li><strong>Light-dark step at the face:</strong> the layers near your face should differ by ' + lo + ' to ' + hi + ' in lightness (L*), about as much as your own features do. Less looks flat; much more takes over the face.</li>' +
@@ -363,7 +398,7 @@
       '<li><strong>Below the belt:</strong> shoes the trousers\' depth or darker; belt matches the shoes; socks take the trousers\' colour, or a distinct tone of it.</li>' +
       '<li><strong>Metal:</strong> ' + metal + ' Keep one metal through an outfit; a two-tone watch is the exception.</li>' +
       (V.state.outfit && V.state.outfit.acc && V.state.outfit.acc.glasses && V.state.outfit.acc.glasses.on ? '<li><strong>Glasses:</strong> they sit at the face, so the Dresser judges them with the colours there' + (a.underEye === 'deep' ? '; with deep-set eyes, check that the bottom rim does not sit on the shadow' : '') + '.</li>' : '') +
-      (a.redness !== 'none' ? '<li><strong>Redness:</strong> reds and pinks near the face pick out the red in the skin, and greens push it redder. Blues and greys are the calm choice.</li>' : '') +
+      (a.redness !== 'none' ? '<li><strong>Redness:</strong> light or strong reds and pinks near the face pick out the red in the skin, and bright greens push it redder; dark, muted ones (burgundy, forest) do much less, which is why they can stay in the tiers above. Blues and greys are the calm choice.</li>' : '') +
       '</ul>' +
       (sm.tests.length ? '<h2>Daylight tests to run</h2><ul>' + sm.tests.map(function (t) { return '<li><strong>' + esc(t.title) + '.</strong> ' + esc(t.text) + '</li>'; }).join('') + '</ul>' : '');
     h += cardCombos(chip);

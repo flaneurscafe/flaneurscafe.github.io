@@ -13,13 +13,13 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Valet — dressing from theory</title>
 <meta name="description" content="Valet: a browser tool that works out which colours suit you from colour science and tailoring theory, and charts an outfit's lightness against your own colouring. Nothing leaves your browser.">
-<link rel="stylesheet" href="css/valet.css?v=1.11.1">
+<link rel="stylesheet" href="css/valet.css?v=1.11.2">
 </head>
 <body>
 <header class="masthead">
   <div class="brand">
     <h1>Valet</h1>
-    <p class="tagline">Dressing from theory, not from cases <button type="button" class="ver" id="verTag" title="What Valet is and how to use it">v1.11.1</button></p>
+    <p class="tagline">Dressing from theory, not from cases <button type="button" class="ver" id="verTag" title="What Valet is and how to use it">v1.11.2</button></p>
   </div>
   <div class="season-bar"><span class="flabel" id="seasonLabel">Season</span>
     <div class="seg" id="season" role="radiogroup" aria-labelledby="seasonLabel">
@@ -449,7 +449,7 @@
           <h2>5. Separation from the skin</h2>
           <p><span class="badge A">A</span> <span class="badge B">B</span> When a colour is close to your skin in lightness <em>and</em> hue, face and garment separate weakly. Valet measures the distance with <strong>CIEDE2000</strong>, the standard formula for perceived colour difference <span class="cite">[<a href="#ref-15">15</a>]</span>, and scores it from 0 at ΔE 10 to full at ΔE 20.</p>
           <p>Those two numbers are convention, not science. A ΔE of 10 between two flat patches is plainly visible; the claim is only that, across a soft boundary with shadow and texture and at talking distance, differences in this range give the face a weak edge. CIEDE2000 was also built for small differences and is less exact for large ones. Beige, camel and oatmeal usually fail here for fair skin.</p>
-          <p>So does white, a little: on fair skin it sits about as far from the face as écru does, and lands in tier 2. Its usual job is to be the light half of a light-dark step under a dark jacket, which section 4 scores separately.</p>
+          <p>White is the exception. CIEDE2000 weighs lightness differences less near white, so on very fair skin white comes out about as close as écru does. Yet a white collar is the classic frame of the face <span class="cite">[<a href="#ref-50">50</a>, p. 123]</span>, and the eye separates it from skin by its lack of colour as well as its lightness. So a white or near-white (OKLCH chroma under 0.02) that is lighter than your skin is at worst tier 2 for separation, never a failure at the face. Its usual job is to be the light half of a light-dark step under a dark jacket, which section 4 scores separately.</p>
         </section>
 
         <section id="h-sim">
@@ -481,6 +481,7 @@
             <li><strong>Tier 3 — below the belt:</strong> fails the above, but is neither more vivid than your colouring nor heavier than your face carries (camel or rust on a cool face, a pale colour that blends with the skin). Trousers, shoes and belts.</li>
             <li><strong>Tier 4 — never at the face:</strong> fails, and the chroma rule says it is more vivid than your colouring, or the contrast rule says it is heavier than your face carries: "too vivid or too much". Small accents, or one bold piece below the belt.</li>
           </ul>
+          <p>A tier is a pass mark, not a ranking. So the Palette and the palette card show tier 1 with its strongest colours first (score 0.9 or more), and tier 2 with its wardrobe neutrals apart from its colours: a neutral lands there for being a little weak at the face, not for being loud, and the Dresser never counts it as the outfit's one colour. This is a reading aid; no verdict uses it. While your undertone reading is low confidence, both also list the colours whose tier would change if the daylight test (navy against camel) reads clearly cool or clearly warm.</p>
           <p>The <strong>colour map</strong> on the Palette tab runs the same score over every hue and lightness at one strength. Hue and lightness there are OKLCH, so neighbouring squares are even steps to the eye, and squares your screen cannot show are left empty. The size of a square is its verdict, so the shape can be read without judging colour: large for tier 1, large with a white dot for tier 2, small for tiers 3 and 4. The Strength slider sets the saturation of the whole map; moving it shows how far toward vivid your palette reaches.</p>
         </section>
 
@@ -895,7 +896,7 @@
         <summary>What it cannot do</summary>
         <p>A colour reading from a photo is only as good as the light it was taken in. Numbers cannot see one shoulder lower than the other, feel how a cloth hangs, or know how a house cuts its sizes, so the sizes are ranges to take into a fitting room, not a replacement for one. And it covers everyday dress, from casual to evening; the codes of black tie, white tie and morning dress are not checked. How it works, section 1, says more.</p>
       </details>
-      <p class="small muted">Version 1.11.1. Proportion and Fit are still being refined: their numbers are tailoring rules and survey averages, so treat them as a starting point and trust a garment that fits you.</p>
+      <p class="small muted">Version 1.11.2. Proportion and Fit are still being refined: their numbers are tailoring rules and survey averages, so treat them as a starting point and trust a garment that fits you.</p>
       <div class="wl-foot" id="welcomeFoot"></div>
       <div class="ov-actions">
         <button type="button" class="btn" id="welcomeStart">Set my colouring</button>
@@ -907,29 +908,29 @@
 </div>
 
 <div id="printCard" class="print-card" aria-hidden="true"></div>
-<script src="js/colour.js?v=1.11.1"></script>
-<script src="js/vision.js?v=1.11.1"></script>
-<script src="js/patterns.js?v=1.11.1"></script>
-<script src="js/measure-art.js?v=1.11.1"></script>
-<script src="js/data.js?v=1.11.1"></script>
-<script src="js/garments.js?v=1.11.1"></script>
-<script src="js/rules.js?v=1.11.1"></script>
-<script src="js/engine.js?v=1.11.1"></script>
-<script src="js/suggest.js?v=1.11.1"></script>
-<script src="js/outfit.js?v=1.11.1"></script>
-<script src="js/chart.js?v=1.11.1"></script>
-<script src="js/body.js?v=1.11.1"></script>
-<script src="js/proportion.js?v=1.11.1"></script>
-<script src="js/fit.js?v=1.11.1"></script>
-<script src="js/ui/why.js?v=1.11.1"></script>
-<script src="js/ui/dresser.js?v=1.11.1"></script>
-<script src="js/ui/core.js?v=1.11.1"></script>
-<script src="js/ui/you.js?v=1.11.1"></script>
-<script src="js/ui/palette.js?v=1.11.1"></script>
-<script src="js/ui/chart-host.js?v=1.11.1"></script>
-<script src="js/ui/fit.js?v=1.11.1"></script>
-<script src="js/ui/shape.js?v=1.11.1"></script>
-<script src="js/ui/main.js?v=1.11.1"></script>
-<script src="js/ui/mobile.js?v=1.11.1"></script>
+<script src="js/colour.js?v=1.11.2"></script>
+<script src="js/vision.js?v=1.11.2"></script>
+<script src="js/patterns.js?v=1.11.2"></script>
+<script src="js/measure-art.js?v=1.11.2"></script>
+<script src="js/data.js?v=1.11.2"></script>
+<script src="js/garments.js?v=1.11.2"></script>
+<script src="js/rules.js?v=1.11.2"></script>
+<script src="js/engine.js?v=1.11.2"></script>
+<script src="js/suggest.js?v=1.11.2"></script>
+<script src="js/outfit.js?v=1.11.2"></script>
+<script src="js/chart.js?v=1.11.2"></script>
+<script src="js/body.js?v=1.11.2"></script>
+<script src="js/proportion.js?v=1.11.2"></script>
+<script src="js/fit.js?v=1.11.2"></script>
+<script src="js/ui/why.js?v=1.11.2"></script>
+<script src="js/ui/dresser.js?v=1.11.2"></script>
+<script src="js/ui/core.js?v=1.11.2"></script>
+<script src="js/ui/you.js?v=1.11.2"></script>
+<script src="js/ui/palette.js?v=1.11.2"></script>
+<script src="js/ui/chart-host.js?v=1.11.2"></script>
+<script src="js/ui/fit.js?v=1.11.2"></script>
+<script src="js/ui/shape.js?v=1.11.2"></script>
+<script src="js/ui/main.js?v=1.11.2"></script>
+<script src="js/ui/mobile.js?v=1.11.2"></script>
 </body>
 </html>

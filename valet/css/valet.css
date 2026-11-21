@@ -212,6 +212,8 @@ input[type="color"] { width: 2.4rem; height: 2rem; padding: 0; border: 1px solid
 .tier { margin-bottom: 1.2rem; }
 .tier h3 { margin-bottom: 0.15rem; }
 .tier p { margin: 0 0 0.5rem; font: 0.82rem var(--sans); color: var(--muted); }
+.tier p.tier-sub { margin: 0.5rem 0 0.3rem; font: 600 0.78rem var(--sans); color: var(--ink); }
+.tier-dep { margin-top: 0.4rem; }
 .tier h3 .count { font: 500 0.72rem var(--sans); color: var(--muted); border: 1px solid var(--rule); border-radius: 99px; padding: 0 0.4rem; vertical-align: 0.15em; }
 .pal-bar { display: flex; align-items: center; gap: 0.6rem; margin-bottom: 0.7rem; font: 0.85rem var(--sans); color: var(--muted); }
 .pal-sum { font: 0.88rem var(--sans); margin: 0 0 1rem; }
@@ -597,12 +599,16 @@ body.is-summer .season-tag { color: var(--gold); border-color: var(--gold); }
 .print-card .pc-feats { display: flex; gap: 14pt; flex-wrap: wrap; margin: 0 0 6pt; }
 .print-card .pc-feat { display: flex; align-items: center; gap: 5pt; }
 .print-card .pc-dot { width: 14pt; height: 14pt; border-radius: 50%; border: 0.5pt solid #888; display: inline-block; }
-.print-card .pc-sw { display: grid; grid-template-columns: repeat(6, 1fr); gap: 3pt 6pt; break-inside: avoid; }
+/* tier swatches big enough to hold against cloth: a box of colour with its name under it */
+.print-card .pc-sw { display: grid; grid-template-columns: repeat(7, 1fr); gap: 5pt 6pt; break-inside: avoid; }
 .print-card .pc-c { display: flex; align-items: center; gap: 4pt; font-size: 8.5pt; break-inside: avoid; }
+.print-card .pc-sw .pc-c { flex-direction: column; align-items: stretch; gap: 2pt; text-align: center; line-height: 1.15; }
+.print-card .pc-sw .pc-c i { width: auto; height: 30pt; }
 .print-card .pc-c i { width: 13pt; height: 13pt; border-radius: 2pt; border: 0.5pt solid #999; flex: none; }
 .print-card ul { margin: 0 0 4pt; padding-left: 12pt; }
 .print-card li { margin: 0 0 2pt; break-inside: avoid; }
 .print-card .pc-tier { break-inside: avoid; }
+.print-card .pc-sub2 { margin: 0.3rem 0 0.15rem; font-weight: 600; font-size: 0.8em; }
 .print-card .pc-foot { margin-top: 10pt; color: #555; font-size: 8pt; border-top: 0.5pt solid #bbb; padding-top: 4pt; }
 
 
@@ -855,7 +861,7 @@ button.gl-c.pk-no { text-decoration: line-through; text-decoration-color: var(--
 .print-card .pc-combos { list-style: none; padding: 0; margin: 0 0 6pt; }
 .print-card .pc-combos li { margin: 0 0 3pt; break-inside: avoid; }
 .print-card .pc-combos .pc-c, .print-card .pc-pairs .pc-c { display: inline-flex; margin: 0 6pt 2pt 0; vertical-align: middle; }
-.print-card .pc-combos .pc-c i, .print-card .pc-pairs .pc-c i { width: 10pt; height: 10pt; }
+.print-card .pc-combos .pc-c i, .print-card .pc-pairs .pc-c i { width: 18pt; height: 18pt; }
 .print-card .pc-pairs { width: 100%; border-collapse: collapse; font-size: 8.5pt; }
 .print-card .pc-pairs th { text-align: left; font-weight: 600; color: #555; border-bottom: 0.5pt solid #bbb; padding: 2pt 4pt; }
 .print-card .pc-pairs td { border-bottom: 0.5pt solid #e2e2e2; padding: 2pt 4pt; vertical-align: top; }
@@ -864,7 +870,7 @@ button.gl-c.pk-no { text-decoration: line-through; text-decoration-color: var(--
 .pair-ctx { font: 0.78rem var(--sans); color: var(--muted); margin-left: 0.4rem; }
 .theme-print { display: block; margin: 0.6rem 0 0.2rem; }
 .print-card .pc-theme .pc-c { display: inline-flex; margin: 0 6pt 2pt 0; vertical-align: middle; }
-.print-card .pc-theme .pc-c i { width: 10pt; height: 10pt; }
+.print-card .pc-theme .pc-c i { width: 18pt; height: 18pt; }
 .print-card .pc-theme { break-inside: avoid; }
 
 /* Proportion */
