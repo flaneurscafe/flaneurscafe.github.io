@@ -76,7 +76,7 @@
   function markHtml(sig) {
     const m = h.markOf(sig);
     return '<span class="cl-marks" role="group" aria-label="Your verdict">' + MARKS.map(function (x) {
-      return '<button type="button" class="btn ghost small cl-mark m-' + x[0] + '" data-mark="' + x[0] + '" aria-pressed="' + (m === x[0]) + '">' + x[1] + '</button>';
+      return '<button type="button" class="btn ghost small cl-mark m-' + x[0] + '" data-mark="' + x[0] + '" aria-pressed="' + (m === x[0]) + '" title="Your verdict: ' + x[1].toLowerCase() + '. Kept in Saved outfits">' + x[1] + '</button>';
     }).join('') + '</span>';
   }
 
@@ -92,21 +92,31 @@
     }
     const list = garments();
     box.innerHTML =
-      '<p class="cl-lede">The clothes you own, one piece each. Ask what goes with one: Valet tries it with your other garments and judges every outfit as the Outfit view does. Mark the outfits you would and would not wear; Saved outfits then shows where you and Valet disagree. How it works, section 10, says how the outfits are found.</p>' +
-      '<div class="dr-tools"><label class="btn ghost small">Import garments<input type="file" id="clImport" accept="application/json,.json" hidden></label>' +
-      '<button type="button" class="btn ghost small" id="clExport"' + (list.length ? '' : ' disabled') + '>Export garments</button></div>' +
+      '<p class="cl-lede">The clothes you own, one piece each. Add one here with <em>Add a garment</em>, or from the Outfit view with <em>Save to my garments</em> on any piece; <em>Wear</em> takes a garment back into the Outfit view, to check it with the rest of what you are wearing. <em>What goes with it?</em> tries a garment with all your others and judges every outfit as the Outfit view does. Mark the outfits you would and would not wear; Saved outfits then shows where you and Valet disagree. Untick <em>I own it</em> for a piece you are only thinking of buying: it is then tried only when you ask about it.</p>' +
+      '<div class="dr-tools"><button type="button" class="btn small" id="clAdd">Add a garment</button>' +
+      '<label class="btn ghost small">Import garments<input type="file" id="clImport" accept="application/json,.json" hidden></label>' +
+      '<button type="button" class="btn ghost small" id="clExport"' + (list.length ? '' : ' disabled') + '>Export garments</button>' +
+      '<button type="button" class="btn ghost small" id="clClear"' + (list.length ? '' : ' disabled') + '>Delete all</button></div>' +
+      '<div id="clEdit"></div>' +
       (note ? '<p class="dr-note" role="status">' + esc(note) + '</p>' : '') +
-      '<div class="cl-occ"><span class="flabel">Occasion</span><div class="seg" role="radiogroup" aria-label="Occasion for the outfits">' + G.OCCASIONS.map(function (x) {
+      '<div class="cl-occ"><span class="flabel">Occasion of the outfits Valet builds</span><div class="seg" role="radiogroup" aria-label="Occasion for the outfits">' + G.OCCASIONS.map(function (x) {
         return '<button type="button" role="radio" data-cocc="' + x.id + '" aria-checked="' + (opts().occasion === x.id) + '">' + esc(x.name) + '</button>';
       }).join('') + '</div></div>' +
       '<div id="clAsk" class="cl-ask" aria-live="polite"></div>' +
       '<div id="clBuy"></div>' +
       '<div id="clList"></div>';
     wireTop(box);
-    paintAsk(); paintBuy(); paintList();
+    paintEdit(); paintAsk(); paintBuy(); paintList();
   }
   function wireTop(box) {
     $('#clExport', box).addEventListener('click', exportFile);
+    $('#clAdd', box).addEventListener('click', function () { startEdit(null); });
+    $('#clClear', box).addEventListener('click', function () {
+      const all = garments(); if (!all.length) return;
+      stop(); last = null;
+      removed = { all: all.splice(0, all.length) }; h.api.save();
+      note = ''; render();
+    });
     $('#clImport', box).addEventListener('change', function (e) {
       const f = e.target.files[0]; if (!f) return;
       f.text().then(function (t) { let d = null; try { d = JSON.parse(t); } catch (err) { /* not JSON */ } importFile(d); render(); });
@@ -117,18 +127,118 @@
         occasion = b.dataset.cocc; $$('[data-cocc]', box).forEach(function (x) { x.setAttribute('aria-checked', String(x === b)); });
         if (last && last.kind === 'around' && byId(last.gid)) ask(last.gid);
         else if (last && last.kind === 'buy') buy(last.spec);
-        else paintList();
+        else { note = 'Outfits will now be built for ' + G.OCCASIONS.find(function (x) { return x.id === occasion; }).name.toLowerCase() + '. Press What goes with it? on a garment to see them.'; render(); }
       });
     });
   }
 
+  /* ---------- Adding or changing a garment here, without the Outfit view ----------
+     The form keeps its state in `editing`, so it survives the view being drawn again (after a photo
+     is read, say). Saving makes the piece safe with VCLOSET.cleanPiece, as an import does. */
+  let editing = null;   // { id (null: new), name, slot, own, note, piece }
+  function startEdit(id) {
+    const g = id ? byId(id) : null;
+    editing = g ? { id: g.id, name: g.name, slot: g.slot, own: g.own, note: g.note || '', piece: JSON.parse(JSON.stringify(g.piece)) }
+      : { id: null, name: '', slot: 'shirt', own: true, note: '', piece: C.cleanPiece('shirt', {}) };
+    paintEdit();
+    const box = $('#clEdit'); if (box) { box.scrollIntoView({ block: 'nearest' }); const f = $('select, input', box); if (f) f.focus(); }
+  }
+  /* Keep the piece consistent after its position, type or cloth changes: cloth among the type's,
+     a pattern the type and cloth can take. */
+  function settle(e) {
+    const kind = G.byKey[e.slot].kinds.find(function (k) { return k.id === e.piece.kind; }) || G.byKey[e.slot].kinds[0];
+    e.piece.kind = kind.id;
+    if (kind.cloths) { if (kind.cloths.indexOf(e.piece.cloth) < 0) e.piece.cloth = kind.cloths[0]; } else delete e.piece.cloth;
+    const pt = (e.piece.pat || {}).type || 'solid';
+    if (pt !== 'solid' && (kind.pats.indexOf(pt) < 0 || (e.piece.cloth && !G.patOK(e.piece.cloth, pt)))) e.piece.pat = { type: 'solid' };
+    if (!e.piece.pat) e.piece.pat = { type: 'solid' };
+  }
+  function colourField(id, label, hex, allowNone) {
+    const mine = (S().myColours || []);
+    const known = D.colours.some(function (c) { return c.hex.toLowerCase() === String(hex).toLowerCase(); }) || mine.some(function (c) { return c.hex.toLowerCase() === String(hex).toLowerCase(); });
+    return '<div class="cl-colour"><span class="flabel">' + esc(label) + '</span><span class="cl-crow">' +
+      '<i class="cl-chip" style="background:' + esc(hex || 'transparent') + '"></i>' +
+      '<select data-col="' + id + '" aria-label="' + esc(label) + '">' + (allowNone ? '<option value=""' + (hex ? '' : ' selected') + '>None</option>' : '') +
+      (mine.length ? '<optgroup label="My colours">' + mine.map(function (c) { return '<option value="' + esc(c.hex) + '"' + (c.hex.toLowerCase() === String(hex).toLowerCase() ? ' selected' : '') + '>' + esc(c.name) + '</option>'; }).join('') + '</optgroup>' : '') +
+      '<optgroup label="Library">' + D.colours.map(function (c) { return '<option value="' + c.hex + '"' + (c.hex.toLowerCase() === String(hex).toLowerCase() ? ' selected' : '') + '>' + esc(c.name) + '</option>'; }).join('') + '</optgroup>' +
+      (hex && !known ? '<option value="' + esc(hex) + '" selected>' + esc(hex.toUpperCase()) + '</option>' : '') + '</select>' +
+      '<input type="color" data-colpick="' + id + '" value="' + esc(hex || '#808080') + '" aria-label="' + esc(label) + ': any colour">' +
+      '<button type="button" class="btn ghost small" data-colphoto="' + id + '">From a photo…</button></span></div>';
+  }
+  function paintEdit() {
+    const box = $('#clEdit'); if (!box) return;
+    const e = editing; if (!e) { box.innerHTML = ''; return; }
+    settle(e);
+    const pos = G.byKey[e.slot], kind = G.kind(e.slot, e.piece), cloths = kind.cloths || [];
+    const pats = kind.pats.filter(function (t) { return t === 'solid' || !e.piece.cloth || G.patOK(e.piece.cloth, t); });
+    const pt = e.piece.pat.type, two = pt !== 'solid', spect = e.slot === 'shoes' && kind.id === 'spectator';
+    box.innerHTML = '<form class="cl-edit" novalidate><h3>' + (e.id ? 'Edit garment' : 'Add a garment') + '</h3>' +
+      '<div class="cl-eform">' +
+      '<label>Name<input type="text" data-f="name" maxlength="80" value="' + esc(e.name) + '" placeholder="' + esc(C.autoName(e.slot, e.piece, h.api.nameOf)) + '"></label>' +
+      '<label>Position<select data-f="slot">' + G.SLOTS.map(function (k) { return '<option value="' + k + '"' + (k === e.slot ? ' selected' : '') + '>' + esc(G.byKey[k].label) + '</option>'; }).join('') + '</select></label>' +
+      '<label>Type<select data-f="kind">' + pos.kinds.map(function (k) { return '<option value="' + k.id + '"' + (k.id === kind.id ? ' selected' : '') + '>' + esc(k.name) + '</option>'; }).join('') + '</select></label>' +
+      (cloths.length ? '<label>Cloth<select data-f="cloth">' + cloths.map(function (c) { return '<option value="' + c + '"' + (c === e.piece.cloth ? ' selected' : '') + '>' + esc(G.CLOTHS[c].name) + '</option>'; }).join('') + '</select></label>' : '') +
+      (pats.length > 1 ? '<label>Pattern<select data-f="pat">' + pats.map(function (t) { return '<option value="' + t + '"' + (t === pt ? ' selected' : '') + '>' + esc(window.VPAT.byId[t].name) + '</option>'; }).join('') + '</select></label>' : '') +
+      '</div>' +
+      colourField('hex', two ? 'Ground colour' : 'Colour', e.piece.hex) +
+      (two ? colourField('hex2', 'The pattern\'s second colour', e.piece.pat.hex2 || '', false) : '') +
+      (spect ? colourField('spec', 'Toe cap and heel', e.piece.hex2 || '#f2efe6', false) : '') +
+      (kind.brim ? colourField('band', 'Hat band', e.piece.band || '', true) : '') +
+      '<div class="cl-eform"><label class="cl-own"><input type="checkbox" data-f="own"' + (e.own ? ' checked' : '') + '> I own it (untick for a piece you are thinking of buying)</label>' +
+      '<label class="cl-enote">Note<input type="text" data-f="note" maxlength="200" value="' + esc(e.note) + '" placeholder="Anything to remember about it"></label></div>' +
+      '<div class="cl-eacts"><button type="submit" class="btn small">' + (e.id ? 'Save changes' : 'Add to my garments') + '</button><button type="button" class="btn ghost small" data-ecancel>Cancel</button></div></form>';
+    const f = $('form', box);
+    $$('[data-f]', f).forEach(function (el) {
+      el.addEventListener(el.tagName === 'SELECT' || el.type === 'checkbox' ? 'change' : 'input', function () {
+        const k = el.dataset.f;
+        if (k === 'name') e.name = el.value;
+        else if (k === 'note') e.note = el.value;
+        else if (k === 'own') e.own = el.checked;
+        else if (k === 'slot') { e.slot = el.value; e.piece = Object.assign(C.cleanPiece(el.value, {}), { hex: e.piece.hex }); paintEdit(); }
+        else if (k === 'kind') { e.piece.kind = el.value; paintEdit(); }
+        else if (k === 'cloth') { e.piece.cloth = el.value; paintEdit(); }
+        else if (k === 'pat') { e.piece.pat = el.value === 'solid' ? { type: 'solid' } : { type: el.value, hex2: e.piece.pat.hex2 || '#f2efe6' }; paintEdit(); }
+      });
+    });
+    const setCol = function (id, hex) {
+      if (id === 'hex') e.piece.hex = hex;
+      else if (id === 'hex2') e.piece.pat = Object.assign({}, e.piece.pat, { hex2: hex });
+      else if (id === 'spec') e.piece.hex2 = hex;
+      else if (id === 'band') { if (hex) e.piece.band = hex; else delete e.piece.band; }
+      paintEdit();
+    };
+    $$('[data-col]', f).forEach(function (el) { el.addEventListener('change', function () { setCol(el.dataset.col, el.value); }); });
+    $$('[data-colpick]', f).forEach(function (el) { el.addEventListener('change', function () { setCol(el.dataset.colpick, el.value.toLowerCase()); }); });
+    $$('[data-colphoto]', f).forEach(function (b) {
+      b.addEventListener('click', function () { window.VPHOTOS.open({ wear: function (hex) { setCol(b.dataset.colphoto, hex); } }); });
+    });
+    $('[data-ecancel]', f).addEventListener('click', function () { editing = null; paintEdit(); });
+    f.addEventListener('submit', function (ev) {
+      ev.preventDefault();
+      const piece = C.cleanPiece(e.slot, e.piece), name = e.name.replace(/[\u0000-\u001f]/g, ' ').trim().slice(0, 80) || C.autoName(e.slot, piece, h.api.nameOf);
+      const notes = e.note.replace(/[\u0000-\u001f]/g, ' ').trim().slice(0, 200);
+      if (e.id) {
+        const g = byId(e.id);
+        if (g) { g.name = name; g.slot = e.slot; g.piece = piece; g.own = e.own; g.note = notes; note = 'Saved “' + name + '”.'; }
+      } else {
+        if (garments().length >= C.MAX) { note = 'My garments is full (' + C.MAX + ').'; editing = null; render(); return; }
+        const g = C.fromPiece(e.slot, piece, name, e.own); g.note = notes; garments().push(g);
+        note = 'Added “' + name + '”. Press What goes with it? to see the outfits it makes, or Wear to check it in the Outfit view.';
+      }
+      editing = null; h.api.save(); render();
+    });
+  }
+
   /* The list, by position, in the Dresser's order from head to feet. */
+  /* The count on the My garments tab follows every change made here. */
+  function syncCount() { const gc = $('#clCount'), n = garments().length; if (gc) gc.textContent = n ? '(' + n + ')' : ''; }
   function paintList() {
+    syncCount();
     const box = $('#clList'); if (!box) return;
     const list = garments();
-    const undoBar = removed ? '<div class="dr-undo">Removed “' + esc(removed.item.name) + '”. <button type="button" class="btn ghost small" id="clUndo">Undo</button></div>' : '';
+    const undoBar = removed ? '<div class="dr-undo">' + (removed.all ? 'Deleted all ' + plural(removed.all.length, 'garment') + '.' : 'Removed “' + esc(removed.item.name) + '”.') + ' <button type="button" class="btn ghost small" id="clUndo">Undo</button></div>' : '';
     if (!list.length) {
-      box.innerHTML = undoBar + '<p class="dr-empty">No garments yet. Under <strong>Outfit</strong>, open a piece and press <strong>Save to my garments</strong>: what it is, its cloth, colour and pattern are kept. Or import a garments file. Colours read from photos with white paper (<em>From photos…</em>) make the answers trustworthy.</p>';
+      box.innerHTML = undoBar + '<p class="dr-empty">No garments yet. Press <strong>Add a garment</strong>, import a garments file, or, under <strong>Outfit</strong>, open a piece and press <strong>Save to my garments</strong>. Colours read from photos with white paper (<em>From photos…</em>) make the answers trustworthy.</p>';
       wireUndo(box); return;
     }
     freshCounts();
@@ -143,8 +253,9 @@
           (g.note ? '<span class="cl-desc">' + esc(g.note) + '</span>' : '') +
           '<span class="cl-meta">' + (g.own ? '' : '<span class="cl-tag">Thinking of buying</span> ') + (k ? 'In ' + plural(k.joins, 'good outfit') + ' of ' + num(k.tried) + ' tried' : '') + '</span></div>' +
           '<div class="cl-acts"><button type="button" class="btn small" data-ask>What goes with it?</button>' +
-          '<button type="button" class="btn ghost small" data-wear>Wear</button>' +
-          '<label class="cl-own"><input type="checkbox" data-own' + (g.own ? ' checked' : '') + '> I own it</label>' +
+          '<button type="button" class="btn ghost small" data-wear title="Put it on in the Outfit view, to check it with the rest of what you are wearing">Wear</button>' +
+          '<button type="button" class="btn ghost small" data-edit>Edit</button>' +
+          '<label class="cl-own" title="Ticked: Valet uses it when it builds outfits around your other garments. Not ticked: a piece you are thinking of buying, tried only when you ask what goes with it"><input type="checkbox" data-own' + (g.own ? ' checked' : '') + '> I own it</label>' +
           '<button type="button" class="btn ghost small" data-del aria-label="Delete ' + esc(g.name) + '">Delete</button></div></li>';
       }).join('') + '</ul></section>';
     }).join('');
@@ -152,6 +263,7 @@
       const id = li.dataset.id, g = byId(id); if (!g) return;
       $('[data-ask]', li).addEventListener('click', function () { ask(id); paintList(); });
       $('[data-wear]', li).addEventListener('click', function () { h.wearGarment(g); });
+      $('[data-edit]', li).addEventListener('click', function () { startEdit(g.id); });
       $('[data-own]', li).addEventListener('change', function (e) { g.own = e.target.checked; h.api.save(); paintList(); });
       const nm = $('.cl-name', li);
       nm.addEventListener('change', function () { g.name = nm.value.replace(/[\u0000-\u001f]/g, ' ').trim().slice(0, 80) || g.name; nm.value = g.name; h.api.save(); });
@@ -166,7 +278,11 @@
   }
   function wireUndo(box) {
     const u = $('#clUndo', box);
-    if (u) u.addEventListener('click', function () { if (removed) { garments().splice(removed.at, 0, removed.item); removed = null; h.api.save(); paintList(); } });
+    if (u) u.addEventListener('click', function () {
+      if (!removed) return;
+      if (removed.all) { const all = garments(); Array.prototype.push.apply(all, removed.all); removed = null; h.api.save(); render(); return; }
+      garments().splice(removed.at, 0, removed.item); removed = null; h.api.save(); paintList();
+    });
   }
 
   /* Positions with no garment of yours: the current outfit's pieces are used in their place. */
@@ -195,6 +311,7 @@
       (g.own ? '' : ' Bought, it would join <strong>' + plural(s.joins, 'good outfit') + '</strong> (good or works).') +
       (C.EXTRA.indexOf(g.slot) < 0 ? ' A tie, square or socks are added only where they make an outfit better; ask about one to see what it goes with.' : '') + '</p>';
     if (!s.tried) html += '<p class="dr-empty">' + (job.needs ? 'Nothing to try it with: it needs ' + esc(job.needs) + ', and there is none among your garments.' : 'Nothing to try it with: add garments for the other positions.') + '</p>';
+    if (s.tried) html += '<p class="cl-hint cl-keys"><strong>Wear</strong> opens the outfit in the Outfit view, with every check and its reason. <strong>Good</strong>, <strong>So-so</strong> and <strong>Bad</strong> are your own verdict, not Valet\'s: an outfit you mark is kept in Saved outfits with your verdict beside Valet\'s, and the ones where the two disagree show where a rule may be wrong. Press a pressed mark again to clear it.</p>';
     if (s.best.length) html += '<h4>The best</h4><ul class="cl-outfits">' + s.best.map(card).join('') + '</ul>';
     else if (s.tried) html += '<p class="dr-empty">None of these outfits passes. The closest are below.</p>';
     const no = s.nearly.concat(s.no);
@@ -217,8 +334,8 @@
     const pieces = G.SLOTS.filter(function (k) { return r.pick[k]; });
     return '<li class="cl-outfit lv-' + esc(r.level) + '"><div class="dr-strip" aria-hidden="true">' + pieces.map(function (k) { return '<i style="' + h.chipStyle(r.pick[k].piece) + '"></i>'; }).join('') + '</div>' +
       '<div class="dr-text"><span class="cl-pieces">' + pieces.map(function (k) { return esc(r.pick[k].name || ('current ' + G.byKey[k].label.toLowerCase())); }).join(' · ') + '</span>' +
-      '<span class="dr-verdict"><strong>' + esc(r.title) + '</strong>' + (r.fails.length ? ': ' + esc(r.fails.join(', ')) : '') + '</span></div>' +
-      '<div class="cl-oacts"><button type="button" class="btn small" data-wear>Wear</button>' + markHtml(sig) + '</div></li>';
+      '<span class="dr-verdict">Valet: <strong>' + esc(r.title) + '</strong>' + (r.fails.length ? ': ' + esc(r.fails.join(', ')) : '') + '</span></div>' +
+      '<div class="cl-oacts"><button type="button" class="btn small" data-wear title="Open it in the Outfit view, with every check">Wear</button><span class="cl-you">You:</span>' + markHtml(sig) + '</div></li>';
   }
   function wireAsk(box) {
     const st = $('#clStop', box); if (st) st.addEventListener('click', function () { stop(); last = null; paintAsk(); paintList(); });
@@ -255,14 +372,19 @@
     }
     const a = h.api.analysis(), rows = job.rows, top = rows.filter(function (r) { return !r.garment; }).slice(0, 10), owned = rows.filter(function (r) { return r.garment; });
     const shown = rows.filter(function (r) { return top.indexOf(r) >= 0 || owned.indexOf(r) >= 0; });
-    html += '<p class="cl-sum">Each colour was tried in the same ' + plural(job.sample, 'outfit') + ' made from your garments, for ' + esc(occName) + ' (the core of each outfit: no tie, square or socks added). The share is how many of them pass: a good outfit, or one that works. Equal shares are ordered by how little Valet has to note.' +
-      (owned.length ? ' Yours in this position are marked.' : '') + '</p>';
+    const pct = function (x) { return Math.round(x * 100); };
+    const spread = top.length > 1 ? pct(top[0].share) - pct(top[top.length - 1].share) : 100;
+    html += '<p class="cl-sum">Valet put each colour into the same ' + plural(job.sample, 'test outfit') + ', made from your garments for ' + esc(occName) +
+      ', and counted how many of them pass (a good outfit, or one that works). Only the core of each outfit is judged: no tie, square or socks. ' +
+      'The rows marked <span class="cl-tag">you own it</span> are your own ' + esc(G.byKey[sp.slot].label.toLowerCase()) + ' in the same test, for comparison; the others are colours you could buy, with their tier on you (T1 is best). Equal shares are ordered by how little Valet has to note. <strong>Try with my clothes</strong> adds that colour to My garments as a piece you are thinking of buying (it is tried only when you ask about it) and shows every outfit it would make with what you own: the full answer, with ties, squares and socks.</p>' +
+      (spread <= 5 ? '<p class="cl-hint">Here most colours score about the same: Valet judges this position mainly by how light or dark it is against the rest, so the colour itself changes little. Choose by your own eye, or ask what goes with one of them.</p>' : '');
+    html += '<div class="cl-buyhead" aria-hidden="true"><span></span><span>Colour</span><span>Test outfits that pass</span></div>';
     html += '<ol class="cl-buylist">' + shown.map(function (r) {
       const rank = rows.indexOf(r) + 1, t = E.scoreColour(r.hex, a).tier;
       return '<li class="' + (r.garment ? 'own' : '') + '"><span class="cl-rank">' + rank + '</span><i class="cl-chip" style="background:' + esc(r.hex) + '"></i>' +
-        '<span class="cl-bname">' + esc(r.garment ? r.name : r.name + ' ' + kind.name.toLowerCase()) + (r.garment ? ' <span class="cl-tag">yours</span>' : ' <span class="tt t' + t + '">T' + t + '</span>') + '</span>' +
-        '<span class="cl-share"><span class="cl-bar"><i style="width:' + Math.round(r.share * 100) + '%"></i></span>' + Math.round(r.share * 100) + '%</span>' +
-        (r.garment ? '' : '<button type="button" class="btn ghost small" data-try="' + esc(r.hex) + '">Think about it</button>') + '</li>';
+        '<span class="cl-bname">' + esc(r.garment ? r.name : r.name + ' ' + kind.name.toLowerCase()) + (r.garment ? ' <span class="cl-tag">you own it</span>' : ' <span class="tt t' + t + '" title="Tier ' + t + ' on you">T' + t + '</span>') + '</span>' +
+        '<span class="cl-share" title="' + r.good + ' of ' + r.tried + ' test outfits pass"><span class="cl-bar"><i style="width:' + pct(r.share) + '%"></i></span>' + pct(r.share) + '%<span class="cl-of"> (' + r.good + ' of ' + r.tried + ')</span></span>' +
+        (r.garment ? '' : '<button type="button" class="btn ghost small" data-try="' + esc(r.hex) + '" title="Add it to My garments as thinking of buying, and see what goes with it">Try with my clothes</button>') + '</li>';
     }).join('') + '</ol>';
     box.innerHTML = html; wireAsk(box);
     $$('[data-try]', box).forEach(function (b) {

@@ -93,12 +93,21 @@
     if (w.hairStyle) s.hairStyle = w.hairStyle;
     if (su && hexOk(su.skin)) s.summer = su.skin.toLowerCase() === w.skin.toLowerCase() ? { mode: 'same' } : { mode: 'own', samples: { white: null, skin: su.skin }, manual: { skin: true } };
   }
+  /* What a file holds besides the profile, in words: "3 saved outfits (2 marked), 59 garments…". */
+  function contents(s) {
+    const n = function (x, one, many) { return x ? x + ' ' + (x === 1 ? one : many) : 'no ' + many; };
+    const w = Array.isArray(s.wardrobe) ? s.wardrobe : [], g = Array.isArray(s.garments) ? s.garments : [], c = Array.isArray(s.myColours) ? s.myColours : [];
+    const m = w.filter(function (x) { return x && x.mark; }).length;
+    return 'your profile and outfit, ' + n(w.length, 'saved outfit', 'saved outfits') + (m ? ' (' + m + ' marked)' : '') + ', ' + n(g.length, 'garment', 'garments') + ', ' + (c.length ? c.length + ' of My colours' : 'nothing in My colours');
+  }
   function openFile(s, fileName) {
     if (!s || typeof s !== 'object' || (s.app && s.app !== 'valet')) throw new Error('not valet');
     const pal = s.palette && s.palette.winter ? s.palette : null;
     const hasColouring = !!(s.samples && (s.samples.skin || (s.named && s.named.skin)));
     const fromPalette = !hasColouring && pal && pal.winter.colouring && hexOk(pal.winter.colouring.skin);
     if (!hasColouring && !fromPalette && !s.outfit) throw new Error('empty');
+    // what the file itself holds, before it is made safe (which fills in empty lists)
+    const kept = ['wardrobe', 'garments', 'myColours'].filter(function (k) { return !Array.isArray(s[k]); });
     if (fromPalette) colouringFromPalette(s);
     cleanProfile(s);
     upgrade(s);
@@ -118,6 +127,7 @@
         : changed.length + ' colour' + (changed.length > 1 ? 's sit' : ' sits') + ' in a different tier from the saved palette' + (s.valet && s.valet !== VERSION ? ' (saved with Valet ' + s.valet + '; the rules have changed since)' : '') +
           '. The palette shown follows the current rules: ' + changed.slice(0, 8).join(', ') + (changed.length > 8 ? ' and ' + (changed.length - 8) + ' more' : '') + '.');
     }
+    msg += ' Valet now has ' + contents(V.state).replace('your profile and outfit, ', '') + '.' + (kept.length ? ' The file had no ' + kept.map(function (k) { return { wardrobe: 'saved outfits', garments: 'garments', myColours: 'My colours' }[k]; }).join(' or ') + ', so yours were kept.' : '');
     fileNote(msg);
   }
   function fileNote(msg) { const n = $('#fileNote'); n.textContent = msg || ''; n.hidden = !msg; }
@@ -130,7 +140,7 @@
     a.download = 'valet-' + ((V.state.name || 'profile').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '') || 'profile') + '.json';
     a.click();
     setTimeout(function () { URL.revokeObjectURL(a.href); }, 1000);
-    fileNote(out.palette ? 'Saved, with the palette for winter and summer.' : 'Saved. There is no colouring yet, so the file has no palette.');
+    fileNote('Saved everything: ' + contents(out) + (out.palette ? ', and the palette for winter and summer.' : '. There is no colouring yet, so the file has no palette.'));
   });
   $('#importInput').addEventListener('change', function (e) {
     const f = e.target.files[0]; if (!f) return;
