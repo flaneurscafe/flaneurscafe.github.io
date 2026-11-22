@@ -22,9 +22,10 @@ function randomOutfit(){
     const ok=kd.pats.filter(t=>t==='solid'||!cloth||G.patOK(cloth,t));
     const t=pick(ok); if(t!=='solid'){ const ty=VP.byId[t]; pat={type:t, scale: ty.min+(ty.max-ty.min)*rnd(), hex2: pick(hexes)}; }
     o[pos.key]={hex:pick(hexes), name:'X', kind:kd.id, cloth:cloth, pat:pat, rise:pick(['high','mid','low']), length:pick(['short','regular','long']),
-      hex2: kd.twoTone? pick(['#f2efe6','#161616','#a8733f']):undefined, buttons: kd.buttons? pick(G.BUTTONS.map(b=>b[0])):undefined, brim: kd.brim? pick(G.BRIMS.map(b=>b.id||b[0]||b)) : undefined};
+      hex2: kd.twoTone? pick(['#f2efe6','#161616','#a8733f']):undefined, buttons: kd.buttons? pick(G.BUTTONS.map(b=>b[0])):undefined, brim: kd.brim? pick(G.BRIMS.map(b=>b.id||b[0]||b)) : undefined,
+      collar: kd.collars && rnd()<0.8? pick(G.COLLARS).id : undefined, collarBand: kd.collars? pick(['standard','tall']) : undefined, collarHex: kd.collars && rnd()<0.3? pick(hexes) : undefined};
   });
-  o.occasion=pick(G.OCCASIONS.map(x=>x.id)); o.propOn=true; o.body={}; o.frame=null; o.shape={}; o.hairStyle='short'; o.m={};
+  o.occasion=pick(G.OCCASIONS.map(x=>x.id)); o.propOn=true; o.body={faceClass: pick(['broad','long','middle',undefined])}; o.frame=null; o.shape={}; o.hairStyle=pick(['short','none']); o.m={};
   o.acc={}; G.ACCESSORIES.forEach(d=>{ o.acc[d.key]={on:rnd()<0.5, metal:pick(d.metals), stone:d.stone?pick(G.STONES).id:undefined, size: d.size? Math.round(d.size.min+(d.size.max-d.size.min)*rnd()):undefined,
      strap: pick(G.STRAPS).id, strapHex: (G.STRAP_COLOURS? pick(G.STRAP_COLOURS)[1] : '#3b2417'), dial: (G.DIALS? pick(G.DIALS)[1] : '#f2f0ea'), display: pick(['analogue','digital'])}; });
   o.acc.wrist = rnd()<0.5? 16+Math.round(rnd()*4):null;

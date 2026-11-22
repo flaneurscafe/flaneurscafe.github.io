@@ -42,6 +42,9 @@
         near: (pos.face || pos.near) && !(k === 'boutonniere' && kinds[k] === pinName) });
     });
 
+    // a contrast collar (1.17) gets its own row under the shirt: it is the colour that meets the next layer at the neck
+    const shirtAt = rows.findIndex(function (r) { return r.k === 'shirt'; });
+    if (P.collar && shirtAt >= 0) rows.splice(shirtAt + 1, 0, { k: 'collar', label: 'Collar', name: P.collarName || '', hex: P.collar, two: null, face: true, near: true });
     const top = 44, youH = 50, rowH = 40, chartBot = top + youH + rows.length * rowH;
     const skinL = a ? a.lab.skin[0] : Lof(P.skin);
 
@@ -98,7 +101,7 @@
       // tier at the face, from the colour rules
       if (r.near && a && E) {
         // judged as the Dresser judges it: a pattern that reads at 3 m by the better of its main colours
-        const lk = E.look && E.bestAtFace && r.k !== 'shoes' ? E.look({ hex: o[r.k], pat: pats[r.k] }) : null;
+        const lk = E.look && E.bestAtFace && r.k !== 'shoes' && r.k !== 'collar' ? E.look({ hex: o[r.k], pat: pats[r.k] }) : null;
         const bestF = lk ? E.bestAtFace(lk, a) : { hex: r.hex, s: E.scoreColour(r.hex, a) };
         const t = bestF.s.tier;
         s.push('<text x="' + (X1 + 8) + '" y="' + (y + 4) + '" class="c-tt" fill="' + TT_COL[t] + '">T' + t + '</text>');
@@ -131,17 +134,19 @@
     const faceLayers = window.VGARM.FACE.filter(function (k) { return by[k]; });
     // the light-dark step at the face: the shirt against the layer that meets it at the neck, the same
     // pair as the Dresser's rule (VENGINE.stepOver)
-    const over = by.shirt && E && E.stepOver ? E.stepOver(function (k) { return !!by[k]; }, function (k) { return by[k].L; }) : null;
+    // with a contrast collar, the collar is what meets the next layer at the neck (as in the engine)
+    const neck = by.collar || by.shirt;
+    const over = by.shirt && E && E.stepOver ? E.stepOver(function (k) { return !!by[k]; }, function (k) { return k === 'shirt' ? neck.L : by[k].L; }) : null;
     if (over) {
-      const pair = [by.shirt, by[over]], best = Math.abs(by.shirt.L - by[over].L);
+      const pair = [neck, by[over]], best = Math.abs(neck.L - by[over].L);
       // a step a little short of the bound (within stepNear of it) still frames the face: a note in the Dresser
       const nearLo = lo * (E.PARAMS ? E.PARAMS.stepNear : 1), short = best >= nearLo && best < lo;
       const ok = best >= nearLo && !(a && a.contrastLevel === 'low' && best > hi);
       bracket(pair[0], pair[1], ok, (short ? 'Face just framed: ' : ok ? 'Face framed: ' : best < lo ? 'Face not framed: ' : 'Frame heavy: ') + pair[0].label.toLowerCase() + ' against ' + pair[1].label.toLowerCase() + ', step ' + Math.round(best) +
         (short ? ' (a little short of the ' + Math.round(lo) + ' your face carries)' : best < lo ? ' (your face needs at least ' + Math.round(lo) + ')' : ok ? ' (needs ' + Math.round(lo) + ' or more)' : ' (more than your colouring carries, ' + Math.round(hi) + ')'));
     }
-    if (by.shirt && a && Math.abs(by.shirt.L - skinL) < lo) {
-      notes.push({ ok: null, text: by.shirt.label + ' at your skin\u2019s lightness (' + Math.round(Math.abs(by.shirt.L - skinL)) + ' apart): beside the face it separates by colour, not by light against dark.' });
+    if (by.shirt && a && Math.abs(neck.L - skinL) < lo) {
+      notes.push({ ok: null, text: neck.label + ' at your skin\u2019s lightness (' + Math.round(Math.abs(neck.L - skinL)) + ' apart): beside the face it separates by colour, not by light against dark.' });
     }
     if (faceLayers.length === 1 && !P.study) {      // layering is the Dresser's business, not the study's
       notes.push({ ok: null, text: 'One layer at the face: only its neckline frames it. A jacket or a knit adds a frame.' });

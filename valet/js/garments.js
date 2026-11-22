@@ -34,7 +34,7 @@
     { key: 'shirt', label: 'Next to the neck', face: true, optional: false, kinds: [
       // tieable: a dress shirt's collar band and full button front, cut to take a tie, a waistcoat and double cuffs;
       // a polo's soft collar frames the face but is not cut for them
-      { id: 'shirt', name: 'Shirt', frame: 'collar', collar: true, tieable: true, f: 5, cloths: ['oxford', 'poplin', 'shirttwill', 'linen', 'brushed', 'chambray', 'cflannel', 'satinshirt'], pats: ['solid', 'pinstripe', 'bengal', 'candy', 'gingham', 'tattersall'], maxScale: 'small' },
+      { id: 'shirt', name: 'Shirt', frame: 'collar', collar: true, collars: true, tieable: true, f: 5, cloths: ['oxford', 'poplin', 'shirttwill', 'linen', 'brushed', 'chambray', 'cflannel', 'satinshirt'], pats: ['solid', 'pinstripe', 'bengal', 'candy', 'gingham', 'tattersall'], maxScale: 'small' },
       { id: 'rollneck', name: 'Roll neck', frame: 'neck', f: 4, cloths: ['merino', 'cashmere', 'lambswool', 'cottonknit'], pats: SOLID_ONLY, maxScale: 'small' },
       { id: 'knitpolo', name: 'Knitted polo', frame: 'collar', f: 3, cloths: ['merino', 'cottonknit', 'cashmere'], pats: SOLID_ONLY, maxScale: 'small' },
       { id: 'polo', name: 'Polo shirt', frame: 'collar', f: 2, cloths: ['pique', 'jersey'], pats: SOLID_ONLY, maxScale: 'small' },
@@ -233,8 +233,38 @@
      register (scarf, socks, pocket square). */
   function formality(slot, piece) {
     const k = kind(slot, piece); if (!k || k.f == null) return null;
-    const c = cloth(slot, piece);
-    return c ? Math.min(k.f, c.f) : k.f;
+    const c = cloth(slot, piece), f = c ? Math.min(k.f, c.f) : k.f, cs = k.collars ? collarOf(piece) : null;
+    // the collar sets a ceiling (B): a button-down is a casual dress shirt, kept for a blazer, a sports
+    // jacket or a knit (Gentleman's Gazette, ref. 79); a camp collar is for casual shirts only (ref. 78)
+    return cs && cs.f != null ? Math.min(f, cs.f) : f;
+  }
+
+  /* ---------- The shirt's collar (B) ----------
+     Only the woven shirt (collars: true) has these; a polo's or a knit's collar is part of its type.
+     spread: how far apart the points sit, which is what balances a face (Flusser, Dressing the Man,
+     pp. 124, 126: long points close together narrow a broad face; a wider spread balances a long one).
+     f: a ceiling on the shirt's formality. open: what the collar does worn without a tie under a
+     jacket (Flusser p. 273). tieOnly: made to be worn with a tie (Gentleman's Gazette). The default,
+     semi-spread, is the middle of every scale and no rule judges it, so a shirt saved before 1.17
+     (which has no collar) is read exactly as before. */
+  const COLLARS = [
+    { id: 'semispread', name: 'Semi-spread', spread: 'medium', note: 'Between point and spread: the middle choice, which suits most faces and takes most knots.' },
+    { id: 'point', name: 'Point', spread: 'narrow', note: 'Long points set close together: the neutral collar, worn with any jacket (Flusser). It narrows a broad face and lengthens a long one.' },
+    { id: 'spread', name: 'Spread', spread: 'wide', note: 'Points set wide apart: it widens the face, which balances a long one and broadens a broad one.' },
+    { id: 'cutaway', name: 'Cutaway', spread: 'wide', note: 'Points cut back towards the shoulders: the widest spread. With a tie it wants a large knot to fill it.' },
+    { id: 'buttondown', name: 'Button-down', spread: 'medium', f: 3, open: 'stands', note: 'Points buttoned to the shirt: a casual collar, for a blazer, a sports jacket or a knit. Worn open, it stands up round the neck.' },
+    { id: 'tab', name: 'Tab', spread: 'narrow', tieOnly: true, note: 'A tab joins the points under the knot: made to be worn with a tie, not open.' },
+    { id: 'camp', name: 'Camp', spread: 'wide', f: 2, open: 'falls', noBand: true, note: 'No collar band: the collar lies flat and open. A casual summer shirt, not made for a tie.' }
+  ];
+  const collarBy = {}; COLLARS.forEach(function (c) { collarBy[c.id] = c; });
+  const COLLAR_BANDS = [{ id: 'standard', name: 'Standard' }, { id: 'tall', name: 'Tall' }];
+  function collarOf(piece) { return collarBy[piece && piece.collar] || COLLARS[0]; }
+  /* The colour of a contrast (Winchester) collar, when the shirt has one: a different colour from the
+     body, almost always white (Gentleman's Gazette, ref. 80). null for a self collar. */
+  function contrastCollar(slot, piece) {
+    const k = kind(slot, piece), h = piece && piece.collarHex;
+    if (!k || !k.collars || typeof h !== 'string' || !/^#[0-9a-f]{6}$/i.test(h)) return null;
+    return h.toLowerCase() === String(piece.hex).toLowerCase() ? null : h;
   }
   /* Brimmed hats: brim widths (cm at the side) and band colours offered first. */
   const BRIMS = [{ id: 'narrow', name: 'Narrow', cm: 'under 5 cm' }, { id: 'medium', name: 'Medium', cm: '5 to 6.5 cm' }, { id: 'wide', name: 'Wide', cm: 'over 6.5 cm' }];
@@ -330,5 +360,6 @@
   /* How far a scale class is above what is usual on the garment: 0 fine, 1 bold, 2 or more wrong. */
   function scaleOver(k, clsId) { return Math.max(0, SCALE_ORDER.indexOf(clsId) - SCALE_ORDER.indexOf(k.maxScale)); }
 
-  window.VGARM = { FRAMES: FRAMES, FRAME_COLOURS: FRAME_COLOURS, STRAPS: STRAPS, BUTTONS: BUTTONS, CLOTH_PATS: CLOTH_PATS, patOK: patOK, BRIMS: BRIMS, BANDS: BANDS, CLOTHS: CLOTHS, cloth: cloth, formality: formality, OCCASIONS: OCCASIONS, POSITIONS: POSITIONS, SLOTS: SLOTS, FACE: FACE, NEAR: NEAR, METALS: METALS, STONES: STONES, ACCESSORIES: ACCESSORIES, metalBy: metalBy, stoneBy: stoneBy, accBy: accBy, byKey: byKey, kind: kind, neckwearAllowed: neckwearAllowed, scaleOver: scaleOver };
+  window.VGARM = { FRAMES: FRAMES, FRAME_COLOURS: FRAME_COLOURS, STRAPS: STRAPS, BUTTONS: BUTTONS, CLOTH_PATS: CLOTH_PATS, patOK: patOK, BRIMS: BRIMS, BANDS: BANDS, CLOTHS: CLOTHS, cloth: cloth, formality: formality, OCCASIONS: OCCASIONS, POSITIONS: POSITIONS, SLOTS: SLOTS, FACE: FACE, NEAR: NEAR, METALS: METALS, STONES: STONES, ACCESSORIES: ACCESSORIES, metalBy: metalBy, stoneBy: stoneBy, accBy: accBy, byKey: byKey, kind: kind, neckwearAllowed: neckwearAllowed, scaleOver: scaleOver,
+    COLLARS: COLLARS, COLLAR_BANDS: COLLAR_BANDS, collarBy: collarBy, collarOf: collarOf, contrastCollar: contrastCollar };
 })();

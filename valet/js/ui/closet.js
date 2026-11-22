@@ -188,6 +188,10 @@
       (two ? colourField('hex2', 'The pattern\'s second colour', e.piece.pat.hex2 || '', false) : '') +
       (spect ? colourField('spec', 'Toe cap and heel', e.piece.hex2 || '#f2efe6', false) : '') +
       (kind.brim ? colourField('band', 'Hat band', e.piece.band || '', true) : '') +
+      // a woven shirt's collar (1.17): style, band, and a contrast colour ("None": the shirt's own)
+      (kind.collars ? '<div class="cl-eform"><label>Collar<select data-f="collar">' + G.COLLARS.map(function (c) { return '<option value="' + c.id + '"' + (c.id === G.collarOf(e.piece).id ? ' selected' : '') + '>' + esc(c.name) + '</option>'; }).join('') + '</select></label>' +
+        '<label>Collar band<select data-f="collarBand">' + G.COLLAR_BANDS.map(function (b) { return '<option value="' + b.id + '"' + (b.id === (e.piece.collarBand || 'standard') ? ' selected' : '') + '>' + esc(b.name) + '</option>'; }).join('') + '</select></label></div>' +
+        colourField('collar', 'Collar colour, if not the shirt\'s own (a contrast collar)', e.piece.collarHex || '', true) : '') +
       '<div class="cl-eform"><label class="cl-own"><input type="checkbox" data-f="own"' + (e.own ? ' checked' : '') + '> I own it (untick for a piece you are thinking of buying)</label>' +
       '<label class="cl-enote">Note<input type="text" data-f="note" maxlength="200" value="' + esc(e.note) + '" placeholder="Anything to remember about it"></label></div>' +
       '<div class="cl-eacts"><button type="submit" class="btn small">' + (e.id ? 'Save changes' : 'Add to my garments') + '</button><button type="button" class="btn ghost small" data-ecancel>Cancel</button></div></form>';
@@ -202,6 +206,8 @@
         else if (k === 'kind') { e.piece.kind = el.value; paintEdit(); }
         else if (k === 'cloth') { e.piece.cloth = el.value; paintEdit(); }
         else if (k === 'pat') { e.piece.pat = el.value === 'solid' ? { type: 'solid' } : { type: el.value, hex2: e.piece.pat.hex2 || '#f2efe6' }; paintEdit(); }
+        else if (k === 'collar') e.piece.collar = el.value;
+        else if (k === 'collarBand') e.piece.collarBand = el.value;
         else if (k === 'cover') { e.piece.pat = Object.assign({}, e.piece.pat); if (el.value === '') delete e.piece.pat.cover; else e.piece.pat.cover = +el.value; }
       });
     });
@@ -210,6 +216,7 @@
       else if (id === 'hex2') e.piece.pat = Object.assign({}, e.piece.pat, { hex2: hex });
       else if (id === 'spec') e.piece.hex2 = hex;
       else if (id === 'band') { if (hex) e.piece.band = hex; else delete e.piece.band; }
+      else if (id === 'collar') { if (hex) e.piece.collarHex = hex; else delete e.piece.collarHex; }
       paintEdit();
     };
     $$('[data-col]', f).forEach(function (el) { el.addEventListener('change', function () { setCol(el.dataset.col, el.value); }); });

@@ -59,6 +59,10 @@
       if (out[k].brim != null && !window.VGARM.BRIMS.some(function (b) { return b.id === out[k].brim; })) delete out[k].brim;
       if (out[k].buttons != null && !window.VGARM.BUTTONS.some(function (b) { return b[0] === out[k].buttons; })) delete out[k].buttons;
       if (out[k].metal != null && !window.VGARM.metalBy[out[k].metal]) out[k].metal = 'silver';           // a lapel pin's metal
+      // a shirt's collar (1.17): its style, its band and a contrast colour; anything unknown is dropped, which reads as a semi-spread self collar
+      if (out[k].collar != null && !window.VGARM.collarBy[out[k].collar]) delete out[k].collar;
+      if (out[k].collarBand != null && !window.VGARM.COLLAR_BANDS.some(function (b) { return b.id === out[k].collarBand; })) delete out[k].collarBand;
+      if (out[k].collarHex != null && !isHex(out[k].collarHex)) delete out[k].collarHex;
       if (!out[k].pat || typeof out[k].pat !== 'object') out[k].pat = { type: 'solid' };
       else if (out[k].pat.hex2 != null && !isHex(out[k].pat.hex2)) { out[k].pat = Object.assign({}, out[k].pat); delete out[k].pat.hex2; }
       // a pattern the garment does not take, or its cloth cannot carry, is worn plain
@@ -149,11 +153,19 @@
   /* What makes two outfits the same for a mark: the pieces worn (type, cloth, colour, pattern…) and
      the occasion. Accessories, names and locks do not count. */
   const SIG_FIELDS = ['hex', 'kind', 'cloth', 'pat', 'rise', 'length', 'hex2', 'buttons', 'metal', 'band', 'brim'];
+  // added in 1.17, and only when set, so the marks on outfits saved before keep their signature
+  const SIG_EXTRA = ['collar', 'collarBand', 'collarHex'];
   function outfitSig(o) {
     const out = [o.occasion || 'smart'];
     G.SLOTS.forEach(function (k) {
       const x = o[k]; if (!x || x.on === false) return;
-      out.push(k, SIG_FIELDS.map(function (f) { const c = f === 'cloth' ? G.cloth(k, x) : null, v = f === 'pat' ? VP.norm(x.pat) : f === 'cloth' ? (c ? c.id : null) : x[f]; return v === undefined ? null : v; }));
+      const sig = SIG_FIELDS.map(function (f) { const c = f === 'cloth' ? G.cloth(k, x) : null, v = f === 'pat' ? VP.norm(x.pat) : f === 'cloth' ? (c ? c.id : null) : x[f]; return v === undefined ? null : v; });
+      // a value at its default is the same collar: semi-spread, a standard band, a collar in the body's own colour
+      SIG_EXTRA.forEach(function (f) {
+        const v = x[f], dflt = v == null || (f === 'collar' && v === 'semispread') || (f === 'collarBand' && v === 'standard') || (f === 'collarHex' && String(v).toLowerCase() === String(x.hex).toLowerCase());
+        if (!dflt) sig.push(f + ':' + v);
+      });
+      out.push(k, sig);
     });
     return JSON.stringify(out);
   }
@@ -180,7 +192,7 @@
     const out = {};
     G.SLOTS.forEach(function (k) {
       const x = o[k];
-      out[k] = !x || x.on === false ? null : { hex: x.hex, name: nameOf(x.hex), kind: x.kind, cloth: x.cloth, band: x.band, brim: x.brim, pat: x.pat || { type: 'solid' }, rise: x.rise, length: x.length, hex2: x.hex2, buttons: x.buttons, metal: x.metal };
+      out[k] = !x || x.on === false ? null : { hex: x.hex, name: nameOf(x.hex), kind: x.kind, cloth: x.cloth, band: x.band, brim: x.brim, pat: x.pat || { type: 'solid' }, rise: x.rise, length: x.length, hex2: x.hex2, buttons: x.buttons, metal: x.metal, collar: x.collar, collarBand: x.collarBand, collarHex: x.collarHex, collarName: isHex(x.collarHex) ? nameOf(x.collarHex) : undefined };
     });
     out.propOn = true;
     const m = profile.measurements;

@@ -466,18 +466,35 @@
       : cur.twoTone ? '<div class="kind-row" role="radiogroup" aria-label="Toe cap and heel"><span class="kind-lab">Toe cap and heel</span>' + SPEC2.map(function (c) {
         return '<button type="button" role="radio" class="kind spec2" data-hex2="' + c[1] + '" aria-checked="' + ((x.hex2 || '').toLowerCase() === c[1]) + '"><i class="d" style="background:' + c[1] + '"></i>' + c[0] + '</button>';
       }).join('') + '</div><p class="ed-note">The second colour of the spectator; the main colour, chosen below, is the rest of the upper.</p>' : '';
+    // A woven shirt's collar (1.17): its style, its band, and a collar in another colour (contrast, Winchester)
+    const cs = cur.collars ? G.collarOf(x) : null, cband = x.collarBand || 'standard', chex = G.contrastCollar(k, x);
+    const collarRow = cs ? '<div class="kind-row" role="radiogroup" aria-label="Collar"><span class="kind-lab">Collar</span>' + G.COLLARS.map(function (c) {
+        return '<button type="button" role="radio" class="kind collar-opt" data-collar="' + c.id + '" aria-checked="' + (c.id === x.collar) + '" title="' + esc(c.note) + '">' + c.name + '</button>';
+      }).join('') + '</div><p class="ed-note">' + esc(x.collar && G.collarBy[x.collar] ? cs.note : 'Not chosen yet: read as a semi-spread. Choose the collar to have it judged against your face, the tie and the occasion.') + '</p>' +
+      '<div class="kind-row" role="radiogroup" aria-label="Collar band"><span class="kind-lab">Band</span>' + G.COLLAR_BANDS.map(function (b) {
+        return '<button type="button" role="radio" class="kind collar-band" data-cband="' + b.id + '" aria-checked="' + (b.id === cband) + '">' + b.name + '</button>';
+      }).join('') + '</div>' +
+      '<div class="kind-row" role="radiogroup" aria-label="Collar colour"><span class="kind-lab">Collar colour</span>' +
+        '<button type="button" role="radio" class="kind collar-col" data-ccol="" aria-checked="' + !chex + '">The shirt\'s own</button>' +
+        '<button type="button" role="radio" class="kind collar-col" data-ccol="#f7f6f2" aria-checked="' + (!!chex && chex.toLowerCase() === '#f7f6f2') + '"><i class="d" style="background:#f7f6f2"></i>White</button>' +
+        '<input type="color" class="collar-any" value="' + (chex || '#f7f6f2') + '" aria-label="Any collar colour" title="Any colour">' + (chex && chex.toLowerCase() !== '#f7f6f2' ? ' <span class="small">' + esc(api.nameOf(chex)) + '</span>' : '') +
+      '</div><p class="ed-note">' + (chex ? 'A contrast (Winchester) collar: it meets the jacket at the neck, so the light-dark step at the face is read from it; the body still shows in the V. Business dress, less suited to casual wear.' : 'A band that stands taller frames the face more, which counts most without hair. A white collar on a coloured or striped body is a contrast (Winchester) collar.') + '</p>' : '';
     // A Cloth tab only when there is something to choose there: a fresh flower has no cloth and a
     // lapel pin is its metal, so neither gets one. A pin has no Colour list either: its metal row sets it.
     const hasCloth = p.cloth && !cur.metal && (!!cur.cloths || cur.pats.length > 1);
-    ed.innerHTML = kindRow + cutRow + extraRow + keepRow + (cur.metal ? '' : window.VCLOSETUI.editorRow(k, x)) + (hasCloth ? '<div class="seg ed-tabs" role="tablist"><button type="button" role="tab" data-t="colour" aria-selected="' + (tab === 'colour') + '">Colour</button>' +
+    ed.innerHTML = kindRow + cutRow + extraRow + collarRow + keepRow + (cur.metal ? '' : window.VCLOSETUI.editorRow(k, x)) + (hasCloth ? '<div class="seg ed-tabs" role="tablist"><button type="button" role="tab" data-t="colour" aria-selected="' + (tab === 'colour') + '">Colour</button>' +
       '<button type="button" role="tab" data-t="cloth" aria-selected="' + (tab === 'cloth') + '">' + (k === 'shoes' ? 'Upper' : kindOf(k).pats.length > 1 ? 'Cloth and pattern' : 'Cloth') + '</button></div>' : '') +
       '<div class="ed-body"></div>';
     $$('.ed-tabs button', ed).forEach(function (b) { b.addEventListener('click', function () { tab = b.dataset.t; renderEditor(ed, k, a); }); });
-    $$('.kind:not(.cut):not(.btn-opt):not(.spec2):not(.pin-metal)', ed).forEach(function (b) { b.addEventListener('click', function () { setKind(k, b.dataset.kind); }); });
+    $$('.kind:not(.cut):not(.btn-opt):not(.spec2):not(.pin-metal):not(.collar-opt):not(.collar-band):not(.collar-col)', ed).forEach(function (b) { b.addEventListener('click', function () { setKind(k, b.dataset.kind); }); });
     $$('.btn-opt', ed).forEach(function (b) { b.addEventListener('click', function () { snapshot(); piece(k).buttons = b.dataset.btn; commit('Buttons: ' + b.textContent.toLowerCase() + '.'); }); });
     $$('.pin-metal', ed).forEach(function (b) { b.addEventListener('click', function () { snapshot(); piece(k).metal = b.dataset.metal; piece(k).hex = G.metalBy[b.dataset.metal].hex; commit('Lapel pin: ' + b.textContent.toLowerCase() + '.'); }); });
     $$('.spec2', ed).forEach(function (b) { b.addEventListener('click', function () { snapshot(); piece(k).hex2 = b.dataset.hex2; commit('Toe cap and heel: ' + b.textContent.toLowerCase() + '.'); }); });
     $$('.cut', ed).forEach(function (b) { b.addEventListener('click', function () { snapshot(); piece(k)[cut.key] = b.dataset.cut; commit(cut.label + ': ' + b.textContent.toLowerCase() + '.'); }); });
+    $$('.collar-opt', ed).forEach(function (b) { b.addEventListener('click', function () { snapshot(); piece(k).collar = b.dataset.collar; commit('Collar: ' + b.textContent.toLowerCase() + '.'); }); });
+    $$('.collar-band', ed).forEach(function (b) { b.addEventListener('click', function () { snapshot(); piece(k).collarBand = b.dataset.cband; commit('Collar band: ' + b.textContent.toLowerCase() + '.'); }); });
+    $$('.collar-col', ed).forEach(function (b) { b.addEventListener('click', function () { snapshot(); if (b.dataset.ccol) piece(k).collarHex = b.dataset.ccol; else delete piece(k).collarHex; commit(b.dataset.ccol ? 'Collar: white, a contrast collar.' : 'Collar in the shirt\'s own colour.'); }); });
+    const cany = $('.collar-any', ed); if (cany) cany.addEventListener('change', function () { snapshot(); piece(k).collarHex = cany.value; commit('Collar colour: ' + api.nameOf(cany.value) + '.'); });
     $('.ov-keep', ed).addEventListener('click', function () { keepAndFix(k); });
     window.VCLOSETUI.wireEditor(ed, k);
     const body = $('.ed-body', ed);
@@ -542,6 +559,7 @@
     else if (was.metal) x.hex = '#f7f6f2';                           // from a pin back to a flower: a white carnation
     if (t.twoTone && !x.hex2) x.hex2 = '#f2efe6';                     // spectators start brown and white
     if (t.buttons && !x.buttons) x.buttons = 'silver';                // silver, so a new blazer agrees with the default steel watch
+    if (!t.collars) { delete x.collar; delete x.collarBand; delete x.collarHex; }   // only a woven shirt records its collar
     return notes;
   }
   function keepAndFix(k) {
@@ -1143,7 +1161,7 @@
   }
 
   /* A garment from My garments put on in its position of the outfit being edited. */
-  const PIECE_FIELDS = ['hex', 'kind', 'cloth', 'pat', 'rise', 'length', 'hex2', 'buttons', 'metal', 'band', 'brim'];
+  const PIECE_FIELDS = ['hex', 'kind', 'cloth', 'pat', 'rise', 'length', 'hex2', 'buttons', 'metal', 'band', 'brim', 'collar', 'collarBand', 'collarHex'];
   function wearGarment(g) {
     snapshot();
     const k = g.slot, x = piece(k);

@@ -324,5 +324,70 @@ T('an impossible combination is its own verdict', base({jacket:P('#2d3b2a','waxe
   tst('a belt without a waistcoat is fine', !fl(base({ acc: { buckle: { on: true, metal: 'silver' }, braces: { on: false } } }), 'beltvest'));
   fails += fails_;
 }
+// ---- 1.17: the shirt's collar (style, band, contrast colour) ----
+{
+  const sh = (extra, hex) => P(hex || '#c3d7ee', 'shirt', 'poplin', extra);
+  const tie = P('#5e1f2c', 'tie', 'grenadine'), bow = P('#5e1f2c', 'bowtie', 'silktwill'), cravat = P('#5e1f2c', 'cravat', 'silktwill');
+  const face = (cls, extra) => base({ shirt: sh(extra), propOn: true, body: { faceClass: cls } });
+  const suit = (extra, over) => base(Object.assign({ occasion: 'smart', shirt: sh(extra), jacket: P('#3d4045', 'jacket', 'worsted'), trousers: P('#3d4045', 'trousers', 'worsted') }, over || {}));
+  // the default is read exactly as before: no collar rule speaks for a semi-spread self collar
+  T('a shirt with no collar recorded: no collar rule fires', base({ tie: tie }), [[/^collar(tie|open|formal|face):/, false]]);
+  T('a semi-spread collar open under a jacket: nothing said', base(), [[/^collaropen:/, false]]);
+  // against the face (Flusser pp. 124, 126)
+  T('a broad face in a cutaway collar: noted', face('broad', { collar: 'cutaway' }), [[/^collarface: Your face is broad/, true]]);
+  T('a broad face in a point collar: fine', face('broad', { collar: 'point' }), [[/^collarface:/, false]]);
+  T('a long face in a point collar: noted', face('long', { collar: 'point' }), [[/^collarface: Your face is long/, true]]);
+  T('a long face in a spread collar: fine', face('long', { collar: 'spread' }), [[/^collarface:/, false]]);
+  T('a middle face: the collar is not judged against it', face('middle', { collar: 'cutaway' }), [[/^collarface:/, false]]);
+  { const ck = E.checkOutfit(face('broad', {}), aW); count++; if (ck.some(c => c.id === 'collarface') || !ck.some(c => c.id === 'pcollar' && /broad/.test(c.text))) { fails++; console.log('✗ a shirt with no collar chosen gets the advice, not a judgement'); } }
+  // open under a jacket (Flusser p. 273)
+  T('a camp collar open under a jacket: noted', base({ shirt: sh({ collar: 'camp' }), occasion: 'casual' }), [[/^collaropen: A camp collar/, true]]);
+  T('a camp collar with a cravat under a jacket: the cravat fills the neck', base({ shirt: sh({ collar: 'camp' }), tie: cravat, occasion: 'casual' }), [[/^collaropen:/, false], [/^collartie:/, false]]);
+  T('a camp collar without a jacket: nothing about the jacket', base({ shirt: sh({ collar: 'camp' }), jacket: null, occasion: 'casual' }), [[/^collaropen:/, false]]);
+  // a tie and the collar
+  T('a tie with a camp collar fails', base({ shirt: sh({ collar: 'camp' }), tie: tie }), [[/^collartie: A tie with a camp collar/, true]]);
+  T('a bow tie with a camp collar fails', base({ shirt: sh({ collar: 'camp' }), tie: bow }), [[/^collartie:/, true]]);
+  T('a tab collar worn open fails', base({ shirt: sh({ collar: 'tab' }) }), [[/^collartie: A tab collar worn open/, true]]);
+  T('a tab collar with a tie is fine', base({ shirt: sh({ collar: 'tab' }), tie: tie }), [[/^collartie:/, false]]);
+  // formality (Gentleman's Gazette)
+  T('a button-down with a suit: noted', suit({ collar: 'buttondown' }), [[/^collarformal: A button-down with a suit/, true]]);
+  T('a button-down with a blazer and odd trousers: fine', base({ shirt: sh({ collar: 'buttondown' }), jacket: P('#1d2a44', 'blazer', 'hopsack') }), [[/^collarformal:/, false]]);
+  T('a button-down at a business occasion: the occasion rule names the collar', suit({ collar: 'buttondown' }, { occasion: 'business', tie: tie }), [[/^occasion: .*button-down shirt/, true], [/^collarformal:/, false]]);
+  T('a camp collar with a suit: too casual for it', suit({ collar: 'camp' }), [[/^formal: .*camp shirt/, true]]);
+  T('a contrast collar on a casual day: noted', base({ shirt: sh({ collarHex: '#f7f6f2' }), occasion: 'casual' }), [[/^collarformal: A contrast collar/, true]]);
+  T('a contrast collar with a tie at business: fine', suit({ collarHex: '#f7f6f2' }, { occasion: 'business', tie: tie }), [[/^collarformal:/, false]]);
+  T('a collar colour equal to the body is no contrast collar', base({ shirt: sh({ collarHex: '#c3d7ee' }), occasion: 'casual' }), [[/^collarformal:/, false]]);
+}
+{
+  // a contrast collar is what meets the jacket at the neck: a white collar on a mid-grey body under a
+  // mid-grey jacket rescues a flat step, and the step's text names the collar
+  const flat = base({ shirt: P('#8e9196', 'shirt', 'poplin'), jacket: P('#8a8d92', 'jacket', 'flannel') });
+  const white = base({ shirt: P('#8e9196', 'shirt', 'poplin', { collarHex: '#f7f6f2' }), jacket: P('#8a8d92', 'jacket', 'flannel') });
+  const st = o => E.checkOutfit(o, aW).find(c => c.id === 'step');
+  count++; if (!(st(flat).score < 0.5 && st(white).score >= 0.85 && /\(#f7f6f2 collar\)/.test(st(white).text))) { fails++; console.log('✗ a white collar sets the step at the neck', st(flat), st(white)); }
+  // the skin is checked against the collar as well as the body: a collar in a clashing colour is named
+  const bad = base({ shirt: P('#f7f6f2', 'shirt', 'poplin', { collarHex: '#c8a24a' }) });
+  const f = E.checkOutfit(bad, aW).find(c => c.id === 'face');
+  count++; if (!(f && f.score < 0.85 && /collar/.test(f.text))) { fails++; console.log('✗ a clashing collar colour is named at the face', f); }
+  count++; if (!E.skinClashes(bad, aW).some(x => x.piece === 'shirt collar')) { fails++; console.log('✗ skinClashes lists the collar'); }
+  // the formality ceiling: a button-down poplin shirt is smart casual, a camp shirt relaxed
+  count++; if (!(G.formality('shirt', { kind: 'shirt', cloth: 'poplin', collar: 'buttondown' }) === 3 && G.formality('shirt', { kind: 'shirt', cloth: 'poplin', collar: 'camp' }) === 2 && G.formality('shirt', { kind: 'shirt', cloth: 'poplin' }) === 5)) { fails++; console.log('✗ the collar formality ceiling'); }
+  // what Valet cannot see is said as advice (collarhint), never counted, and only for a chosen collar
+  const hints = o => E.checkOutfit(o, aW).filter(c => c.id === 'collarhint');
+  const hb = (extra, over) => base(Object.assign({ shirt: P('#c3d7ee', 'shirt', 'poplin', extra), propOn: true }, over || {}));
+  const tie2 = P('#5e1f2c', 'tie', 'grenadine');
+  count++; if (!hints(hb({ collar: 'cutaway' })).some(c => /^Not judged: no source says how a cutaway/.test(c.text))) { fails++; console.log('✗ a cutaway worn open: the mirror test, said as not judged'); }
+  count++; if (hints(hb({ collar: 'buttondown' })).some(c => /behaves worn open/.test(c.text))) { fails++; console.log('✗ a button-down worn open is judged, so no hint'); }
+  count++; if (!hints(hb({ collar: 'cutaway' }, { tie: tie2 })).some(c => /knot.*Windsor/.test(c.text))) { fails++; console.log('✗ a cutaway with a tie: the knot test'); }
+  count++; if (!hints(hb({ collar: 'point' }, { tie: tie2 })).some(c => /small knot/.test(c.text))) { fails++; console.log('✗ a point collar with a tie: a small knot'); }
+  count++; if (!hints(hb({ collar: 'point' })).some(c => /face width and length/.test(c.text))) { fails++; console.log('✗ no face measurements: said so'); }
+  count++; if (!hints(hb({ collar: 'point' }, { body: { faceClass: 'middle' } })).some(c => /neither clearly broad/.test(c.text))) { fails++; console.log('✗ a middle face: no collar has to counterbalance it'); }
+  count++; if (!hints(hb({ collarHex: '#f7f6f2', collar: 'spread' }, { jacket: null })).some(c => /no source covers a contrast collar worn without a tie.*jacket kept on/.test(c.text))) { fails++; console.log('✗ a contrast collar open, no jacket'); }
+  count++; if (!hints(hb({ collarHex: '#f7f6f2', collar: 'spread' }, { tie: tie2, occasion: 'business' })).some(c => /Permanent Style: a tie dark or colourful/.test(c.text))) { fails++; console.log('✗ a contrast collar with a tie: the tie advice'); }
+  count++; if (hints(hb({}, { tie: tie2 })).length) { fails++; console.log('✗ no collar chosen: no hints'); }
+  { const a = E.checkOutfit(hb({ collar: 'cutaway' }, { tie: tie2 }), aW), b = a.filter(c => c.id !== 'collarhint'); count++; if (E.verdict(a).title !== E.verdict(b).title) { fails++; console.log('✗ hints never change the verdict'); } }
+  // a polo records no collar: the fields are ignored
+  count++; if (G.contrastCollar('shirt', { kind: 'polo', hex: '#1d2a44', collarHex: '#f7f6f2' }) !== null) { fails++; console.log('✗ a polo has no contrast collar'); }
+}
 console.log((fails ? fails + ' scenario(s) failed' : 'all scenarios pass') + ' (' + count + ' run)');
 if (fails) process.exit(1);

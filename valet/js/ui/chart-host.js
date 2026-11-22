@@ -28,6 +28,9 @@
       skin: c.skin || PLACEHOLDER.skin, hair: c.hair || PLACEHOLDER.hair, eyes: c.eyes || PLACEHOLDER.eyes,
       hairStyle: V.state.hairStyle,
       outfit: hex, pats: pats, shoesTwo: shoesTwo,
+      // a contrast collar (1.17): its own row, the colour that meets the jacket at the neck
+      collar: hex.shirt ? window.VGARM.contrastCollar('shirt', V.previewing && V.previewing.slot === 'shirt' ? Object.assign({}, o.shirt, V.previewing.look) : o.shirt) : null,
+      collarName: o.shirt && o.shirt.collarHex ? nameOf(o.shirt.collarHex) : '',
       names: (function () { const n = {}; window.VGARM.SLOTS.forEach(function (k) { n[k] = nameOf(hex[k] || o[k].hex); }); return n; })(),
       kinds: (function () { const n = {}; window.VGARM.SLOTS.forEach(function (k) { n[k] = window.VGARM.kind(k, o[k]).name; }); return n; })(),
       analysis: a, previewSlot: V.previewing ? V.previewing.slot : null

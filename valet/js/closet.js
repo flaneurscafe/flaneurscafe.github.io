@@ -24,7 +24,7 @@
   const CORE = ['shirt', 'trousers', 'shoes', 'mid', 'jacket'];
   const NEEDED = ['shirt', 'trousers', 'shoes'];
   const EXTRA = ['tie', 'square', 'socks'];          // added one at a time where they help
-  const FIELDS = ['hex', 'kind', 'cloth', 'pat', 'rise', 'length', 'hex2', 'buttons', 'metal', 'band', 'brim'];
+  const FIELDS = ['hex', 'kind', 'cloth', 'pat', 'rise', 'length', 'hex2', 'buttons', 'metal', 'band', 'brim', 'collar', 'collarBand', 'collarHex'];
   const LEVELS = { good: 0, ok: 1, fix: 2, bad: 3 };
   const GOOD = function (level) { return level === 'good' || level === 'ok'; };
   const idOk = function (id) { return typeof id === 'string' && /^[a-z0-9]{1,40}$/i.test(id); };
@@ -64,7 +64,10 @@
   /* Its type, cloth and pattern in words, for the list. */
   function describe(g) {
     const k = G.kind(g.slot, g.piece), c = G.cloth(g.slot, g.piece), p = window.VPAT.norm(g.piece.pat);
-    return [k.name, c ? O.clothWord(c) : '', p.type !== 'solid' ? window.VPAT.byId[p.type].name.toLowerCase() : ''].filter(Boolean).join(', ');
+    // a shirt's collar when it is not the default semi-spread self collar
+    const cs = k.collars ? G.collarOf(g.piece) : null, ch = k.collars ? G.contrastCollar(g.slot, g.piece) : null;
+    const collar = cs && (cs.id !== 'semispread' || ch || g.piece.collarBand === 'tall') ? (ch ? 'contrast ' : '') + (g.piece.collarBand === 'tall' ? 'tall ' : '') + cs.name.toLowerCase() + ' collar' : '';
+    return [k.name, c ? O.clothWord(c) : '', p.type !== 'solid' ? window.VPAT.byId[p.type].name.toLowerCase() : '', collar].filter(Boolean).join(', ');
   }
   /* Merging an imported list: a garment already there (same slot, name and piece) is skipped; a
      different one that carries an id already in use gets a new id. incoming: made safe. */

@@ -472,6 +472,11 @@
   function checkOutfit(o, p) {
     const L = {}, worn = SLOTS.filter(function (k) { return o[k]; });
     worn.forEach(function (k) { L[k] = look(o[k]); });
+    // A contrast (Winchester) collar: the collar is another colour from the body, almost always white.
+    // It is what sits against the neck, so the light-dark step at the face is read from it; the body
+    // still shows in the V of the jacket, so the skin is checked against both (section 10).
+    const collarHex = L.shirt ? G.contrastCollar('shirt', o.shirt) : null;
+    const LC = collarHex ? look({ hex: collarHex, name: o.shirt.collarName || collarHex.toUpperCase(), pat: { type: 'solid' } }) : null;
     const face = FACE.filter(function (k) { return L[k]; });
     // the face layers, the pocket square and a buttonhole flower; a lapel pin is metal, judged with the metals
     const near = G.NEAR.filter(function (k) { return L[k] && !(k === 'boutonniere' && o[k].kind === 'pin'); });
@@ -488,6 +493,10 @@
     // Each piece is judged by the colour it shows best at the face: its one colour, or for a pattern
     // that reads at 3 m, the better of its main colours (seenColours).
     const best = {}; near.forEach(function (k) { best[k] = bestAtFace(L[k], p); });
+    if (LC && best.shirt) {
+      const bc = bestAtFace(LC, p);
+      if (bc.s.tier > best.shirt.s.tier || (bc.s.tier === best.shirt.s.tier && bc.s.score < best.shirt.s.score)) best.shirt = Object.assign({ collar: true }, bc);
+    }
     const weak = !near.length ? [] : near.filter(function (k) { return best[k].s.tier > 2; });
     // A small accent (square, flower) is a note. So is a colour kept from the face by temperature alone:
     // the warm-cool lean is the least certain thing Valet reads from a face, and the sources that use
@@ -502,7 +511,7 @@
     const tempOnlyNote = allSoft && p.skinMeasured === false && weak.some(function (k) { return k !== 'square' && k !== 'boutonniere'; })
       ? ' Your skin colour was entered by hand (or read without white paper), so a clash with it is a note: measure it from a daylight photo with white paper and it counts.'
       : allSoft && weak.some(tempSoft) ? ' A clash of temperature alone is a note, not a failure (section 3).' : '';
-    const showColour = function (k) { const x = L[k]; return x.visible && seenColours(x).length > 1 && best[k].hex !== x.hex ? ' at its best colour, ' + best[k].hex.toUpperCase() : ''; };
+    const showColour = function (k) { const x = L[k]; if (best[k].collar) return ', its ' + LC.name.toLowerCase() + ' collar'; return x.visible && seenColours(x).length > 1 && best[k].hex !== x.hex ? ' at its best colour, ' + best[k].hex.toUpperCase() : ''; };
     if (near.length) add(weak.length
       ? { id: 'face', level: 'A/B', score: allSoft ? 0.6 : 0.3, n: weak.length, slots: weak, text: 'Clashes with your skin: ' + weak.map(function (k) { const r = skinReasons(best[k].hex, p); return nm(k) + ' (tier ' + best[k].s.tier + showColour(k) + (r.length ? ', ' + r[0] : '') + (!allSoft && tempSoft(k) ? '; temperature only, a note on its own' : '') + ')'; }).join(' and ') + '. Swap it, or move that colour below the belt.' + tempOnlyNote }
       : { id: 'face', level: 'A/B', score: 1, slots: face, text: 'Against your skin: everything near the face is tier 1 or 2 for you.' });
@@ -513,16 +522,19 @@
     // which is put on before the jacket; else the jacket; else a coat worn straight over the shirt;
     // else a tie. A hat, or a coat over a jacket, is further out, so it neither rescues a flat shirt
     // and jacket nor is blamed for a strong step.
-    const over = stepOver(function (k) { return !!L[k]; }, function (k) { return lum(L[k].mean); });
+    // with a contrast collar, the collar is what meets the next layer at the neck
+    const neckMean = LC ? LC.mean : L.shirt ? L.shirt.mean : null;
+    const nmNeck = function () { return LC ? nm('shirt') + ' (' + LC.name.toLowerCase() + ' collar)' : nm('shirt'); };
+    const over = stepOver(function (k) { return !!L[k]; }, function (k) { return lum(k === 'shirt' && LC ? LC.mean : L[k].mean); });
     if (L.shirt && over) {
-      const best = Math.abs(lum(L.shirt.mean) - lum(L[over].mean)), pair = ['shirt', over];
+      const best = Math.abs(lum(neckMean) - lum(L[over].mean)), pair = ['shirt', over];
       if (best < lo * PARAMS.stepNear) add({ id: 'step', score: 0.35, slots: [over, 'shirt'], level: 'A/B',
-        text: 'Light-dark step: ' + nm('shirt') + ' and ' + nm(over) + ' are close in lightness (' + round(best) + '; your face carries at least ' + round(lo) + '). The frame goes flat: make one clearly lighter or darker.' });
+        text: 'Light-dark step: ' + nmNeck() + ' and ' + nm(over) + ' are close in lightness (' + round(best) + '; your face carries at least ' + round(lo) + '). The frame goes flat: make one clearly lighter or darker.' });
       else if (best < lo) add({ id: 'step', score: 0.65, slots: [over, 'shirt'], level: 'A/B',
-        text: 'Light-dark step: ' + nm('shirt') + ' against ' + nm(over) + ' (' + round(best) + ') is a little short of what your face carries (' + round(lo) + '). It still frames the face; a slightly lighter shirt or darker layer frames it more clearly.' });
+        text: 'Light-dark step: ' + nmNeck() + ' against ' + nm(over) + ' (' + round(best) + ') is a little short of what your face carries (' + round(lo) + '). It still frames the face; a slightly lighter shirt or darker layer frames it more clearly.' });
       else if (p.contrastLevel === 'low' && best > hi) add({ id: 'step', score: 0.6, slots: pair, level: 'A/B',
-        text: 'Light-dark step: ' + nm('shirt') + ' against ' + nm(over) + ' (' + round(best) + ') is far stronger than your own low contrast.' });
-      else add({ id: 'step', score: 1, slots: pair, level: 'A/B', text: 'Light-dark step: ' + nm('shirt') + ' against ' + nm(over) + ' (' + round(best) + ') gives the face a frame.' });
+        text: 'Light-dark step: ' + nmNeck() + ' against ' + nm(over) + ' (' + round(best) + ') is far stronger than your own low contrast.' });
+      else add({ id: 'step', score: 1, slots: pair, level: 'A/B', text: 'Light-dark step: ' + nmNeck() + ' against ' + nm(over) + ' (' + round(best) + ') gives the face a frame.' });
     } else if (L.shirt && K.shirt.frame) {
       add({ id: 'step', score: 0.75, slots: ['shirt'],
         text: 'One layer at the face: ' + (K.shirt.frame === 'neck' ? 'the roll neck' : 'the collar of the ' + K.shirt.name.toLowerCase()) + ' is the only frame. Fine on a warm day; a jacket, a knit or a tie adds a second (rule 8).' });
@@ -541,6 +553,7 @@
       // with a single top the outfit is that top and the trousers, seen together, so they count
       if (pieces.length < 2 && L.trousers) pieces = pieces.concat(['trousers']);
       const Ls = []; pieces.forEach(function (k) { seenColours(L[k]).forEach(function (h) { Ls.push(lum(h)); }); });
+      if (LC && pieces.indexOf('shirt') >= 0) Ls.push(lum(LC.mean));   // a contrast collar is a colour at the face too
       const stepSaid = out.some(function (c) { return c.id === 'step' && c.score < 0.85 && /^Light-dark step/.test(c.text); });   // not the one-layer note
       if (Ls.length >= 2 && !stepSaid) {
         const range = Math.max.apply(null, Ls) - Math.min.apply(null, Ls);
@@ -906,6 +919,9 @@
     /* --- the whole outfit: sheen, formality, season (cloth and shoe type) --- */
     if (!o.study) wholeChecks(o, L, K, p, add, nm);
 
+    /* --- the shirt's collar with what is worn with it: a tie, a jacket, the occasion --- */
+    if (!o.study) collarChecks(o, L, K, LC, add, nm, out);
+
     /* --- proportion: the outfit's lines on the body, and cuts that belong together --- */
     if (o.propOn && !o.study) proportionChecks(o, L, K, add, nm);
 
@@ -925,6 +941,70 @@
         text: 'With ' + fName + ', ' + second.map(nm).join(' and ') + (second.length > 1 ? ' are' : ' is') + ' a second ' + ft + ' note at the face, beside the frames. Let the frames be the one ' + ft + ' note: a ' + (ft === 'warm' ? 'cool or neutral' : 'warm or neutral') + ' colour there instead.' });
     }
     return checkRules(out);
+  }
+
+  /* The shirt's collar with what is worn with it (B), for a woven shirt, which records its collar (1.17).
+     Each rule is the source's, and nothing is judged for a collar a source does not speak of:
+     - Open under a jacket (Flusser, Dressing the Man, p. 273): a button-down's fastened points make it
+       stand up round the neck and frame the face; a collar with no band (camp) slides down the neck,
+       leaves the throat bare and looks dishevelled. A cravat or neckerchief fills the open neck, so then
+       nothing is said.
+     - A tab collar is made for a tie (Gentleman's Gazette, ref. 78: it "can only really be worn with a
+       necktie"); a camp collar has no band to button under a knot.
+     - Formality (Gentleman's Gazette): a button-down is a casual dress shirt, for a blazer, a sports
+       jacket or a knit, not a suit (ref. 79; the formality ceiling in garments.js does the rest);
+       a contrast (Winchester) collar is business dress, less suited to casual wear (ref. 80). */
+  function collarChecks(o, L, K, LC, add, nm, out) {
+    if (!L.shirt || !K.shirt.collars) return;
+    // a tie or bow tie closes the collar; a cravat (ascot) is worn inside an open one
+    const cs = G.collarOf(o.shirt), knotted = !!(L.tie && K.tie.knotted && K.tie.id !== 'cravat');
+    const ad = function (c) { c.group = 'collar'; c.slots = c.slots || ['shirt']; return add(c); };
+    if (cs.noBand && knotted) ad({ id: 'collartie', score: 0.3, slots: ['shirt', 'tie'],
+      text: 'A ' + K.tie.name.toLowerCase() + ' with a camp collar: the collar has no band to button under a knot, and is cut to lie open (Flusser; Gentleman\'s Gazette keeps it for casual shirts). Take off the ' + K.tie.name.toLowerCase() + ', or wear a shirt with a standing collar.',
+      fixes: [{ label: 'Take off the ' + K.tie.name.toLowerCase(), slot: 'tie', on: false }, { label: 'A semi-spread collar', slot: 'shirt', set: { collar: 'semispread' } }] });
+    if (cs.tieOnly && !knotted) ad({ id: 'collartie', score: 0.45,
+      text: 'A tab collar worn open: it is made to be worn with a tie, its tab joining the points under the knot, and not open at the neck (Gentleman\'s Gazette).',
+      fixes: [{ label: 'A semi-spread collar', slot: 'shirt', set: { collar: 'semispread' } }, { label: 'Add a tie', slot: 'tie', kind: 'tie', set: { on: true } }] });
+    // open under a tailored jacket, with nothing filling the neck
+    if (!L.tie && L.jacket && K.jacket.frame === 'lapel') {
+      if (cs.open === 'stands') ad({ id: 'collaropen', score: 1,
+        text: 'A button-down worn open under a jacket: its fastened points stand up round the neck and frame the face (Flusser).' });
+      else if (cs.open === 'falls') ad({ id: 'collaropen', score: 0.65,
+        text: 'A camp collar worn open under a jacket: with no collar band it slides down the neck and leaves the throat bare, which looks dishevelled (Flusser). A button-down stands up instead; a neckerchief fills the space.',
+        fixes: [{ label: 'A button-down collar', slot: 'shirt', set: { collar: 'buttondown' } }] });
+    }
+    // formality: the ceiling in garments.js already lowers the shirt; say why where the general rules do not
+    const C = { jacket: L.jacket ? G.cloth('jacket', o.jacket) : null, trousers: L.trousers ? G.cloth('trousers', o.trousers) : null };
+    const occSaid = out.some(function (c) { return (c.id === 'occasion' || c.id === 'formal') && c.score < 0.85 && (c.slots || []).indexOf('shirt') >= 0; });
+    if (cs.id === 'buttondown' && suitWorn(o, L, K, C) && !occSaid) ad({ id: 'collarformal', score: 0.65,
+      text: 'A button-down with a suit: Gentleman\'s Gazette calls it a very informal dress shirt, worn with a blazer, a sports jacket or a knit and nothing more formal (it allows a summer suit). A point or semi-spread collar suits the suit.',
+      fixes: [{ label: 'A semi-spread collar', slot: 'shirt', set: { collar: 'semispread' } }, { label: 'A point collar', slot: 'shirt', set: { collar: 'point' } }] });
+    if (LC && o.occasion === 'casual') ad({ id: 'collarformal', score: 0.7,
+      text: 'A contrast collar (' + LC.name.toLowerCase() + ') for a casual outfit: Gentleman\'s Gazette finds a Winchester shirt slightly more formal than one with a self collar, well suited to business wear and less so to casual wear.',
+      fixes: [{ label: 'A collar in the shirt\'s own colour', slot: 'shirt', set: { collarHex: null } }] });
+    else if (LC && knotted) ad({ id: 'collarformal', score: 1,
+      text: 'A contrast collar (' + LC.name.toLowerCase() + ') with a ' + K.tie.name.toLowerCase() + ': the plain collar is a neutral background for the knot (Gentleman\'s Gazette).' });
+
+    /* What Valet cannot see, said as advice (collarhint: information, never counted). Where a source gives
+       a test, the advice is that test to do in a mirror; where no source speaks, the text says so. Only for
+       a collar that has been chosen: a shirt saved without one is read as before. */
+    if (!o.shirt.collar || !G.collarBy[o.shirt.collar]) return;
+    const hint = function (text) { ad({ id: 'collarhint', score: 1, text: text }); };
+    const cn = cs.name.toLowerCase(), tall = o.shirt.collarBand === 'tall';
+    // open under a jacket: only the button-down and the bandless collar have a source (above)
+    if (!L.tie && L.jacket && K.jacket.frame === 'lapel' && !cs.open && !cs.tieOnly)
+      hint('Not judged: no source says how a ' + cn + ' collar behaves worn open. Flusser\'s test for any open collar is that it still frames the face: in a mirror, see whether the points stand up round the neck or fall flat onto the lapels. ' +
+        (tall ? 'A tall band helps them stand.' : 'If they fall, a button-down or a taller band holds better.'));
+    // the knot: Valet does not record it, so it gives Flusser's and Gentleman's Gazette's tests
+    if (L.tie && K.tie.id === 'tie') {
+      if (cs.spread === 'wide' || cs.id === 'semispread') hint('Valet cannot see the knot. Flusser: a semi-spread to cutaway collar should leave no tie space above the knot' +
+        (cs.id === 'cutaway' ? ', and Gentleman\'s Gazette finds a large knot (a half or full Windsor) essential with a cutaway' : '') + '. Check that the knot fills the space between the points.');
+      else if (cs.spread === 'narrow') hint('Valet cannot see the knot. With long points close together, a small knot (a four-in-hand) sits best: a bulky knot pushes the points off the chest (Flusser).' +
+        (cs.tieOnly ? ' Gentleman\'s Gazette warns against a half Windsor with a tab.' : '') + ' Check that the points stay flat on the shirt when you turn your head.');
+    }
+    // a contrast collar: Permanent Style on the tie, and on the jacket; nothing on wearing it open
+    if (LC && knotted) hint('Valet cannot judge the tie for a contrast collar. Permanent Style: a tie dark or colourful enough draws the eye from the white collar; a pale or plain one is not strong enough, and the collar dominates.');
+    else if (LC) hint('Not judged: no source covers a contrast collar worn ' + (L.tie ? 'with a cravat' : 'without a tie') + '; Gentleman\'s Gazette shows it only with a tie.' + (L.jacket ? '' : ' Permanent Style finds it looks a lot better with the jacket kept on.'));
   }
 
   /* Proportion. Two kinds of check.
@@ -991,14 +1071,38 @@
     else if (L.mid && len && L.trousers) ad({ id: 'pperiod', score: 1, slots: [], text: 'Knit and trousers meet at the waist: their cuts belong together.' });
     if (L.tie && rise === 'high' && !L.mid) ad({ id: 'ptie', score: 0.85, slots: [],
       text: 'With high-rise trousers a standard-length tie hangs past the waistband; tie a larger knot, or wear a knit or waistcoat over it, as the 1930s did.' });
-    // the collar against the face: the outfit does not record the collar's cut, so this is the
-    // advice for the shirt you choose, from the face's proportions (Flusser, Dressing the Man, pp. 124–125: counterbalance, not repeat)
-    // broad or long only beyond the tape's error (body.js); the percentile alone is not trusted
+    // The collar against the face (Flusser, Dressing the Man, pp. 124–126: counterbalance, not repeat).
+    // A woven shirt records its collar (1.17), so it is judged: long points set close together narrow
+    // a face, a wide spread broadens it. A polo's or knit's collar is part of its type, so for those
+    // this stays advice for the shirt you choose. Broad or long only beyond the tape's error (body.js);
+    // the percentile alone is not trusted.
     const fs = pc.faceClass === 'broad' ? 70 : pc.faceClass === 'long' ? 30 : null, bald = o.hairStyle === 'none';
-    if (L.shirt && K.shirt && K.shirt.collar && ((fs != null && (fs >= 70 || fs <= 30)) || bald)) ad({ id: 'pcollar', score: 1, slots: ['shirt'],
-      text: (fs >= 70 ? 'Your face is broad for its length: a collar with longer points and a moderate spread balances it; a wide cutaway would widen it further.'
-        : fs != null && fs <= 30 ? 'Your face is long for its width: a wider spread balances it; long narrow points would lengthen it further.' : '') +
-        (bald ? (fs >= 70 || (fs != null && fs <= 30) ? ' ' : '') + 'With no hair the collar is the frame: a taller band stands up and does that job.' : '') });
+    // judged only when the collar has been chosen: a shirt saved without one gets the advice, as before 1.17
+    const cs = L.shirt && K.shirt && K.shirt.collars && o.shirt.collar && G.collarBy[o.shirt.collar] ? G.collarOf(o.shirt) : null, cn = cs ? cs.name.toLowerCase() : '';
+    if (cs && fs != null) {
+      if (fs >= 70 && cs.spread === 'wide') ad({ id: 'collarface', score: 0.65, slots: ['shirt'],
+        text: 'Your face is broad for its length, and a ' + cn + ' collar spreads its points wide, which broadens it further. Longer points with a moderate spread balance it: a point or semi-spread collar (Flusser).',
+        fixes: [{ label: 'A point collar', slot: 'shirt', set: { collar: 'point' } }, { label: 'A semi-spread collar', slot: 'shirt', set: { collar: 'semispread' } }] });
+      else if (fs >= 70) ad({ id: 'collarface', score: 1, slots: ['shirt'],
+        text: cs.spread === 'narrow' ? 'A ' + cn + ' collar: its long points, set close together, balance your broad face (Flusser).' : 'A ' + cn + ' collar: its moderate spread suits your broad face; longer points set closer would balance it more (Flusser).' });
+      else if (cs.spread === 'narrow') ad({ id: 'collarface', score: 0.65, slots: ['shirt'],
+        text: 'Your face is long for its width, and a ' + cn + ' collar\'s long points, set close together, lengthen it further. A wider spread balances it (Flusser).',
+        fixes: [{ label: 'A spread collar', slot: 'shirt', set: { collar: 'spread' } }, { label: 'A semi-spread collar', slot: 'shirt', set: { collar: 'semispread' } }] });
+      else ad({ id: 'collarface', score: 1, slots: ['shirt'],
+        text: cs.spread === 'wide' ? 'A ' + cn + ' collar: its wide spread balances your long face (Flusser).' : 'A ' + cn + ' collar: its moderate spread suits your long face; a wider spread would balance it more (Flusser).' });
+    }
+    // a chosen collar that the face rule cannot judge: say why (information, never counted)
+    if (cs && fs == null) ad({ id: 'collarhint', score: 1, slots: ['shirt'], text: pc.faceClass === 'middle'
+      ? 'A ' + cn + ' collar: your face is neither clearly broad nor clearly long, so no collar has to counterbalance it; Gentleman\'s Gazette finds a spread collar suits most faces.'
+      : 'Not judged against your face: Valet needs your face width and length (You tab) to say whether a ' + cn + ' collar balances it.' });
+    if (cs && o.shirt.collarBand === 'tall' && !bald) ad({ id: 'collarhint', score: 1, slots: ['shirt'],
+      text: 'A tall band: not judged. Flusser gives a long neck a taller band and a short neck a lower one, and Valet does not measure the neck.' });
+    // advice, never counted: the collar to choose where none is recorded, and the band for a head with no hair
+    const tall = cs && o.shirt && o.shirt.collarBand === 'tall';
+    if (L.shirt && K.shirt && K.shirt.collar && ((!cs && fs != null) || bald)) ad({ id: 'pcollar', score: 1, slots: ['shirt'],
+      text: (!cs && fs >= 70 ? 'Your face is broad for its length: a collar with longer points and a moderate spread balances it; a wide cutaway would widen it further.'
+        : !cs && fs != null && fs <= 30 ? 'Your face is long for its width: a wider spread balances it; long narrow points would lengthen it further.' : '') +
+        (bald ? (!cs && fs != null ? ' ' : '') + (tall ? 'With no hair the collar is the frame, and its tall band stands up to do that job.' : 'With no hair the collar is the frame: a taller band stands up and does that job.') : '') });
     // a prominent seat or hollow lower back and a low waistband (tailoring advice): the back of the
     // waistband stands away and the cloth pulls under the seat. Only the low rise is marked; a flat
     // seat is a matter of the trousers' cut, which the outfit does not record, so Proportion and Fit say it.
@@ -1041,7 +1145,8 @@
     // a dress shirt worn without a tie is open-collared: smart, not business (B)
     if (F.shirt != null && K.shirt.tieable && !(L.tie && K.tie.knotted)) F.shirt = Math.min(F.shirt, 4);
     const cn = function (k) { return C[k] ? C[k].name.toLowerCase().replace(/ \(shiny\)$/, '') : ''; };
-    const what = function (k) { return L[k].name + ' ' + (C[k] ? cn(k) + ' ' : '') + K[k].name.toLowerCase(); };
+    const csw = L.shirt && K.shirt.collars ? G.collarOf(o.shirt) : null;   // a collar that lowers the shirt's formality is named (garments.js)
+    const what = function (k) { return L[k].name + ' ' + (C[k] ? cn(k) + ' ' : '') + (k === 'shirt' && csw && csw.f != null ? csw.name.toLowerCase() + ' ' : '') + K[k].name.toLowerCase(); };
     const occ = G.OCCASIONS.find(function (x) { return x.id === o.occasion; }) || G.OCCASIONS[1];
 
     // 4. Sheen: anything glossy near the face fails; below it, a caution; patent is for black tie.
@@ -1162,6 +1267,9 @@
       out.push({ slot: k, name: L.name, piece: G.kind(k, o[k]).name.toLowerCase(), tier: t, hex: L.mean,
         reasons: skinReasons(L.mean, p), patterned: L.pat.type !== 'solid', soft: G.FACE.indexOf(k) < 0 });
     });
+    // a contrast collar sits against the neck: a colour at the face of its own
+    const ch = o.shirt ? G.contrastCollar('shirt', o.shirt) : null, ct = ch ? scoreCached(ch, p).tier : 0;
+    if (ct > 2) out.push({ slot: 'shirt', name: o.shirt.collarName || ch.toUpperCase(), piece: 'shirt collar', tier: ct, hex: ch, reasons: skinReasons(ch, p), patterned: false, soft: false });
     return out;
   }
 
