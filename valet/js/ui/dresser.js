@@ -383,7 +383,7 @@
     { id: 'head', label: 'Head', keys: ['hat'], acc: ['glasses', 'earring'] },
     { id: 'upper', label: 'Head to belt', keys: ['shirt', 'tie', 'mid', 'jacket', 'square', 'boutonniere', 'coat', 'scarf'], acc: ['tiebar'] },
     { id: 'hands', label: 'Hands', keys: ['gloves'], acc: ['watch', 'cufflinks', 'ring'] },
-    { id: 'legs', label: 'Waist and legs', keys: ['trousers'], acc: ['buckle'] },
+    { id: 'legs', label: 'Waist and legs', keys: ['trousers'], acc: ['buckle', 'braces'] },
     { id: 'feet', label: 'Feet', keys: ['socks', 'shoes'], acc: [] }
   ];
   function renderPieces(a) {
@@ -578,6 +578,7 @@
   const ACC_ZONE = {}; ZONES.forEach(function (z) { (z.acc || []).forEach(function (k) { ACC_ZONE[k] = z.id; }); });
   function accSummary(d, x) {
     if (d.glasses) return glassesWord(x).replace(/^Glasses: /, '');
+    if (d.plain) return 'worn';
     const parts = [G.metalBy[x.metal] ? G.metalBy[x.metal].name.toLowerCase() : ''];
     if (d.stone && x.stone && x.stone !== 'none' && G.stoneBy[x.stone]) parts.push(G.stoneBy[x.stone].name.toLowerCase());
     if (d.size && x.size) parts.push(x.size + ' mm');
@@ -621,7 +622,8 @@
       return '<div class="acc-item acc-open' + (on ? '' : ' off') + (st ? ' st-' + st.state : '') + '" data-a="' + d.key + '">' +
         '<div class="acc-head"><button type="button" class="acc-pick" aria-expanded="true"><strong>' + d.name + '</strong></button>' + statusLine(st) + '<button type="button" class="btn ghost small acc-rm">Take off</button></div>' +
         (blocked ? '<span class="ed-note fit-care-t">' + blocked + '</span>' : '') +
-        (on && d.glasses ? glassesHtml(x) + (d.note ? '<p class="ed-note">' + esc(d.note) + '</p>' : '') :
+        (on && d.plain ? (d.note ? '<p class="ed-note">' + esc(d.note) + '</p>' : '') :
+         on && d.glasses ? glassesHtml(x) + (d.note ? '<p class="ed-note">' + esc(d.note) + '</p>' : '') :
          on ? '<span class="acc-fields">' +
           '<label>Metal <select class="acc-metal">' + d.metals.map(function (m) { return '<option value="' + m + '"' + (x.metal === m ? ' selected' : '') + '>' + G.metalBy[m].name + '</option>'; }).join('') + '</select></label>' +
           (d.stone ? '<label>Stone <select class="acc-stone">' + G.STONES.map(function (st) { return '<option value="' + st.id + '"' + (x.stone === st.id ? ' selected' : '') + '>' + st.name + '</option>'; }).join('') + '</select></label>' : '') +
@@ -993,6 +995,7 @@
       return { label: f.label, run: function () {
         snapshot();
         if (f.acc) Object.assign(S().outfit.acc[f.acc], f.set);
+        (f.and || []).forEach(function (g) { if (g.acc) Object.assign(S().outfit.acc[g.acc], g.set); });   // a fix that changes two accessories
         if (f.slot && f.kind) applyKind(f.slot, f.kind);
         if (f.slot && f.on === false) piece(f.slot).on = false;
         if (f.slot && f.pat) piece(f.slot).pat = f.pat;
@@ -1200,6 +1203,7 @@
     const acc = S().outfit.acc, accs = G.ACCESSORIES.filter(function (d) { return acc[d.key].on; }).map(function (d) {
       const x = acc[d.key], st = d.stone && x.stone && x.stone !== 'none' ? G.stoneBy[x.stone] : null;
       if (d.glasses) return esc(glassesWord(x));
+      if (d.plain) return esc(d.name);
       return esc(d.name) + ': ' + esc(G.metalBy[x.metal].name.toLowerCase()) + (st ? ', ' + esc(st.name.toLowerCase()) : '') + (d.size && x.size ? ', ' + x.size + ' mm' : '');
     });
     const secs = E.SECTIONS.map(function (sec) {
@@ -1241,6 +1245,7 @@
         const x = acc[d.key], st = d.stone && x.stone && x.stone !== 'none' ? G.stoneBy[x.stone] : null;
         const watch = d.watch ? ', ' + ((G.STRAPS.find(function (t) { return t.id === x.strap; }) || {}).name || '').toLowerCase() + (x.display === 'digital' ? ', digital' : '') : '';
         if (d.glasses) return esc(glassesWord(x));
+      if (d.plain) return esc(d.name);
       return esc(d.name) + ': ' + esc(G.metalBy[x.metal].name.toLowerCase()) + (st ? ', ' + esc(st.name.toLowerCase()) : '') + (d.size && x.size ? ', ' + x.size + ' mm' : '') + esc(watch);
       });
       const watch = checks.filter(function (c) { return c.score < 0.85; }).sort(function (x, y) { return x.score - y.score; }).slice(0, 4);

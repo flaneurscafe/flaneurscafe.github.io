@@ -287,6 +287,10 @@
       note: 'Frames sit at the face: a metal frame adds its temperature there, and an acetate frame is a line whose weight is judged against your contrast.' },
     { key: 'watch', name: 'Watch', watch: true, size: { label: 'Case diameter', min: 26, max: 50 }, metals: ['silver', 'white', 'gunmetal', 'gold', 'rose', 'twotone', 'black'] },
     { key: 'buckle', name: 'Belt buckle', metals: ['silver', 'gunmetal', 'gold'] },
+    // Braces (suspenders): nothing to set but whether they are worn. They hold the trousers from the shoulders,
+    // which a waistcoat asks for, and they are never worn with a belt.
+    { key: 'braces', name: 'Braces', plain: true, metals: [],
+      note: 'Braces hold the trousers from the shoulders, so the waistband stays where it should: a waistcoat asks for them, and they are never worn with a belt.' },
     { key: 'cufflinks', name: 'Cufflinks', stone: true, size: { label: 'Face width', min: 8, max: 30 }, needs: 'cuffs', metals: ['silver', 'white', 'gunmetal', 'gold', 'rose'],
       note: 'Only with a shirt with double (French) cuffs.' },
     { key: 'tiebar', name: 'Tie bar', needs: 'tie', size: { label: 'Length', min: 25, max: 90 }, metals: ['silver', 'white', 'gunmetal', 'gold'],

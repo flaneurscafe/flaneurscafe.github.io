@@ -4,13 +4,13 @@
    "approved": 31,
    "passed": 28,
    "crossed": 8,
-   "flagged": 4
+   "flagged": 5
   },
   "measured": {
    "approved": 31,
    "passed": 25,
    "crossed": 8,
-   "flagged": 5
+   "flagged": 6
   }
  },
  "verdicts": [
@@ -222,7 +222,7 @@
   [
    "C/00 #2",
    "measured",
-   "Good outfit"
+   "Works"
   ],
   [
    "C/02",
@@ -317,22 +317,22 @@
   [
    "all/02 #2",
    "estimated",
-   "One fix away"
+   "Start again"
   ],
   [
    "all/02 #2",
    "measured",
-   "One fix away"
+   "Start again"
   ],
   [
    "all/01",
    "estimated",
-   "Works"
+   "One fix away"
   ],
   [
    "all/01",
    "measured",
-   "Works"
+   "One fix away"
   ],
   [
    "all/03",

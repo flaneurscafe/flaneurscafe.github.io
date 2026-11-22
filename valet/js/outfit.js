@@ -25,7 +25,7 @@
     socks: { hex: '#1d2a44', kind: 'socks', pat: { type: 'solid' }, on: true }, shoes: { hex: '#4a3326', kind: 'loafer', cloth: 'calf' }, locks: {}, occasion: 'smart',
     acc: {
       glasses: { on: false, frame: 'gold', hex: '#161616' },
-      watch: { on: true, metal: 'silver', size: 38, strap: 'leather', display: 'analogue' }, buckle: { on: true, metal: 'silver' },
+      watch: { on: true, metal: 'silver', size: 38, strap: 'leather', display: 'analogue' }, buckle: { on: true, metal: 'silver' }, braces: { on: false },
       cufflinks: { on: false, metal: 'silver', stone: 'none', size: 15 }, tiebar: { on: false, metal: 'silver', size: 45 },
       ring: { on: false, metal: 'silver', stone: 'none', size: 12 }, earring: { on: false, metal: 'silver', stone: 'none', size: 4 }
     }
@@ -77,6 +77,7 @@
     out.acc = {};
     Object.keys(d.acc).forEach(function (k) {
       const x = out.acc[k] = Object.assign({}, d.acc[k], (o && o.acc && o.acc[k]) || {}), G = window.VGARM;
+      if (k === 'braces') { x.on = !!x.on; delete x.metal; return; }   // nothing to set but whether they are worn
       if (k === 'glasses') {
         if (!G.FRAMES.some(function (f) { return f[0] === x.frame; })) x.frame = 'gold';
         if (!isHex(x.hex)) x.hex = '#161616';

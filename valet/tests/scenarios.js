@@ -296,5 +296,33 @@ T('an impossible combination is its own verdict', base({jacket:P('#2d3b2a','waxe
   chk('a flower in the tie\'s exact colour is a note', csE.some(c => c.id === 'accentmatch' && c.score === 0.8));
   chk('near matches between cloths still fail (navy and midnight)', E.checkOutfit(base({ jacket: P(col('Navy'), 'jacket', 'hopsack'), trousers: P(col('Midnight') || col('Ink'), 'trousers', 'flannel') }), aW).some(c => c.id === 'near'));
 }
+
+// ---- 1.16: a tie and square cut from one cloth fail (Flusser pp. 216-217); outfit contrast is judged at the face ----
+{
+  const sq = (cloth) => base({ occasion: 'business', tie: P('#555045', 'tie', 'woolchallis'), square: P('#565243', 'square', cloth) });
+  const one = E.checkOutfit(sq('woolchallis'), aW), other = E.checkOutfit(sq('silktwill'), aW);
+  count++; if (!one.some(c => c.id === 'sqmatch' && c.score < 0.5)) { fails++; console.log('✗ a tie and square of one cloth, one colour, should fail'); }
+  count++; if (other.some(c => c.id === 'sqmatch')) { fails++; console.log('✗ the same colour in another cloth is tone on tone, not an exact match'); }
+  // a high-contrast face, a pale top: dark trousers far below no longer count as contrast at the face
+  const hi = E.analyseProfile({ samples: { skin: '#e8c8b0', hair: '#1a1410', eyes: '#3a2a20' }, manual: { skin: true, hair: true, eyes: true }, named: {}, hairStyle: 'short', season: 'winter' });
+  hi.confidence = 'medium'; hi.skinMeasured = true;
+  const tonal = base({ shirt: P('#f1f1f1', 'shirt', 'poplin'), jacket: P('#9c9288', 'jacket', 'worsted'), trousers: P('#3d4045', 'trousers', 'worsted') });
+  count++; if (hi.contrastLevel !== 'high') { fails++; console.log('✗ the test face should read as high contrast, read ' + hi.contrastLevel); }
+  // noted once: by the light-dark step at the collar if it is short, otherwise by the outfit's contrast
+  else if (!E.checkOutfit(tonal, hi).some(c => (c.id === 'ocontrast' || c.id === 'step') && c.score < 0.85)) { fails++; console.log('✗ a pale tonal top on a high-contrast face should be noted, whatever the trousers'); }
+}
+
+// ---- 1.16: the belt, braces and the waistcoat ----
+{
+  const vest = (acc) => base({ occasion: 'business', mid: P('#3d4045', 'waistcoat', 'worsted'), acc: acc });
+  const fl = (o, id) => E.checkOutfit(o, aW).some(c => c.id === id && c.score < 0.5);
+  const tst = (name, ok) => { count++; if (!ok) { fails_++; console.log('✗ ' + name); } };
+  var fails_ = 0;
+  tst('a belt with a waistcoat fails', fl(vest({ buckle: { on: true, metal: 'silver' }, braces: { on: false } }), 'beltvest'));
+  tst('braces with a waistcoat pass', !fl(vest({ buckle: { on: false, metal: 'silver' }, braces: { on: true } }), 'beltvest'));
+  tst('a belt and braces together fail', fl(base({ acc: { buckle: { on: true, metal: 'silver' }, braces: { on: true } } }), 'beltbraces'));
+  tst('a belt without a waistcoat is fine', !fl(base({ acc: { buckle: { on: true, metal: 'silver' }, braces: { on: false } } }), 'beltvest'));
+  fails += fails_;
+}
 console.log((fails ? fails + ' scenario(s) failed' : 'all scenarios pass') + ' (' + count + ' run)');
 if (fails) process.exit(1);

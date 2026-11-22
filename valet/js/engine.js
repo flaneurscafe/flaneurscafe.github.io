@@ -535,15 +535,21 @@
     // the main pieces and the colours a pattern shows (seenColours), as the lightness range from darkest to
     // lightest. Where the light-dark step at the collar has already said the same, it is not said twice.
     {
-      const pieces = ['shirt', 'tie', 'scarf', 'mid', 'jacket', 'coat', 'trousers'].filter(function (k) { return L[k]; });
+      // at the face, as in Flusser's examples (the tie's stripes, the shirt against the suit): the trousers are
+      // far from it, and a dark pair under a pale top does not give the face the contrast it carries
+      let pieces = ['shirt', 'tie', 'scarf', 'mid', 'jacket', 'coat'].filter(function (k) { return L[k]; });
+      // with a single top the outfit is that top and the trousers, seen together, so they count
+      if (pieces.length < 2 && L.trousers) pieces = pieces.concat(['trousers']);
       const Ls = []; pieces.forEach(function (k) { seenColours(L[k]).forEach(function (h) { Ls.push(lum(h)); }); });
       const stepSaid = out.some(function (c) { return c.id === 'step' && c.score < 0.85 && /^Light-dark step/.test(c.text); });   // not the one-layer note
       if (Ls.length >= 2 && !stepSaid) {
         const range = Math.max.apply(null, Ls) - Math.min.apply(null, Ls);
         if (p.contrastLevel === 'low' && range > hi) add({ id: 'ocontrast', level: 'B', score: 0.65, slots: [],
           text: 'Outfit contrast: from darkest to lightest the outfit spans ' + round(range) + ' in lightness, more than your low-contrast colouring carries (' + round(hi) + '). Stark light-dark contrast takes the eye from a muted face; softer steps suit it (Flusser).' });
-        else if (p.contrastLevel === 'high' && range < lo) add({ id: 'ocontrast', level: 'B', score: 0.65, slots: [],
-          text: 'Outfit contrast: the whole outfit spans only ' + round(range) + ' in lightness, less than your high-contrast colouring shows (' + round(lo) + '). A tonal outfit dampens a face like yours; a clearly lighter or darker piece near the face livens it (Flusser).' });
+        // "the same degree of contrast" (p. 20): a high-contrast face asks for a high-contrast outfit at the face,
+        // the same band that makes the face high contrast (PARAMS.contrastHigh), not half of it
+        else if (p.contrastLevel === 'high' && range < PARAMS.contrastHigh) add({ id: 'ocontrast', level: 'B', score: 0.65, slots: [],
+          text: 'Outfit contrast: at the face the outfit spans only ' + round(range) + ' in lightness, less than your high-contrast colouring shows (' + round(PARAMS.contrastHigh) + ' or more). A tonal outfit dampens a face like yours; a clearly lighter or darker piece near the face livens it (Flusser).' });
         else if (p.contrastLevel !== 'medium') add({ id: 'ocontrast', level: 'B', score: 1, slots: [],
           text: 'Outfit contrast: a range of ' + round(range) + ' in lightness, in keeping with your ' + p.contrastLevel + '-contrast colouring.' });
       }
@@ -717,8 +723,13 @@
         text: 'A pocket square needs a breast pocket: a tailored jacket, a blazer, or an overcoat with one. Take it off, or wear one of them.' });
       else {
         const sq = VC.hexToLab(L.square.mean), white = sq[0] > 88 && okc(L.square.mean)[1] < 0.03;
-        if (L.tie && K.tie.knotted && VC.deltaE2000(sq, VC.hexToLab(L.tie.mean)) < PARAMS.squareSetDE && L.square.pat.type === L.tie.pat.type)
-          add({ id: 'square', score: 0.55, slots: ['square'], text: 'Square and ' + K.tie.name.toLowerCase() + ' are the same cloth: it looks bought as a set. Let the square pick up a colour from the tie or shirt, or wear white linen.' });
+        // an exact match: the same colour, the same pattern and the same cloth, as if cut from one piece (Gentleman's
+        // Gazette's crossed example is a tie and square of one tweed). The same colour in another cloth is tone on
+        // tone, which the softer notes below judge.
+        const oneCloth = L.tie && (G.cloth('tie', o.tie) || {}).id === (G.cloth('square', o.square) || {}).id;
+        if (L.tie && K.tie.knotted && oneCloth && VC.deltaE2000(sq, VC.hexToLab(L.tie.mean)) < PARAMS.squareSetDE && L.square.pat.type === L.tie.pat.type)
+          add({ id: 'sqmatch', score: 0.3, slots: ['square'], fixes: [{ label: 'A white linen square', slot: 'square', set: { hex: '#f7f6f2', cloth: 'linen', pat: { type: 'solid' } } }],
+            text: 'Square and ' + K.tie.name.toLowerCase() + ' match: Flusser calls a matching tie and handkerchief the sign of an unsure dresser, and a way to lead the eye across the body and away from the face (Dressing the Man, pp. 216\u2013217). Let the square echo a colour of the tie, shirt or jacket, or wear white linen.' });
         else if (white) add({ id: 'square', score: 1, slots: ['square'], text: 'White linen square: never wrong.' });
 
         // With a tie (Flusser, Dressing the Man, pp. 216-217): the tie decides the square. A plain square goes
@@ -726,7 +737,7 @@
         // shirt or jacket rather than matching it; and the two differ in surface, a matte square with a silk
         // tie's lustre and a silk square with a dull wool or linen tie. White linen is the fallback that always
         // works, so it is exempt from all of this.
-        if (!white && L.tie && K.tie.knotted && !out.some(function (c) { return c.id === 'square' && c.score < 0.85; })) {
+        if (!white && L.tie && K.tie.knotted && !out.some(function (c) { return (c.id === 'square' || c.id === 'sqmatch') && c.score < 0.85; })) {
           const sqPlain = !L.square.visible, tiePlain = !L.tie.visible;
           if (sqPlain && tiePlain) add({ id: 'hank', score: 0.7, slots: ['square', 'tie'],
             text: 'A plain square with a plain ' + K.tie.name.toLowerCase() + ': Flusser keeps the plain square for a patterned tie. A patterned square, or white linen, sits better here.' });
@@ -1237,7 +1248,7 @@
   }
 
   function accessoryChecks(acc, L, K, p, add, nm, occasion, o) {
-    const A = G.ACCESSORIES, M = G.metalBy, worn = A.filter(function (a) { return acc[a.key] && acc[a.key].on; });
+    const A = G.ACCESSORIES, M = G.metalBy, worn = A.filter(function (a) { return acc[a.key] && acc[a.key].on && !a.plain; });   // braces have no metal
     const ad = function (c) { c.group = 'accessory'; c.slots = c.slots || []; return add(c); };
     const glf = framesOf(o), glassMetal = glf && (glf.frame === 'gold' || glf.frame === 'silver') ? glf.frame : null;
     const cool = p.tempLevel === 'cool', warm = p.tempLevel === 'warm';   // the profile's own bands (cool under -0.35, warm over 0.35)
@@ -1246,6 +1257,17 @@
         text: 'Cufflinks need a shirt with double cuffs; a ' + K.shirt.name.toLowerCase() + ' has none.' });
       if (a.needs === 'tie' && !(L.tie && K.tie.id === 'tie')) ad({ id: 'acc', score: 0.2, acc: a.key, text: 'A tie bar needs a tie to hold.' });
     });
+    /* The belt and what holds the trousers (B). A waistcoat asks for braces: it must cover the waistband, and
+       a belt beneath it makes a bulge at the waist and drags the trousers down until shirt shows (Gentleman's
+       Gazette; No Man Walks Alone; Flusser, Dressing the Man, pp. 60, 222). A belt and braces together are one
+       too many, and a failure in every source. */
+    const belt = acc.buckle && acc.buckle.on, braces = acc.braces && acc.braces.on, vest = L.mid && K.mid.vest;
+    if (belt && braces) ad({ id: 'beltbraces', score: 0.3, acc: 'buckle',
+      text: 'A belt and braces together: either holds the trousers, and wearing both says neither was trusted. Take off the belt.',
+      fixes: [{ label: 'Take off the belt', acc: 'buckle', set: { on: false } }] });
+    else if (belt && vest) ad({ id: 'beltvest', score: 0.3, acc: 'buckle',
+      text: 'A belt with a waistcoat: the waistcoat should cover the waistband, and a belt beneath it bulges at the waist and lets the trousers slip until shirt shows. A waistcoat is worn with braces, or with trousers that have side adjusters.',
+      fixes: [{ label: 'Braces instead of the belt', acc: 'buckle', set: { on: false }, and: [{ acc: 'braces', set: { on: true } }] }] });
     // matching: everything but the ring and the face pieces
     const match = worn.filter(function (a) { return a.key !== 'ring' && !a.face && acc[a.key].metal !== 'twotone' && acc[a.key].metal !== 'black'; });
     // metal blazer buttons are worn metal too
