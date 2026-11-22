@@ -168,17 +168,17 @@
     melton: { name: 'Melton or overcoat wool', f: 4, season: 'winter', sheen: 0 },
     covert: { name: 'Covert cloth', f: 4, season: 'all', sheen: 0 },
     duffel: { name: 'Duffel wool', f: 1, season: 'winter', sheen: 0 },
-    gloveleather: { name: 'Glove leather (lambskin, deerskin or peccary)', f: 4, season: 'winter', sheen: 1 },
+    gloveleather: { name: 'Glove leather (lambskin, deerskin or peccary)', f: 4, season: 'winter', sheen: 1, leather: true },
     gabardine: { name: 'Gabardine', f: 3, season: 'all', sheen: 0 },
     waxed: { name: 'Waxed cotton', f: 1, season: 'all', sheen: 1 },
-    leather: { name: 'Leather, matte finish', f: 2, season: 'all', sheen: 0 },
+    leather: { name: 'Leather, matte finish', f: 2, season: 'all', sheen: 0, leather: true },
     nylonmatte: { name: 'Technical shell, matte', f: 1, season: 'all', sheen: 0 },
     nylongloss: { name: 'Glossy nylon or down (shiny)', f: 1, season: 'winter', sheen: 2 },
     felt: { name: 'Felt', f: 4, season: 'winter', sheen: 0 },
     straw: { name: 'Straw', f: 3, season: 'summer', sheen: 0 },
-    calf: { name: 'Calf leather', f: 5, season: 'all', sheen: 1 },
-    suede: { name: 'Suede', f: 4, season: 'all', sheen: 0 },
-    patent: { name: 'Patent leather (shiny)', f: 5, season: 'all', sheen: 2 },
+    calf: { name: 'Calf leather', f: 5, season: 'all', sheen: 1, leather: true },
+    suede: { name: 'Suede', f: 4, season: 'all', sheen: 0, leather: true },
+    patent: { name: 'Patent leather (shiny)', f: 5, season: 'all', sheen: 2, leather: true },
     canvas: { name: 'Canvas', f: 1, season: 'summer', sheen: 0 }
   };
   Object.keys(CLOTHS).forEach(function (id) { CLOTHS[id].id = id; });

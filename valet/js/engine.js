@@ -325,7 +325,8 @@
       }
     }
 
-    const score = clamp(0.3 * sContrast + 0.2 * sMerge + 0.25 * sTemp + 0.25 * sChroma - simPenalty, 0, 1);
+    const CW = PARAMS.colourWeights;
+    const score = clamp(CW.contrast * sContrast + CW.merge * sMerge + CW.temp * sTemp + CW.chroma * sChroma - simPenalty, 0, 1);
     // Weakest rule: a colour is only as good at the face as its worst failing. Redness counts here
     // too, as it is a fact of the skin the person has told us: a strong red or green beside a
     // marked redness cannot be a face colour however well it does otherwise. (The general
@@ -342,13 +343,16 @@
       return 3;
     };
     const tier = tierOf(score, weakest);
-    // The tier the colour would have if temperature did not count: when that is 1 or 2, temperature
-    // alone keeps it from the face, and a low-confidence temperature reading makes that a note (checkOutfit).
-    const tierNoTemp = sTemp >= 1 ? tier : tierOf(clamp(score + 0.25 * (1 - sTemp), 0, 1), Math.min(sContrast, sMerge, sChroma, sRed));
+    // Temperature alone keeps the colour from the face when, with temperature counted as met, it would be
+    // tier 1 or 2, and temperature is also its weakest rule (a colour that is weaker on another rule is not
+    // a clash of temperature alone, even if temperature tips it). A low-confidence temperature reading
+    // makes such a clash a note (checkOutfit).
+    const othersMin = Math.min(sContrast, sMerge, sChroma, sRed);
+    const tierNoTemp = sTemp >= 1 ? tier : tierOf(clamp(score + CW.temp * (1 - sTemp), 0, 1), othersMin);
 
     return {
       hex: hex, lab: lab, lch: lch, oklch: ok, neutral: neutral,
-      temperature: tColour, score: score, tier: tier, tempOnly: tier > 2 && tierNoTemp <= 2, rules: rules
+      temperature: tColour, score: score, tier: tier, tempOnly: tier > 2 && tierNoTemp <= 2 && sTemp <= othersMin, rules: rules
     };
   }
 
@@ -430,6 +434,19 @@
     return out;
   }
 
+  /* The layer the shirt is judged against for the light-dark step at the face: the first worn of a
+     scarf, a knit or waistcoat, the jacket, a coat worn straight over the shirt, a tie; a scarf is
+     narrow, so when the layer beside it makes the stronger step over the shirt, that one counts.
+     has(k): whether the piece is worn; light(k): its lightness L*. Used by checkOutfit and the chart. */
+  function stepOver(has, light) {
+    let over = ['scarf', 'mid', 'jacket', 'coat', 'tie'].find(has);
+    if (over === 'scarf' && has('shirt')) {
+      const next = ['mid', 'jacket', 'coat'].find(has);
+      if (next && Math.abs(light('shirt') - light(next)) > Math.abs(light('shirt') - light('scarf'))) over = next;
+    }
+    return over || null;
+  }
+
   function checkOutfit(o, p) {
     const L = {}, worn = SLOTS.filter(function (k) { return o[k]; });
     worn.forEach(function (k) { L[k] = look(o[k]); });
@@ -451,9 +468,13 @@
     // when the temperature reading is low confidence (a skin colour typed in, or no white reference):
     // the warm-cool lean is the least certain thing Valet reads from a face (section 3).
     const softFace = function (k) { return k === 'square' || k === 'boutonniere' || (p.confidence === 'low' && scoreCached(L[k].mean, p).tempOnly); };
-    const tempOnlyNote = weak.length && p.confidence === 'low' && weak.some(function (k) { return scoreCached(L[k].mean, p).tempOnly; }) ? ' Your temperature reading is low confidence, so a clash of temperature alone is a note: check it in daylight.' : '';
+    const tempSoft = function (k) { return p.confidence === 'low' && scoreCached(L[k].mean, p).tempOnly; };
+    const allSoft = weak.length && weak.every(softFace);
+    // When the whole check is a note because of a low-confidence temperature, the sentence says so; when
+    // it fails anyway, each piece that would only be a note is marked as such, so the reason is not misread.
+    const tempOnlyNote = allSoft && weak.some(tempSoft) ? ' Your temperature reading is low confidence, so a clash of temperature alone is a note: check it in daylight.' : '';
     if (near.length) add(weak.length
-      ? { id: 'face', level: 'A/B', score: weak.every(softFace) ? 0.6 : 0.3, n: weak.length, slots: weak, text: 'Clashes with your skin: ' + weak.map(function (k) { const r = skinReasons(L[k].mean, p); return nm(k) + ' (tier ' + scoreCached(L[k].mean, p).tier + (r.length ? ', ' + r[0] : '') + ')'; }).join(' and ') + '. Swap it, or move that colour below the belt.' + tempOnlyNote }
+      ? { id: 'face', level: 'A/B', score: allSoft ? 0.6 : 0.3, n: weak.length, slots: weak, text: 'Clashes with your skin: ' + weak.map(function (k) { const r = skinReasons(L[k].mean, p); return nm(k) + ' (tier ' + scoreCached(L[k].mean, p).tier + (r.length ? ', ' + r[0] : '') + (!allSoft && tempSoft(k) ? '; temperature only, a note on its own as your reading is low confidence' : '') + ')'; }).join(' and ') + '. Swap it, or move that colour below the belt.' + tempOnlyNote }
       : { id: 'face', level: 'A/B', score: 1, slots: face, text: 'Against your skin: everything near the face is tier 1 or 2 for you.' });
 
     // A light-dark step at the face (Outfit Check, question 2), in proportion to the face: the layer
@@ -462,12 +483,7 @@
     // which is put on before the jacket; else the jacket; else a coat worn straight over the shirt;
     // else a tie. A hat, or a coat over a jacket, is further out, so it neither rescues a flat shirt
     // and jacket nor is blamed for a strong step.
-    let over = ['scarf', 'mid', 'jacket', 'coat', 'tie'].find(function (k) { return L[k]; });
-    // a scarf is narrow: the layer over the shirt front beside it frames the face too, so the stronger step counts
-    if (over === 'scarf' && L.shirt) {
-      const next = ['mid', 'jacket', 'coat'].find(function (k) { return L[k]; });
-      if (next && Math.abs(lum(L.shirt.mean) - lum(L[next].mean)) > Math.abs(lum(L.shirt.mean) - lum(L.scarf.mean))) over = next;
-    }
+    const over = stepOver(function (k) { return !!L[k]; }, function (k) { return lum(L[k].mean); });
     if (L.shirt && over) {
       const best = Math.abs(lum(L.shirt.mean) - lum(L[over].mean)), pair = ['shirt', over];
       if (best < lo * PARAMS.stepNear) add({ id: 'step', score: 0.35, slots: [over, 'shirt'], level: 'A/B',
@@ -546,7 +562,7 @@
     let suitText = null;
     // Leather shoes are not compared with the trousers: leather and cloth never look like one material
     // meant to match, so black calf boots with black jeans read as black with black, not as a near miss.
-    const leatherShoes = L.shoes && ['calf', 'suede', 'patent'].indexOf((G.cloth('shoes', o.shoes) || {}).id) >= 0;
+    const leatherShoes = L.shoes && !!(G.cloth('shoes', o.shoes) || {}).leather;
     pairs.forEach(function (pr) {
       if (!L[pr[0]] || !L[pr[1]]) return;
       if (pr[1] === 'shoes' && leatherShoes) return;
@@ -1334,7 +1350,7 @@
 
   window.VENGINE = {
     analyseProfile: analyseProfile, bodyRatios: bodyRatios, scoreColour: scoreColour,
-    RULES: RULES, PARAMS: PARAMS, ruleOf: ruleOf, kindOf: kindOf, wardrobeNeutral: wardrobeNeutral, checkOutfit: checkOutfit, verdict: verdict, penalty: penalty, SECTIONS: SECTIONS, sectionOf: sectionOf, watchRange: watchRange, summary: summary, look: look, SLOTS: SLOTS, FACE: FACE, TIER_TEXT: TIER_TEXT, corrected: corrected, HAIR: HAIR,
+    RULES: RULES, PARAMS: PARAMS, stepOver: stepOver, ruleOf: ruleOf, kindOf: kindOf, wardrobeNeutral: wardrobeNeutral, checkOutfit: checkOutfit, verdict: verdict, penalty: penalty, SECTIONS: SECTIONS, sectionOf: sectionOf, watchRange: watchRange, summary: summary, look: look, SLOTS: SLOTS, FACE: FACE, TIER_TEXT: TIER_TEXT, corrected: corrected, HAIR: HAIR,
     okc: okc, hueDist: hueDist, scoreCached: scoreCached, round: round, G: G,
     echoes: echoes, hairShown: hairShown, frameWeight: frameWeight, frameTemp: frameTemp, framesOf: framesOf, skinClashes: skinClashes, skinReasons: skinReasons, seasonProfile: seasonProfile, TAN: TAN
   };

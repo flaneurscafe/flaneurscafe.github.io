@@ -4,7 +4,7 @@
    Run with Node from the project folder: node tests/scenarios.js (VERBOSE=1 lists each). Exits 1 on failure.
    When a rule changes on purpose, change its scenario with it. */
 global.window={}; const path=require('path'); const ROOT=path.join(__dirname,'..');
-for (const f of ['colour','vision','patterns','data','garments', 'rules', 'engine', 'suggest','body','proportion']) require(path.join(ROOT,'js',f+'.js'));
+for (const f of ['colour','vision','patterns','data','garments', 'rules', 'engine', 'suggest','body','proportion','chart']) require(path.join(ROOT,'js',f+'.js'));
 const E=window.VENGINE, G=window.VGARM, D=window.VDATA;
 const aW=E.analyseProfile(Object.assign({},D.demo,{season:'winter'})), aS=E.analyseProfile(Object.assign({},D.demo,{season:'summer'}));
 const P=(hex,kind,cloth,extra)=>Object.assign({hex,name:hex,kind,cloth,pat:{type:'solid'}},extra||{});
@@ -138,7 +138,6 @@ T('an impossible combination is its own verdict', base({jacket:P('#2d3b2a','waxe
   // light-dark step: a little short is a note, well short a failure
   { const lo = aW.band[0], grey = L => window.VC.labToHex([L, 0, 0]);
     const shirtL = 92, sh = grey(shirtL);
-    const step = (k, o) => E.checkOutfit(o, aW).find(c => c.id === 'step');
     const o1 = base({shirt:P(sh,'shirt','poplin'), jacket:P(grey(shirtL - lo * 0.9),'jacket','hopsack')});
     const o2 = base({shirt:P(sh,'shirt','poplin'), jacket:P(grey(shirtL - lo * 0.5),'jacket','hopsack')});
     chk('a step at 90% of the bound: a note', o1, aW, cs => cs.some(c => c.id === 'step' && c.score === 0.65));
@@ -153,6 +152,36 @@ T('an impossible combination is its own verdict', base({jacket:P('#2d3b2a','waxe
     chk('gold tie, cool skin, trustworthy reading: a failure', gold, good, cs => cs.some(c => c.id === 'face' && c.score === 0.3));
     const flat = base({shirt:P('#7a5a48','shirt','poplin'), tie:P('#d0bc87','tie','repsilk')});   // a shirt that merges with the skin, besides the tie
     chk('temperature plus another clash, low confidence: still a failure', flat, low, cs => cs.some(c => c.id === 'face' && c.score === 0.3)); }
+}
+
+// ---- 1.14.1: the review of 1.14 ----
+{
+  const chk = (name, ok) => { count++; if (!ok) { fails++; console.log('✗', name); } else if (process.env.VERBOSE) console.log('✓', name); };
+  const skin = { white:null, skin:'#814c35', hair:'#1a1412', eyes:'#2a1c14' };
+  const low = E.analyseProfile({ samples: skin, manual: { skin:true, hair:true, eyes:true }, useWhite:true, hairStyle:'none', season:'winter' });
+  // a failing face check with one temperature-only piece: that piece is marked, the "is a note" sentence is not added
+  const mixed = E.checkOutfit(base({shirt:P('#7a5a48','shirt','poplin'), tie:P('#d0bc87','tie','repsilk')}), low).find(c => c.id === 'face');
+  chk('mixed clash: fails, marks the temperature-only piece, no "is a note" sentence', mixed && mixed.score === 0.3 && /temperature only, a note on its own/.test(mixed.text) && !/check it in daylight/.test(mixed.text));
+  // temperature that tips a colour already weaker on another rule is not "temperature alone"
+  const raph = E.analyseProfile({ samples: { white:null, skin:'#b88f78', hair:'#2a2018', eyes:'#3b2618' }, manual: { skin:true, hair:true, eyes:true }, useWhite:true, hairStyle:'short', season:'winter' });
+  const orange = E.scoreColour('#c76b2f', raph);
+  chk('a colour weaker on merge than on temperature is not temperature-only', orange.tier > 2 && orange.tempOnly === false);
+  const gold = E.scoreColour('#d0bc87', low);
+  chk('a gold tie against a cool reading is temperature-only', gold.tier > 2 && gold.tempOnly === true);
+  // suede is leather: exempt from the near match with the trousers, like calf (a decision, 1.14.1)
+  T('brown suede loafers with brown corduroy trousers: no near match', base({trousers:P('#5a3e2b','trousers','corduroy'),shoes:P('#5e412c','loafer','suede'),socks:P('#5a3e2b','socks')}), [[/^near:/,false]]);
+  // the chart judges the light-dark step on the same pair as the Dresser
+  const C = window.VCHART;
+  const pair = (o) => { const has = k => !!o[k], Lk = k => window.VC.hexToLab(o[k])[0]; return E.stepOver(has, Lk); };
+  const o1 = { shirt:'#8a8a8a', jacket:'#2a2a2e', tie:'#f4f4f2', trousers:'#8e9196', shoes:'#4a3326' };   // dark jacket, mid shirt, white tie
+  const o2 = { shirt:'#f4f4f2', scarf:'#e8e8e8', jacket:'#2a2a2e', trousers:'#8e9196', shoes:'#4a3326' };  // white scarf over a white shirt, dark jacket
+  chk('step pair: the jacket, not the tie', pair(o1) === 'jacket');
+  chk('step pair: a scarf gives way to the jacket beside it', pair(o2) === 'jacket');
+  [o1, o2].forEach((o, i) => {
+    const r = C.build({ analysis: aW, outfit: o, skin: D.demo.samples.skin, names: {}, kinds: {} });
+    const t = r.label;
+    chk('chart ' + (i + 1) + ': the bracket names the shirt (next to the neck) and the jacket', /next to the neck against jacket/i.test(t) && !/against tie|tie against/i.test(t) && !/against scarf|scarf against/i.test(t));
+  });
 }
 console.log((fails ? fails + ' scenario(s) failed' : 'all scenarios pass') + ' (' + count + ' run)');
 if (fails) process.exit(1);

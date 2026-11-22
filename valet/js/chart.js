@@ -6,8 +6,9 @@
    on the right); a patterned piece at the colour it adds up to, with its two colours as ticks.
    Down the whole chart runs a line at your skin's lightness, and on the rows at the face a
    shaded zone marks the lightness that frames your face (the band of section 4). Underneath,
-   first any piece near the face that clashes with your skin (ringed in red), then the three steps
-   the outfit rules check, with their numbers: shirt against jacket, top against
+   first any piece near the face that clashes with your skin (ringed in red; a clash of temperature
+   alone with a low-confidence reading, a note, in dashed grey), then the three steps the outfit rules
+   check, with their numbers: the shirt against the layer at the neck (the Dresser's pair), top against
    trousers, shoes against trousers. They use the same thresholds as the Dresser, so the
    chart and the checks always agree.
 
@@ -98,9 +99,12 @@
       if (r.near && a && E) {
         const t = E.scoreColour(r.hex, a).tier;
         s.push('<text x="' + (X1 + 8) + '" y="' + (y + 4) + '" class="c-tt" fill="' + TT_COL[t] + '">T' + t + '</text>');
-        if (t > 2) {                                  // clashes with your skin: ring it in red
-          s.push('<rect x="' + r1(x - 12) + '" y="' + (y - 12) + '" width="24" height="24" rx="5" fill="none" stroke="#b0413e" stroke-width="1.8"/>');
-          clashRows.push({ r: r, t: t, soft: a.confidence === 'low' && E.scoreColour(r.hex, a).tempOnly });
+        if (t > 2) {
+          // clashes with your skin: ringed in red; a clash of temperature alone with a low-confidence
+          // reading is a note in the Dresser, so it is ringed in a dashed grey instead
+          const soft = a.confidence === 'low' && E.scoreColour(r.hex, a).tempOnly;
+          s.push('<rect x="' + r1(x - 12) + '" y="' + (y - 12) + '" width="24" height="24" rx="5" fill="none" stroke="' + (soft ? '#8a8a8a' : '#b0413e') + '" stroke-width="' + (soft ? 1.4 : 1.8) + '"' + (soft ? ' stroke-dasharray="3 2"' : '') + '/>');
+          clashRows.push({ r: r, t: t, soft: soft });
         }
       }
       s.push('<text x="' + r1(x) + '" y="' + (y - 12) + '" class="c-small" text-anchor="middle">' + Math.round(L) + '</text>');
@@ -113,8 +117,8 @@
     // Clashes with your skin come first: they are the one thing no other piece can fix.
     clashRows.forEach(function (c) {
       const why = E.skinReasons ? E.skinReasons(c.r.hex, a) : [];
-      notes.push({ ok: false, text: 'Clashes with your skin: ' + (c.r.name ? c.r.name + ' ' : '') + c.r.label.toLowerCase() + ' is T' + c.t + (why.length ? ', ' + why[0] : '') +
-        (c.soft ? ' (temperature only, and your temperature reading is low confidence: a note in the Dresser)' : '') + '.' });
+      notes.push({ ok: c.soft ? null : false, text: (c.soft ? 'Temperature only, at the face: ' : 'Clashes with your skin: ') + (c.r.name ? c.r.name + ' ' : '') + c.r.label.toLowerCase() + ' is T' + c.t + (why.length ? ', ' + why[0] : '') +
+        (c.soft ? '. Your temperature reading is low confidence, so this is a note: check it in daylight' : '') + '.' });
     });
     function bracket(r1_, r2_, ok, text) {
       const xm = X1 + 38, ya = r1_.y, yb = r2_.y;
@@ -122,14 +126,13 @@
       notes.push({ ok: ok, text: text });
     }
     const faceLayers = window.VGARM.FACE.filter(function (k) { return by[k]; });
-    if (faceLayers.length >= 2) {
-      let best = -1, pair = null;        // -1 so two layers of equal lightness still make a pair
-      for (let i = 0; i < faceLayers.length; i++) for (let j = i + 1; j < faceLayers.length; j++) {
-        const d = Math.abs(by[faceLayers[i]].L - by[faceLayers[j]].L);
-        if (d > best) { best = d; pair = [by[faceLayers[i]], by[faceLayers[j]]]; }
-      }
+    // the light-dark step at the face: the shirt against the layer that meets it at the neck, the same
+    // pair as the Dresser's rule (VENGINE.stepOver)
+    const over = by.shirt && E && E.stepOver ? E.stepOver(function (k) { return !!by[k]; }, function (k) { return by[k].L; }) : null;
+    if (over) {
+      const pair = [by.shirt, by[over]], best = Math.abs(by.shirt.L - by[over].L);
       // a step a little short of the bound (within stepNear of it) still frames the face: a note in the Dresser
-      const nearLo = lo * (E && E.PARAMS ? E.PARAMS.stepNear : 1), short = best >= nearLo && best < lo;
+      const nearLo = lo * (E.PARAMS ? E.PARAMS.stepNear : 1), short = best >= nearLo && best < lo;
       const ok = best >= nearLo && !(a && a.contrastLevel === 'low' && best > hi);
       bracket(pair[0], pair[1], ok, (short ? 'Face just framed: ' : ok ? 'Face framed: ' : best < lo ? 'Face not framed: ' : 'Frame heavy: ') + pair[0].label.toLowerCase() + ' against ' + pair[1].label.toLowerCase() + ', step ' + Math.round(best) +
         (short ? ' (a little short of the ' + Math.round(lo) + ' your face carries)' : best < lo ? ' (your face needs at least ' + Math.round(lo) + ')' : ok ? ' (needs ' + Math.round(lo) + ' or more)' : ' (more than your colouring carries, ' + Math.round(hi) + ')'));
@@ -201,13 +204,13 @@
       '<li><b>Rows:</b> one per piece, head to toe, placed by lightness: black (0) on the left, white (100) on the right. Your features sit on the top row.</li>' +
       '<li><b>Dashed line:</b> your skin\'s lightness, ' + Math.round(skinL) + ', carried down the chart.</li>' +
       '<li><b>Green zones</b> (on the rows at the face): the lightness that frames your face, far enough from your skin to give it an edge and not so far that it takes over. Yours: ' + dark + ' on the dark side' + (light ? ', ' + light + ' on the light side' : '') + '.</li>' +
-      '<li><b>T1 to T4</b> at the right: each colour\'s tier at your face. <b>A red ring:</b> the colour clashes with your skin.</li>' +
+      '<li><b>T1 to T4</b> at the right: each colour\'s tier at your face. <b>A red ring:</b> the colour clashes with your skin. <b>A dashed grey ring:</b> it clashes by temperature alone and your temperature reading is low confidence, so the Dresser only notes it.</li>' +
       '<li><b>Two coloured ticks:</b> a pattern\'s two colours; its square sits where they add up from a distance.</li>' +
-      '<li><b>Bracket and number:</b> the biggest light-dark step between the layers at the face.</li></ul>' +
+      '<li><b>Bracket and number:</b> the light-dark step between the shirt and the layer that meets it at the neck, the pair the Dresser judges.</li></ul>' +
       '<p class="ck-how"><b>Where to put colours</b></p><ol class="ck-place">' +
       '<li>At least one layer at the face in a green zone.</li>' +
-      '<li>Between the layers at the face, a step of at least ' + lo + ' (your face carries contrast ' + Math.round(a.contrast) + ').</li>' +
-      '<li>The top and the trousers at least 12 apart, or matching exactly, as a suit.</li>' +
+      '<li>Between the shirt and the layer at the neck, a step of at least ' + lo + ' (your face carries contrast ' + Math.round(a.contrast) + '); a little short of it, down to ' + Math.round(lo * (window.VENGINE ? window.VENGINE.PARAMS.stepNear : 1)) + ', is a note.</li>' +
+      '<li>The top and the trousers at least ' + (window.VENGINE ? window.VENGINE.PARAMS.halvesL : 12) + ' apart, or matching exactly, as a suit.</li>' +
       '<li>Shoes level with the trousers or to their left, darker.</li>' +
       '<li>Below the face there is no zone: any lightness works there, within these steps.</li></ol>';
   }
@@ -223,5 +226,6 @@
     if (A.host !== host) { host.appendChild(A.stage); A.host = host; }
     draw();
   }
-  window.VCHART = { mount: mount, update: update };
+  // build: the chart as SVG markup and notes, without the page (used by the tests)
+  window.VCHART = { mount: mount, update: update, build: chart };
 })();
