@@ -41,10 +41,10 @@
       { id: 'tee', name: 'T-shirt', frame: null, f: 1, cloths: ['jersey', 'linen'], pats: ['solid', 'breton'], maxScale: 'small' }
     ] },
     { key: 'tie', label: 'Neckwear', face: true, optional: true, kinds: [
-      { id: 'tie', name: 'Tie', needsCollar: true, knotted: true, f: 5, cloths: ['grenadine', 'silktwill', 'repsilk', 'knitsilk', 'woolchallis', 'linen', 'satin'], pats: ['solid', 'repp', 'pindot', 'foulard', 'paisley', 'houndstooth'], maxScale: 'small' },
-      { id: 'bowtie', name: 'Bow tie', needsCollar: true, knotted: true, f: 5, cloths: ['silktwill', 'grenadine', 'woolchallis', 'satin'], pats: ['solid', 'pindot', 'foulard', 'paisley', 'houndstooth'], maxScale: 'small' },
+      { id: 'tie', name: 'Tie', needsCollar: true, knotted: true, f: 5, cloths: ['grenadine', 'silktwill', 'repsilk', 'knitsilk', 'woolchallis', 'linen', 'satin'], pats: ['solid', 'repp', 'pindot', 'foulard', 'paisley', 'houndstooth', 'gingham', 'tattersall'], maxScale: 'small' },
+      { id: 'bowtie', name: 'Bow tie', needsCollar: true, knotted: true, f: 5, cloths: ['silktwill', 'grenadine', 'woolchallis', 'satin'], pats: ['solid', 'pindot', 'foulard', 'paisley', 'houndstooth', 'gingham', 'tattersall'], maxScale: 'small' },
       // a day cravat (ascot), worn inside an open shirt collar in place of a tie
-      { id: 'cravat', name: 'Cravat (ascot)', needsCollar: true, knotted: true, f: 3, cloths: ['silktwill', 'woolchallis', 'cashmere'], pats: ['solid', 'paisley', 'foulard', 'pindot'], maxScale: 'small' }
+      { id: 'cravat', name: 'Cravat (ascot)', needsCollar: true, knotted: true, f: 3, cloths: ['silktwill', 'woolchallis', 'cashmere'], pats: ['solid', 'paisley', 'foulard', 'pindot', 'gingham', 'tattersall'], maxScale: 'small' }
     ] },
     // The scarf is its own position, worn over everything (listed beside the neckwear: the order of
     // POSITIONS is head to feet, inside to outside at the same height) (a coat, a jacket, a knit), so it can go
@@ -212,8 +212,8 @@
     cashmere: ['breton', 'herringbone', 'houndstooth', 'paisley'],
     lambswool: ['breton', 'herringbone', 'houndstooth'],
     grenadine: [], satin: [], knitsilk: [],
-    silktwill: ['pindot', 'foulard', 'paisley', 'houndstooth'],
-    woolchallis: ['paisley', 'foulard', 'pindot', 'houndstooth'],
+    silktwill: ['pindot', 'foulard', 'paisley', 'houndstooth', 'gingham', 'tattersall'],   // checks: the plaid tie, printed or woven (Flusser, p. 154)
+    woolchallis: ['paisley', 'foulard', 'pindot', 'houndstooth', 'gingham', 'tattersall'],
     repsilk: ['repp'],
     melton: [], covert: [], duffel: [], gloveleather: [], gabardine: [], waxed: [], leather: [], nylonmatte: [], nylongloss: [],
     felt: [], straw: [], calf: [], suede: [], patent: [], canvas: []

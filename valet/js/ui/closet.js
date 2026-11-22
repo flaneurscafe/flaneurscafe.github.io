@@ -179,6 +179,10 @@
       '<label>Type<select data-f="kind">' + pos.kinds.map(function (k) { return '<option value="' + k.id + '"' + (k.id === kind.id ? ' selected' : '') + '>' + esc(k.name) + '</option>'; }).join('') + '</select></label>' +
       (cloths.length ? '<label>Cloth<select data-f="cloth">' + cloths.map(function (c) { return '<option value="' + c + '"' + (c === e.piece.cloth ? ' selected' : '') + '>' + esc(G.CLOTHS[c].name) + '</option>'; }).join('') + '</select></label>' : '') +
       (pats.length > 1 ? '<label>Pattern<select data-f="pat">' + pats.map(function (t) { return '<option value="' + t + '"' + (t === pt ? ' selected' : '') + '>' + esc(window.VPAT.byId[t].name) + '</option>'; }).join('') + '</select></label>' : '') +
+      // how much of the cloth is the second colour (patterns.js; the same steps as the Dresser's pattern editor)
+      (two ? '<label>Second colour covers<select data-f="cover">' + [['', 'as usually made (' + Math.round(window.VPAT.byId[pt].cover * 100) + '%)'], ['0.1', 'a touch'], ['0.33', 'about a third'], ['0.5', 'about half'], ['0.7', 'most']].concat(
+          e.piece.pat.cover != null && [0.1, 0.33, 0.5, 0.7].indexOf(e.piece.pat.cover) < 0 ? [[String(e.piece.pat.cover), Math.round(e.piece.pat.cover * 100) + '% (measured)']] : []).map(function (c) {
+          return '<option value="' + c[0] + '"' + ((e.piece.pat.cover == null ? '' : String(e.piece.pat.cover)) === c[0] ? ' selected' : '') + '>' + esc(c[1]) + '</option>'; }).join('') + '</select></label>' : '') +
       '</div>' +
       colourField('hex', two ? 'Ground colour' : 'Colour', e.piece.hex) +
       (two ? colourField('hex2', 'The pattern\'s second colour', e.piece.pat.hex2 || '', false) : '') +
@@ -198,6 +202,7 @@
         else if (k === 'kind') { e.piece.kind = el.value; paintEdit(); }
         else if (k === 'cloth') { e.piece.cloth = el.value; paintEdit(); }
         else if (k === 'pat') { e.piece.pat = el.value === 'solid' ? { type: 'solid' } : { type: el.value, hex2: e.piece.pat.hex2 || '#f2efe6' }; paintEdit(); }
+        else if (k === 'cover') { e.piece.pat = Object.assign({}, e.piece.pat); if (el.value === '') delete e.piece.pat.cover; else e.piece.pat.cover = +el.value; }
       });
     });
     const setCol = function (id, hex) {

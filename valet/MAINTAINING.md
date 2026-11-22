@@ -134,24 +134,25 @@ To **change a threshold only**: edit `PARAMS` and the number in its passage, the
 
 To **remove a rule**: delete its check, its `RULES` entry, its scenarios and boundary lines, and either delete its passage or say there why it was removed (readers may remember it). `tests/rules.js` reports a `RULES` entry that nothing emits.
 
-## 5. A worked example, not yet built
+## 5. A worked example: the plain pocket square (built in 1.15)
 
-Flusser gives a rule Valet does not check (How it works, section 18): *a plain pocket square only with a patterned tie* (*Dressing the Man*, p. 216). Here is how it would go in, as a gentle note.
+Flusser gives a rule Valet did not check until 1.15: *a plain pocket square only with a patterned tie* (*Dressing the Man*, p. 216). Here is how it went in, as a gentle note. Read it beside the code: `hank` in `js/rules.js` and the pocket-square block of `checkOutfit`.
 
-1. **What it rests on:** B, one writer. A note, never a failure: score 0.7.
-2. **Passage:** add a sentence to `<li id="r-square">`, and take it out of the "not checked yet" paragraph in section 18.
+1. **What it rests on:** B, one writer, with the page. A note, never a failure: score 0.7.
+2. **Passage:** a sentence in `<li id="r-square">` with the page cited, and the rule taken out of the "not checked yet" paragraph in section 18 (`id="flusser-unchecked"`).
 3. **Threshold:** none needed; "patterned" is `L.tie.visible`, "plain" is `!L.square.visible`.
-4. **Registry:** none new; it is part of the `square` rule, so it reuses `id: 'square'`.
-5. **Check**, in the pocket-square block of `checkOutfit`, after the "bought as a set" test:
+4. **Registry:** a new id, `hank` ("the pocket square with the tie"), kind `convention`. It could not reuse `square`, because `square` is a *possibility* rule (a square needs a breast pocket), and a failing possibility rule makes the verdict "Not possible as set".
+5. **Check**, in the pocket-square block of `checkOutfit`, after the "bought as a set" test, skipped for white linen:
 
    ```js
-   else if (L.tie && K.tie.knotted && !L.square.visible && !L.tie.visible && !white)
-     add({ id: 'square', score: 0.7, slots: ['square', 'tie'],
-           text: 'A plain square with a plain tie: Flusser keeps the plain square for a patterned tie. A patterned square, or white linen, sits better here.' });
+   if (sqPlain && tiePlain) add({ id: 'hank', score: 0.7, slots: ['square', 'tie'],
+     text: 'A plain square with a plain tie: Flusser keeps the plain square for a patterned tie. A patterned square, or white linen, sits better here.' });
    ```
 
-6. **Scenarios:** a plain burgundy square with a plain navy tie should note `square`; the same square with a striped tie should not; a white square never should.
-7. **Run** `node tests/run.js`, read which regression outfits changed (only ones with a plain square and a plain tie should), then `--update`.
+6. **Scenarios:** a plain square with a plain tie notes `hank`; a white linen square never does (see "the pocket square with the tie" in `tests/scenarios.js`).
+7. **Run** `node tests/run.js`. The regression test lists every outfit that changed and counts the checks by id: here only `hank` should appear as new. Then `--update`.
+
+A warning learnt in 1.15: adding a choice to a list the regression test draws from (a pattern allowed on a tie, say) changes the random outfits themselves, so nearly every outfit "changes". To see what the rules changed, compare on the same outfits: run the test once with the old lists and the new rules, read that, then update with the new lists.
 
 ## 6. Checking in the browser
 

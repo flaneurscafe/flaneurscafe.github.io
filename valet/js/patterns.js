@@ -72,15 +72,23 @@
     const t = byId[pat.type];
     // each pattern keeps to the repeat it is made in (a 15 cm pinstripe or a 3 mm windowpane does not exist)
     const lo = t.min || 0.1, hi = t.max || 25;
-    return { type: pat.type, scale: Math.max(lo, Math.min(hi, +pat.scale || t.scale)), hex2: pat.hex2 || '#f7f6f2' };
+    const out = { type: pat.type, scale: Math.max(lo, Math.min(hi, +pat.scale || t.scale)), hex2: pat.hex2 || '#f7f6f2' };
+    // share of the cloth in the second colour, when it differs from the drawn default (a dense foulard,
+    // a grid that is half rust and half cream): set by the user, or measured from a photo
+    const cv = +pat.cover;
+    if (pat.cover != null && isFinite(cv) && cv >= COVER_MIN && cv <= COVER_MAX) out.cover = Math.round(cv * 100) / 100;
+    return out;
   }
+  const COVER_MIN = 0.02, COVER_MAX = 0.9;
+  /* The share of the second colour: the piece's own when it has one, otherwise the pattern's default. */
+  function coverOf(pat) { pat = norm(pat); return pat.type === 'solid' ? 0 : (pat.cover != null ? pat.cover : byId[pat.type].cover); }
 
   /* The colour a pattern adds up to from a distance: the two colours mixed by area, in linear
      light (A: the eye integrates fine detail it cannot resolve). */
   function mean(ground, pat) {
     pat = norm(pat);
     if (pat.type === 'solid') return ground;
-    const f = byId[pat.type].cover, a = VC.hexToRgb(ground).map(VC.srgbToLinear), b = VC.hexToRgb(pat.hex2).map(VC.srgbToLinear);
+    const f = coverOf(pat), a = VC.hexToRgb(ground).map(VC.srgbToLinear), b = VC.hexToRgb(pat.hex2).map(VC.srgbToLinear);
     return VC.rgbToHex(a.map(function (v, i) { return VC.linearToSrgb(v * (1 - f) + b[i] * f); }));
   }
 
@@ -106,7 +114,7 @@
     pat = norm(pat);
     if (pat.type === 'solid') return { state: 'plain', why: 'solid', m: m };
     const V = window.VVIS, t = byId[pat.type], spec = SPECTRA[pat.type] || [];
-    const Yg = relY(ground), Ya = relY(pat.hex2), Ym = Yg + (Ya - Yg) * t.cover, dY = Math.abs(Ya - Yg);
+    const Yg = relY(ground), Ya = relY(pat.hex2), Ym = Yg + (Ya - Yg) * coverOf(pat), dY = Math.abs(Ya - Yg);
     const lg = VC.hexToLab(ground), la = VC.hexToLab(pat.hex2), dab = Math.hypot(lg[1] - la[1], lg[2] - la[2]);
     let maxC = 0, sumE = 0, sumS = 0, coarsest = Infinity, anyCoarse = false, lumSeen = false;
     spec.forEach(function (sc) {
@@ -344,6 +352,6 @@
     return (cache[key] = cv.toDataURL());
   }
 
-  window.VPAT = { TYPES: TYPES, byId: byId, scaleClass: scaleClass, norm: norm, mean: mean, tile: tile, thumb: thumb, draw: draw,
+  window.VPAT = { TYPES: TYPES, byId: byId, scaleClass: scaleClass, norm: norm, mean: mean, coverOf: coverOf, COVER_MIN: COVER_MIN, COVER_MAX: COVER_MAX, tile: tile, thumb: thumb, draw: draw,
     SPECTRA: SPECTRA, reads: reads, camera: camera, seenTile: seenTile, FINE_CPD: FINE_CPD, FAINT: FAINT };
 })();

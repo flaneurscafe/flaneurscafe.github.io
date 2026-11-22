@@ -52,13 +52,30 @@ if (process.argv.includes('--update')) {
 }
 if (!fs.existsSync(FILE)) { console.log('regression: no record yet; run node tests/regression.js --update'); process.exit(1); }
 const old = JSON.parse(fs.readFileSync(FILE, 'utf8')), diffs = [];
-for (let i = 0; i < record.length && diffs.length < 8; i++) {
+// Every outfit is compared (an earlier version stopped at the first eight differences, which hid how many
+// outfits a change touched): the first differences are listed in full, then a summary of all of them.
+let differ = 0; const verdicts = {}, byCheck = {};
+for (let i = 0; i < record.length; i++) {
   const x = old[i], y = record[i];
-  if (!x) { diffs.push('outfit ' + i + ': not in the record'); continue; }
-  ['verdict', 'penalty', 'suggest', 'complete'].forEach(k => { if (JSON.stringify(x[k]) !== JSON.stringify(y[k])) diffs.push('outfit ' + i + ', ' + k + ': ' + JSON.stringify(x[k]).slice(0, 90) + ' → ' + JSON.stringify(y[k]).slice(0, 90)); });
+  if (!x) { diffs.push('outfit ' + i + ': not in the record'); differ++; continue; }
+  const lines = [];
+  ['verdict', 'penalty', 'suggest', 'complete'].forEach(k => { if (JSON.stringify(x[k]) !== JSON.stringify(y[k])) lines.push('outfit ' + i + ', ' + k + ': ' + JSON.stringify(x[k]).slice(0, 90) + ' → ' + JSON.stringify(y[k]).slice(0, 90)); });
   const a = x.checks.map(c => JSON.stringify(c)), b = y.checks.map(c => JSON.stringify(c));
-  a.filter(c => b.indexOf(c) < 0).slice(0, 2).forEach(c => diffs.push('outfit ' + i + ', check gone or changed: ' + c.slice(0, 140)));
-  b.filter(c => a.indexOf(c) < 0).slice(0, 2).forEach(c => diffs.push('outfit ' + i + ', check new or changed: ' + c.slice(0, 140)));
+  const gone = a.filter(c => b.indexOf(c) < 0), added = b.filter(c => a.indexOf(c) < 0);
+  gone.slice(0, 2).forEach(c => lines.push('outfit ' + i + ', check gone or changed: ' + c.slice(0, 140)));
+  added.slice(0, 2).forEach(c => lines.push('outfit ' + i + ', check new or changed: ' + c.slice(0, 140)));
+  if (!lines.length) continue;
+  differ++; diffs.push.apply(diffs, lines);
+  if (x.verdict[0] !== y.verdict[0]) { const k = x.verdict[0] + ' → ' + y.verdict[0]; verdicts[k] = (verdicts[k] || 0) + 1; }
+  gone.forEach(c => { const j = JSON.parse(c), k = j[0] + ' ' + j[1] + ' gone'; byCheck[k] = (byCheck[k] || 0) + 1; });
+  added.forEach(c => { const j = JSON.parse(c), k = j[0] + ' ' + j[1] + ' new'; byCheck[k] = (byCheck[k] || 0) + 1; });
 }
-if (diffs.length) { console.log('regression: behaviour differs from the record:\n  ' + diffs.slice(0, 8).join('\n  ') + '\n  If this is intended, run node tests/regression.js --update'); process.exit(1); }
+if (diffs.length) {
+  const top = Object.keys(byCheck).sort((p, q) => byCheck[q] - byCheck[p]);
+  console.log('regression: behaviour differs from the record in ' + differ + ' of ' + record.length + ' outfits:\n  ' + diffs.slice(0, 8).join('\n  ') +
+    '\n  Verdicts changed: ' + (Object.keys(verdicts).length ? Object.keys(verdicts).map(k => verdicts[k] + ' × ' + k).join('; ') : 'none') +
+    '\n  Checks (id score, how many): ' + top.slice(0, 16).map(k => k + ' ' + byCheck[k]).join('; ') + (top.length > 16 ? '; …' : '') +
+    '\n  Read every line: each should be a change you meant. If so, run node tests/regression.js --update');
+  process.exit(1);
+}
 console.log('regression: ' + record.length + ' outfits behave exactly as recorded');

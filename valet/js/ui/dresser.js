@@ -26,6 +26,8 @@
   const lname = function (k) { return kindOf(k).name.toLowerCase(); };
   const FAMILIES = [['all', 'All'], ['Neutral', 'Neutrals'], ['Blue', 'Blues'], ['Green', 'Greens'], ['Red', 'Reds'], ['Yellow', 'Yellows'], ['Purple', 'Purples']];
   const ACCENT_NEUTRALS = ['#f7f6f2', '#c9cbcd', '#8e9196', '#3d4045', '#1d2a44', '#161616'];
+  // the share of a pattern's second colour, in plain steps (patterns.js keeps any value from 2% to 90%)
+  const COVER_STEPS = [{ v: null }, { v: 0.1, label: 'A touch' }, { v: 0.33, label: 'About a third' }, { v: 0.5, label: 'About half' }, { v: 0.7, label: 'Most' }];
   const PX_PER_CM = 96 / 2.54;
   // a spectator's second colour, named (these are not in the colour library)
   const SPEC2 = [['White', '#f2efe6'], ['Cream', '#e6dbc4'], ['Black', '#161616'], ['Dark brown', '#3b2417'], ['Tan', '#a8733f'], ['Navy', '#1d2a44']];
@@ -371,7 +373,7 @@
   }
   function patLabel(x) {
     const pat = VP.norm(x.pat);
-    return pat.type === 'solid' ? 'plain' : VP.byId[pat.type].name.toLowerCase() + ', ' + (Math.round(pat.scale * 10) / 10) + ' cm';
+    return pat.type === 'solid' ? 'plain' : VP.byId[pat.type].name.toLowerCase() + ', ' + (Math.round(pat.scale * 10) / 10) + ' cm' + (pat.cover != null ? ', ' + Math.round(pat.cover * 100) + '% second colour' : '');
   }
 
   /* The outfit laid out on the body: a row for each level from head to feet, and in each row the
@@ -878,6 +880,11 @@
         '<div class="acc-row">' + uniq.map(function (h) {
           return '<button type="button" class="acc' + (h.toLowerCase() === hex2.toLowerCase() ? ' sel' : '') + '" data-hex="' + h + '" title="' + esc(api.nameOf(h)) + '" style="background:' + h + '"></button>';
         }).join('') + '<input type="color" class="acc-any" value="' + hex2 + '" aria-label="Any second colour" title="Any colour"></div>' +
+        '<h4>How much of the cloth is the second colour</h4><p class="ed-note">Decides the colour the pattern adds up to from a distance. A dense foulard or a bold grid shows more of it than the drawing.</p>' +
+        '<div class="seg cover-seg" role="radiogroup" aria-label="Share of the second colour">' + COVER_STEPS.map(function (c) {
+          const on = c.v == null ? pat.cover == null : pat.cover != null && Math.abs(pat.cover - c.v) < 0.005;
+          return '<button type="button" role="radio" data-cover="' + (c.v == null ? '' : c.v) + '" aria-checked="' + on + '">' + (c.v == null ? 'As usually made (' + Math.round(VP.byId[pat.type].cover * 100) + '%)' : c.label) + '</button>';
+        }).join('') + (pat.cover != null && !COVER_STEPS.some(function (c) { return c.v != null && Math.abs(pat.cover - c.v) < 0.005; }) ? '<button type="button" role="radio" aria-checked="true" disabled>' + Math.round(pat.cover * 100) + '% (measured)</button>' : '') + '</div>' +
         '<h4>About life size</h4><div class="life"><canvas class="life-cv"></canvas><div class="ruler"></div><p class="ed-note">10 cm of cloth at screen scale (approximate: screens differ).</p></div>' +
         '<h4>From a distance <button type="button" class="info" data-info="distance" aria-label="What is this?">?</button></h4>' +
         '<p class="ed-note">The same patch of cloth (<span class="dist-cm"></span>), then what the eye can still see of it from each distance, enlarged.</p>' +
@@ -886,6 +893,8 @@
         }).join('') + '</div><p class="dist-why"></p><p class="dist-cam" hidden></p>');
 
     wireCloth(body, k);
+    // a change of scale or second colour keeps the share; a new pattern type starts from its own default
+    const keepCover = function (np) { if (pat.cover != null) np.cover = pat.cover; return np; };
     const apply = function (np, keep) {
       if (!keep) snapshot();
       piece(k).pat = np; commit(kindOf(k).name + ': ' + patLabel(piece(k)) + '.');
@@ -906,14 +915,22 @@
       drawLife(body, x.hex, { type: pat.type, scale: cm, hex2: hex2 });
       drawDistance(body, x.hex, { type: pat.type, scale: cm, hex2: hex2 });
     });
-    sc.addEventListener('change', function () { api.preview(null); apply({ type: pat.type, scale: toCm(+sc.value), hex2: hex2 }); });
+    sc.addEventListener('change', function () { api.preview(null); apply(keepCover({ type: pat.type, scale: toCm(+sc.value), hex2: hex2 })); });
     $$('.acc', body).forEach(function (b) {
       previewOn(b, k, function () { return { hex: x.hex, pat: { type: pat.type, scale: pat.scale, hex2: b.dataset.hex } }; });
-      b.addEventListener('click', function () { api.preview(null); apply({ type: pat.type, scale: pat.scale, hex2: b.dataset.hex }); });
+      b.addEventListener('click', function () { api.preview(null); apply(keepCover({ type: pat.type, scale: pat.scale, hex2: b.dataset.hex })); });
     });
     const any = $('.acc-any', body);
     any.addEventListener('input', function () { const np = { type: pat.type, scale: pat.scale, hex2: any.value }; api.preview(k, { hex: x.hex, pat: np }); drawLife(body, x.hex, np); drawDistance(body, x.hex, np); });
-    any.addEventListener('change', function () { api.preview(null); apply({ type: pat.type, scale: pat.scale, hex2: any.value }); });
+    any.addEventListener('change', function () { api.preview(null); apply(keepCover({ type: pat.type, scale: pat.scale, hex2: any.value })); });
+    $$('.cover-seg [data-cover]', body).forEach(function (b) {
+      if (b.disabled) return;
+      b.addEventListener('click', function () {
+        const np = { type: pat.type, scale: pat.scale, hex2: hex2 };
+        if (b.dataset.cover !== '') np.cover = +b.dataset.cover;
+        apply(np);
+      });
+    });
     drawLife(body, x.hex, pat);
     drawDistance(body, x.hex, pat);
   }

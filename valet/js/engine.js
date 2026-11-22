@@ -434,6 +434,25 @@
     return out;
   }
 
+  /* What the eye sees of a piece at the face (Flusser, Dressing the Man, pp. 21-24; How it works,
+     section 11). A pattern that reads as a pattern at 3 m is resolved into its colours, so it is
+     judged by them: each colour that covers a fair share of the cloth (PARAMS.patternMajor). A plain
+     piece, a two-tone shoe, or a pattern that reads only as texture is seen as the one colour it adds
+     up to. x: a piece as look() returns it. */
+  function seenColours(x) {
+    if (!x) return [];
+    if (!x.visible || x.twoTone || !x.pat || x.pat.type === 'solid') return [x.mean];
+    const c = P().coverOf(x.pat), out = [];
+    if (1 - c >= PARAMS.patternMajor) out.push(x.hex);
+    if (c >= PARAMS.patternMajor) out.push(x.pat.hex2);
+    return out.length ? out : [x.mean];
+  }
+  /* Of those colours, the one that sits best at the face: the lowest tier, then the highest score. */
+  function bestAtFace(x, p) {
+    return seenColours(x).map(function (h) { return { hex: h, s: scoreCached(h, p) }; })
+      .sort(function (a, b) { return a.s.tier - b.s.tier || b.s.score - a.s.score; })[0];
+  }
+
   /* The layer the shirt is judged against for the light-dark step at the face: the first worn of a
      scarf, a knit or waistcoat, the jacket, a coat worn straight over the shirt, a tie; a scarf is
      narrow, so when the layer beside it makes the stronger step over the shirt, that one counts.
@@ -463,18 +482,22 @@
     const lo = p.band[0], hi = p.band[1];      // the face's contrast band (section 4), the same as for a colour against the skin
 
     /* --- colour --- */
-    const weak = !near.length ? [] : near.filter(function (k) { return scoreCached(L[k].mean, p).tier > 2; });
-    // A small accent (square, flower) is a note. So is a colour kept from the face by temperature alone
-    // when the temperature reading is low confidence (a skin colour typed in, or no white reference):
-    // the warm-cool lean is the least certain thing Valet reads from a face (section 3).
-    const softFace = function (k) { return k === 'square' || k === 'boutonniere' || (p.confidence === 'low' && scoreCached(L[k].mean, p).tempOnly); };
-    const tempSoft = function (k) { return p.confidence === 'low' && scoreCached(L[k].mean, p).tempOnly; };
+    // Each piece is judged by the colour it shows best at the face: its one colour, or for a pattern
+    // that reads at 3 m, the better of its main colours (seenColours).
+    const best = {}; near.forEach(function (k) { best[k] = bestAtFace(L[k], p); });
+    const weak = !near.length ? [] : near.filter(function (k) { return best[k].s.tier > 2; });
+    // A small accent (square, flower) is a note. So is a colour kept from the face by temperature alone:
+    // the warm-cool lean is the least certain thing Valet reads from a face, and the sources that use
+    // it give no measurement for it (section 3), so on its own it never fails an outfit.
+    const tempSoft = function (k) { return best[k].s.tempOnly; };
+    const softFace = function (k) { return k === 'square' || k === 'boutonniere' || tempSoft(k); };
     const allSoft = weak.length && weak.every(softFace);
-    // When the whole check is a note because of a low-confidence temperature, the sentence says so; when
-    // it fails anyway, each piece that would only be a note is marked as such, so the reason is not misread.
-    const tempOnlyNote = allSoft && weak.some(tempSoft) ? ' Your temperature reading is low confidence, so a clash of temperature alone is a note: check it in daylight.' : '';
+    // When the whole check is a note because of temperature, the sentence says so; when it fails anyway,
+    // each piece that would only be a note is marked as such, so the reason is not misread.
+    const tempOnlyNote = allSoft && weak.some(tempSoft) ? ' A clash of temperature alone is a note, not a failure (section 3)' + (p.confidence === 'low' ? '; your reading is low confidence, so check it in daylight.' : '.') : '';
+    const showColour = function (k) { const x = L[k]; return x.visible && seenColours(x).length > 1 && best[k].hex !== x.hex ? ' at its best colour, ' + best[k].hex.toUpperCase() : ''; };
     if (near.length) add(weak.length
-      ? { id: 'face', level: 'A/B', score: allSoft ? 0.6 : 0.3, n: weak.length, slots: weak, text: 'Clashes with your skin: ' + weak.map(function (k) { const r = skinReasons(L[k].mean, p); return nm(k) + ' (tier ' + scoreCached(L[k].mean, p).tier + (r.length ? ', ' + r[0] : '') + (!allSoft && tempSoft(k) ? '; temperature only, a note on its own as your reading is low confidence' : '') + ')'; }).join(' and ') + '. Swap it, or move that colour below the belt.' + tempOnlyNote }
+      ? { id: 'face', level: 'A/B', score: allSoft ? 0.6 : 0.3, n: weak.length, slots: weak, text: 'Clashes with your skin: ' + weak.map(function (k) { const r = skinReasons(best[k].hex, p); return nm(k) + ' (tier ' + best[k].s.tier + showColour(k) + (r.length ? ', ' + r[0] : '') + (!allSoft && tempSoft(k) ? '; temperature only, a note on its own' : '') + ')'; }).join(' and ') + '. Swap it, or move that colour below the belt.' + tempOnlyNote }
       : { id: 'face', level: 'A/B', score: 1, slots: face, text: 'Against your skin: everything near the face is tier 1 or 2 for you.' });
 
     // A light-dark step at the face (Outfit Check, question 2), in proportion to the face: the layer
@@ -496,6 +519,27 @@
     } else if (L.shirt && K.shirt.frame) {
       add({ id: 'step', score: 0.75, slots: ['shirt'],
         text: 'One layer at the face: ' + (K.shirt.frame === 'neck' ? 'the roll neck' : 'the collar of the ' + K.shirt.name.toLowerCase()) + ' is the only frame. Fine on a warm day; a jacket, a knit or a tie adds a second (rule 8).' });
+    }
+
+    // The outfit's contrast against the face's (Flusser, Dressing the Man, pp. 20-22, 26-29): the colours of
+    // an outfit should show about as much light-dark contrast as the face shows between skin and hair. Only
+    // the ends of the scale are judged, as Flusser does: a muted face is overwhelmed by a stark outfit, and a
+    // high-contrast face is dampened by a tonal one; a medium face carries the widest range. Measured over
+    // the main pieces and the colours a pattern shows (seenColours), as the lightness range from darkest to
+    // lightest. Where the light-dark step at the collar has already said the same, it is not said twice.
+    {
+      const pieces = ['shirt', 'tie', 'scarf', 'mid', 'jacket', 'coat', 'trousers'].filter(function (k) { return L[k]; });
+      const Ls = []; pieces.forEach(function (k) { seenColours(L[k]).forEach(function (h) { Ls.push(lum(h)); }); });
+      const stepSaid = out.some(function (c) { return c.id === 'step' && c.score < 0.85 && /^Light-dark step/.test(c.text); });   // not the one-layer note
+      if (Ls.length >= 2 && !stepSaid) {
+        const range = Math.max.apply(null, Ls) - Math.min.apply(null, Ls);
+        if (p.contrastLevel === 'low' && range > hi) add({ id: 'ocontrast', level: 'B', score: 0.65, slots: [],
+          text: 'Outfit contrast: from darkest to lightest the outfit spans ' + round(range) + ' in lightness, more than your low-contrast colouring carries (' + round(hi) + '). Stark light-dark contrast takes the eye from a muted face; softer steps suit it (Flusser).' });
+        else if (p.contrastLevel === 'high' && range < lo) add({ id: 'ocontrast', level: 'B', score: 0.65, slots: [],
+          text: 'Outfit contrast: the whole outfit spans only ' + round(range) + ' in lightness, less than your high-contrast colouring shows (' + round(lo) + '). A tonal outfit dampens a face like yours; a clearly lighter or darker piece near the face livens it (Flusser).' });
+        else if (p.contrastLevel !== 'medium') add({ id: 'ocontrast', level: 'B', score: 1, slots: [],
+          text: 'Outfit contrast: a range of ' + round(range) + ' in lightness, in keeping with your ' + p.contrastLevel + '-contrast colouring.' });
+      }
     }
 
     // What frames the face: a collar, a roll neck, a shawl collar, lapels or a scarf. A T-shirt
@@ -588,8 +632,13 @@
     if (top && L.trousers) {
       const dTop = Math.abs(lum(L[top].mean) - lum(L.trousers.mean));
       const dETop = VC.deltaE2000(VC.hexToLab(L[top].mean), VC.hexToLab(L.trousers.mean));
-      if (dETop >= PARAMS.nearTo && dTop < PARAMS.halvesL) add({ id: 'blur', score: 0.45, slots: ['trousers'],
-        text: nm(top) + ' and ' + nm('trousers') + ' are close in lightness (step ' + round(dTop) + '): the two halves blur. Go clearly lighter or darker.' });
+      // Close in lightness, not matched. Whether that is good depends on the build (Flusser, pp. 52-54, 271):
+      // it lengthens a short or heavy figure and is the dressier choice, and a tall one gains from a break.
+      // With height known and Proportion & fit on, proportionChecks judges it; otherwise this is a note
+      // about the wearer (context), never counted.
+      const heightKnown = o.propOn && +((o.m || {}).height) > 0;
+      if (dETop >= PARAMS.nearTo && dTop < PARAMS.halvesL && !heightKnown && !o.study) add({ id: 'halves', score: 0.8, slots: [],
+        text: nm(top) + ' and ' + nm('trousers') + ' are close in lightness (step ' + round(dTop) + '). Whether that helps depends on your build: it lengthens a short or heavy figure and reads dressier, while a tall one gains from a contrasting trouser (Flusser). Turn on Proportion & fit and enter your height for a verdict.' });
 
       // One colour from collar to shoe. A matching top and trousers in a wardrobe neutral is tonal
       // dressing (the guide's charcoal-on-charcoal and all-black evening outfits); in a colour it reads
@@ -656,6 +705,56 @@
         if (L.tie && K.tie.knotted && VC.deltaE2000(sq, VC.hexToLab(L.tie.mean)) < PARAMS.squareSetDE && L.square.pat.type === L.tie.pat.type)
           add({ id: 'square', score: 0.55, slots: ['square'], text: 'Square and ' + K.tie.name.toLowerCase() + ' are the same cloth: it looks bought as a set. Let the square pick up a colour from the tie or shirt, or wear white linen.' });
         else if (white) add({ id: 'square', score: 1, slots: ['square'], text: 'White linen square: never wrong.' });
+
+        // With a tie (Flusser, Dressing the Man, pp. 216-217): the tie decides the square. A plain square goes
+        // with a patterned tie, and not in the tie's ground colour; a plain square echoes a colour of the tie,
+        // shirt or jacket rather than matching it; and the two differ in surface, a matte square with a silk
+        // tie's lustre and a silk square with a dull wool or linen tie. White linen is the fallback that always
+        // works, so it is exempt from all of this.
+        if (!white && L.tie && K.tie.knotted && !out.some(function (c) { return c.id === 'square' && c.score < 0.85; })) {
+          const sqPlain = !L.square.visible, tiePlain = !L.tie.visible;
+          if (sqPlain && tiePlain) add({ id: 'hank', score: 0.7, slots: ['square', 'tie'],
+            text: 'A plain square with a plain ' + K.tie.name.toLowerCase() + ': Flusser keeps the plain square for a patterned tie. A patterned square, or white linen, sits better here.' });
+          else if (sqPlain && VC.deltaE2000(sq, VC.hexToLab(L.tie.hex)) < PARAMS.squareSetDE) add({ id: 'hank', score: 0.7, slots: ['square'],
+            text: 'The square is the ground colour of the ' + K.tie.name.toLowerCase() + ': it brackets the chest and leads the eye away from the face. Pick up one of the tie\'s other colours, or the shirt\'s (Flusser).' });
+          else if (sqPlain) {
+            const others = [].concat(L.tie.colours, L.shirt ? L.shirt.colours : [], L.jacket ? L.jacket.colours : []);
+            const echoes = others.some(function (h) { return VC.deltaE2000(sq, VC.hexToLab(h)) < PARAMS.patternShareDE; });
+            add({ id: 'hank', score: echoes ? 1 : 0.9, slots: echoes ? [] : ['square'],
+              text: echoes ? 'The square echoes a colour of the tie, shirt or jacket without matching the tie, as Flusser advises.' : 'Hint: the square repeats no colour of the tie, shirt or jacket; Flusser would have it echo one of them.' });
+          }
+          const sheenOf = function (k) { const c = G.cloth(k, o[k]); return c ? c.sheen || 0 : 0; };
+          const tieSilk = sheenOf('tie') >= 1, sqSilk = sheenOf('square') >= 1;
+          if (tieSilk === sqSilk) add({ id: 'hank', score: 0.8, slots: ['square'],
+            text: tieSilk ? 'A silk square with a silk ' + K.tie.name.toLowerCase() + ': Flusser pairs a tie\'s lustre with a matte square, in linen or cotton, so the two do not look like a set.'
+              : 'A matte square with a matte ' + K.tie.name.toLowerCase() + ': Flusser gives a dull wool or linen tie the lift of a silk square.' });
+        }
+      }
+    }
+
+    // Your own colours echoed (Flusser, Dressing the Man, pp. 23-24, 29-31): the second of his two ways to
+    // bring the face forward is to repeat one of its own colours, of the hair (or brows) and of the eyes,
+    // in a piece near it: a suit in the shade of the hair, a blue shirt or tie for blue eyes. Only colours
+    // with some hue are echoed (a grey or black hair is a matter of contrast, section 4). A tick when it is
+    // done, a hint when it is not: it never lowers a verdict.
+    if (near.length && p.lab && (p.lab.hair || p.lab.eyes)) {
+      const feats = [];
+      if (p.lab.hair) feats.push({ what: 'your ' + (p.hairStyle === 'none' ? 'brows' : 'hair'), hex: VC.labToHex(p.lab.hair) });
+      if (p.lab.eyes) feats.push({ what: 'your eyes', hex: VC.labToHex(p.lab.eyes) });
+      const chromatic = feats.filter(function (f) { return okc(f.hex)[1] >= PARAMS.echoC; });
+      if (chromatic.length) {
+        let hit = null;
+        near.concat(L.jacket && near.indexOf('jacket') < 0 ? ['jacket'] : []).some(function (k) {
+          return seenColours(L[k]).some(function (h) {
+            const c = okc(h);
+            const f = c[1] >= PARAMS.echoC && chromatic.find(function (f) { const fc = okc(f.hex); return hueDist(c[2], fc[2]) <= PARAMS.familyHue && Math.abs(lum(h) - lum(f.hex)) <= PARAMS.echoL; });
+            if (f) hit = { k: k, f: f };
+            return !!f;
+          });
+        });
+        add({ id: 'echo', score: hit ? 1 : 0.9, slots: [],
+          text: hit ? 'Echo: the ' + nm(hit.k) + ' picks up the colour of ' + hit.f.what + ', which draws the eye to the face (Flusser).'
+            : 'Hint: nothing near the face repeats the colour of ' + chromatic.map(function (f) { return f.what; }).join(' or ') + '. Echoing one of them is Flusser\'s second way to bring the face forward.' });
       }
     }
 
@@ -679,7 +778,10 @@
 
     // Tie against shirt.
     if (L.tie && L.shirt && K.tie.knotted) {
-      const dT = Math.abs(lum(L.tie.mean) - lum(L.shirt.mean)), dE = VC.deltaE2000(VC.hexToLab(L.tie.mean), VC.hexToLab(L.shirt.mean));
+      // a tie whose pattern reads at 3 m stands clear of the shirt by its colours, not by their average
+      const tieCols = seenColours(L.tie), shirtL = lum(L.shirt.mean), shirtLab = VC.hexToLab(L.shirt.mean);
+      const dT = Math.max.apply(null, tieCols.map(function (h) { return Math.abs(lum(h) - shirtL); }));
+      const dE = Math.max.apply(null, tieCols.map(function (h) { return VC.deltaE2000(VC.hexToLab(h), shirtLab); }));
       const tn = K.tie.name, tl = tn.toLowerCase();
       if (dT < PARAMS.tieL && dE < PARAMS.mergeTo) add({ id: 'tie', score: 0.45, slots: ['tie'], text: tn + ' and shirt are too alike to separate. The ' + tl + ' is usually darker than the shirt.' });
       else if (lum(L.tie.mean) > lum(L.shirt.mean) + 12) add({ id: 'tie', score: 0.75, slots: ['tie'], text: tn + ' lighter than the shirt: possible, but a darker ' + tl + ' on a lighter shirt is the reliable order.' });
@@ -818,11 +920,26 @@
     const top = L.jacket ? 'jacket' : L.mid ? 'mid' : 'shirt', rise = (o.trousers && o.trousers.rise) || 'mid';
     if (L[top] && L.trousers) {
       const d = Math.abs(lum(top) - lum('trousers')), jacketHem = top === 'jacket';
-      if (d >= 30 && jacketHem) ad({ id: 'pline', score: shortLegs ? 0.75 : 0.9, slots: [],
+      if (d >= PARAMS.halvesStrong && jacketHem) ad({ id: 'pline', score: shortLegs ? 0.75 : 0.9, slots: [],
         text: 'A strong light-dark step at the ' + nm('jacket') + '\'s hem, over the hips: the eye starts the legs there, lower than the waist.' + legWord + (shortLegs ? ' Closer lightness between jacket and trousers moves the line up.' : '') });
-      else if (d >= 30 && rise === 'low') ad({ id: 'pline', score: shortLegs ? 0.75 : 0.9, slots: [],
+      else if (d >= PARAMS.halvesStrong && rise === 'low') ad({ id: 'pline', score: shortLegs ? 0.75 : 0.9, slots: [],
         text: 'The light-dark change sits at a low waistband, below your waist: the legs read shorter than they are.' + legWord + (shortLegs ? ' Higher-rise trousers move the line to your waist.' : '') });
-      else if (d >= 30) ad({ id: 'pline', score: 1, slots: [], text: 'The light-dark change between top and trousers falls at the waistband, where the legs appear to start.' });
+      else if (d >= PARAMS.halvesStrong) ad({ id: 'pline', score: 1, slots: [], text: 'The light-dark change between top and trousers falls at the waistband, where the legs appear to start.' });
+    }
+    // Top against trousers by build (Flusser, Dressing the Man, pp. 52-54, 271): the less contrast between the
+    // halves, the longer and dressier the figure, which a short man wants; a tall man wants horizontal breaks,
+    // such as a contrasting trouser. Matched (a suit, ΔE under nearFrom) is one block and not judged here.
+    if (L[top] && L.trousers && VC.deltaE2000(VC.hexToLab(L[top].mean), VC.hexToLab(L.trousers.mean)) >= PARAMS.nearFrom) {
+      const d = Math.abs(lum(top) - lum('trousers')), h = +((o.m || {}).height) || 0;
+      const tall = h >= PARAMS.frameTall, short = (h && h < PARAMS.frameShort) || shortLegs;
+      if (h && d < PARAMS.halvesL && tall) ad({ id: 'phalves', score: 0.8, slots: ['trousers'],
+        text: nm(top) + ' and ' + nm('trousers') + ' are close in lightness (step ' + Math.round(d) + '): one long column on a tall frame. A contrasting trouser, or a patterned jacket, breaks the line (Flusser).' });
+      else if (h && d < PARAMS.halvesL) ad({ id: 'phalves', score: 1, slots: [],
+        text: nm(top) + ' and ' + nm('trousers') + ' close in lightness: ' + (short ? 'the less contrast between the halves, the longer the figure, which suits your build (Flusser).' : 'a long, dressy line (Flusser).') });
+      else if (h && d >= PARAMS.halvesStrong && short && !(shortLegs && (top === 'jacket' || rise === 'low'))) ad({ id: 'phalves', score: 0.8, slots: ['trousers'],
+        text: 'A strong light-dark step between ' + nm(top) + ' and ' + nm('trousers') + ' (' + Math.round(d) + ') cuts a shorter figure in two; closer tones lengthen it (Flusser).' });
+      else if (h && d >= PARAMS.halvesL && tall) ad({ id: 'phalves', score: 1, slots: [],
+        text: 'A contrasting top and trousers break a tall frame\'s long line, as Flusser advises.' });
     }
     if (L.trousers && L.shoes) {
       const ds = Math.abs(lum('trousers') - lum('shoes')), bridge = L.socks && Math.abs(lum('socks') - lum('trousers')) < PARAMS.ankleBridgeL;
@@ -1350,7 +1467,7 @@
 
   window.VENGINE = {
     analyseProfile: analyseProfile, bodyRatios: bodyRatios, scoreColour: scoreColour,
-    RULES: RULES, PARAMS: PARAMS, stepOver: stepOver, ruleOf: ruleOf, kindOf: kindOf, wardrobeNeutral: wardrobeNeutral, checkOutfit: checkOutfit, verdict: verdict, penalty: penalty, SECTIONS: SECTIONS, sectionOf: sectionOf, watchRange: watchRange, summary: summary, look: look, SLOTS: SLOTS, FACE: FACE, TIER_TEXT: TIER_TEXT, corrected: corrected, HAIR: HAIR,
+    RULES: RULES, PARAMS: PARAMS, stepOver: stepOver, seenColours: seenColours, bestAtFace: bestAtFace, ruleOf: ruleOf, kindOf: kindOf, wardrobeNeutral: wardrobeNeutral, checkOutfit: checkOutfit, verdict: verdict, penalty: penalty, SECTIONS: SECTIONS, sectionOf: sectionOf, watchRange: watchRange, summary: summary, look: look, SLOTS: SLOTS, FACE: FACE, TIER_TEXT: TIER_TEXT, corrected: corrected, HAIR: HAIR,
     okc: okc, hueDist: hueDist, scoreCached: scoreCached, round: round, G: G,
     echoes: echoes, hairShown: hairShown, frameWeight: frameWeight, frameTemp: frameTemp, framesOf: framesOf, skinClashes: skinClashes, skinReasons: skinReasons, seasonProfile: seasonProfile, TAN: TAN
   };

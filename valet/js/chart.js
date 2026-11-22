@@ -7,7 +7,7 @@
    Down the whole chart runs a line at your skin's lightness, and on the rows at the face a
    shaded zone marks the lightness that frames your face (the band of section 4). Underneath,
    first any piece near the face that clashes with your skin (ringed in red; a clash of temperature
-   alone with a low-confidence reading, a note, in dashed grey), then the three steps the outfit rules
+   alone, a note, in dashed grey), then the three steps the outfit rules
    check, with their numbers: the shirt against the layer at the neck (the Dresser's pair), top against
    trousers, shoes against trousers. They use the same thresholds as the Dresser, so the
    chart and the checks always agree.
@@ -97,12 +97,15 @@
       s.push('<rect x="' + r1(x - 9) + '" y="' + (y - 9) + '" width="18" height="18" rx="3" fill="' + r.hex + '" stroke="' + (P.previewSlot === r.k ? '#111' : 'rgba(0,0,0,0.3)') + '" stroke-width="' + (P.previewSlot === r.k ? 1.6 : 1) + '"/>');
       // tier at the face, from the colour rules
       if (r.near && a && E) {
-        const t = E.scoreColour(r.hex, a).tier;
+        // judged as the Dresser judges it: a pattern that reads at 3 m by the better of its main colours
+        const lk = E.look && E.bestAtFace && r.k !== 'shoes' ? E.look({ hex: o[r.k], pat: pats[r.k] }) : null;
+        const bestF = lk ? E.bestAtFace(lk, a) : { hex: r.hex, s: E.scoreColour(r.hex, a) };
+        const t = bestF.s.tier;
         s.push('<text x="' + (X1 + 8) + '" y="' + (y + 4) + '" class="c-tt" fill="' + TT_COL[t] + '">T' + t + '</text>');
         if (t > 2) {
-          // clashes with your skin: ringed in red; a clash of temperature alone with a low-confidence
-          // reading is a note in the Dresser, so it is ringed in a dashed grey instead
-          const soft = a.confidence === 'low' && E.scoreColour(r.hex, a).tempOnly;
+          // clashes with your skin: ringed in red; a clash of temperature alone is a note in the Dresser,
+          // so it is ringed in a dashed grey instead
+          const soft = !!bestF.s.tempOnly;
           s.push('<rect x="' + r1(x - 12) + '" y="' + (y - 12) + '" width="24" height="24" rx="5" fill="none" stroke="' + (soft ? '#8a8a8a' : '#b0413e') + '" stroke-width="' + (soft ? 1.4 : 1.8) + '"' + (soft ? ' stroke-dasharray="3 2"' : '') + '/>');
           clashRows.push({ r: r, t: t, soft: soft });
         }
@@ -118,7 +121,7 @@
     clashRows.forEach(function (c) {
       const why = E.skinReasons ? E.skinReasons(c.r.hex, a) : [];
       notes.push({ ok: c.soft ? null : false, text: (c.soft ? 'Temperature only, at the face: ' : 'Clashes with your skin: ') + (c.r.name ? c.r.name + ' ' : '') + c.r.label.toLowerCase() + ' is T' + c.t + (why.length ? ', ' + why[0] : '') +
-        (c.soft ? '. Your temperature reading is low confidence, so this is a note: check it in daylight' : '') + '.' });
+        (c.soft ? '. A clash of temperature alone is a note, not a failure' + (a.confidence === 'low' ? '; your reading is low confidence, so check it in daylight' : '') : '') + '.' });
     });
     function bracket(r1_, r2_, ok, text) {
       const xm = X1 + 38, ya = r1_.y, yb = r2_.y;
@@ -146,10 +149,11 @@
     const topK = by.jacket ? 'jacket' : by.mid ? 'mid' : 'shirt';
     if (by[topK] && by.trousers) {
       const d = Math.abs(by[topK].L - by.trousers.L), dE = VC.deltaE2000(VC.hexToLab(by[topK].hex), VC.hexToLab(by.trousers.hex));
-      // the thresholds of the blur rule (rules.js), not numbers of its own
+      // the thresholds of the top-and-trousers rule (rules.js); whether close halves help depends on the build
+      // (How it works, section 10, Top and trousers), so the chart describes and does not judge
       const PR = E && E.PARAMS ? E.PARAMS : { nearFrom: 1.5, nearTo: 7, halvesL: 12 };
-      const blur = dE >= PR.nearTo && d < PR.halvesL, same = dE < PR.nearFrom;
-      notes.push({ ok: !blur, text: same ? 'Top and trousers the same colour: one block from neck to shoes' + (topK === 'jacket' ? ', as a suit reads' : '') + '.' : (blur ? 'Halves blur: ' : 'Top and bottom separate: ') + by[topK].label.toLowerCase() + ' and trousers ' + Math.round(d) + ' apart' + (blur ? ' (need ' + PR.halvesL + ' or more, or an exact match)' : '') + '.' });
+      const close = dE >= PR.nearFrom && d < PR.halvesL, same = dE < PR.nearFrom;
+      notes.push({ ok: null, text: same ? 'Top and trousers the same colour: one block from neck to shoes' + (topK === 'jacket' ? ', as a suit reads' : '') + '.' : close ? 'Top and trousers close in lightness (' + Math.round(d) + ' apart): one long line, which lengthens a short figure; a tall one may want a break.' : 'Top and trousers ' + Math.round(d) + ' apart: a clear break at the waist.' });
     }
     if (by.shoes && by.trousers) {
       const lighter = by.shoes.L > by.trousers.L + 8;
@@ -210,7 +214,7 @@
       '<p class="ck-how"><b>Where to put colours</b></p><ol class="ck-place">' +
       '<li>At least one layer at the face in a green zone.</li>' +
       '<li>Between the shirt and the layer at the neck, a step of at least ' + lo + ' (your face carries contrast ' + Math.round(a.contrast) + '); a little short of it, down to ' + Math.round(lo * (window.VENGINE ? window.VENGINE.PARAMS.stepNear : 1)) + ', is a note.</li>' +
-      '<li>The top and the trousers at least ' + (window.VENGINE ? window.VENGINE.PARAMS.halvesL : 12) + ' apart, or matching exactly, as a suit.</li>' +
+      '<li>The top and the trousers: close in lightness for a long line on a short or average frame, a clear break for a tall one (with your height on, the Dresser judges it).</li>' +
       '<li>Shoes level with the trousers or to their left, darker.</li>' +
       '<li>Below the face there is no zone: any lightness works there, within these steps.</li></ol>';
   }

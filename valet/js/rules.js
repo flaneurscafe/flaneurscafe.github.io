@@ -22,7 +22,10 @@
     tier2Score: 0.62, tier2Floor: 0.45,            // B §8  tier 2
     nearFrom: 1.5, nearTo: 7,                      // A/B §10  ΔE2000: a match below 1.5, a near miss up to 7 (leather shoes are not compared with the trousers)
     stepNear: 0.8,                                 // B §10  a light-dark step at the face short of the lower bound but within 80% of it is a note, not a failure
-    halvesL: 12,                                   // B §9–10  L* between top and bottom, or any pair, so they do not blur
+    halvesL: 12,                                   // B §13  top and trousers closer than this in L* are one long line (judged by build: Flusser pp. 52–54)
+    halvesStrong: 30,                              // B §13  a strong light-dark step between top and trousers, which cuts a short figure (Flusser p. 53) and marks where the legs start
+    patternMajor: 0.35,                            // B §11  a pattern that reads at 3 m is judged at the face by each colour covering at least this share of the cloth
+    echoC: 0.03, echoL: 30,                        // B §4  a colour of the hair or eyes is echoed by one of its hue (familyHue), with OKLCH chroma 0.03 or more and within 30 L* (Flusser pp. 23–24)
     tieL: 12,                                      // B §10  L* between tie and shirt
     sockDeepL: 40, sockDeepC: 0.12,                // B §10  a deep sock colour: L* under 40, OKLCH chroma 0.12 at most
     sockFamilyHue: 35, sockLoudC: 0.2,             // B §10  socks in the trousers' colour family: hue within 35°; electric or neon from OKLCH chroma 0.2 (royal blue, 0.16, is strong but not electric); neutral below 0.025
@@ -66,7 +69,11 @@
     anchor: { name: 'no plain layer', weight: 1, reason: 'gives the patterns a plain anchor', kind: 'convention', how: 'r-pnear' },
     asize: { name: 'the size of an accessory', weight: 0.6, reason: null, kind: 'convention', how: 'r-size' },
     band: { name: 'the hat band', weight: 1, reason: null, section: 'skin', kind: 'convention', how: 'r-pgarment' },
-    blur: { name: 'top and bottom blur', weight: 0.8, reason: 'separates top and bottom', section: 'contrast', kind: 'convention', how: 'r-blur' },
+    halves: { name: 'top and trousers by build', weight: 0.8, reason: null, section: 'contrast', kind: 'context', how: 'r-halves' },
+    phalves: { name: 'top and trousers for your build', weight: 0.8, reason: 'suits your build', kind: 'convention', how: 'r-halves' },
+    ocontrast: { name: "the outfit's contrast", weight: 0.8, reason: "matches your face's contrast", section: 'contrast', kind: 'convention', how: 'r-ocontrast' },
+    hank: { name: 'the pocket square with the tie', weight: 0.5, reason: 'suits the tie', section: 'colour', kind: 'convention', how: 'r-square' },
+    echo: { name: 'your own colours echoed', weight: 0.3, reason: 'echoes your hair or eyes', section: 'skin', kind: 'convention', how: 'r-echo' },
     bold: { name: 'a second loud colour', weight: 0.5, reason: 'quieter below the belt', section: 'colour', kind: 'convention', how: 'r-below' },
     bout: { name: 'a buttonhole without lapels', weight: 1, reason: null, kind: 'possibility', how: 'r-buttonhole' },
     brim: { name: 'the brim for the frame', weight: 1, reason: null, section: 'frame', kind: 'convention', how: 'r-pgarment' },

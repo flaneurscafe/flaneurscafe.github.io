@@ -149,7 +149,7 @@ T('an impossible combination is its own verdict', base({jacket:P('#2d3b2a','waxe
     const gold = base({shirt:P(col('White'),'shirt','poplin'), tie:P('#d0bc87','tie','repsilk')});
     chk('the reading is cool in both, low and trustworthy confidence', gold, low, () => low.tempLevel === 'cool' && good.tempLevel === 'cool' && low.confidence === 'low' && good.confidence !== 'low');
     chk('gold tie, cool skin, low confidence: a note that says why', gold, low, cs => cs.some(c => c.id === 'face' && c.score === 0.6 && /low confidence/.test(c.text)));
-    chk('gold tie, cool skin, trustworthy reading: a failure', gold, good, cs => cs.some(c => c.id === 'face' && c.score === 0.3));
+    chk('gold tie, cool skin, trustworthy reading: also a note since 1.15 (temperature alone never fails)', gold, good, cs => cs.some(c => c.id === 'face' && c.score === 0.6 && !/low confidence/.test(c.text)));
     const flat = base({shirt:P('#7a5a48','shirt','poplin'), tie:P('#d0bc87','tie','repsilk')});   // a shirt that merges with the skin, besides the tie
     chk('temperature plus another clash, low confidence: still a failure', flat, low, cs => cs.some(c => c.id === 'face' && c.score === 0.3)); }
 }
@@ -182,6 +182,99 @@ T('an impossible combination is its own verdict', base({jacket:P('#2d3b2a','waxe
     const t = r.label;
     chk('chart ' + (i + 1) + ': the bracket names the shirt (next to the neck) and the jacket', /next to the neck against jacket/i.test(t) && !/against tie|tie against/i.test(t) && !/against scarf|scarf against/i.test(t));
   });
+}
+
+// ---- 1.15: Flusser's rules (Dressing the Man): patterns by what is seen, contrast, build, squares, echo ----
+{
+  const chk = (name, ok, why) => { count++; if (!ok) { fails++; console.log('✗', name, why ? '\n   ' + why : ''); } else if (process.env.VERBOSE) console.log('✓', name); };
+  const VP = window.VPAT, VC = window.VC, O = null;
+  const prof = (skin, hair, eyes, style) => E.analyseProfile({ samples: { white: null, skin, hair, eyes }, manual: { skin: true, hair: true, eyes: true }, useWhite: true, hairStyle: style || 'short', season: 'winter' });
+  const low = prof('#e8c4a8', '#c8a878', '#7a8a6a'), high = prof('#f0d0bc', '#1a1412', '#2a1c14');
+  const ids = (cs, id) => cs.filter(c => c.id === id);
+  const notes = (cs, id) => cs.filter(c => c.id === id && c.score < 0.85);
+  const txt = cs => cs.filter(c => c.score < 0.85).map(c => c.id + ' ' + c.score + ': ' + c.text.slice(0, 120)).join('\n   ');
+
+  // the share of the second colour
+  const f0 = VP.mean('#f7e8d8', { type: 'foulard', hex2: '#6b3a24' }), f5 = VP.mean('#f7e8d8', { type: 'foulard', hex2: '#6b3a24', cover: 0.5 });
+  chk('share: a half-and-half foulard adds up darker than the usual one', VC.hexToLab(f5)[0] < VC.hexToLab(f0)[0] - 15);
+  chk('share: kept by norm, rounded', VP.norm({ type: 'foulard', hex2: '#6b3a24', cover: 0.333 }).cover === 0.33);
+  chk('share: out of range or nonsense is dropped', VP.norm({ type: 'foulard', cover: 0.99 }).cover === undefined && VP.norm({ type: 'foulard', cover: 'x' }).cover === undefined && VP.norm({ type: 'foulard', cover: 0.01 }).cover === undefined);
+  chk('share: the default is the drawing\'s', VP.coverOf({ type: 'gingham' }) === VP.byId.gingham.cover && VP.coverOf({ type: 'solid' }) === 0);
+  chk('checks on neckwear: gingham and tattersall for ties, bow ties and cravats, in silk twill and wool', ['tie', 'bowtie', 'cravat'].every(k => G.byKey.tie.kinds.find(x => x.id === k).pats.indexOf('gingham') >= 0) && G.patOK('silktwill', 'tattersall') && G.patOK('woolchallis', 'gingham'));
+
+  // a pattern that reads at 3 m is judged by its main colours
+  const grid = P('#fbe6d6', 'cravat', 'silktwill', { pat: { type: 'gingham', scale: 1.2, hex2: '#7a4a32', cover: 0.5 } });
+  const lk = E.look(grid);
+  chk('seen colours: a half-and-half grid that reads at 3 m shows both its colours', lk.visible && E.seenColours(lk).length === 2);
+  const thin = E.look(P('#1d2a44', 'tie', 'silktwill', { pat: { type: 'foulard', scale: 1.5, hex2: '#f7f6f2' } }));
+  chk('seen colours: a navy foulard with small white motifs is seen as its navy ground', E.seenColours(thin).length === 1 && E.seenColours(thin)[0] === '#1d2a44');
+  const tex = E.look(P('#1d2a44', 'jacket', 'worsted', { pat: { type: 'birdseye', scale: 0.3, hex2: '#3a4a64' } }));
+  chk('seen colours: a pattern that reads as texture is its average', !tex.visible && E.seenColours(tex)[0] === tex.mean);
+  const cream = base({ shirt: P('#ede4d6', 'shirt', 'poplin'), tie: grid });
+  chk('tie against shirt: a cream-and-rust grid stands clear of a cream shirt by its rust', !notes(E.checkOutfit(cream, aW), 'tie').length, txt(E.checkOutfit(cream, aW)));
+  const creamAvg = base({ shirt: P('#ede4d6', 'shirt', 'poplin'), tie: P('#fbe6d6', 'cravat', 'silktwill', { pat: { type: 'foulard', scale: 1.2, hex2: '#7a4a32' } }) });
+  chk('tie against shirt: a sparse foulard on the same cream ground still merges with the shirt', notes(E.checkOutfit(creamAvg, aW), 'tie').length === 1);
+
+  // temperature alone never fails
+  const kyle = prof('#814c35', '#1a1412', '#2a1c14');
+  const goldTie = base({ shirt: P('#f7f6f2', 'shirt', 'poplin'), tie: P('#d0bc87', 'tie', 'repsilk') });
+  const fg = E.checkOutfit(goldTie, kyle).find(c => c.id === 'face');
+  chk('temperature alone: a note, whatever the confidence', fg && fg.score === 0.6 && /temperature alone is a note/.test(fg.text), fg && fg.text);
+
+  // the outfit's contrast against the face's
+  const stark = base({ jacket: P('#161616', 'jacket', 'worsted'), shirt: P('#f7f6f2', 'shirt', 'poplin'), trousers: P('#161616', 'trousers', 'worsted') });
+  const cs1 = E.checkOutfit(stark, low);
+  chk('outfit contrast: black and white on a muted face is noted (or the collar step says it)', notes(cs1, 'ocontrast').length === 1 || notes(cs1, 'step').length === 1, txt(cs1));
+  const soft = base({ jacket: P('#8a7a68', 'jacket', 'linen'), shirt: P('#cdbfa8', 'shirt', 'poplin'), trousers: P('#a89880', 'trousers', 'cotton') });
+  chk('outfit contrast: soft tones on a muted face are fine', !notes(E.checkOutfit(soft, low), 'ocontrast').length);
+  const tonal = base({ jacket: null, shirt: P('#8e8a84', 'polo', 'pique'), trousers: P('#7f7b75', 'trousers', 'cotton'), socks: P('#7f7b75', 'socks'), shoes: P('#6a6058', 'loafer', 'suede') });
+  const cs2 = E.checkOutfit(tonal, high);
+  chk('outfit contrast: a tonal outfit with one layer on a high-contrast face is noted', notes(cs2, 'ocontrast').length === 1, txt(cs2));
+  chk('outfit contrast: a medium-contrast face is never noted', !notes(E.checkOutfit(tonal, aW), 'ocontrast').length && !notes(E.checkOutfit(stark, aW), 'ocontrast').length);
+  const boldTie = base({ tie: P('#161616', 'tie', 'repsilk', { pat: { type: 'repp', scale: 2.2, hex2: '#f7f6f2', cover: 0.5 } }) });
+  chk('pattern contrast (existing rule): a bold black-and-white tie on a muted face is noted once', notes(E.checkOutfit(boldTie, low), 'pcontrast').length === 1);
+
+  // top and trousers, by build
+  const close = base({ jacket: P(col('Charcoal'), 'jacket', 'flannel'), trousers: P('#55575b', 'trousers', 'flannel') });
+  const csA = E.checkOutfit(close, aW);
+  chk('halves: close in lightness, no height known: a note about you that never counts', ids(csA, 'halves').length === 1 && E.kindOf(ids(csA, 'halves')[0]) === 'context' && !ids(csA, 'blur').length, txt(csA));
+  const withH = h => Object.assign({}, close, { propOn: true, m: { height: h }, body: {} });
+  chk('halves: the verdict does not change with or without that note', E.verdict(csA).title === E.verdict(csA.filter(c => c.id !== 'halves')).title);
+  chk('halves: a tall frame gets a note to break the line', notes(E.checkOutfit(withH(190), aW), 'phalves').length === 1 && !ids(E.checkOutfit(withH(190), aW), 'halves').length);
+  chk('halves: a short frame gets a tick', ids(E.checkOutfit(withH(165), aW), 'phalves').some(c => c.score === 1));
+  chk('halves: an average frame gets a tick', ids(E.checkOutfit(withH(178), aW), 'phalves').some(c => c.score === 1));
+  const strong = Object.assign(base({ jacket: P('#1d2a44', 'blazer', 'hopsack'), trousers: P('#e8e0d0', 'trousers', 'cotton') }), { propOn: true, m: { height: 165 }, body: {} });
+  chk('halves: a strong step on a short frame is noted', notes(E.checkOutfit(strong, aW), 'phalves').length === 1);
+  const suitO = Object.assign(base({ jacket: P(col('Charcoal'), 'jacket', 'flannel'), trousers: P(col('Charcoal'), 'trousers', 'flannel') }), { propOn: true, m: { height: 190 }, body: {} });
+  chk('halves: a suit is one block, not judged', !ids(E.checkOutfit(suitO, aW), 'phalves').length && !ids(E.checkOutfit(suitO, aW), 'halves').length);
+
+  // the pocket square with the tie (Flusser pp. 216-217)
+  const sqBase = o => base(Object.assign({ jacket: P('#1d2a44', 'blazer', 'hopsack') }, o));
+  const plainPlain = sqBase({ tie: P('#5e1f2c', 'tie', 'grenadine'), square: P('#c8a24a', 'square', 'silktwill') });
+  chk('square: a plain square with a plain tie is noted', notes(E.checkOutfit(plainPlain, aW), 'hank').some(c => /patterned tie/.test(c.text)));
+  const ground = sqBase({ tie: P('#5e1f2c', 'tie', 'silktwill', { pat: { type: 'foulard', scale: 1.2, hex2: '#c8a24a' } }), square: P('#5f202d', 'square', 'linen') });
+  chk('square: a plain square in the tie\'s ground colour is noted', notes(E.checkOutfit(ground, aW), 'hank').some(c => /ground colour/.test(c.text)));
+  const goodSq = sqBase({ tie: P('#5e1f2c', 'tie', 'silktwill', { pat: { type: 'foulard', scale: 1.2, hex2: '#c8a24a' } }), square: P('#c8a24a', 'square', 'linen') });
+  const csG = E.checkOutfit(goodSq, aW);
+  chk('square: a matte square echoing the tie\'s figure, with a silk patterned tie: a tick, no note', ids(csG, 'hank').some(c => c.score === 1) && !notes(csG, 'hank').length, txt(csG));
+  const silkSilk = sqBase({ tie: P('#5e1f2c', 'tie', 'silktwill', { pat: { type: 'foulard', scale: 1.2, hex2: '#c8a24a' } }), square: P('#c8a24a', 'square', 'silktwill') });
+  chk('square: a silk square with a silk tie is noted for the surface', notes(E.checkOutfit(silkSilk, aW), 'hank').some(c => /lustre/.test(c.text)));
+  const woolLinen = sqBase({ tie: P('#5e1f2c', 'tie', 'woolchallis', { pat: { type: 'paisley', scale: 2.5, hex2: '#c8a24a' } }), square: P('#c8a24a', 'square', 'linen') });
+  chk('square: a linen square with a wool tie is noted for the surface', notes(E.checkOutfit(woolLinen, aW), 'hank').some(c => /silk square/.test(c.text)));
+  const whiteSq = sqBase({ tie: P('#5e1f2c', 'tie', 'grenadine'), square: P('#f7f6f2', 'square', 'linen') });
+  chk('square: white linen is exempt from all of it', !ids(E.checkOutfit(whiteSq, aW), 'hank').length);
+  const noEcho = sqBase({ tie: P('#5e1f2c', 'tie', 'silktwill', { pat: { type: 'foulard', scale: 1.2, hex2: '#c8a24a' } }), square: P('#2f6b3d', 'square', 'linen') });
+  const csN = E.checkOutfit(noEcho, aW);
+  chk('square: a square that echoes nothing gets a hint that never changes the verdict', ids(csN, 'hank').some(c => c.score === 0.9) && E.verdict(csN).title === E.verdict(csN.filter(c => c.id !== 'hank')).title);
+
+  // your own colours echoed
+  const auburn = prof('#f0cdb8', '#7a3a22', '#5a6a7a');
+  const echoTie = base({ tie: P('#7d3b26', 'tie', 'grenadine') });
+  chk('echo: a tie in the colour of auburn hair is a tick', ids(E.checkOutfit(echoTie, auburn), 'echo').some(c => c.score === 1 && /hair/.test(c.text)));
+  const greyOnly = base({ jacket: P('#3d4045', 'jacket', 'flannel'), shirt: P('#f7f6f2', 'shirt', 'poplin'), tie: P('#8e9196', 'tie', 'grenadine'), trousers: P('#8e9196', 'trousers', 'flannel') });
+  const csE = E.checkOutfit(greyOnly, auburn);
+  chk('echo: nothing repeated gets a hint that never changes the verdict', ids(csE, 'echo').some(c => c.score === 0.9) && E.verdict(csE).title === E.verdict(csE.filter(c => c.id !== 'echo')).title);
+  chk('echo: black hair and dark brown eyes, nothing to echo, no check', !ids(E.checkOutfit(echoTie, high), 'echo').length || ids(E.checkOutfit(echoTie, high), 'echo').every(c => !/hair/.test(c.text)));
 }
 console.log((fails ? fails + ' scenario(s) failed' : 'all scenarios pass') + ' (' + count + ' run)');
 if (fails) process.exit(1);

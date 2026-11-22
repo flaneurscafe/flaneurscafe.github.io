@@ -30,9 +30,23 @@ function flip(name, key, value, o, fires, below, prof) {
 }
 const has = (id, re) => cs => cs.some(c => c.id === id && c.score < 0.85 && (!re || re.test(c.text)));
 
-// top and bottom blur: lightness between them under halvesL
+// top and trousers close in lightness under halvesL: a note about the wearer without a height (halves),
+// a note for a tall frame with one (phalves)
 { const o = base({ jacket: P(col('Charcoal'), 'jacket', 'flannel'), trousers: P(col('Mid grey'), 'trousers', 'flannel') });
-  flip('top and bottom blur', 'halvesL', Math.abs(L(o.jacket.hex) - L(o.trousers.hex)), o, has('blur'), true); }
+  const d = Math.abs(L(o.jacket.hex) - L(o.trousers.hex));
+  flip('top and trousers, no height', 'halvesL', d, o, cs => cs.some(c => c.id === 'halves'), true);
+  flip('top and trousers, tall', 'halvesL', d, Object.assign({}, o, { propOn: true, m: { height: 190 }, body: {} }), cs => cs.some(c => c.id === 'phalves' && c.score < 0.85), true); }
+// a strong step between top and trousers on a short frame, from halvesStrong
+{ const o = Object.assign(base({ jacket: P(col('Navy'), 'blazer', 'hopsack'), trousers: P('#e8e0d0', 'trousers', 'cotton') }), { propOn: true, m: { height: 165 }, body: {} });
+  flip('strong step on a short frame', 'halvesStrong', Math.abs(L(E.look(o.jacket).mean) - L(o.trousers.hex)), o, cs => cs.some(c => c.id === 'phalves' && c.score < 0.85), false); }
+// a pattern's second colour counts as a main colour from patternMajor
+{ const o = base({ tie: P('#fbe6d6', 'cravat', 'silktwill', { pat: { type: 'gingham', scale: 1.2, hex2: '#7a4a32', cover: 0.42 } }) });
+  flip('a main colour of a pattern', 'patternMajor', 0.42, o, () => E.seenColours(E.look(o.tie)).length === 2, false); }
+// echo: within echoL of the hair's lightness
+{ const pr = E.analyseProfile({ samples: { white: null, skin: '#f0cdb8', hair: '#7a3a22', eyes: '#3a3a3a' }, manual: { skin: true, hair: true, eyes: true }, useWhite: true, hairStyle: 'short', season: 'winter' });
+  const hairHex = VC.labToHex(pr.lab.hair), hl = VC.hexToLab(hairHex), tie = VC.labToHex([hl[0] + 22, hl[1], hl[2]]);
+  const o = base({ shirt: P('#f7f6f2', 'shirt', 'poplin'), jacket: P('#3d4045', 'jacket', 'flannel'), trousers: P('#8e9196', 'trousers', 'flannel'), tie: P(tie, 'tie', 'grenadine') });
+  flip('echo of the hair', 'echoL', Math.abs(L(tie) - hl[0]), o, cs => cs.some(c => c.id === 'echo' && c.score === 1), true, pr); }
 // tie against shirt: lightness step under tieL
 { const o = base({ tie: P(col('Sky blue'), 'tie', 'grenadine') });   // close to the light blue shirt in colour (ΔE 6), so lightness decides
   flip('tie against shirt', 'tieL', Math.abs(L(o.tie.hex) - L(o.shirt.hex)), o, has('tie'), true); }

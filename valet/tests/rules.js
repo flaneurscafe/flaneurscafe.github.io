@@ -27,6 +27,15 @@ emitted.forEach(function (id) {
   if (['perceptual', 'convention', 'possibility', 'context'].indexOf(r.kind) < 0) problems.push(id + ': kind must be perceptual, convention, possibility or context');
 });
 Object.keys(E.RULES).forEach(function (id) { if (emitted.indexOf(id) < 0) problems.push(id + ': entry for a rule no check emits'); });
+// a key written twice in the RULES or PARAMS table silently keeps only the last one
+{ const rsrc = fs.readFileSync(path.join(__dirname, '..', 'js', 'rules.js'), 'utf8');
+  ['RULES', 'PARAMS'].forEach(function (tab) {
+    const from = rsrc.indexOf('const ' + tab + ' = {'), to = rsrc.indexOf('\n  };', from);
+    const keys = [...rsrc.slice(from, to).matchAll(/^\s{4}([a-zA-Z0-9]+):/gm)].map(function (m) { return m[1]; })
+      .concat([...rsrc.slice(from, to).matchAll(/,\s+([a-zA-Z0-9]+):\s/g)].map(function (m) { return m[1]; }).filter(function () { return tab === 'PARAMS'; }));
+    const seen = {}; keys.forEach(function (k) { if (seen[k]) problems.push(tab + ': "' + k + '" is written twice'); seen[k] = 1; });
+  });
+}
 if (problems.length) { console.error('RULES table: ' + problems.length + ' problem(s)\n  ' + problems.join('\n  ')); process.exit(1); }
 const kinds = {}; emitted.forEach(function (id) { kinds[E.RULES[id].kind] = (kinds[E.RULES[id].kind] || 0) + 1; });
 console.log('RULES table complete: ' + emitted.length + ' rules, each with a name, weight, reason, section, kind and a passage in How it works (' + Object.keys(kinds).map(function (k) { return kinds[k] + ' ' + k; }).join(', ') + ').');
