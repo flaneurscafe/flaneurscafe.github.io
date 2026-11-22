@@ -297,7 +297,7 @@ T('an impossible combination is its own verdict', base({jacket:P('#2d3b2a','waxe
   chk('near matches between cloths still fail (navy and midnight)', E.checkOutfit(base({ jacket: P(col('Navy'), 'jacket', 'hopsack'), trousers: P(col('Midnight') || col('Ink'), 'trousers', 'flannel') }), aW).some(c => c.id === 'near'));
 }
 
-// ---- 1.16: a tie and square cut from one cloth fail (Flusser pp. 216-217); outfit contrast is judged at the face ----
+// ---- 1.16.1: a tie and square cut from one cloth fail (Flusser pp. 216-217); outfit contrast is judged at the face ----
 {
   const sq = (cloth) => base({ occasion: 'business', tie: P('#555045', 'tie', 'woolchallis'), square: P('#565243', 'square', cloth) });
   const one = E.checkOutfit(sq('woolchallis'), aW), other = E.checkOutfit(sq('silktwill'), aW);
@@ -312,7 +312,7 @@ T('an impossible combination is its own verdict', base({jacket:P('#2d3b2a','waxe
   else if (!E.checkOutfit(tonal, hi).some(c => (c.id === 'ocontrast' || c.id === 'step') && c.score < 0.85)) { fails++; console.log('✗ a pale tonal top on a high-contrast face should be noted, whatever the trousers'); }
 }
 
-// ---- 1.16: the belt, braces and the waistcoat ----
+// ---- 1.16.1: the belt, braces and the waistcoat ----
 {
   const vest = (acc) => base({ occasion: 'business', mid: P('#3d4045', 'waistcoat', 'worsted'), acc: acc });
   const fl = (o, id) => E.checkOutfit(o, aW).some(c => c.id === id && c.score < 0.5);

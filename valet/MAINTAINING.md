@@ -144,7 +144,7 @@ Flusser gives a rule Valet did not check until 1.15: *a plain pocket square only
 2. **Passage:** a sentence in `<li id="r-square">` with the page cited, and the rule taken out of the "not checked yet" paragraph in section 18 (`id="flusser-unchecked"`).
 3. **Threshold:** none needed; "patterned" is `L.tie.visible`, "plain" is `!L.square.visible`.
 4. **Registry:** a new id, `hank` ("the pocket square with the tie"), kind `convention`. It could not reuse `square`, because `square` is a *possibility* rule (a square needs a breast pocket), and a failing possibility rule makes the verdict "Not possible as set".
-5. **Check**, in the pocket-square block of `checkOutfit`, after the "bought as a set" test, skipped for white linen:
+5. **Check**, in the pocket-square block of `checkOutfit`, after the test for a square cut from the tie's own cloth (`sqmatch`, a failure since 1.16.1), skipped for white linen:
 
    ```js
    if (sqPlain && tiePlain) add({ id: 'hank', score: 0.7, slots: ['square', 'tie'],
