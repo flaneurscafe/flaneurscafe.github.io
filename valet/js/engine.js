@@ -333,17 +333,22 @@
     const sRed = rules.filter(function (r) { return r.id === 'red'; }).reduce(function (m, r) { return Math.min(m, r.score); }, 1);
     const weakest = Math.min(sContrast, sMerge, sTemp, sChroma, sRed);
 
-    let tier;
-    if (score >= PARAMS.tier1Score && weakest >= PARAMS.tier1Floor) tier = 1;
-    else if (score >= PARAMS.tier2Score && weakest >= PARAMS.tier2Floor) tier = 2;
-    // Tier 4 is "too vivid or too much against your colouring": the chroma rule or the heavy side of
-    // the contrast rule says so. Any other colour that fails at the face is useful below the belt.
-    else if (sChroma < 0.99 || (sContrast < 0.7 && sep >= lo)) tier = 4;
-    else tier = 3;
+    const tierOf = function (sc, wk) {
+      if (sc >= PARAMS.tier1Score && wk >= PARAMS.tier1Floor) return 1;
+      if (sc >= PARAMS.tier2Score && wk >= PARAMS.tier2Floor) return 2;
+      // Tier 4 is "too vivid or too much against your colouring": the chroma rule or the heavy side of
+      // the contrast rule says so. Any other colour that fails at the face is useful below the belt.
+      if (sChroma < 0.99 || (sContrast < 0.7 && sep >= lo)) return 4;
+      return 3;
+    };
+    const tier = tierOf(score, weakest);
+    // The tier the colour would have if temperature did not count: when that is 1 or 2, temperature
+    // alone keeps it from the face, and a low-confidence temperature reading makes that a note (checkOutfit).
+    const tierNoTemp = sTemp >= 1 ? tier : tierOf(clamp(score + 0.25 * (1 - sTemp), 0, 1), Math.min(sContrast, sMerge, sChroma, sRed));
 
     return {
       hex: hex, lab: lab, lch: lch, oklch: ok, neutral: neutral,
-      temperature: tColour, score: score, tier: tier, rules: rules
+      temperature: tColour, score: score, tier: tier, tempOnly: tier > 2 && tierNoTemp <= 2, rules: rules
     };
   }
 
@@ -442,8 +447,13 @@
 
     /* --- colour --- */
     const weak = !near.length ? [] : near.filter(function (k) { return scoreCached(L[k].mean, p).tier > 2; });
+    // A small accent (square, flower) is a note. So is a colour kept from the face by temperature alone
+    // when the temperature reading is low confidence (a skin colour typed in, or no white reference):
+    // the warm-cool lean is the least certain thing Valet reads from a face (section 3).
+    const softFace = function (k) { return k === 'square' || k === 'boutonniere' || (p.confidence === 'low' && scoreCached(L[k].mean, p).tempOnly); };
+    const tempOnlyNote = weak.length && p.confidence === 'low' && weak.some(function (k) { return scoreCached(L[k].mean, p).tempOnly; }) ? ' Your temperature reading is low confidence, so a clash of temperature alone is a note: check it in daylight.' : '';
     if (near.length) add(weak.length
-      ? { id: 'face', level: 'A/B', score: weak.every(function (k) { return k === 'square' || k === 'boutonniere'; }) ? 0.6 : 0.3, n: weak.length, slots: weak, text: 'Clashes with your skin: ' + weak.map(function (k) { const r = skinReasons(L[k].mean, p); return nm(k) + ' (tier ' + scoreCached(L[k].mean, p).tier + (r.length ? ', ' + r[0] : '') + ')'; }).join(' and ') + '. Swap it, or move that colour below the belt.' }
+      ? { id: 'face', level: 'A/B', score: weak.every(softFace) ? 0.6 : 0.3, n: weak.length, slots: weak, text: 'Clashes with your skin: ' + weak.map(function (k) { const r = skinReasons(L[k].mean, p); return nm(k) + ' (tier ' + scoreCached(L[k].mean, p).tier + (r.length ? ', ' + r[0] : '') + ')'; }).join(' and ') + '. Swap it, or move that colour below the belt.' + tempOnlyNote }
       : { id: 'face', level: 'A/B', score: 1, slots: face, text: 'Against your skin: everything near the face is tier 1 or 2 for you.' });
 
     // A light-dark step at the face (Outfit Check, question 2), in proportion to the face: the layer
@@ -460,8 +470,10 @@
     }
     if (L.shirt && over) {
       const best = Math.abs(lum(L.shirt.mean) - lum(L[over].mean)), pair = ['shirt', over];
-      if (best < lo) add({ id: 'step', score: 0.35, slots: [over, 'shirt'], level: 'A/B',
+      if (best < lo * PARAMS.stepNear) add({ id: 'step', score: 0.35, slots: [over, 'shirt'], level: 'A/B',
         text: 'Light-dark step: ' + nm('shirt') + ' and ' + nm(over) + ' are close in lightness (' + round(best) + '; your face carries at least ' + round(lo) + '). The frame goes flat: make one clearly lighter or darker.' });
+      else if (best < lo) add({ id: 'step', score: 0.65, slots: [over, 'shirt'], level: 'A/B',
+        text: 'Light-dark step: ' + nm('shirt') + ' against ' + nm(over) + ' (' + round(best) + ') is a little short of what your face carries (' + round(lo) + '). It still frames the face; a slightly lighter shirt or darker layer frames it more clearly.' });
       else if (p.contrastLevel === 'low' && best > hi) add({ id: 'step', score: 0.6, slots: pair, level: 'A/B',
         text: 'Light-dark step: ' + nm('shirt') + ' against ' + nm(over) + ' (' + round(best) + ') is far stronger than your own low contrast.' });
       else add({ id: 'step', score: 1, slots: pair, level: 'A/B', text: 'Light-dark step: ' + nm('shirt') + ' against ' + nm(over) + ' (' + round(best) + ') gives the face a frame.' });
@@ -532,8 +544,12 @@
       ['scarf', 'jacket'], ['scarf', 'mid'], ['scarf', 'shirt'], ['tie', 'scarf'],
       ['coat', 'jacket'], ['coat', 'mid'], ['coat', 'trousers'], ['scarf', 'coat'], ['boutonniere', 'tie']];
     let suitText = null;
+    // Leather shoes are not compared with the trousers: leather and cloth never look like one material
+    // meant to match, so black calf boots with black jeans read as black with black, not as a near miss.
+    const leatherShoes = L.shoes && ['calf', 'suede', 'patent'].indexOf((G.cloth('shoes', o.shoes) || {}).id) >= 0;
     pairs.forEach(function (pr) {
       if (!L[pr[0]] || !L[pr[1]]) return;
+      if (pr[1] === 'shoes' && leatherShoes) return;
       const dE = VC.deltaE2000(VC.hexToLab(L[pr[0]].mean), VC.hexToLab(L[pr[1]].mean));
       if (dE < PARAMS.nearFrom && pr[0] === 'jacket' && pr[1] === 'trousers') {
         // a suit is one cloth as well as one colour; the same colour in two cloths looks like a
@@ -930,7 +946,8 @@
     }
     // Season: cloth weight against the season switch, and two seasons in one outfit.
     const season = p.season === 'summer' ? 'summer' : 'winter', other = season === 'summer' ? 'winter' : 'summer';
-    const seasonal = Object.keys(L);
+    // the pocket square is left out: a linen or silk square is worn all year, with tweed and flannel too
+    const seasonal = Object.keys(L).filter(function (k) { return k !== 'square'; });
     const wrong = seasonal.filter(function (k) { return C[k] && C[k].season === other; });
     const sum = seasonal.filter(function (k) { return C[k] && C[k].season === 'summer'; }), win = seasonal.filter(function (k) { return C[k] && C[k].season === 'winter'; });
     if (sum.length && win.length) add({ id: 'season', group: 'season', score: 0.55, slots: [sum[0]],

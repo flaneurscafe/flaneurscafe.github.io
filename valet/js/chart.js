@@ -100,7 +100,7 @@
         s.push('<text x="' + (X1 + 8) + '" y="' + (y + 4) + '" class="c-tt" fill="' + TT_COL[t] + '">T' + t + '</text>');
         if (t > 2) {                                  // clashes with your skin: ring it in red
           s.push('<rect x="' + r1(x - 12) + '" y="' + (y - 12) + '" width="24" height="24" rx="5" fill="none" stroke="#b0413e" stroke-width="1.8"/>');
-          clashRows.push({ r: r, t: t });
+          clashRows.push({ r: r, t: t, soft: a.confidence === 'low' && E.scoreColour(r.hex, a).tempOnly });
         }
       }
       s.push('<text x="' + r1(x) + '" y="' + (y - 12) + '" class="c-small" text-anchor="middle">' + Math.round(L) + '</text>');
@@ -113,7 +113,8 @@
     // Clashes with your skin come first: they are the one thing no other piece can fix.
     clashRows.forEach(function (c) {
       const why = E.skinReasons ? E.skinReasons(c.r.hex, a) : [];
-      notes.push({ ok: false, text: 'Clashes with your skin: ' + (c.r.name ? c.r.name + ' ' : '') + c.r.label.toLowerCase() + ' is T' + c.t + (why.length ? ', ' + why[0] : '') + '.' });
+      notes.push({ ok: false, text: 'Clashes with your skin: ' + (c.r.name ? c.r.name + ' ' : '') + c.r.label.toLowerCase() + ' is T' + c.t + (why.length ? ', ' + why[0] : '') +
+        (c.soft ? ' (temperature only, and your temperature reading is low confidence: a note in the Dresser)' : '') + '.' });
     });
     function bracket(r1_, r2_, ok, text) {
       const xm = X1 + 38, ya = r1_.y, yb = r2_.y;
@@ -127,9 +128,11 @@
         const d = Math.abs(by[faceLayers[i]].L - by[faceLayers[j]].L);
         if (d > best) { best = d; pair = [by[faceLayers[i]], by[faceLayers[j]]]; }
       }
-      const ok = best >= lo && !(a && a.contrastLevel === 'low' && best > hi);
-      bracket(pair[0], pair[1], ok, (ok ? 'Face framed: ' : best < lo ? 'Face not framed: ' : 'Frame heavy: ') + pair[0].label.toLowerCase() + ' against ' + pair[1].label.toLowerCase() + ', step ' + Math.round(best) +
-        (best < lo ? ' (your face needs at least ' + Math.round(lo) + ')' : ok ? ' (needs ' + Math.round(lo) + ' or more)' : ' (more than your colouring carries, ' + Math.round(hi) + ')'));
+      // a step a little short of the bound (within stepNear of it) still frames the face: a note in the Dresser
+      const nearLo = lo * (E && E.PARAMS ? E.PARAMS.stepNear : 1), short = best >= nearLo && best < lo;
+      const ok = best >= nearLo && !(a && a.contrastLevel === 'low' && best > hi);
+      bracket(pair[0], pair[1], ok, (short ? 'Face just framed: ' : ok ? 'Face framed: ' : best < lo ? 'Face not framed: ' : 'Frame heavy: ') + pair[0].label.toLowerCase() + ' against ' + pair[1].label.toLowerCase() + ', step ' + Math.round(best) +
+        (short ? ' (a little short of the ' + Math.round(lo) + ' your face carries)' : best < lo ? ' (your face needs at least ' + Math.round(lo) + ')' : ok ? ' (needs ' + Math.round(lo) + ' or more)' : ' (more than your colouring carries, ' + Math.round(hi) + ')'));
     }
     if (by.shirt && a && Math.abs(by.shirt.L - skinL) < lo) {
       notes.push({ ok: null, text: by.shirt.label + ' at your skin\u2019s lightness (' + Math.round(Math.abs(by.shirt.L - skinL)) + ' apart): beside the face it separates by colour, not by light against dark.' });

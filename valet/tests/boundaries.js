@@ -41,6 +41,9 @@ const has = (id, re) => cs => cs.some(c => c.id === id && c.score < 0.85 && (!re
   const d = dE(o.jacket.hex, o.trousers.hex);
   flip('near match, upper edge', 'nearTo', d, o, has('near'), true);
   flip('near match, lower edge', 'nearFrom', d, o, has('near'), false); }
+// light-dark step at the face: a failure only below stepNear of the face's lower bound (a note above it)
+{ const lo = a.band[0], sh = VC.labToHex([92, 0, 0]), o = base({ shirt: P(sh, 'shirt', 'poplin'), jacket: P(VC.labToHex([92 - lo * 0.7, 0, 0]), 'jacket', 'hopsack') });
+  flip('light-dark step, failure', 'stepNear', Math.abs(L(o.shirt.hex) - L(o.jacket.hex)) / lo, o, cs => cs.some(c => c.id === 'step' && c.score < 0.5), true); }
 // deep socks: lightness and chroma limits (a muted dark colour passes as deep)
 { const o = base({ socks: P(col('Burgundy'), 'socks'), trousers: P(col('Charcoal'), 'trousers', 'flannel'), occasion: 'business' });   // the deep allowance matters in business dress
   flip('deep socks, lightness', 'sockDeepL', L(o.socks.hex), o, cs => !cs.some(c => c.id === 'socks' && c.score < 0.85), true);

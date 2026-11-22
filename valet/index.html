@@ -13,13 +13,13 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Valet — dressing from theory</title>
 <meta name="description" content="Valet: a browser tool that works out which colours suit you from colour science and tailoring theory, and charts an outfit's lightness against your own colouring. Nothing leaves your browser.">
-<link rel="stylesheet" href="css/valet.css?v=1.13.2">
+<link rel="stylesheet" href="css/valet.css?v=1.14">
 </head>
 <body>
 <header class="masthead">
   <div class="brand">
     <h1>Valet</h1>
-    <p class="tagline">Dressing from theory, not from cases <button type="button" class="ver" id="verTag" title="What Valet is and how to use it">v1.13.2</button></p>
+    <p class="tagline">Dressing from theory, not from cases <button type="button" class="ver" id="verTag" title="What Valet is and how to use it">v1.14</button></p>
   </div>
   <div class="season-bar"><span class="flabel" id="seasonLabel">Season</span>
     <div class="seg" id="season" role="radiogroup" aria-labelledby="seasonLabel">
@@ -531,12 +531,12 @@
           <p><span class="badge B">B</span> Once there is a whole outfit, rules apply between pieces. These are the Outfit Check card's questions, made measurable. The card is the one-page checklist that goes with the Style Guide (both unpublished; section 19): six questions (temperature, contrast, frame, sheen, pattern, metal), then the feet; the question numbers below are its numbers. All are convention unless badged otherwise.</p>
           <ul>
             <li><strong>Positions, not fixed garments.</strong> An outfit is a set of positions: a hat, next to the neck, neckwear, a mid layer, an outer layer, a scarf, a pocket square, trousers, socks, shoes and belt. Only next to the neck, trousers and shoes are needed, so a summer shirt and trousers is a whole outfit. Each position holds a garment type: a shirt, roll neck, polo or T-shirt; a tie, bow tie or cravat (ascot); a crew neck, V-neck, cardigan or waistcoat; a jacket, overshirt or coat. A waistcoat, like a V-neck, wants a shirt collar under it; with the lab link, Proportion checks that its points meet the trousers' waistband. Neckwear sits at the collar and needs one; the scarf is its own position, worn over everything, so a tie and a scarf can go together under a coat. The type carries what the rules need: whether it frames the face, which patterns are used on it, and the largest pattern scale that suits it (section 11).</li>
-            <li id="r-face"><strong>At the face.</strong> Every layer above the waist, and the pocket square, is scored at the face, using the colour it adds up to from a distance (section 11 for patterns). Each should be tier 1 or 2.</li>
+            <li id="r-face"><strong>At the face.</strong> Every layer above the waist, and the pocket square, is scored at the face, using the colour it adds up to from a distance (section 11 for patterns). Each should be tier 1 or 2. A colour below tier 2 fails, with two exceptions that are notes: a small accent (the pocket square, a flower), and a colour that only temperature keeps from the face when your temperature reading is low confidence (a skin colour typed in by hand, or read without a white reference; section 3). The warm-cool lean is the least certain thing Valet reads from a face: in a test on three presenters measured from photographs, all three read as cool, though two of them had been estimated as warm by eye, so a clash of temperature alone is not failed until the reading is trustworthy.</li>
             <li id="r-frame"><strong>Something frames the face.</strong> The Outfit Check card's third question: name the thing that frames the face. Flusser puts it as "think of the face as a picture and what surrounds it as the frame" <span class="cite">[<a href="#ref-50">50</a>, p. 123]</span>, an image he also uses with the clothes and with the collar as the frame <span class="cite">[<a href="#ref-50">50</a>, pp. 24, 46]</span>, and Valet measures the light-dark step that makes the frame (section 4). A shirt or polo collar, a roll neck, a shawl collar, lapels, a coat collar or a scarf all count. An open collar must still frame the face, as Flusser says of dressing down without a tie <span class="cite">[<a href="#ref-50">50</a>, p. 269]</span>. A T-shirt or crew neck alone does not, which is noted as casual rather than failed. A tie needs a shirt to sit under: a collar and a full button front, so a polo, whose placket stops halfway, does not take one. A V-neck knit is cut to show a collar; a waistcoat wants a shirt that takes a tie.</li>
-            <li id="r-step"><strong>Light-dark step</strong> <span class="badge A">A</span> <span class="badge B">B</span>. The shirt and the layer that meets it at the neck should differ by at least the lower bound of section 4. That layer is the first of these that is worn: a scarf, which lies against the collar whatever is over the shirt; a knit or waistcoat, which goes on before the jacket; the jacket; a coat worn straight over the shirt; a tie. (A scarf is narrow, so when the knit or jacket beside it makes the stronger step over the shirt front, that one counts.) Flusser shows the step on a medium-contrast face: a grey shirt under a grey suit leaves it in shadow, a white one lights it <span class="cite">[<a href="#ref-50">50</a>, p. 26]</span>; he names the contrast between the darker jacket and the lighter shirt as one of the things that draw the eye to the face <span class="cite">[<a href="#ref-50">50</a>, p. 123]</span>. The bound is the one a colour has to clear against your skin. A hat, or a coat over a jacket, cannot stand in for the step: the frame is the line where the shirt meets what is over it. With a single layer, the collar alone frames the face, which is noted but not failed.</li>
+            <li id="r-step"><strong>Light-dark step</strong> <span class="badge A">A</span> <span class="badge B">B</span>. The shirt and the layer that meets it at the neck should differ by at least the lower bound of section 4. That layer is the first of these that is worn: a scarf, which lies against the collar whatever is over the shirt; a knit or waistcoat, which goes on before the jacket; the jacket; a coat worn straight over the shirt; a tie. (A scarf is narrow, so when the knit or jacket beside it makes the stronger step over the shirt front, that one counts.) Flusser shows the step on a medium-contrast face: a grey shirt under a grey suit leaves it in shadow, a white one lights it <span class="cite">[<a href="#ref-50">50</a>, p. 26]</span>; he names the contrast between the darker jacket and the lighter shirt as one of the things that draw the eye to the face <span class="cite">[<a href="#ref-50">50</a>, p. 123]</span>. The bound is the one a colour has to clear against your skin. A hat, or a coat over a jacket, cannot stand in for the step: the frame is the line where the shirt meets what is over it. With a single layer, the collar alone frames the face, which is noted but not failed. A step a little short of the bound, within 80% of it, still frames the face and is noted, not failed: the bound is a working value <span class="badge B">B</span>, and a white shirt under a camel jacket on a high-contrast face (a step of 26 against 31) is a frame anyone can see.</li>
             <li id="r-temp"><strong>One temperature above the waist.</strong> A warm piece among cool ones, or the reverse, reads as the odd one out.</li>
             <li id="r-harmony"><strong>Colours that compete.</strong> Wardrobe neutrals (OKLCH chroma under 0.06) are free. Coloured pieces are grouped into families within 35° of hue. One family is the classic template. Two families are fine when they are complementary (best if one is dark or muted) or when one is only a small accent (tie, shoes, a pattern's second colour). Two families that are neither neighbours nor opposites compete. Three or more is flagged.</li>
-            <li id="r-near"><strong>Near match</strong> <span class="badge A">A</span> <span class="badge B">B</span>. Two pieces between ΔE2000 1.5 and 7 apart, such as navy with midnight, are close enough to look intended to match and far enough to fail. Below 1.5 they match: a jacket and trousers that match read as a suit.</li>
+            <li id="r-near"><strong>Near match</strong> <span class="badge A">A</span> <span class="badge B">B</span>. Two pieces between ΔE2000 1.5 and 7 apart, such as navy with midnight, are close enough to look intended to match and far enough to fail. Below 1.5 they match: a jacket and trousers that match read as a suit. Leather shoes are not compared with the trousers: leather and cloth never look like one material meant to match, so black calf boots with black jeans read as black with black, not as a near miss.</li>
             <li id="r-blur"><strong>Top and bottom</strong> differ by at least 12 L*, or the halves blur.</li>
             <li id="r-statement"><strong>One statement.</strong> A tier 2 colour is "the one chosen colour of an outfit" (section 8). A second, different tier 2 colour at the face competes with it, and so does a tier 4 colour below the belt, which is the bold move of a bold day. Two statements are flagged as a caution, three as a failure. Neutrals do not count, and two pieces in one colour family (hues within 35°, such as salmon and burgundy) count once: a tonal pairing is one statement.</li>
             <li id="r-tie"><strong>Tie against shirt.</strong> The tie should separate from the shirt; darker than the shirt is the reliable order.</li>
@@ -545,7 +545,7 @@
             <li><strong>Cloth.</strong> Every piece has a cloth as well as a colour, as the Style Guide lists them. For tailoring: worsted, flannel, hopsack, tweed, linen, fresco, cotton twill, corduroy, denim. For shirts: poplin, oxford, twill, linen, brushed cotton. For knits: merino, lambswool, cashmere. For ties: grenadine, silk twill, knitted silk, wool. For shoes: calf and suede. And so on. Each cloth carries how formal it is, its season, and whether it shines. A piece is as formal as the lower of its type and its cloth: a tweed jacket is country wear, not business.</li>
             <li id="r-sheen"><strong>4. Sheen</strong> (Outfit Check, question 4). That too much shine reads as cheap cloth is stated in the book as a rule: shiny clothes normally belong "to the parvenu side of the tracks", with dulled mohair and fine worsted dinner clothes the exception <span class="cite">[<a href="#ref-50">50</a>, p. 244]</span>. It is also common advice on the web (Gentleman's Gazette on overly shiny satin ties <span class="cite">[<a class="web" href="#ref-38">38</a>]</span>; Permanent Style on very fine worsteds being shinier <span class="cite">[<a class="web" href="#ref-35">35</a>]</span>). Valet applies it most where it is seen most. Anything shiny near the face (satin ties, lustrous worsted, glossy nylon) is noted as reading cheap; below the belt it is a caution. Patent shoes belong to black tie, and black-tie patent is black.</li>
             <li id="r-formality"><strong>Formality and the occasion.</strong> Choose the occasion at the top: casual, smart casual, business or evening. A dress shirt worn without a tie is open-collared, smart rather than business, so it counts a step lower; dark denim sits at relaxed, the register of jeans under a blazer, not with sportswear. Evening means dinner or an event, not a dress code: black tie, white tie and morning dress have fixed codes of their own, which Valet does not check. Pieces are placed on a five-step scale from casual to business, and each occasion has its range. Pieces four steps apart look like a mistake; three apart is a deliberate mix at best. The Style Guide's own pairings are checked by name. (Gentleman's Gazette gives the same account: trainers with a suit look wrong in the classic view, though mixing formalities is a current trend <span class="cite">[<a class="web" href="#ref-38">38</a>]</span>.) Chunky trainers fail with anything smart; a tie with trainers fails; a suit with trainers is a fashion look rather than a classic one. A tie with jeans is noted: Gentleman's Gazette leaves neckwear off with jeans altogether <span class="cite">[<a class="web" href="#ref-43">43</a>]</span>; Permanent Style allows a rough, casual tie, knitted wool or silk <span class="cite">[<a class="web" href="#ref-42">42</a>]</span>, which Valet does not follow. Flusser gives the same ladder for trousers under a jacket: grey is the dressiest, tan a step down because it contrasts more, corduroy and chinos next, jeans below <span class="cite">[<a href="#ref-50">50</a>, p. 114]</span>. A jacket and trousers in one colour but two cloths look like a suit jacket worn with the wrong trousers; Flusser warns against matching odd trousers to the jacket's own shade <span class="cite">[<a href="#ref-50">50</a>, p. 114]</span>.</li>
-            <li id="r-season"><strong>Season.</strong> Cloth against the season switch: flannel, tweed and heavy knits belong to winter, linen, fresco, seersucker and piqué to summer, and summer and winter cloth in one outfit look as if one of them was a mistake.</li>
+            <li id="r-season"><strong>Season.</strong> Cloth against the season switch: flannel, tweed and heavy knits belong to winter, linen, fresco, seersucker and piqué to summer, and summer and winter cloth in one outfit look as if one of them was a mistake. The pocket square is left out: a linen or silk square is worn all year, with tweed and flannel as much as with linen.</li>
             <li id="r-below"><strong>Below the belt.</strong> Tier 4 is allowed as the one bold move. Shoes are the trousers' depth or darker; light warm shoes clash with a cool top. Flusser reprints a 1936 answer that allows dark brown shoes with a navy suit but not light tan <span class="cite">[<a href="#ref-50">50</a>, p. 190]</span>.</li>
             <li id="r-socks"><strong>Socks</strong> take the trousers, not the shoes: socks and shoes seen as one unit stop the eye at the trouser bottom instead of carrying it to the floor (Flusser <span class="cite">[<a href="#ref-50">50</a>, p. 173]</span>; Gentleman's Gazette <span class="cite">[<a class="web" href="#ref-39">39</a>]</span>). The trousers' own colour is the safe choice; a distinct tone of it, lighter or darker (light blue socks with navy trousers), is the more considered one. For business and evening the socks stay in the trousers' colour family or a deep muted colour (burgundy, forest); for smart casual and casual a contrasting colour is fine <span class="cite">[<a class="web" href="#ref-39">39</a>, <a class="web" href="#ref-40">40</a>]</span>. Matching is the safest choice, not an obligation <span class="cite">[<a class="web" href="#ref-34">34</a>]</span>. Noted: socks that match the shoes instead of the trousers, white sports socks with shoes, and electric or neon colours. Flusser also keeps black socks for formal and all-black dress (navy socks look richer with a navy suit and black shoes) <span class="cite">[<a href="#ref-50">50</a>, p. 173]</span>; Valet does not judge black socks. Permanent Style is stricter, matching or a tone or two darker, with a harmonising deep colour (forest with grey, purple with navy) as the latitude <span class="cite">[<a class="web" href="#ref-41">41</a>]</span>. The Style Guide (section 5) and the Outfit Check card were brought in line with Gentleman's Gazette in November 2026. Whether the step at the ankle breaks the leg line is measured separately, under proportion (section 13).</li>
             <li id="r-square"><strong>Pocket square.</strong> It needs a jacket with a breast pocket. White linen is never wrong: it is the first square Flusser teaches <span class="cite">[<a href="#ref-50">50</a>, pp. 36, 215]</span>. A square in the tie's exact cloth looks bought as a set, and matching the tie leads the eye across the chest and away from the face <span class="cite">[<a href="#ref-50">50</a>, pp. 216–217]</span>; Gentleman's Gazette says the same <span class="cite">[<a class="web" href="#ref-38">38</a>]</span>. Flusser goes further: a plain square only with a patterned tie, and not in the tie's ground colour; a matte square with a silk tie, a silk one with a dull wool or linen tie <span class="cite">[<a href="#ref-50">50</a>, p. 216]</span>. Valet does not check these.</li>
@@ -929,7 +929,7 @@
         <summary>What it cannot do</summary>
         <p>A colour reading from a photo is only as good as the light it was taken in. Numbers cannot see one shoulder lower than the other, feel how a cloth hangs, or know how a house cuts its sizes, so the sizes are ranges to take into a fitting room, not a replacement for one. And it covers everyday dress, from casual to evening; the codes of black tie, white tie and morning dress are not checked. How it works, section 1, says more.</p>
       </details>
-      <p class="small muted">Version 1.13.2. Proportion and Fit are still being refined: their numbers are tailoring rules and survey averages, so treat them as a starting point and trust a garment that fits you.</p>
+      <p class="small muted">Version 1.14. Proportion and Fit are still being refined: their numbers are tailoring rules and survey averages, so treat them as a starting point and trust a garment that fits you.</p>
       <div class="wl-foot" id="welcomeFoot"></div>
       <div class="ov-actions">
         <button type="button" class="btn" id="welcomeStart">Set my colouring</button>
@@ -941,32 +941,32 @@
 </div>
 
 <div id="printCard" class="print-card" aria-hidden="true"></div>
-<script src="js/colour.js?v=1.13.2"></script>
-<script src="js/vision.js?v=1.13.2"></script>
-<script src="js/patterns.js?v=1.13.2"></script>
-<script src="js/measure-art.js?v=1.13.2"></script>
-<script src="js/data.js?v=1.13.2"></script>
-<script src="js/garments.js?v=1.13.2"></script>
-<script src="js/rules.js?v=1.13.2"></script>
-<script src="js/engine.js?v=1.13.2"></script>
-<script src="js/suggest.js?v=1.13.2"></script>
-<script src="js/outfit.js?v=1.13.2"></script>
-<script src="js/closet.js?v=1.13.2"></script>
-<script src="js/chart.js?v=1.13.2"></script>
-<script src="js/body.js?v=1.13.2"></script>
-<script src="js/proportion.js?v=1.13.2"></script>
-<script src="js/fit.js?v=1.13.2"></script>
-<script src="js/ui/why.js?v=1.13.2"></script>
-<script src="js/ui/photos.js?v=1.13.2"></script>
-<script src="js/ui/closet.js?v=1.13.2"></script>
-<script src="js/ui/dresser.js?v=1.13.2"></script>
-<script src="js/ui/core.js?v=1.13.2"></script>
-<script src="js/ui/you.js?v=1.13.2"></script>
-<script src="js/ui/palette.js?v=1.13.2"></script>
-<script src="js/ui/chart-host.js?v=1.13.2"></script>
-<script src="js/ui/fit.js?v=1.13.2"></script>
-<script src="js/ui/shape.js?v=1.13.2"></script>
-<script src="js/ui/main.js?v=1.13.2"></script>
-<script src="js/ui/mobile.js?v=1.13.2"></script>
+<script src="js/colour.js?v=1.14"></script>
+<script src="js/vision.js?v=1.14"></script>
+<script src="js/patterns.js?v=1.14"></script>
+<script src="js/measure-art.js?v=1.14"></script>
+<script src="js/data.js?v=1.14"></script>
+<script src="js/garments.js?v=1.14"></script>
+<script src="js/rules.js?v=1.14"></script>
+<script src="js/engine.js?v=1.14"></script>
+<script src="js/suggest.js?v=1.14"></script>
+<script src="js/outfit.js?v=1.14"></script>
+<script src="js/closet.js?v=1.14"></script>
+<script src="js/chart.js?v=1.14"></script>
+<script src="js/body.js?v=1.14"></script>
+<script src="js/proportion.js?v=1.14"></script>
+<script src="js/fit.js?v=1.14"></script>
+<script src="js/ui/why.js?v=1.14"></script>
+<script src="js/ui/photos.js?v=1.14"></script>
+<script src="js/ui/closet.js?v=1.14"></script>
+<script src="js/ui/dresser.js?v=1.14"></script>
+<script src="js/ui/core.js?v=1.14"></script>
+<script src="js/ui/you.js?v=1.14"></script>
+<script src="js/ui/palette.js?v=1.14"></script>
+<script src="js/ui/chart-host.js?v=1.14"></script>
+<script src="js/ui/fit.js?v=1.14"></script>
+<script src="js/ui/shape.js?v=1.14"></script>
+<script src="js/ui/main.js?v=1.14"></script>
+<script src="js/ui/mobile.js?v=1.14"></script>
 </body>
 </html>

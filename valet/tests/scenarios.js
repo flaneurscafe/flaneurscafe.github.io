@@ -124,5 +124,35 @@ T('an impossible combination is its own verdict', base({jacket:P('#2d3b2a','waxe
   chk('two stripes of one scale: still a failure', base({shirt:P(col('Light blue'),'shirt','poplin',{pat:{type:'bengal',scale:1.1,hex2:'#f7f6f2'}}),jacket:P(col('Navy'),'jacket','worsted',{pat:{type:'pinstripe',scale:1.2,hex2:'#f7f6f2'}})}),
       cs => cs.some(c=>c.id==='pscale'&&c.score===0.4));
 }
+
+// ---- 1.14: four rules eased after the Gentleman's Gazette test ----
+{
+  const chk = (name, o, a, fn) => { const cs = E.checkOutfit(o, a), ok = fn(cs); count++; if (!ok) { fails++; console.log('✗', name, cs.filter(c=>c.score<0.85).map(c=>c.id+' '+c.score+': '+c.text.slice(0,100))); } else if (process.env.VERBOSE) console.log('✓', name); };
+  // season: the pocket square's cloth does not count
+  T('linen square with a tweed jacket in winter: no season note', base({jacket:P('#6b4f36','jacket','tweed'),square:P(col('White'),'square','linen')}), [[/^season:/,false]]);
+  T('linen trousers with a tweed jacket: still a season note', base({jacket:P('#6b4f36','jacket','tweed'),trousers:P('#d8cfbd','trousers','linen')}), [[/^season:/,true]]);
+  // near match: leather shoes are not compared with the trousers
+  T('black calf boots with black jeans: no near match', base({trousers:P('#1e1c23','trousers','denim'),shoes:P('#222125','chelsea','calf'),socks:P('#1e1c23','socks')}), [[/^near:/,false]]);
+  T('canvas trainers almost the trousers\' colour: still a near match', base({trousers:P('#c8b89a','trousers','cotton'),shoes:P('#c2b08f','trainer','canvas'),socks:P('#c8b89a','socks')}), [[/^near:/,true]]);
+  T('navy jacket with midnight trousers: still a near match', base({jacket:P(col('Navy'),'jacket','hopsack'),trousers:P(col('Midnight')||col('Ink'),'trousers','flannel')}), [[/^near:/,true]]);
+  // light-dark step: a little short is a note, well short a failure
+  { const lo = aW.band[0], grey = L => window.VC.labToHex([L, 0, 0]);
+    const shirtL = 92, sh = grey(shirtL);
+    const step = (k, o) => E.checkOutfit(o, aW).find(c => c.id === 'step');
+    const o1 = base({shirt:P(sh,'shirt','poplin'), jacket:P(grey(shirtL - lo * 0.9),'jacket','hopsack')});
+    const o2 = base({shirt:P(sh,'shirt','poplin'), jacket:P(grey(shirtL - lo * 0.5),'jacket','hopsack')});
+    chk('a step at 90% of the bound: a note', o1, aW, cs => cs.some(c => c.id === 'step' && c.score === 0.65));
+    chk('a step at half the bound: a failure', o2, aW, cs => cs.some(c => c.id === 'step' && c.score === 0.35)); }
+  // temperature: with a low-confidence reading, a clash of temperature alone is a note
+  { const skin = { white:null, skin:'#814c35', hair:'#1a1412', eyes:'#2a1c14' };
+    const low = E.analyseProfile({ samples: skin, manual: { skin:true, hair:true, eyes:true }, useWhite:true, hairStyle:'none', season:'winter' });
+    const good = E.analyseProfile({ samples: Object.assign({}, skin, { white:'#f2f2f2' }), manual: {}, useWhite:true, hairStyle:'none', season:'winter' });
+    const gold = base({shirt:P(col('White'),'shirt','poplin'), tie:P('#d0bc87','tie','repsilk')});
+    chk('the reading is cool in both, low and trustworthy confidence', gold, low, () => low.tempLevel === 'cool' && good.tempLevel === 'cool' && low.confidence === 'low' && good.confidence !== 'low');
+    chk('gold tie, cool skin, low confidence: a note that says why', gold, low, cs => cs.some(c => c.id === 'face' && c.score === 0.6 && /low confidence/.test(c.text)));
+    chk('gold tie, cool skin, trustworthy reading: a failure', gold, good, cs => cs.some(c => c.id === 'face' && c.score === 0.3));
+    const flat = base({shirt:P('#7a5a48','shirt','poplin'), tie:P('#d0bc87','tie','repsilk')});   // a shirt that merges with the skin, besides the tie
+    chk('temperature plus another clash, low confidence: still a failure', flat, low, cs => cs.some(c => c.id === 'face' && c.score === 0.3)); }
+}
 console.log((fails ? fails + ' scenario(s) failed' : 'all scenarios pass') + ' (' + count + ' run)');
 if (fails) process.exit(1);

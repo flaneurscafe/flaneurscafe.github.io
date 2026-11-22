@@ -19,7 +19,8 @@
     chromaExcess: 35,                              // B §7  C* above your own colouring that arrives before you
     tier1Score: 0.8, tier1Floor: 0.7,              // B §8  tier 1: score, and weakest rule
     tier2Score: 0.62, tier2Floor: 0.45,            // B §8  tier 2
-    nearFrom: 1.5, nearTo: 7,                      // A/B §10  ΔE2000: a match below 1.5, a near miss up to 7
+    nearFrom: 1.5, nearTo: 7,                      // A/B §10  ΔE2000: a match below 1.5, a near miss up to 7 (leather shoes are not compared with the trousers)
+    stepNear: 0.8,                                 // B §10  a light-dark step at the face short of the lower bound but within 80% of it is a note, not a failure
     halvesL: 12,                                   // B §9–10  L* between top and bottom, or any pair, so they do not blur
     tieL: 12,                                      // B §10  L* between tie and shirt
     sockDeepL: 40, sockDeepC: 0.12,                // B §10  a deep sock colour: L* under 40, OKLCH chroma 0.12 at most
