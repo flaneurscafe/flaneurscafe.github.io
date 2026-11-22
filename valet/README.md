@@ -48,6 +48,7 @@ Every outfit rule has one entry in the `RULES` table in `js/rules.js`: its name 
 - My garments: the list made safe, the outfits found around a garment (each judged exactly as the Dresser judges it), the colour-to-buy comparison, your marks and the marks report (`tests/closet.js`);
 - every rule has a complete entry (`tests/rules.js`), and every named threshold is wired to its rule and compares in the right direction (`tests/boundaries.js`);
 - the rule scenarios (`tests/scenarios.js`), a stress test of thousands of random outfits (`tests/stress.js`), and a regression test that compares 800 fixed outfits with a stored record (`tests/regression.js`).
+- taste (`tests/taste.js`): how often Valet agrees with a well-dressed eye, on outfits Gentleman's Gazette's presenters wear in published photos (colours only; no photos or names are kept). A number to watch, not a test to pass: it never fails the run, and it lists the looks whose verdict moved since it was recorded (`--update` to record).
 
 It also runs on GitHub for every change. When you change a rule on purpose, change its scenario with it, and record the new behaviour with `node tests/regression.js --update`, so the change shows in the same commit. To release, set the version with `node tools/release.js <version>`: it writes it to every place it appears, including the `?v=` on each script, so returning visitors get the new files.
 

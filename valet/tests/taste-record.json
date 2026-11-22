@@ -1,0 +1,408 @@
+{
+ "summary": {
+  "estimated": {
+   "approved": 31,
+   "passed": 28,
+   "crossed": 8,
+   "flagged": 4
+  },
+  "measured": {
+   "approved": 31,
+   "passed": 25,
+   "crossed": 8,
+   "flagged": 5
+  }
+ },
+ "verdicts": [
+  [
+   "A/09",
+   "estimated",
+   "Good outfit"
+  ],
+  [
+   "A/09",
+   "measured",
+   "Works"
+  ],
+  [
+   "A/11",
+   "estimated",
+   "Works"
+  ],
+  [
+   "A/11",
+   "measured",
+   "Works"
+  ],
+  [
+   "A/17",
+   "estimated",
+   "Works"
+  ],
+  [
+   "A/17",
+   "measured",
+   "Works"
+  ],
+  [
+   "A/19",
+   "estimated",
+   "Works"
+  ],
+  [
+   "A/19",
+   "measured",
+   "Works"
+  ],
+  [
+   "A/20",
+   "estimated",
+   "Works"
+  ],
+  [
+   "A/20",
+   "measured",
+   "Works"
+  ],
+  [
+   "A/21",
+   "estimated",
+   "Works"
+  ],
+  [
+   "A/21",
+   "measured",
+   "Works"
+  ],
+  [
+   "A/23",
+   "estimated",
+   "Good outfit"
+  ],
+  [
+   "A/23",
+   "measured",
+   "Good outfit"
+  ],
+  [
+   "A/24",
+   "estimated",
+   "Works"
+  ],
+  [
+   "A/24",
+   "measured",
+   "Works"
+  ],
+  [
+   "B/03 #1",
+   "estimated",
+   "Works"
+  ],
+  [
+   "B/03 #1",
+   "measured",
+   "Works"
+  ],
+  [
+   "B/03 #2",
+   "estimated",
+   "One fix away"
+  ],
+  [
+   "B/03 #2",
+   "measured",
+   "Start again"
+  ],
+  [
+   "B/05",
+   "estimated",
+   "Works"
+  ],
+  [
+   "B/05",
+   "measured",
+   "Works"
+  ],
+  [
+   "B/06 #1",
+   "estimated",
+   "Works"
+  ],
+  [
+   "B/06 #1",
+   "measured",
+   "Works"
+  ],
+  [
+   "B/06 #2",
+   "estimated",
+   "Works"
+  ],
+  [
+   "B/06 #2",
+   "measured",
+   "Good outfit"
+  ],
+  [
+   "B/10",
+   "estimated",
+   "Works"
+  ],
+  [
+   "B/10",
+   "measured",
+   "Works"
+  ],
+  [
+   "B/76",
+   "estimated",
+   "Works"
+  ],
+  [
+   "B/76",
+   "measured",
+   "Works"
+  ],
+  [
+   "B/82",
+   "estimated",
+   "Works"
+  ],
+  [
+   "B/82",
+   "measured",
+   "Works"
+  ],
+  [
+   "B/83",
+   "estimated",
+   "Works"
+  ],
+  [
+   "B/83",
+   "measured",
+   "Works"
+  ],
+  [
+   "B/97",
+   "estimated",
+   "Works"
+  ],
+  [
+   "B/97",
+   "measured",
+   "Works"
+  ],
+  [
+   "B/84",
+   "estimated",
+   "Works"
+  ],
+  [
+   "B/84",
+   "measured",
+   "One fix away"
+  ],
+  [
+   "C/00 #1",
+   "estimated",
+   "Good outfit"
+  ],
+  [
+   "C/00 #1",
+   "measured",
+   "Good outfit"
+  ],
+  [
+   "C/00 #2",
+   "estimated",
+   "Works"
+  ],
+  [
+   "C/00 #2",
+   "measured",
+   "Good outfit"
+  ],
+  [
+   "C/02",
+   "estimated",
+   "Works"
+  ],
+  [
+   "C/02",
+   "measured",
+   "Works"
+  ],
+  [
+   "C/20",
+   "estimated",
+   "Works"
+  ],
+  [
+   "C/20",
+   "measured",
+   "Works"
+  ],
+  [
+   "C/28",
+   "estimated",
+   "Start again"
+  ],
+  [
+   "C/28",
+   "measured",
+   "Start again"
+  ],
+  [
+   "C/38",
+   "estimated",
+   "Works"
+  ],
+  [
+   "C/38",
+   "measured",
+   "One fix away"
+  ],
+  [
+   "C/54",
+   "estimated",
+   "Works"
+  ],
+  [
+   "C/54",
+   "measured",
+   "One fix away"
+  ],
+  [
+   "C/58",
+   "estimated",
+   "Works"
+  ],
+  [
+   "C/58",
+   "measured",
+   "Works"
+  ],
+  [
+   "C/66",
+   "estimated",
+   "Works"
+  ],
+  [
+   "C/66",
+   "measured",
+   "Works"
+  ],
+  [
+   "C/72",
+   "estimated",
+   "One fix away"
+  ],
+  [
+   "C/72",
+   "measured",
+   "One fix away"
+  ],
+  [
+   "all/02 #1",
+   "estimated",
+   "One fix away"
+  ],
+  [
+   "all/02 #1",
+   "measured",
+   "One fix away"
+  ],
+  [
+   "all/02 #2",
+   "estimated",
+   "One fix away"
+  ],
+  [
+   "all/02 #2",
+   "measured",
+   "One fix away"
+  ],
+  [
+   "all/01",
+   "estimated",
+   "Works"
+  ],
+  [
+   "all/01",
+   "measured",
+   "Works"
+  ],
+  [
+   "all/03",
+   "estimated",
+   "Works"
+  ],
+  [
+   "all/03",
+   "measured",
+   "Works"
+  ],
+  [
+   "all/28",
+   "estimated",
+   "Good outfit"
+  ],
+  [
+   "all/28",
+   "measured",
+   "Good outfit"
+  ],
+  [
+   "all/11",
+   "estimated",
+   "Good outfit"
+  ],
+  [
+   "all/11",
+   "measured",
+   "Works"
+  ],
+  [
+   "all/10",
+   "estimated",
+   "Start again"
+  ],
+  [
+   "all/10",
+   "measured",
+   "Start again"
+  ],
+  [
+   "all/08",
+   "estimated",
+   "One fix away"
+  ],
+  [
+   "all/08",
+   "measured",
+   "One fix away"
+  ],
+  [
+   "all/07",
+   "estimated",
+   "Works"
+  ],
+  [
+   "all/07",
+   "measured",
+   "Works"
+  ],
+  [
+   "all/05",
+   "estimated",
+   "Works"
+  ],
+  [
+   "all/05",
+   "measured",
+   "One fix away"
+  ]
+ ]
+}

@@ -170,6 +170,9 @@
       band: [Math.max(PARAMS.bandLoMin, contrast * PARAMS.bandLoFactor), contrast * PARAMS.bandHiFactor + PARAMS.bandHiAdd],
       depth: depth, depthLevel: depthLevel,
       skinHue: h, lean: lean, tempLevel: tempLevel, confidence: confidence,
+      // the skin was read from a photo with a white reference (not typed in or picked by name, not read
+      // without white): only then does a clash with it fail an outfit (checkOutfit, the face rule)
+      skinMeasured: confidence !== 'low',
       chroma: chroma, chromaLevel: chromaLevel,
       hairStyle: style, hairLabel: H.label,
       redness: profile.redness || 'none', underEye: profile.underEye || 'none'
@@ -490,11 +493,15 @@
     // the warm-cool lean is the least certain thing Valet reads from a face, and the sources that use
     // it give no measurement for it (section 3), so on its own it never fails an outfit.
     const tempSoft = function (k) { return best[k].s.tempOnly; };
-    const softFace = function (k) { return k === 'square' || k === 'boutonniere' || tempSoft(k); };
+    // With a skin colour typed in or picked by name, every clash with it is a note: it rests on a guess
+    // (in the GG test, a guessed skin produced seven false failures that the measured skin did not).
+    const softFace = function (k) { return k === 'square' || k === 'boutonniere' || tempSoft(k) || p.skinMeasured === false; };
     const allSoft = weak.length && weak.every(softFace);
     // When the whole check is a note because of temperature, the sentence says so; when it fails anyway,
     // each piece that would only be a note is marked as such, so the reason is not misread.
-    const tempOnlyNote = allSoft && weak.some(tempSoft) ? ' A clash of temperature alone is a note, not a failure (section 3)' + (p.confidence === 'low' ? '; your reading is low confidence, so check it in daylight.' : '.') : '';
+    const tempOnlyNote = allSoft && p.skinMeasured === false && weak.some(function (k) { return k !== 'square' && k !== 'boutonniere'; })
+      ? ' Your skin colour was entered by hand (or read without white paper), so a clash with it is a note: measure it from a daylight photo with white paper and it counts.'
+      : allSoft && weak.some(tempSoft) ? ' A clash of temperature alone is a note, not a failure (section 3).' : '';
     const showColour = function (k) { const x = L[k]; return x.visible && seenColours(x).length > 1 && best[k].hex !== x.hex ? ' at its best colour, ' + best[k].hex.toUpperCase() : ''; };
     if (near.length) add(weak.length
       ? { id: 'face', level: 'A/B', score: allSoft ? 0.6 : 0.3, n: weak.length, slots: weak, text: 'Clashes with your skin: ' + weak.map(function (k) { const r = skinReasons(best[k].hex, p); return nm(k) + ' (tier ' + best[k].s.tier + showColour(k) + (r.length ? ', ' + r[0] : '') + (!allSoft && tempSoft(k) ? '; temperature only, a note on its own' : '') + ')'; }).join(' and ') + '. Swap it, or move that colour below the belt.' + tempOnlyNote }
@@ -610,6 +617,14 @@
     pairs.forEach(function (pr) {
       if (!L[pr[0]] || !L[pr[1]]) return;
       if (pr[1] === 'shoes' && leatherShoes) return;
+      // A buttonhole flower close to the tie's colour is the echo Flusser recommends ("a similar shade"); only
+      // an exact match looks studied (Dressing the Man, p. 217). So no near match here, and a note for an exact one.
+      if (pr[0] === 'boutonniere' && pr[1] === 'tie') {
+        const dA = VC.deltaE2000(VC.hexToLab(L.boutonniere.mean), VC.hexToLab(L.tie.mean));
+        if (dA < PARAMS.nearFrom) add({ id: 'accentmatch', score: 0.8, slots: ['boutonniere'],
+          text: nm('boutonniere') + ' and ' + nm('tie') + ' are exactly one colour: it looks studied. A similar shade, or a colour from the tie\'s pattern, echoes it better (Flusser).' });
+        return;
+      }
       const dE = VC.deltaE2000(VC.hexToLab(L[pr[0]].mean), VC.hexToLab(L[pr[1]].mean));
       if (dE < PARAMS.nearFrom && pr[0] === 'jacket' && pr[1] === 'trousers') {
         // a suit is one cloth as well as one colour; the same colour in two cloths looks like a

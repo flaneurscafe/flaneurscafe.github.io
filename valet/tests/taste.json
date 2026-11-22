@@ -1,0 +1,6645 @@
+{
+ "about": "Outfits shown or marked by Gentleman's Gazette, read from their published photos (the photos themselves are not kept here). gg: tick or better = approved by GG, cross or worse = marked wrong, shown = an example in an article. People are letters, and no names, photos or links are kept; their colourings were estimated by eye and measured from white-referenced photos. The full record, with the photos, is kept privately outside the repository.",
+ "people": {
+  "C": {
+   "estimated": {
+    "samples": {
+     "white": null,
+     "skin": "#c89b7b",
+     "hair": "#261e1a",
+     "eyes": "#3b2618"
+    },
+    "manual": {
+     "skin": true,
+     "hair": true,
+     "eyes": true
+    },
+    "useWhite": true,
+    "hairStyle": "short",
+    "grey": 15,
+    "underEye": "none",
+    "redness": "none"
+   },
+   "measured": {
+    "samples": {
+     "white": null,
+     "skin": "#ce9c88",
+     "hair": "#151114",
+     "eyes": "#3b2618"
+    },
+    "manual": {
+     "skin": true,
+     "hair": true,
+     "eyes": true
+    },
+    "useWhite": true,
+    "hairStyle": "short",
+    "grey": 15,
+    "underEye": "none",
+    "redness": "none"
+   }
+  },
+  "B": {
+   "estimated": {
+    "samples": {
+     "white": null,
+     "skin": "#ecc9bd",
+     "hair": "#3b322c",
+     "eyes": "#8a9aa6"
+    },
+    "manual": {
+     "skin": true,
+     "hair": true,
+     "eyes": true
+    },
+    "useWhite": true,
+    "hairStyle": "short",
+    "grey": 0,
+    "underEye": "none",
+    "redness": "none"
+   },
+   "measured": {
+    "samples": {
+     "white": null,
+     "skin": "#dcac95",
+     "hair": "#312019",
+     "eyes": "#8a9aa6"
+    },
+    "manual": {
+     "skin": true,
+     "hair": true,
+     "eyes": true
+    },
+    "useWhite": true,
+    "hairStyle": "short",
+    "grey": 0,
+    "underEye": "none",
+    "redness": "none"
+   }
+  },
+  "A": {
+   "estimated": {
+    "samples": {
+     "white": null,
+     "skin": "#b3805c",
+     "hair": "#161616",
+     "eyes": "#3b2618"
+    },
+    "manual": {
+     "skin": true,
+     "hair": true,
+     "eyes": true
+    },
+    "useWhite": true,
+    "hairStyle": "none",
+    "grey": 0,
+    "underEye": "none",
+    "redness": "none"
+   },
+   "measured": {
+    "samples": {
+     "white": null,
+     "skin": "#814c35",
+     "hair": "#161616",
+     "eyes": "#3b2618"
+    },
+    "manual": {
+     "skin": true,
+     "hair": true,
+     "eyes": true
+    },
+    "useWhite": true,
+    "hairStyle": "none",
+    "grey": 0,
+    "underEye": "none",
+    "redness": "none"
+   }
+  }
+ },
+ "looks": [
+  {
+   "id": "A/09",
+   "who": "A",
+   "gg": "tick",
+   "why": "",
+   "name": "Black waxed jacket, yellow knit, dark jeans, black boots",
+   "outfit": {
+    "locks": {},
+    "hat": {
+     "hex": "#3d4045",
+     "kind": "flatcap",
+     "pat": {
+      "type": "solid"
+     },
+     "on": false
+    },
+    "shirt": {
+     "hex": "#e8be90",
+     "kind": "tee",
+     "pat": {
+      "type": "solid"
+     },
+     "cloth": "jersey",
+     "on": true
+    },
+    "tie": {
+     "hex": "#5e1f2c",
+     "kind": "tie",
+     "pat": {
+      "type": "solid"
+     },
+     "on": false
+    },
+    "scarf": {
+     "hex": "#3d4045",
+     "kind": "scarf",
+     "cloth": "cashmere",
+     "pat": {
+      "type": "solid"
+     },
+     "on": false
+    },
+    "mid": {
+     "hex": "#3d4045",
+     "kind": "crew",
+     "pat": {
+      "type": "solid"
+     },
+     "on": false
+    },
+    "jacket": {
+     "hex": "#201d22",
+     "kind": "waxed",
+     "pat": {
+      "type": "solid"
+     },
+     "on": true,
+     "buttons": "silver",
+     "cloth": "waxed"
+    },
+    "coat": {
+     "hex": "#3d4045",
+     "kind": "overcoat",
+     "cloth": "melton",
+     "pat": {
+      "type": "solid"
+     },
+     "on": false
+    },
+    "square": {
+     "hex": "#f7f6f2",
+     "kind": "square",
+     "pat": {
+      "type": "solid"
+     },
+     "on": false
+    },
+    "boutonniere": {
+     "hex": "#f7f6f2",
+     "kind": "flower",
+     "pat": {
+      "type": "solid"
+     },
+     "on": false,
+     "metal": "silver"
+    },
+    "trousers": {
+     "hex": "#1e1c23",
+     "kind": "trousers",
+     "pat": {
+      "type": "solid"
+     },
+     "cloth": "denim",
+     "on": true
+    },
+    "socks": {
+     "hex": "#1d2a44",
+     "kind": "socks",
+     "pat": {
+      "type": "solid"
+     },
+     "on": false
+    },
+    "shoes": {
+     "hex": "#222125",
+     "kind": "chelsea",
+     "cloth": "calf",
+     "pat": {
+      "type": "solid"
+     },
+     "on": true
+    },
+    "gloves": {
+     "hex": "#4a3326",
+     "kind": "leather",
+     "pat": {
+      "type": "solid"
+     },
+     "on": false
+    },
+    "name": "Black waxed jacket, yellow knit, dark jeans, black boots",
+    "occasion": "casual",
+    "acc": {
+     "glasses": {
+      "on": false,
+      "frame": "gold",
+      "hex": "#161616"
+     },
+     "watch": {
+      "on": false,
+      "metal": "silver",
+      "size": 38,
+      "strap": "leather",
+      "display": "analogue"
+     },
+     "buckle": {
+      "on": false,
+      "metal": "silver"
+     },
+     "cufflinks": {
+      "on": false,
+      "metal": "silver",
+      "stone": "none",
+      "size": 15
+     },
+     "tiebar": {
+      "on": false,
+      "metal": "silver",
+      "size": 45
+     },
+     "ring": {
+      "on": false,
+      "metal": "silver",
+      "stone": "none",
+      "size": 12
+     },
+     "earring": {
+      "on": false,
+      "metal": "silver",
+      "stone": "none",
+      "size": 4
+     }
+    }
+   }
+  },
+  {
+   "id": "A/11",
+   "who": "A",
+   "gg": "tick",
+   "why": "",
+   "name": "Burgundy crewneck over a dress shirt, black jeans, tan suede derbies",
+   "outfit": {
+    "locks": {},
+    "hat": {
+     "hex": "#3d4045",
+     "kind": "flatcap",
+     "pat": {
+      "type": "solid"
+     },
+     "on": false
+    },
+    "shirt": {
+     "hex": "#f2f2ef",
+     "kind": "shirt",
+     "pat": {
+      "type": "solid"
+     },
+     "cloth": "oxford",
+     "on": true
+    },
+    "tie": {
+     "hex": "#5e1f2c",
+     "kind": "tie",
+     "pat": {
+      "type": "solid"
+     },
+     "on": false
+    },
+    "scarf": {
+     "hex": "#3d4045",
+     "kind": "scarf",
+     "cloth": "cashmere",
+     "pat": {
+      "type": "solid"
+     },
+     "on": false
+    },
+    "mid": {
+     "hex": "#2c101d",
+     "kind": "crew",
+     "pat": {
+      "type": "solid"
+     },
+     "on": true,
+     "cloth": "lambswool"
+    },
+    "jacket": {
+     "hex": "#1d2a44",
+     "kind": "jacket",
+     "pat": {
+      "type": "solid"
+     },
+     "on": false,
+     "buttons": "silver",
+     "cloth": "worsted"
+    },
+    "coat": {
+     "hex": "#3d4045",
+     "kind": "overcoat",
+     "cloth": "melton",
+     "pat": {
+      "type": "solid"
+     },
+     "on": false
+    },
+    "square": {
+     "hex": "#f7f6f2",
+     "kind": "square",
+     "pat": {
+      "type": "solid"
+     },
+     "on": false
+    },
+    "boutonniere": {
+     "hex": "#f7f6f2",
+     "kind": "flower",
+     "pat": {
+      "type": "solid"
+     },
+     "on": false,
+     "metal": "silver"
+    },
+    "trousers": {
+     "hex": "#1c1b21",
+     "kind": "trousers",
+     "pat": {
+      "type": "solid"
+     },
+     "cloth": "denim",
+     "on": true
+    },
+    "socks": {
+     "hex": "#1d2a44",
+     "kind": "socks",
+     "pat": {
+      "type": "solid"
+     },
+     "on": false
+    },
+    "shoes": {
+     "hex": "#734931",
+     "kind": "derby",
+     "cloth": "suede",
+     "pat": {
+      "type": "solid"
+     },
+     "on": true
+    },
+    "gloves": {
+     "hex": "#4a3326",
+     "kind": "leather",
+     "pat": {
+      "type": "solid"
+     },
+     "on": false
+    },
+    "name": "Burgundy crewneck over a dress shirt, black jeans, tan suede derbies",
+    "occasion": "casual",
+    "acc": {
+     "glasses": {
+      "on": false,
+      "frame": "gold",
+      "hex": "#161616"
+     },
+     "watch": {
+      "on": false,
+      "metal": "silver",
+      "size": 38,
+      "strap": "leather",
+      "display": "analogue"
+     },
+     "buckle": {
+      "on": false,
+      "metal": "silver"
+     },
+     "cufflinks": {
+      "on": false,
+      "metal": "silver",
+      "stone": "none",
+      "size": 15
+     },
+     "tiebar": {
+      "on": false,
+      "metal": "silver",
+      "size": 45
+     },
+     "ring": {
+      "on": false,
+      "metal": "silver",
+      "stone": "none",
+      "size": 12
+     },
+     "earring": {
+      "on": false,
+      "metal": "silver",
+      "stone": "none",
+      "size": 4
+     }
+    }
+   }
+  },
+  {
+   "id": "A/17",
+   "who": "A",
+   "gg": "shown",
+   "why": "",
+   "name": "Black waxed cotton jacket, white shirt, grey chinos, black boots",
+   "outfit": {
+    "locks": {},
+    "hat": {
+     "hex": "#3d4045",
+     "kind": "flatcap",
+     "pat": {
+      "type": "solid"
+     },
+     "on": false
+    },
+    "shirt": {
+     "hex": "#efefef",
+     "kind": "shirt",
+     "pat": {
+      "type": "solid"
+     },
+     "cloth": "poplin",
+     "on": true
+    },
+    "tie": {
+     "hex": "#5e1f2c",
+     "kind": "tie",
+     "pat": {
+      "type": "solid"
+     },
+     "on": false
+    },
+    "scarf": {
+     "hex": "#3d4045",
+     "kind": "scarf",
+     "cloth": "cashmere",
+     "pat": {
+      "type": "solid"
+     },
+     "on": false
+    },
+    "mid": {
+     "hex": "#3d4045",
+     "kind": "crew",
+     "pat": {
+      "type": "solid"
+     },
+     "on": false
+    },
+    "jacket": {
+     "hex": "#49464e",
+     "kind": "waxed",
+     "pat": {
+      "type": "solid"
+     },
+     "on": true,
+     "buttons": "silver",
+     "cloth": "waxed"
+    },
+    "coat": {
+     "hex": "#3d4045",
+     "kind": "overcoat",
+     "cloth": "melton",
+     "pat": {
+      "type": "solid"
+     },
+     "on": false
+    },
+    "square": {
+     "hex": "#f7f6f2",
+     "kind": "square",
+     "pat": {
+      "type": "solid"
+     },
+     "on": false
+    },
+    "boutonniere": {
+     "hex": "#f7f6f2",
+     "kind": "flower",
+     "pat": {
+      "type": "solid"
+     },
+     "on": false,
+     "metal": "silver"
+    },
+    "trousers": {
+     "hex": "#8e8d8d",
+     "kind": "trousers",
+     "pat": {
+      "type": "solid"
+     },
+     "cloth": "cotton",
+     "on": true
+    },
+    "socks": {
+     "hex": "#1d2a44",
+     "kind": "socks",
+     "pat": {
+      "type": "solid"
+     },
+     "on": false
+    },
+    "shoes": {
+     "hex": "#2a282a",
+     "kind": "chelsea",
+     "cloth": "calf",
+     "pat": {
+      "type": "solid"
+     },
+     "on": true
+    },
+    "gloves": {
+     "hex": "#4a3326",
+     "kind": "leather",
+     "pat": {
+      "type": "solid"
+     },
+     "on": false
+    },
+    "name": "Black waxed cotton jacket, white shirt, grey chinos, black boots",
+    "occasion": "casual",
+    "acc": {
+     "glasses": {
+      "on": false,
+      "frame": "gold",
+      "hex": "#161616"
+     },
+     "watch": {
+      "on": false,
+      "metal": "silver",
+      "size": 38,
+      "strap": "leather",
+      "display": "analogue"
+     },
+     "buckle": {
+      "on": false,
+      "metal": "silver"
+     },
+     "cufflinks": {
+      "on": false,
+      "metal": "silver",
+      "stone": "none",
+      "size": 15
+     },
+     "tiebar": {
+      "on": false,
+      "metal": "silver",
+      "size": 45
+     },
+     "ring": {
+      "on": false,
+      "metal": "silver",
+      "stone": "none",
+      "size": 12
+     },
+     "earring": {
+      "on": false,
+      "metal": "silver",
+      "stone": "none",
+      "size": 4
+     }
+    }
+   }
+  },
+  {
+   "id": "A/19",
+   "who": "A",
+   "gg": "shown",
+   "why": "",
+   "name": "Denim jacket, white tee, khaki chinos, white trainers",
+   "outfit": {
+    "locks": {},
+    "hat": {
+     "hex": "#3d4045",
+     "kind": "flatcap",
+     "pat": {
+      "type": "solid"
+     },
+     "on": false
+    },
+    "shirt": {
+     "hex": "#e7e7e5",
+     "kind": "tee",
+     "pat": {
+      "type": "solid"
+     },
+     "cloth": "jersey",
+     "on": true
+    },
+    "tie": {
+     "hex": "#5e1f2c",
+     "kind": "tie",
+     "pat": {
+      "type": "solid"
+     },
+     "on": false
+    },
+    "scarf": {
+     "hex": "#3d4045",
+     "kind": "scarf",
+     "cloth": "cashmere",
+     "pat": {
+      "type": "solid"
+     },
+     "on": false
+    },
+    "mid": {
+     "hex": "#3d4045",
+     "kind": "crew",
+     "pat": {
+      "type": "solid"
+     },
+     "on": false
+    },
+    "jacket": {
+     "hex": "#17191c",
+     "kind": "overshirt",
+     "pat": {
+      "type": "solid"
+     },
+     "on": true,
+     "buttons": "silver",
+     "cloth": "denim"
+    },
+    "coat": {
+     "hex": "#3d4045",
+     "kind": "overcoat",
+     "cloth": "melton",
+     "pat": {
+      "type": "solid"
+     },
+     "on": false
+    },
+    "square": {
+     "hex": "#f7f6f2",
+     "kind": "square",
+     "pat": {
+      "type": "solid"
+     },
+     "on": false
+    },
+    "boutonniere": {
+     "hex": "#f7f6f2",
+     "kind": "flower",
+     "pat": {
+      "type": "solid"
+     },
+     "on": false,
+     "metal": "silver"
+    },
+    "trousers": {
+     "hex": "#d5cbbb",
+     "kind": "trousers",
+     "pat": {
+      "type": "solid"
+     },
+     "cloth": "cotton",
+     "on": true
+    },
+    "socks": {
+     "hex": "#1d2a44",
+     "kind": "socks",
+     "pat": {
+      "type": "solid"
+     },
+     "on": false
+    },
+    "shoes": {
+     "hex": "#fafcfa",
+     "kind": "trainer",
+     "cloth": "calf",
+     "pat": {
+      "type": "solid"
+     },
+     "on": true
+    },
+    "gloves": {
+     "hex": "#4a3326",
+     "kind": "leather",
+     "pat": {
+      "type": "solid"
+     },
+     "on": false
+    },
+    "name": "Denim jacket, white tee, khaki chinos, white trainers",
+    "occasion": "casual",
+    "acc": {
+     "glasses": {
+      "on": false,
+      "frame": "gold",
+      "hex": "#161616"
+     },
+     "watch": {
+      "on": false,
+      "metal": "silver",
+      "size": 38,
+      "strap": "leather",
+      "display": "analogue"
+     },
+     "buckle": {
+      "on": false,
+      "metal": "silver"
+     },
+     "cufflinks": {
+      "on": false,
+      "metal": "silver",
+      "stone": "none",
+      "size": 15
+     },
+     "tiebar": {
+      "on": false,
+      "metal": "silver",
+      "size": 45
+     },
+     "ring": {
+      "on": false,
+      "metal": "silver",
+      "stone": "none",
+      "size": 12
+     },
+     "earring": {
+      "on": false,
+      "metal": "silver",
+      "stone": "none",
+      "size": 4
+     }
+    }
+   }
+  },
+  {
+   "id": "A/20",
+   "who": "A",
+   "gg": "shown",
+   "why": "",
+   "name": "Brown tweed jacket, chambray shirt, orange paisley square, khakis, brown shoes",
+   "outfit": {
+    "locks": {},
+    "hat": {
+     "hex": "#3d4045",
+     "kind": "flatcap",
+     "pat": {
+      "type": "solid"
+     },
+     "on": false
+    },
+    "shirt": {
+     "hex": "#5c85af",
+     "kind": "shirt",
+     "pat": {
+      "type": "solid"
+     },
+     "cloth": "chambray",
+     "on": true
+    },
+    "tie": {
+     "hex": "#5e1f2c",
+     "kind": "tie",
+     "pat": {
+      "type": "solid"
+     },
+     "on": false
+    },
+    "scarf": {
+     "hex": "#3d4045",
+     "kind": "scarf",
+     "cloth": "cashmere",
+     "pat": {
+      "type": "solid"
+     },
+     "on": false
+    },
+    "mid": {
+     "hex": "#3d4045",
+     "kind": "crew",
+     "pat": {
+      "type": "solid"
+     },
+     "on": false
+    },
+    "jacket": {
+     "hex": "#382d2f",
+     "kind": "jacket",
+     "pat": {
+      "type": "solid"
+     },
+     "on": true,
+     "buttons": "silver",
+     "cloth": "tweed"
+    },
+    "coat": {
+     "hex": "#3d4045",
+     "kind": "overcoat",
+     "cloth": "melton",
+     "pat": {
+      "type": "solid"
+     },
+     "on": false
+    },
+    "square": {
+     "hex": "#9e5837",
+     "kind": "square",
+     "pat": {
+      "type": "paisley",
+      "hex2": "#e8c9a0"
+     },
+     "on": true,
+     "cloth": "silktwill"
+    },
+    "boutonniere": {
+     "hex": "#f7f6f2",
+     "kind": "flower",
+     "pat": {
+      "type": "solid"
+     },
+     "on": false,
+     "metal": "silver"
+    },
+    "trousers": {
+     "hex": "#eee3d4",
+     "kind": "trousers",
+     "pat": {
+      "type": "solid"
+     },
+     "cloth": "cotton",
+     "on": true
+    },
+    "socks": {
+     "hex": "#1d2a44",
+     "kind": "socks",
+     "pat": {
+      "type": "solid"
+     },
+     "on": false
+    },
+    "shoes": {
+     "hex": "#67483f",
+     "kind": "derby",
+     "cloth": "calf",
+     "pat": {
+      "type": "solid"
+     },
+     "on": true
+    },
+    "gloves": {
+     "hex": "#4a3326",
+     "kind": "leather",
+     "pat": {
+      "type": "solid"
+     },
+     "on": false
+    },
+    "name": "Brown tweed jacket, chambray shirt, orange paisley square, khakis, brown shoes",
+    "occasion": "smart",
+    "acc": {
+     "glasses": {
+      "on": false,
+      "frame": "gold",
+      "hex": "#161616"
+     },
+     "watch": {
+      "on": false,
+      "metal": "silver",
+      "size": 38,
+      "strap": "leather",
+      "display": "analogue"
+     },
+     "buckle": {
+      "on": false,
+      "metal": "silver"
+     },
+     "cufflinks": {
+      "on": false,
+      "metal": "silver",
+      "stone": "none",
+      "size": 15
+     },
+     "tiebar": {
+      "on": false,
+      "metal": "silver",
+      "size": 45
+     },
+     "ring": {
+      "on": false,
+      "metal": "silver",
+      "stone": "none",
+      "size": 12
+     },
+     "earring": {
+      "on": false,
+      "metal": "silver",
+      "stone": "none",
+      "size": 4
+     }
+    }
+   }
+  },
+  {
+   "id": "A/21",
+   "who": "A",
+   "gg": "shown",
+   "why": "",
+   "name": "Navy suit, white shirt, gold tie, brown boots (outdoors)",
+   "outfit": {
+    "locks": {},
+    "hat": {
+     "hex": "#3d4045",
+     "kind": "flatcap",
+     "pat": {
+      "type": "solid"
+     },
+     "on": false
+    },
+    "shirt": {
+     "hex": "#eef4fc",
+     "kind": "shirt",
+     "pat": {
+      "type": "solid"
+     },
+     "cloth": "poplin",
+     "on": true
+    },
+    "tie": {
+     "hex": "#d0bc87",
+     "kind": "tie",
+     "pat": {
+      "type": "solid"
+     },
+     "on": true,
+     "cloth": "grenadine"
+    },
+    "scarf": {
+     "hex": "#3d4045",
+     "kind": "scarf",
+     "cloth": "cashmere",
+     "pat": {
+      "type": "solid"
+     },
+     "on": false
+    },
+    "mid": {
+     "hex": "#3d4045",
+     "kind": "crew",
+     "pat": {
+      "type": "solid"
+     },
+     "on": false
+    },
+    "jacket": {
+     "hex": "#313546",
+     "kind": "jacket",
+     "pat": {
+      "type": "solid"
+     },
+     "on": true,
+     "buttons": "silver",
+     "cloth": "worsted"
+    },
+    "coat": {
+     "hex": "#3d4045",
+     "kind": "overcoat",
+     "cloth": "melton",
+     "pat": {
+      "type": "solid"
+     },
+     "on": false
+    },
+    "square": {
+     "hex": "#f7f6f2",
+     "kind": "square",
+     "pat": {
+      "type": "solid"
+     },
+     "on": false
+    },
+    "boutonniere": {
+     "hex": "#f7f6f2",
+     "kind": "flower",
+     "pat": {
+      "type": "solid"
+     },
+     "on": false,
+     "metal": "silver"
+    },
+    "trousers": {
+     "hex": "#313546",
+     "kind": "trousers",
+     "pat": {
+      "type": "solid"
+     },
+     "cloth": "worsted",
+     "on": true
+    },
+    "socks": {
+     "hex": "#1d2a44",
+     "kind": "socks",
+     "pat": {
+      "type": "solid"
+     },
+     "on": false
+    },
+    "shoes": {
+     "hex": "#644e4c",
+     "kind": "chelsea",
+     "cloth": "calf",
+     "pat": {
+      "type": "solid"
+     },
+     "on": true
+    },
+    "gloves": {
+     "hex": "#4a3326",
+     "kind": "leather",
+     "pat": {
+      "type": "solid"
+     },
+     "on": false
+    },
+    "name": "Navy suit, white shirt, gold tie, brown boots (outdoors)",
+    "occasion": "business",
+    "acc": {
+     "glasses": {
+      "on": false,
+      "frame": "gold",
+      "hex": "#161616"
+     },
+     "watch": {
+      "on": false,
+      "metal": "silver",
+      "size": 38,
+      "strap": "leather",
+      "display": "analogue"
+     },
+     "buckle": {
+      "on": false,
+      "metal": "silver"
+     },
+     "cufflinks": {
+      "on": false,
+      "metal": "silver",
+      "stone": "none",
+      "size": 15
+     },
+     "tiebar": {
+      "on": false,
+      "metal": "silver",
+      "size": 45
+     },
+     "ring": {
+      "on": false,
+      "metal": "silver",
+      "stone": "none",
+      "size": 12
+     },
+     "earring": {
+      "on": false,
+      "metal": "silver",
+      "stone": "none",
+      "size": 4
+     }
+    }
+   }
+  },
+  {
+   "id": "A/23",
+   "who": "A",
+   "gg": "shown",
+   "why": "",
+   "name": "Navy cable crewneck over lavender striped shirt, blue jeans",
+   "outfit": {
+    "locks": {},
+    "hat": {
+     "hex": "#3d4045",
+     "kind": "flatcap",
+     "pat": {
+      "type": "solid"
+     },
+     "on": false
+    },
+    "shirt": {
+     "hex": "#9c96bd",
+     "kind": "shirt",
+     "pat": {
+      "type": "bengal",
+      "hex2": "#f2f0f4"
+     },
+     "cloth": "oxford",
+     "on": true
+    },
+    "tie": {
+     "hex": "#5e1f2c",
+     "kind": "tie",
+     "pat": {
+      "type": "solid"
+     },
+     "on": false
+    },
+    "scarf": {
+     "hex": "#3d4045",
+     "kind": "scarf",
+     "cloth": "cashmere",
+     "pat": {
+      "type": "solid"
+     },
+     "on": false
+    },
+    "mid": {
+     "hex": "#252835",
+     "kind": "crew",
+     "pat": {
+      "type": "solid"
+     },
+     "on": true,
+     "cloth": "lambswool"
+    },
+    "jacket": {
+     "hex": "#1d2a44",
+     "kind": "jacket",
+     "pat": {
+      "type": "solid"
+     },
+     "on": false,
+     "buttons": "silver",
+     "cloth": "worsted"
+    },
+    "coat": {
+     "hex": "#3d4045",
+     "kind": "overcoat",
+     "cloth": "melton",
+     "pat": {
+      "type": "solid"
+     },
+     "on": false
+    },
+    "square": {
+     "hex": "#f7f6f2",
+     "kind": "square",
+     "pat": {
+      "type": "solid"
+     },
+     "on": false
+    },
+    "boutonniere": {
+     "hex": "#f7f6f2",
+     "kind": "flower",
+     "pat": {
+      "type": "solid"
+     },
+     "on": false,
+     "metal": "silver"
+    },
+    "trousers": {
+     "hex": "#535877",
+     "kind": "trousers",
+     "pat": {
+      "type": "solid"
+     },
+     "cloth": "denim",
+     "on": true
+    },
+    "socks": {
+     "hex": "#1d2a44",
+     "kind": "socks",
+     "pat": {
+      "type": "solid"
+     },
+     "on": false
+    },
+    "shoes": {
+     "hex": "#4a3326",
+     "kind": "derby",
+     "cloth": "calf",
+     "pat": {
+      "type": "solid"
+     },
+     "on": true
+    },
+    "gloves": {
+     "hex": "#4a3326",
+     "kind": "leather",
+     "pat": {
+      "type": "solid"
+     },
+     "on": false
+    },
+    "name": "Navy cable crewneck over lavender striped shirt, blue jeans",
+    "occasion": "casual",
+    "acc": {
+     "glasses": {
+      "on": false,
+      "frame": "gold",
+      "hex": "#161616"
+     },
+     "watch": {
+      "on": false,
+      "metal": "silver",
+      "size": 38,
+      "strap": "leather",
+      "display": "analogue"
+     },
+     "buckle": {
+      "on": false,
+      "metal": "silver"
+     },
+     "cufflinks": {
+      "on": false,
+      "metal": "silver",
+      "stone": "none",
+      "size": 15
+     },
+     "tiebar": {
+      "on": false,
+      "metal": "silver",
+      "size": 45
+     },
+     "ring": {
+      "on": false,
+      "metal": "silver",
+      "stone": "none",
+      "size": 12
+     },
+     "earring": {
+      "on": false,
+      "metal": "silver",
+      "stone": "none",
+      "size": 4
+     }
+    }
+   }
+  },
+  {
+   "id": "A/24",
+   "who": "A",
+   "gg": "tick",
+   "why": "",
+   "name": "Lilac shirt, navy trousers, brown shoes",
+   "outfit": {
+    "locks": {},
+    "hat": {
+     "hex": "#3d4045",
+     "kind": "flatcap",
+     "pat": {
+      "type": "solid"
+     },
+     "on": false
+    },
+    "shirt": {
+     "hex": "#cebbd9",
+     "kind": "shirt",
+     "pat": {
+      "type": "solid"
+     },
+     "cloth": "oxford",
+     "on": true
+    },
+    "tie": {
+     "hex": "#5e1f2c",
+     "kind": "tie",
+     "pat": {
+      "type": "solid"
+     },
+     "on": false
+    },
+    "scarf": {
+     "hex": "#3d4045",
+     "kind": "scarf",
+     "cloth": "cashmere",
+     "pat": {
+      "type": "solid"
+     },
+     "on": false
+    },
+    "mid": {
+     "hex": "#3d4045",
+     "kind": "crew",
+     "pat": {
+      "type": "solid"
+     },
+     "on": false
+    },
+    "jacket": {
+     "hex": "#1d2a44",
+     "kind": "jacket",
+     "pat": {
+      "type": "solid"
+     },
+     "on": false,
+     "buttons": "silver",
+     "cloth": "worsted"
+    },
+    "coat": {
+     "hex": "#3d4045",
+     "kind": "overcoat",
+     "cloth": "melton",
+     "pat": {
+      "type": "solid"
+     },
+     "on": false
+    },
+    "square": {
+     "hex": "#f7f6f2",
+     "kind": "square",
+     "pat": {
+      "type": "solid"
+     },
+     "on": false
+    },
+    "boutonniere": {
+     "hex": "#f7f6f2",
+     "kind": "flower",
+     "pat": {
+      "type": "solid"
+     },
+     "on": false,
+     "metal": "silver"
+    },
+    "trousers": {
+     "hex": "#191b2d",
+     "kind": "trousers",
+     "pat": {
+      "type": "solid"
+     },
+     "cloth": "cotton",
+     "on": true
+    },
+    "socks": {
+     "hex": "#1d2a44",
+     "kind": "socks",
+     "pat": {
+      "type": "solid"
+     },
+     "on": false
+    },
+    "shoes": {
+     "hex": "#482a26",
+     "kind": "derby",
+     "cloth": "calf",
+     "pat": {
+      "type": "solid"
+     },
+     "on": true
+    },
+    "gloves": {
+     "hex": "#4a3326",
+     "kind": "leather",
+     "pat": {
+      "type": "solid"
+     },
+     "on": false
+    },
+    "name": "Lilac shirt, navy trousers, brown shoes",
+    "occasion": "casual",
+    "acc": {
+     "glasses": {
+      "on": false,
+      "frame": "gold",
+      "hex": "#161616"
+     },
+     "watch": {
+      "on": false,
+      "metal": "silver",
+      "size": 38,
+      "strap": "leather",
+      "display": "analogue"
+     },
+     "buckle": {
+      "on": false,
+      "metal": "silver"
+     },
+     "cufflinks": {
+      "on": false,
+      "metal": "silver",
+      "stone": "none",
+      "size": 15
+     },
+     "tiebar": {
+      "on": false,
+      "metal": "silver",
+      "size": 45
+     },
+     "ring": {
+      "on": false,
+      "metal": "silver",
+      "stone": "none",
+      "size": 12
+     },
+     "earring": {
+      "on": false,
+      "metal": "silver",
+      "stone": "none",
+      "size": 4
+     }
+    }
+   }
+  },
+  {
+   "id": "B/03 #1",
+   "who": "B",
+   "gg": "shown",
+   "why": "",
+   "name": "A: navy DB blazer, light blue shirt, gold-brown repp tie, white square, khakis, dark loafers",
+   "outfit": {
+    "locks": {},
+    "hat": {
+     "hex": "#3d4045",
+     "kind": "flatcap",
+     "pat": {
+      "type": "solid"
+     },
+     "on": false
+    },
+    "shirt": {
+     "hex": "#e3e7ff",
+     "kind": "shirt",
+     "pat": {
+      "type": "solid"
+     },
+     "cloth": "poplin",
+     "on": true
+    },
+    "tie": {
+     "hex": "#dab265",
+     "kind": "tie",
+     "pat": {
+      "type": "repp",
+      "hex2": "#6a3d0c"
+     },
+     "on": true,
+     "cloth": "repsilk"
+    },
+    "scarf": {
+     "hex": "#3d4045",
+     "kind": "scarf",
+     "cloth": "cashmere",
+     "pat": {
+      "type": "solid"
+     },
+     "on": false
+    },
+    "mid": {
+     "hex": "#3d4045",
+     "kind": "crew",
+     "pat": {
+      "type": "solid"
+     },
+     "on": false
+    },
+    "jacket": {
+     "hex": "#272833",
+     "kind": "blazer",
+     "pat": {
+      "type": "solid"
+     },
+     "on": true,
+     "buttons": "silver",
+     "cloth": "hopsack"
+    },
+    "coat": {
+     "hex": "#3d4045",
+     "kind": "overcoat",
+     "cloth": "melton",
+     "pat": {
+      "type": "solid"
+     },
+     "on": false
+    },
+    "square": {
+     "hex": "#e6e8f1",
+     "kind": "square",
+     "pat": {
+      "type": "solid"
+     },
+     "on": true,
+     "cloth": "linen"
+    },
+    "boutonniere": {
+     "hex": "#f7f6f2",
+     "kind": "flower",
+     "pat": {
+      "type": "solid"
+     },
+     "on": false,
+     "metal": "silver"
+    },
+    "trousers": {
+     "hex": "#8a7d69",
+     "kind": "trousers",
+     "pat": {
+      "type": "solid"
+     },
+     "cloth": "cotton",
+     "on": true
+    },
+    "socks": {
+     "hex": "#1d2a44",
+     "kind": "socks",
+     "pat": {
+      "type": "solid"
+     },
+     "on": false
+    },
+    "shoes": {
+     "hex": "#352e2d",
+     "kind": "loafer",
+     "cloth": "calf",
+     "pat": {
+      "type": "solid"
+     },
+     "on": true
+    },
+    "gloves": {
+     "hex": "#4a3326",
+     "kind": "leather",
+     "pat": {
+      "type": "solid"
+     },
+     "on": false
+    },
+    "name": "A: navy DB blazer, light blue shirt, gold-brown repp tie, white square, khakis, ",
+    "occasion": "smart",
+    "acc": {
+     "glasses": {
+      "on": false,
+      "frame": "gold",
+      "hex": "#161616"
+     },
+     "watch": {
+      "on": false,
+      "metal": "silver",
+      "size": 38,
+      "strap": "leather",
+      "display": "analogue"
+     },
+     "buckle": {
+      "on": false,
+      "metal": "silver"
+     },
+     "cufflinks": {
+      "on": false,
+      "metal": "silver",
+      "stone": "none",
+      "size": 15
+     },
+     "tiebar": {
+      "on": false,
+      "metal": "silver",
+      "size": 45
+     },
+     "ring": {
+      "on": false,
+      "metal": "silver",
+      "stone": "none",
+      "size": 12
+     },
+     "earring": {
+      "on": false,
+      "metal": "silver",
+      "stone": "none",
+      "size": 4
+     }
+    }
+   }
+  },
+  {
+   "id": "B/03 #2",
+   "who": "B",
+   "gg": "shown",
+   "why": "",
+   "name": "B: camel jacket, pale yellow shirt, rust tie, brown square, brown trousers, brown shoes",
+   "outfit": {
+    "locks": {},
+    "hat": {
+     "hex": "#3d4045",
+     "kind": "flatcap",
+     "pat": {
+      "type": "solid"
+     },
+     "on": false
+    },
+    "shirt": {
+     "hex": "#e1c8b7",
+     "kind": "shirt",
+     "pat": {
+      "type": "solid"
+     },
+     "cloth": "poplin",
+     "on": true
+    },
+    "tie": {
+     "hex": "#ae634a",
+     "kind": "tie",
+     "pat": {
+      "type": "solid"
+     },
+     "on": true,
+     "cloth": "grenadine"
+    },
+    "scarf": {
+     "hex": "#3d4045",
+     "kind": "scarf",
+     "cloth": "cashmere",
+     "pat": {
+      "type": "solid"
+     },
+     "on": false
+    },
+    "mid": {
+     "hex": "#3d4045",
+     "kind": "crew",
+     "pat": {
+      "type": "solid"
+     },
+     "on": false
+    },
+    "jacket": {
+     "hex": "#e0aa78",
+     "kind": "jacket",
+     "pat": {
+      "type": "solid"
+     },
+     "on": true,
+     "buttons": "silver",
+     "cloth": "flannel"
+    },
+    "coat": {
+     "hex": "#3d4045",
+     "kind": "overcoat",
+     "cloth": "melton",
+     "pat": {
+      "type": "solid"
+     },
+     "on": false
+    },
+    "square": {
+     "hex": "#794f36",
+     "kind": "square",
+     "pat": {
+      "type": "solid"
+     },
+     "on": true,
+     "cloth": "silktwill"
+    },
+    "boutonniere": {
+     "hex": "#f7f6f2",
+     "kind": "flower",
+     "pat": {
+      "type": "solid"
+     },
+     "on": false,
+     "metal": "silver"
+    },
+    "trousers": {
+     "hex": "#674d43",
+     "kind": "trousers",
+     "pat": {
+      "type": "solid"
+     },
+     "cloth": "flannel",
+     "on": true
+    },
+    "socks": {
+     "hex": "#1d2a44",
+     "kind": "socks",
+     "pat": {
+      "type": "solid"
+     },
+     "on": false
+    },
+    "shoes": {
+     "hex": "#723a22",
+     "kind": "derby",
+     "cloth": "calf",
+     "pat": {
+      "type": "solid"
+     },
+     "on": true
+    },
+    "gloves": {
+     "hex": "#4a3326",
+     "kind": "leather",
+     "pat": {
+      "type": "solid"
+     },
+     "on": false
+    },
+    "name": "B: camel jacket, pale yellow shirt, rust tie, brown square, brown trousers, brow",
+    "occasion": "smart",
+    "acc": {
+     "glasses": {
+      "on": false,
+      "frame": "gold",
+      "hex": "#161616"
+     },
+     "watch": {
+      "on": false,
+      "metal": "silver",
+      "size": 38,
+      "strap": "leather",
+      "display": "analogue"
+     },
+     "buckle": {
+      "on": false,
+      "metal": "silver"
+     },
+     "cufflinks": {
+      "on": false,
+      "metal": "silver",
+      "stone": "none",
+      "size": 15
+     },
+     "tiebar": {
+      "on": false,
+      "metal": "silver",
+      "size": 45
+     },
+     "ring": {
+      "on": false,
+      "metal": "silver",
+      "stone": "none",
+      "size": 12
+     },
+     "earring": {
+      "on": false,
+      "metal": "silver",
+      "stone": "none",
+      "size": 4
+     }
+    }
+   }
+  },
+  {
+   "id": "B/05",
+   "who": "B",
+   "gg": "shown",
+   "why": "",
+   "name": "Navy suit, light blue shirt, grey foulard tie, cream square, burgundy shoes",
+   "outfit": {
+    "locks": {},
+    "hat": {
+     "hex": "#3d4045",
+     "kind": "flatcap",
+     "pat": {
+      "type": "solid"
+     },
+     "on": false
+    },
+    "shirt": {
+     "hex": "#dfebf9",
+     "kind": "shirt",
+     "pat": {
+      "type": "solid"
+     },
+     "cloth": "poplin",
+     "on": true
+    },
+    "tie": {
+     "hex": "#817c87",
+     "kind": "tie",
+     "pat": {
+      "type": "solid"
+     },
+     "on": true,
+     "cloth": "silktwill"
+    },
+    "scarf": {
+     "hex": "#3d4045",
+     "kind": "scarf",
+     "cloth": "cashmere",
+     "pat": {
+      "type": "solid"
+     },
+     "on": false
+    },
+    "mid": {
+     "hex": "#3d4045",
+     "kind": "crew",
+     "pat": {
+      "type": "solid"
+     },
+     "on": false
+    },
+    "jacket": {
+     "hex": "#242b46",
+     "kind": "jacket",
+     "pat": {
+      "type": "solid"
+     },
+     "on": true,
+     "buttons": "silver",
+     "cloth": "worsted"
+    },
+    "coat": {
+     "hex": "#3d4045",
+     "kind": "overcoat",
+     "cloth": "melton",
+     "pat": {
+      "type": "solid"
+     },
+     "on": false
+    },
+    "square": {
+     "hex": "#e8dac8",
+     "kind": "square",
+     "pat": {
+      "type": "solid"
+     },
+     "on": true,
+     "cloth": "linen"
+    },
+    "boutonniere": {
+     "hex": "#f7f6f2",
+     "kind": "flower",
+     "pat": {
+      "type": "solid"
+     },
+     "on": false,
+     "metal": "silver"
+    },
+    "trousers": {
+     "hex": "#242b46",
+     "kind": "trousers",
+     "pat": {
+      "type": "solid"
+     },
+     "cloth": "worsted",
+     "on": true
+    },
+    "socks": {
+     "hex": "#1d2a44",
+     "kind": "socks",
+     "pat": {
+      "type": "solid"
+     },
+     "on": false
+    },
+    "shoes": {
+     "hex": "#692a2c",
+     "kind": "oxford",
+     "cloth": "calf",
+     "pat": {
+      "type": "solid"
+     },
+     "on": true
+    },
+    "gloves": {
+     "hex": "#4a3326",
+     "kind": "leather",
+     "pat": {
+      "type": "solid"
+     },
+     "on": false
+    },
+    "name": "Navy suit, light blue shirt, grey foulard tie, cream square, burgundy shoes",
+    "occasion": "business",
+    "acc": {
+     "glasses": {
+      "on": false,
+      "frame": "gold",
+      "hex": "#161616"
+     },
+     "watch": {
+      "on": false,
+      "metal": "silver",
+      "size": 38,
+      "strap": "leather",
+      "display": "analogue"
+     },
+     "buckle": {
+      "on": false,
+      "metal": "silver"
+     },
+     "cufflinks": {
+      "on": false,
+      "metal": "silver",
+      "stone": "none",
+      "size": 15
+     },
+     "tiebar": {
+      "on": false,
+      "metal": "silver",
+      "size": 45
+     },
+     "ring": {
+      "on": false,
+      "metal": "silver",
+      "stone": "none",
+      "size": 12
+     },
+     "earring": {
+      "on": false,
+      "metal": "silver",
+      "stone": "none",
+      "size": 4
+     }
+    }
+   }
+  },
+  {
+   "id": "B/06 #1",
+   "who": "B",
+   "gg": "shown",
+   "why": "",
+   "name": "A: purple V-neck, pink shirt, black trousers, black shoes",
+   "outfit": {
+    "locks": {},
+    "hat": {
+     "hex": "#3d4045",
+     "kind": "flatcap",
+     "pat": {
+      "type": "solid"
+     },
+     "on": false
+    },
+    "shirt": {
+     "hex": "#f0dff7",
+     "kind": "shirt",
+     "pat": {
+      "type": "solid"
+     },
+     "cloth": "oxford",
+     "on": true
+    },
+    "tie": {
+     "hex": "#5e1f2c",
+     "kind": "tie",
+     "pat": {
+      "type": "solid"
+     },
+     "on": false
+    },
+    "scarf": {
+     "hex": "#3d4045",
+     "kind": "scarf",
+     "cloth": "cashmere",
+     "pat": {
+      "type": "solid"
+     },
+     "on": false
+    },
+    "mid": {
+     "hex": "#612c54",
+     "kind": "vneck",
+     "pat": {
+      "type": "solid"
+     },
+     "on": true,
+     "cloth": "merino"
+    },
+    "jacket": {
+     "hex": "#1d2a44",
+     "kind": "jacket",
+     "pat": {
+      "type": "solid"
+     },
+     "on": false,
+     "buttons": "silver",
+     "cloth": "worsted"
+    },
+    "coat": {
+     "hex": "#3d4045",
+     "kind": "overcoat",
+     "cloth": "melton",
+     "pat": {
+      "type": "solid"
+     },
+     "on": false
+    },
+    "square": {
+     "hex": "#f7f6f2",
+     "kind": "square",
+     "pat": {
+      "type": "solid"
+     },
+     "on": false
+    },
+    "boutonniere": {
+     "hex": "#f7f6f2",
+     "kind": "flower",
+     "pat": {
+      "type": "solid"
+     },
+     "on": false,
+     "metal": "silver"
+    },
+    "trousers": {
+     "hex": "#151314",
+     "kind": "trousers",
+     "pat": {
+      "type": "solid"
+     },
+     "cloth": "worsted",
+     "on": true
+    },
+    "socks": {
+     "hex": "#1d2a44",
+     "kind": "socks",
+     "pat": {
+      "type": "solid"
+     },
+     "on": false
+    },
+    "shoes": {
+     "hex": "#2f2d2e",
+     "kind": "oxford",
+     "cloth": "calf",
+     "pat": {
+      "type": "solid"
+     },
+     "on": true
+    },
+    "gloves": {
+     "hex": "#4a3326",
+     "kind": "leather",
+     "pat": {
+      "type": "solid"
+     },
+     "on": false
+    },
+    "name": "A: purple V-neck, pink shirt, black trousers, black shoes",
+    "occasion": "smart",
+    "acc": {
+     "glasses": {
+      "on": false,
+      "frame": "gold",
+      "hex": "#161616"
+     },
+     "watch": {
+      "on": false,
+      "metal": "silver",
+      "size": 38,
+      "strap": "leather",
+      "display": "analogue"
+     },
+     "buckle": {
+      "on": false,
+      "metal": "silver"
+     },
+     "cufflinks": {
+      "on": false,
+      "metal": "silver",
+      "stone": "none",
+      "size": 15
+     },
+     "tiebar": {
+      "on": false,
+      "metal": "silver",
+      "size": 45
+     },
+     "ring": {
+      "on": false,
+      "metal": "silver",
+      "stone": "none",
+      "size": 12
+     },
+     "earring": {
+      "on": false,
+      "metal": "silver",
+      "stone": "none",
+      "size": 4
+     }
+    }
+   }
+  },
+  {
+   "id": "B/06 #2",
+   "who": "B",
+   "gg": "shown",
+   "why": "",
+   "name": "B: burgundy cardigan, white shirt, navy bow tie, brown trousers, dark brown shoes",
+   "outfit": {
+    "locks": {},
+    "hat": {
+     "hex": "#3d4045",
+     "kind": "flatcap",
+     "pat": {
+      "type": "solid"
+     },
+     "on": false
+    },
+    "shirt": {
+     "hex": "#faf7ff",
+     "kind": "shirt",
+     "pat": {
+      "type": "solid"
+     },
+     "cloth": "oxford",
+     "on": true
+    },
+    "tie": {
+     "hex": "#4f455c",
+     "kind": "bowtie",
+     "pat": {
+      "type": "pindot",
+      "hex2": "#f2f0ee"
+     },
+     "on": true,
+     "cloth": "silktwill"
+    },
+    "scarf": {
+     "hex": "#3d4045",
+     "kind": "scarf",
+     "cloth": "cashmere",
+     "pat": {
+      "type": "solid"
+     },
+     "on": false
+    },
+    "mid": {
+     "hex": "#43373b",
+     "kind": "cardigan",
+     "pat": {
+      "type": "solid"
+     },
+     "on": true,
+     "cloth": "merino"
+    },
+    "jacket": {
+     "hex": "#1d2a44",
+     "kind": "jacket",
+     "pat": {
+      "type": "solid"
+     },
+     "on": false,
+     "buttons": "silver",
+     "cloth": "worsted"
+    },
+    "coat": {
+     "hex": "#3d4045",
+     "kind": "overcoat",
+     "cloth": "melton",
+     "pat": {
+      "type": "solid"
+     },
+     "on": false
+    },
+    "square": {
+     "hex": "#f7f6f2",
+     "kind": "square",
+     "pat": {
+      "type": "solid"
+     },
+     "on": false
+    },
+    "boutonniere": {
+     "hex": "#f7f6f2",
+     "kind": "flower",
+     "pat": {
+      "type": "solid"
+     },
+     "on": false,
+     "metal": "silver"
+    },
+    "trousers": {
+     "hex": "#8d6b60",
+     "kind": "trousers",
+     "pat": {
+      "type": "solid"
+     },
+     "cloth": "flannel",
+     "on": true
+    },
+    "socks": {
+     "hex": "#1d2a44",
+     "kind": "socks",
+     "pat": {
+      "type": "solid"
+     },
+     "on": false
+    },
+    "shoes": {
+     "hex": "#3e3332",
+     "kind": "derby",
+     "cloth": "calf",
+     "pat": {
+      "type": "solid"
+     },
+     "on": true
+    },
+    "gloves": {
+     "hex": "#4a3326",
+     "kind": "leather",
+     "pat": {
+      "type": "solid"
+     },
+     "on": false
+    },
+    "name": "B: burgundy cardigan, white shirt, navy bow tie, brown trousers, dark brown shoe",
+    "occasion": "smart",
+    "acc": {
+     "glasses": {
+      "on": false,
+      "frame": "gold",
+      "hex": "#161616"
+     },
+     "watch": {
+      "on": false,
+      "metal": "silver",
+      "size": 38,
+      "strap": "leather",
+      "display": "analogue"
+     },
+     "buckle": {
+      "on": false,
+      "metal": "silver"
+     },
+     "cufflinks": {
+      "on": false,
+      "metal": "silver",
+      "stone": "none",
+      "size": 15
+     },
+     "tiebar": {
+      "on": false,
+      "metal": "silver",
+      "size": 45
+     },
+     "ring": {
+      "on": false,
+      "metal": "silver",
+      "stone": "none",
+      "size": 12
+     },
+     "earring": {
+      "on": false,
+      "metal": "silver",
+      "stone": "none",
+      "size": 4
+     }
+    }
+   }
+  },
+  {
+   "id": "B/10",
+   "who": "B",
+   "gg": "shown",
+   "why": "",
+   "name": "Navy blazer, lavender check shirt, pink foulard tie, pink square and flower, grey trousers, grey suede",
+   "outfit": {
+    "locks": {},
+    "hat": {
+     "hex": "#3d4045",
+     "kind": "flatcap",
+     "pat": {
+      "type": "solid"
+     },
+     "on": false
+    },
+    "shirt": {
+     "hex": "#bbb8c5",
+     "kind": "shirt",
+     "pat": {
+      "type": "solid"
+     },
+     "cloth": "poplin",
+     "on": true
+    },
+    "tie": {
+     "hex": "#c17eac",
+     "kind": "tie",
+     "pat": {
+      "type": "foulard",
+      "hex2": "#f4eef2"
+     },
+     "on": true,
+     "cloth": "silktwill"
+    },
+    "scarf": {
+     "hex": "#3d4045",
+     "kind": "scarf",
+     "cloth": "cashmere",
+     "pat": {
+      "type": "solid"
+     },
+     "on": false
+    },
+    "mid": {
+     "hex": "#3d4045",
+     "kind": "crew",
+     "pat": {
+      "type": "solid"
+     },
+     "on": false
+    },
+    "jacket": {
+     "hex": "#20263e",
+     "kind": "blazer",
+     "pat": {
+      "type": "solid"
+     },
+     "on": true,
+     "buttons": "silver",
+     "cloth": "hopsack"
+    },
+    "coat": {
+     "hex": "#3d4045",
+     "kind": "overcoat",
+     "cloth": "melton",
+     "pat": {
+      "type": "solid"
+     },
+     "on": false
+    },
+    "square": {
+     "hex": "#9f485a",
+     "kind": "square",
+     "pat": {
+      "type": "solid"
+     },
+     "on": true,
+     "cloth": "silktwill"
+    },
+    "boutonniere": {
+     "hex": "#ce97d2",
+     "kind": "flower",
+     "pat": {
+      "type": "solid"
+     },
+     "on": true,
+     "metal": "silver"
+    },
+    "trousers": {
+     "hex": "#939294",
+     "kind": "trousers",
+     "pat": {
+      "type": "solid"
+     },
+     "cloth": "flannel",
+     "on": true
+    },
+    "socks": {
+     "hex": "#1d2a44",
+     "kind": "socks",
+     "pat": {
+      "type": "solid"
+     },
+     "on": false
+    },
+    "shoes": {
+     "hex": "#4d4b48",
+     "kind": "derby",
+     "cloth": "suede",
+     "pat": {
+      "type": "solid"
+     },
+     "on": true
+    },
+    "gloves": {
+     "hex": "#4a3326",
+     "kind": "leather",
+     "pat": {
+      "type": "solid"
+     },
+     "on": false
+    },
+    "name": "Navy blazer, lavender check shirt, pink foulard tie, pink square and flower, gre",
+    "occasion": "smart",
+    "acc": {
+     "glasses": {
+      "on": false,
+      "frame": "gold",
+      "hex": "#161616"
+     },
+     "watch": {
+      "on": false,
+      "metal": "silver",
+      "size": 38,
+      "strap": "leather",
+      "display": "analogue"
+     },
+     "buckle": {
+      "on": false,
+      "metal": "silver"
+     },
+     "cufflinks": {
+      "on": false,
+      "metal": "silver",
+      "stone": "none",
+      "size": 15
+     },
+     "tiebar": {
+      "on": false,
+      "metal": "silver",
+      "size": 45
+     },
+     "ring": {
+      "on": false,
+      "metal": "silver",
+      "stone": "none",
+      "size": 12
+     },
+     "earring": {
+      "on": false,
+      "metal": "silver",
+      "stone": "none",
+      "size": 4
+     }
+    }
+   }
+  },
+  {
+   "id": "B/76",
+   "who": "B",
+   "gg": "shown",
+   "why": "",
+   "name": "Navy jacket, check shirt, grey knit tie, white square, grey trousers, dark shoes",
+   "outfit": {
+    "locks": {},
+    "hat": {
+     "hex": "#3d4045",
+     "kind": "flatcap",
+     "pat": {
+      "type": "solid"
+     },
+     "on": false
+    },
+    "shirt": {
+     "hex": "#dddbeb",
+     "kind": "shirt",
+     "pat": {
+      "type": "tattersall",
+      "hex2": "#3b3f6a"
+     },
+     "cloth": "poplin",
+     "on": true
+    },
+    "tie": {
+     "hex": "#505158",
+     "kind": "tie",
+     "pat": {
+      "type": "solid"
+     },
+     "on": true,
+     "cloth": "knitsilk"
+    },
+    "scarf": {
+     "hex": "#3d4045",
+     "kind": "scarf",
+     "cloth": "cashmere",
+     "pat": {
+      "type": "solid"
+     },
+     "on": false
+    },
+    "mid": {
+     "hex": "#3d4045",
+     "kind": "crew",
+     "pat": {
+      "type": "solid"
+     },
+     "on": false
+    },
+    "jacket": {
+     "hex": "#32323a",
+     "kind": "jacket",
+     "pat": {
+      "type": "solid"
+     },
+     "on": true,
+     "buttons": "silver",
+     "cloth": "worsted"
+    },
+    "coat": {
+     "hex": "#3d4045",
+     "kind": "overcoat",
+     "cloth": "melton",
+     "pat": {
+      "type": "solid"
+     },
+     "on": false
+    },
+    "square": {
+     "hex": "#c1c7ce",
+     "kind": "square",
+     "pat": {
+      "type": "solid"
+     },
+     "on": true,
+     "cloth": "linen"
+    },
+    "boutonniere": {
+     "hex": "#f7f6f2",
+     "kind": "flower",
+     "pat": {
+      "type": "solid"
+     },
+     "on": false,
+     "metal": "silver"
+    },
+    "trousers": {
+     "hex": "#979799",
+     "kind": "trousers",
+     "pat": {
+      "type": "solid"
+     },
+     "cloth": "flannel",
+     "on": true
+    },
+    "socks": {
+     "hex": "#1d2a44",
+     "kind": "socks",
+     "pat": {
+      "type": "solid"
+     },
+     "on": false
+    },
+    "shoes": {
+     "hex": "#362d29",
+     "kind": "loafer",
+     "cloth": "calf",
+     "pat": {
+      "type": "solid"
+     },
+     "on": true
+    },
+    "gloves": {
+     "hex": "#4a3326",
+     "kind": "leather",
+     "pat": {
+      "type": "solid"
+     },
+     "on": false
+    },
+    "name": "Navy jacket, check shirt, grey knit tie, white square, grey trousers, dark shoes",
+    "occasion": "smart",
+    "acc": {
+     "glasses": {
+      "on": false,
+      "frame": "gold",
+      "hex": "#161616"
+     },
+     "watch": {
+      "on": false,
+      "metal": "silver",
+      "size": 38,
+      "strap": "leather",
+      "display": "analogue"
+     },
+     "buckle": {
+      "on": false,
+      "metal": "silver"
+     },
+     "cufflinks": {
+      "on": false,
+      "metal": "silver",
+      "stone": "none",
+      "size": 15
+     },
+     "tiebar": {
+      "on": false,
+      "metal": "silver",
+      "size": 45
+     },
+     "ring": {
+      "on": false,
+      "metal": "silver",
+      "stone": "none",
+      "size": 12
+     },
+     "earring": {
+      "on": false,
+      "metal": "silver",
+      "stone": "none",
+      "size": 4
+     }
+    }
+   }
+  },
+  {
+   "id": "B/82",
+   "who": "B",
+   "gg": "shown",
+   "why": "",
+   "name": "Brown cardigan, cream shirt, yellow knit tie, navy trousers, dark brown shoes",
+   "outfit": {
+    "locks": {},
+    "hat": {
+     "hex": "#3d4045",
+     "kind": "flatcap",
+     "pat": {
+      "type": "solid"
+     },
+     "on": false
+    },
+    "shirt": {
+     "hex": "#ffffff",
+     "kind": "shirt",
+     "pat": {
+      "type": "solid"
+     },
+     "cloth": "oxford",
+     "on": true
+    },
+    "tie": {
+     "hex": "#eecf88",
+     "kind": "tie",
+     "pat": {
+      "type": "solid"
+     },
+     "on": true,
+     "cloth": "knitsilk"
+    },
+    "scarf": {
+     "hex": "#3d4045",
+     "kind": "scarf",
+     "cloth": "cashmere",
+     "pat": {
+      "type": "solid"
+     },
+     "on": false
+    },
+    "mid": {
+     "hex": "#6c5a54",
+     "kind": "cardigan",
+     "pat": {
+      "type": "solid"
+     },
+     "on": true,
+     "cloth": "lambswool"
+    },
+    "jacket": {
+     "hex": "#1d2a44",
+     "kind": "jacket",
+     "pat": {
+      "type": "solid"
+     },
+     "on": false,
+     "buttons": "silver",
+     "cloth": "worsted"
+    },
+    "coat": {
+     "hex": "#3d4045",
+     "kind": "overcoat",
+     "cloth": "melton",
+     "pat": {
+      "type": "solid"
+     },
+     "on": false
+    },
+    "square": {
+     "hex": "#f7f6f2",
+     "kind": "square",
+     "pat": {
+      "type": "solid"
+     },
+     "on": false
+    },
+    "boutonniere": {
+     "hex": "#f7f6f2",
+     "kind": "flower",
+     "pat": {
+      "type": "solid"
+     },
+     "on": false,
+     "metal": "silver"
+    },
+    "trousers": {
+     "hex": "#2a2832",
+     "kind": "trousers",
+     "pat": {
+      "type": "solid"
+     },
+     "cloth": "worsted",
+     "on": true
+    },
+    "socks": {
+     "hex": "#1d2a44",
+     "kind": "socks",
+     "pat": {
+      "type": "solid"
+     },
+     "on": false
+    },
+    "shoes": {
+     "hex": "#392a26",
+     "kind": "derby",
+     "cloth": "calf",
+     "pat": {
+      "type": "solid"
+     },
+     "on": true
+    },
+    "gloves": {
+     "hex": "#4a3326",
+     "kind": "leather",
+     "pat": {
+      "type": "solid"
+     },
+     "on": false
+    },
+    "name": "Brown cardigan, cream shirt, yellow knit tie, navy trousers, dark brown shoes",
+    "occasion": "smart",
+    "acc": {
+     "glasses": {
+      "on": false,
+      "frame": "gold",
+      "hex": "#161616"
+     },
+     "watch": {
+      "on": false,
+      "metal": "silver",
+      "size": 38,
+      "strap": "leather",
+      "display": "analogue"
+     },
+     "buckle": {
+      "on": false,
+      "metal": "silver"
+     },
+     "cufflinks": {
+      "on": false,
+      "metal": "silver",
+      "stone": "none",
+      "size": 15
+     },
+     "tiebar": {
+      "on": false,
+      "metal": "silver",
+      "size": 45
+     },
+     "ring": {
+      "on": false,
+      "metal": "silver",
+      "stone": "none",
+      "size": 12
+     },
+     "earring": {
+      "on": false,
+      "metal": "silver",
+      "stone": "none",
+      "size": 4
+     }
+    }
+   }
+  },
+  {
+   "id": "B/83",
+   "who": "B",
+   "gg": "shown",
+   "why": "",
+   "name": "Charcoal cardigan, light blue shirt, navy trousers, grey suede shoes",
+   "outfit": {
+    "locks": {},
+    "hat": {
+     "hex": "#3d4045",
+     "kind": "flatcap",
+     "pat": {
+      "type": "solid"
+     },
+     "on": false
+    },
+    "shirt": {
+     "hex": "#d1d8e9",
+     "kind": "shirt",
+     "pat": {
+      "type": "solid"
+     },
+     "cloth": "oxford",
+     "on": true
+    },
+    "tie": {
+     "hex": "#5e1f2c",
+     "kind": "tie",
+     "pat": {
+      "type": "solid"
+     },
+     "on": false
+    },
+    "scarf": {
+     "hex": "#3d4045",
+     "kind": "scarf",
+     "cloth": "cashmere",
+     "pat": {
+      "type": "solid"
+     },
+     "on": false
+    },
+    "mid": {
+     "hex": "#28252b",
+     "kind": "cardigan",
+     "pat": {
+      "type": "solid"
+     },
+     "on": true,
+     "cloth": "lambswool"
+    },
+    "jacket": {
+     "hex": "#1d2a44",
+     "kind": "jacket",
+     "pat": {
+      "type": "solid"
+     },
+     "on": false,
+     "buttons": "silver",
+     "cloth": "worsted"
+    },
+    "coat": {
+     "hex": "#3d4045",
+     "kind": "overcoat",
+     "cloth": "melton",
+     "pat": {
+      "type": "solid"
+     },
+     "on": false
+    },
+    "square": {
+     "hex": "#f7f6f2",
+     "kind": "square",
+     "pat": {
+      "type": "solid"
+     },
+     "on": false
+    },
+    "boutonniere": {
+     "hex": "#f7f6f2",
+     "kind": "flower",
+     "pat": {
+      "type": "solid"
+     },
+     "on": false,
+     "metal": "silver"
+    },
+    "trousers": {
+     "hex": "#2b3653",
+     "kind": "trousers",
+     "pat": {
+      "type": "solid"
+     },
+     "cloth": "cotton",
+     "on": true
+    },
+    "socks": {
+     "hex": "#1d2a44",
+     "kind": "socks",
+     "pat": {
+      "type": "solid"
+     },
+     "on": false
+    },
+    "shoes": {
+     "hex": "#635f56",
+     "kind": "derby",
+     "cloth": "suede",
+     "pat": {
+      "type": "solid"
+     },
+     "on": true
+    },
+    "gloves": {
+     "hex": "#4a3326",
+     "kind": "leather",
+     "pat": {
+      "type": "solid"
+     },
+     "on": false
+    },
+    "name": "Charcoal cardigan, light blue shirt, navy trousers, grey suede shoes",
+    "occasion": "casual",
+    "acc": {
+     "glasses": {
+      "on": false,
+      "frame": "gold",
+      "hex": "#161616"
+     },
+     "watch": {
+      "on": false,
+      "metal": "silver",
+      "size": 38,
+      "strap": "leather",
+      "display": "analogue"
+     },
+     "buckle": {
+      "on": false,
+      "metal": "silver"
+     },
+     "cufflinks": {
+      "on": false,
+      "metal": "silver",
+      "stone": "none",
+      "size": 15
+     },
+     "tiebar": {
+      "on": false,
+      "metal": "silver",
+      "size": 45
+     },
+     "ring": {
+      "on": false,
+      "metal": "silver",
+      "stone": "none",
+      "size": 12
+     },
+     "earring": {
+      "on": false,
+      "metal": "silver",
+      "stone": "none",
+      "size": 4
+     }
+    }
+   }
+  },
+  {
+   "id": "B/97",
+   "who": "B",
+   "gg": "shown",
+   "why": "",
+   "name": "Burgundy-brown linen jacket, ivory shirt, brown grid cravat, yellow flower, paisley square, taupe trousers, dark brown suede derbies",
+   "outfit": {
+    "locks": {},
+    "hat": {
+     "hex": "#3d4045",
+     "kind": "flatcap",
+     "pat": {
+      "type": "solid"
+     },
+     "on": false
+    },
+    "shirt": {
+     "hex": "#e2dcd8",
+     "kind": "shirt",
+     "pat": {
+      "type": "solid"
+     },
+     "cloth": "poplin",
+     "on": true
+    },
+    "tie": {
+     "hex": "#ffe7d8",
+     "kind": "cravat",
+     "pat": {
+      "type": "tattersall",
+      "hex2": "#845c48",
+      "scale": 1,
+      "cover": 0.5
+     },
+     "on": true,
+     "cloth": "silktwill"
+    },
+    "scarf": {
+     "hex": "#3d4045",
+     "kind": "scarf",
+     "cloth": "cashmere",
+     "pat": {
+      "type": "solid"
+     },
+     "on": false
+    },
+    "mid": {
+     "hex": "#3d4045",
+     "kind": "crew",
+     "pat": {
+      "type": "solid"
+     },
+     "on": false
+    },
+    "jacket": {
+     "hex": "#714e4a",
+     "kind": "jacket",
+     "pat": {
+      "type": "solid"
+     },
+     "on": true,
+     "buttons": "silver",
+     "cloth": "linen"
+    },
+    "coat": {
+     "hex": "#3d4045",
+     "kind": "overcoat",
+     "cloth": "melton",
+     "pat": {
+      "type": "solid"
+     },
+     "on": false
+    },
+    "square": {
+     "hex": "#48342c",
+     "kind": "square",
+     "pat": {
+      "type": "paisley",
+      "hex2": "#b37b4f"
+     },
+     "on": true,
+     "cloth": "silktwill"
+    },
+    "boutonniere": {
+     "hex": "#d5a02e",
+     "kind": "fabric",
+     "pat": {
+      "type": "solid"
+     },
+     "on": true,
+     "metal": "silver",
+     "cloth": "silktwill"
+    },
+    "trousers": {
+     "hex": "#958d83",
+     "kind": "trousers",
+     "pat": {
+      "type": "solid"
+     },
+     "cloth": "cotton",
+     "on": true
+    },
+    "socks": {
+     "hex": "#1d2a44",
+     "kind": "socks",
+     "pat": {
+      "type": "solid"
+     },
+     "on": false
+    },
+    "shoes": {
+     "hex": "#50473e",
+     "kind": "derby",
+     "cloth": "suede",
+     "pat": {
+      "type": "solid"
+     },
+     "on": true
+    },
+    "gloves": {
+     "hex": "#4a3326",
+     "kind": "leather",
+     "pat": {
+      "type": "solid"
+     },
+     "on": false
+    },
+    "name": "Burgundy-brown linen jacket, ivory shirt, brown grid cravat, yellow flower, pais",
+    "occasion": "smart",
+    "acc": {
+     "glasses": {
+      "on": false,
+      "frame": "gold",
+      "hex": "#161616"
+     },
+     "watch": {
+      "on": false,
+      "metal": "silver",
+      "size": 38,
+      "strap": "leather",
+      "display": "analogue"
+     },
+     "buckle": {
+      "on": false,
+      "metal": "silver"
+     },
+     "cufflinks": {
+      "on": false,
+      "metal": "silver",
+      "stone": "none",
+      "size": 15
+     },
+     "tiebar": {
+      "on": false,
+      "metal": "silver",
+      "size": 45
+     },
+     "ring": {
+      "on": false,
+      "metal": "silver",
+      "stone": "none",
+      "size": 12
+     },
+     "earring": {
+      "on": false,
+      "metal": "silver",
+      "stone": "none",
+      "size": 4
+     }
+    }
+   }
+  },
+  {
+   "id": "B/84",
+   "who": "B",
+   "gg": "shown",
+   "why": "",
+   "name": "Camel jacket, cream shirt, brown houndstooth bow tie, brown square, brown trousers, brown shoes",
+   "outfit": {
+    "locks": {},
+    "hat": {
+     "hex": "#3d4045",
+     "kind": "flatcap",
+     "pat": {
+      "type": "solid"
+     },
+     "on": false
+    },
+    "shirt": {
+     "hex": "#fbf9fb",
+     "kind": "shirt",
+     "pat": {
+      "type": "solid"
+     },
+     "cloth": "oxford",
+     "on": true
+    },
+    "tie": {
+     "hex": "#9f8371",
+     "kind": "bowtie",
+     "pat": {
+      "type": "houndstooth",
+      "hex2": "#efe6d6"
+     },
+     "on": true,
+     "cloth": "woolchallis"
+    },
+    "scarf": {
+     "hex": "#3d4045",
+     "kind": "scarf",
+     "cloth": "cashmere",
+     "pat": {
+      "type": "solid"
+     },
+     "on": false
+    },
+    "mid": {
+     "hex": "#3d4045",
+     "kind": "crew",
+     "pat": {
+      "type": "solid"
+     },
+     "on": false
+    },
+    "jacket": {
+     "hex": "#dba67d",
+     "kind": "jacket",
+     "pat": {
+      "type": "solid"
+     },
+     "on": true,
+     "buttons": "silver",
+     "cloth": "flannel"
+    },
+    "coat": {
+     "hex": "#3d4045",
+     "kind": "overcoat",
+     "cloth": "melton",
+     "pat": {
+      "type": "solid"
+     },
+     "on": false
+    },
+    "square": {
+     "hex": "#54423a",
+     "kind": "square",
+     "pat": {
+      "type": "solid"
+     },
+     "on": true,
+     "cloth": "silktwill"
+    },
+    "boutonniere": {
+     "hex": "#f7f6f2",
+     "kind": "flower",
+     "pat": {
+      "type": "solid"
+     },
+     "on": false,
+     "metal": "silver"
+    },
+    "trousers": {
+     "hex": "#715247",
+     "kind": "trousers",
+     "pat": {
+      "type": "solid"
+     },
+     "cloth": "flannel",
+     "on": true
+    },
+    "socks": {
+     "hex": "#1d2a44",
+     "kind": "socks",
+     "pat": {
+      "type": "solid"
+     },
+     "on": false
+    },
+    "shoes": {
+     "hex": "#7f4830",
+     "kind": "oxford",
+     "cloth": "calf",
+     "pat": {
+      "type": "solid"
+     },
+     "on": true
+    },
+    "gloves": {
+     "hex": "#4a3326",
+     "kind": "leather",
+     "pat": {
+      "type": "solid"
+     },
+     "on": false
+    },
+    "name": "Camel jacket, cream shirt, brown houndstooth bow tie, brown square, brown trouse",
+    "occasion": "smart",
+    "acc": {
+     "glasses": {
+      "on": false,
+      "frame": "gold",
+      "hex": "#161616"
+     },
+     "watch": {
+      "on": false,
+      "metal": "silver",
+      "size": 38,
+      "strap": "leather",
+      "display": "analogue"
+     },
+     "buckle": {
+      "on": false,
+      "metal": "silver"
+     },
+     "cufflinks": {
+      "on": false,
+      "metal": "silver",
+      "stone": "none",
+      "size": 15
+     },
+     "tiebar": {
+      "on": false,
+      "metal": "silver",
+      "size": 45
+     },
+     "ring": {
+      "on": false,
+      "metal": "silver",
+      "stone": "none",
+      "size": 12
+     },
+     "earring": {
+      "on": false,
+      "metal": "silver",
+      "stone": "none",
+      "size": 4
+     }
+    }
+   }
+  },
+  {
+   "id": "C/00 #1",
+   "who": "C",
+   "gg": "better",
+   "why": "",
+   "name": "A (GG: better): brown jacket, cream open-collar shirt",
+   "outfit": {
+    "locks": {},
+    "hat": {
+     "hex": "#3d4045",
+     "kind": "flatcap",
+     "pat": {
+      "type": "solid"
+     },
+     "on": false
+    },
+    "shirt": {
+     "hex": "#f9f7df",
+     "kind": "shirt",
+     "pat": {
+      "type": "solid"
+     },
+     "cloth": "poplin",
+     "on": true
+    },
+    "tie": {
+     "hex": "#5e1f2c",
+     "kind": "tie",
+     "pat": {
+      "type": "solid"
+     },
+     "on": false
+    },
+    "scarf": {
+     "hex": "#3d4045",
+     "kind": "scarf",
+     "cloth": "cashmere",
+     "pat": {
+      "type": "solid"
+     },
+     "on": false
+    },
+    "mid": {
+     "hex": "#3d4045",
+     "kind": "crew",
+     "pat": {
+      "type": "solid"
+     },
+     "on": false
+    },
+    "jacket": {
+     "hex": "#6c5855",
+     "kind": "jacket",
+     "pat": {
+      "type": "solid"
+     },
+     "on": true,
+     "buttons": "silver",
+     "cloth": "worsted"
+    },
+    "coat": {
+     "hex": "#3d4045",
+     "kind": "overcoat",
+     "cloth": "melton",
+     "pat": {
+      "type": "solid"
+     },
+     "on": false
+    },
+    "square": {
+     "hex": "#f7f6f2",
+     "kind": "square",
+     "pat": {
+      "type": "solid"
+     },
+     "on": false
+    },
+    "boutonniere": {
+     "hex": "#f7f6f2",
+     "kind": "flower",
+     "pat": {
+      "type": "solid"
+     },
+     "on": false,
+     "metal": "silver"
+    },
+    "trousers": {
+     "hex": "#3d4045",
+     "kind": "trousers",
+     "pat": {
+      "type": "solid"
+     },
+     "cloth": "worsted",
+     "on": true
+    },
+    "socks": {
+     "hex": "#1d2a44",
+     "kind": "socks",
+     "pat": {
+      "type": "solid"
+     },
+     "on": false
+    },
+    "shoes": {
+     "hex": "#4a3326",
+     "kind": "oxford",
+     "cloth": "calf",
+     "pat": {
+      "type": "solid"
+     },
+     "on": true
+    },
+    "gloves": {
+     "hex": "#4a3326",
+     "kind": "leather",
+     "pat": {
+      "type": "solid"
+     },
+     "on": false
+    },
+    "name": "A (GG: better): brown jacket, cream open-collar shirt",
+    "occasion": "smart",
+    "acc": {
+     "glasses": {
+      "on": false,
+      "frame": "gold",
+      "hex": "#161616"
+     },
+     "watch": {
+      "on": false,
+      "metal": "silver",
+      "size": 38,
+      "strap": "leather",
+      "display": "analogue"
+     },
+     "buckle": {
+      "on": false,
+      "metal": "silver"
+     },
+     "cufflinks": {
+      "on": false,
+      "metal": "silver",
+      "stone": "none",
+      "size": 15
+     },
+     "tiebar": {
+      "on": false,
+      "metal": "silver",
+      "size": 45
+     },
+     "ring": {
+      "on": false,
+      "metal": "silver",
+      "stone": "none",
+      "size": 12
+     },
+     "earring": {
+      "on": false,
+      "metal": "silver",
+      "stone": "none",
+      "size": 4
+     }
+    }
+   }
+  },
+  {
+   "id": "C/00 #2",
+   "who": "C",
+   "gg": "worse",
+   "why": "",
+   "name": "B (GG: worse): light grey jacket, white shirt",
+   "outfit": {
+    "locks": {},
+    "hat": {
+     "hex": "#3d4045",
+     "kind": "flatcap",
+     "pat": {
+      "type": "solid"
+     },
+     "on": false
+    },
+    "shirt": {
+     "hex": "#f1f1f1",
+     "kind": "shirt",
+     "pat": {
+      "type": "solid"
+     },
+     "cloth": "poplin",
+     "on": true
+    },
+    "tie": {
+     "hex": "#5e1f2c",
+     "kind": "tie",
+     "pat": {
+      "type": "solid"
+     },
+     "on": false
+    },
+    "scarf": {
+     "hex": "#3d4045",
+     "kind": "scarf",
+     "cloth": "cashmere",
+     "pat": {
+      "type": "solid"
+     },
+     "on": false
+    },
+    "mid": {
+     "hex": "#3d4045",
+     "kind": "crew",
+     "pat": {
+      "type": "solid"
+     },
+     "on": false
+    },
+    "jacket": {
+     "hex": "#9c9288",
+     "kind": "jacket",
+     "pat": {
+      "type": "solid"
+     },
+     "on": true,
+     "buttons": "silver",
+     "cloth": "worsted"
+    },
+    "coat": {
+     "hex": "#3d4045",
+     "kind": "overcoat",
+     "cloth": "melton",
+     "pat": {
+      "type": "solid"
+     },
+     "on": false
+    },
+    "square": {
+     "hex": "#f7f6f2",
+     "kind": "square",
+     "pat": {
+      "type": "solid"
+     },
+     "on": false
+    },
+    "boutonniere": {
+     "hex": "#f7f6f2",
+     "kind": "flower",
+     "pat": {
+      "type": "solid"
+     },
+     "on": false,
+     "metal": "silver"
+    },
+    "trousers": {
+     "hex": "#3d4045",
+     "kind": "trousers",
+     "pat": {
+      "type": "solid"
+     },
+     "cloth": "worsted",
+     "on": true
+    },
+    "socks": {
+     "hex": "#1d2a44",
+     "kind": "socks",
+     "pat": {
+      "type": "solid"
+     },
+     "on": false
+    },
+    "shoes": {
+     "hex": "#4a3326",
+     "kind": "oxford",
+     "cloth": "calf",
+     "pat": {
+      "type": "solid"
+     },
+     "on": true
+    },
+    "gloves": {
+     "hex": "#4a3326",
+     "kind": "leather",
+     "pat": {
+      "type": "solid"
+     },
+     "on": false
+    },
+    "name": "B (GG: worse): light grey jacket, white shirt",
+    "occasion": "smart",
+    "acc": {
+     "glasses": {
+      "on": false,
+      "frame": "gold",
+      "hex": "#161616"
+     },
+     "watch": {
+      "on": false,
+      "metal": "silver",
+      "size": 38,
+      "strap": "leather",
+      "display": "analogue"
+     },
+     "buckle": {
+      "on": false,
+      "metal": "silver"
+     },
+     "cufflinks": {
+      "on": false,
+      "metal": "silver",
+      "stone": "none",
+      "size": 15
+     },
+     "tiebar": {
+      "on": false,
+      "metal": "silver",
+      "size": 45
+     },
+     "ring": {
+      "on": false,
+      "metal": "silver",
+      "stone": "none",
+      "size": 12
+     },
+     "earring": {
+      "on": false,
+      "metal": "silver",
+      "stone": "none",
+      "size": 4
+     }
+    }
+   }
+  },
+  {
+   "id": "C/02",
+   "who": "C",
+   "gg": "shown",
+   "why": "",
+   "name": "Brown suit, light blue shirt, green repp tie, tan shoes",
+   "outfit": {
+    "locks": {},
+    "hat": {
+     "hex": "#3d4045",
+     "kind": "flatcap",
+     "pat": {
+      "type": "solid"
+     },
+     "on": false
+    },
+    "shirt": {
+     "hex": "#d8daea",
+     "kind": "shirt",
+     "pat": {
+      "type": "solid"
+     },
+     "cloth": "poplin",
+     "on": true
+    },
+    "tie": {
+     "hex": "#4e846e",
+     "kind": "tie",
+     "pat": {
+      "type": "repp",
+      "hex2": "#7a2f35"
+     },
+     "on": true,
+     "cloth": "repsilk"
+    },
+    "scarf": {
+     "hex": "#3d4045",
+     "kind": "scarf",
+     "cloth": "cashmere",
+     "pat": {
+      "type": "solid"
+     },
+     "on": false
+    },
+    "mid": {
+     "hex": "#3d4045",
+     "kind": "crew",
+     "pat": {
+      "type": "solid"
+     },
+     "on": false
+    },
+    "jacket": {
+     "hex": "#765f62",
+     "kind": "jacket",
+     "pat": {
+      "type": "solid"
+     },
+     "on": true,
+     "buttons": "silver",
+     "cloth": "worsted"
+    },
+    "coat": {
+     "hex": "#3d4045",
+     "kind": "overcoat",
+     "cloth": "melton",
+     "pat": {
+      "type": "solid"
+     },
+     "on": false
+    },
+    "square": {
+     "hex": "#8ea0e5",
+     "kind": "square",
+     "pat": {
+      "type": "paisley",
+      "hex2": "#2f6a4a"
+     },
+     "on": true,
+     "cloth": "silktwill"
+    },
+    "boutonniere": {
+     "hex": "#f7f6f2",
+     "kind": "flower",
+     "pat": {
+      "type": "solid"
+     },
+     "on": false,
+     "metal": "silver"
+    },
+    "trousers": {
+     "hex": "#765f62",
+     "kind": "trousers",
+     "pat": {
+      "type": "solid"
+     },
+     "cloth": "worsted",
+     "on": true
+    },
+    "socks": {
+     "hex": "#1d2a44",
+     "kind": "socks",
+     "pat": {
+      "type": "solid"
+     },
+     "on": false
+    },
+    "shoes": {
+     "hex": "#dc8444",
+     "kind": "oxford",
+     "cloth": "calf",
+     "pat": {
+      "type": "solid"
+     },
+     "on": true
+    },
+    "gloves": {
+     "hex": "#4a3326",
+     "kind": "leather",
+     "pat": {
+      "type": "solid"
+     },
+     "on": false
+    },
+    "name": "Brown suit, light blue shirt, green repp tie, tan shoes",
+    "occasion": "business",
+    "acc": {
+     "glasses": {
+      "on": false,
+      "frame": "gold",
+      "hex": "#161616"
+     },
+     "watch": {
+      "on": false,
+      "metal": "silver",
+      "size": 38,
+      "strap": "leather",
+      "display": "analogue"
+     },
+     "buckle": {
+      "on": false,
+      "metal": "silver"
+     },
+     "cufflinks": {
+      "on": false,
+      "metal": "silver",
+      "stone": "none",
+      "size": 15
+     },
+     "tiebar": {
+      "on": false,
+      "metal": "silver",
+      "size": 45
+     },
+     "ring": {
+      "on": false,
+      "metal": "silver",
+      "stone": "none",
+      "size": 12
+     },
+     "earring": {
+      "on": false,
+      "metal": "silver",
+      "stone": "none",
+      "size": 4
+     }
+    }
+   }
+  },
+  {
+   "id": "C/20",
+   "who": "C",
+   "gg": "shown",
+   "why": "",
+   "name": "Grey windowpane DB suit, white shirt, paisley tie, burgundy square and gloves, black shoes",
+   "outfit": {
+    "locks": {},
+    "hat": {
+     "hex": "#3d4045",
+     "kind": "flatcap",
+     "pat": {
+      "type": "solid"
+     },
+     "on": false
+    },
+    "shirt": {
+     "hex": "#ffffff",
+     "kind": "shirt",
+     "pat": {
+      "type": "solid"
+     },
+     "cloth": "poplin",
+     "on": true
+    },
+    "tie": {
+     "hex": "#726e74",
+     "kind": "tie",
+     "pat": {
+      "type": "paisley",
+      "hex2": "#9a777d"
+     },
+     "on": true,
+     "cloth": "silktwill"
+    },
+    "scarf": {
+     "hex": "#3d4045",
+     "kind": "scarf",
+     "cloth": "cashmere",
+     "pat": {
+      "type": "solid"
+     },
+     "on": false
+    },
+    "mid": {
+     "hex": "#3d4045",
+     "kind": "crew",
+     "pat": {
+      "type": "solid"
+     },
+     "on": false
+    },
+    "jacket": {
+     "hex": "#7f7d7a",
+     "kind": "jacket",
+     "pat": {
+      "type": "windowpane",
+      "hex2": "#d9d4cc"
+     },
+     "on": true,
+     "buttons": "silver",
+     "cloth": "flannel"
+    },
+    "coat": {
+     "hex": "#3d4045",
+     "kind": "overcoat",
+     "cloth": "melton",
+     "pat": {
+      "type": "solid"
+     },
+     "on": false
+    },
+    "square": {
+     "hex": "#904653",
+     "kind": "square",
+     "pat": {
+      "type": "solid"
+     },
+     "on": true,
+     "cloth": "silktwill"
+    },
+    "boutonniere": {
+     "hex": "#f7f6f2",
+     "kind": "flower",
+     "pat": {
+      "type": "solid"
+     },
+     "on": false,
+     "metal": "silver"
+    },
+    "trousers": {
+     "hex": "#7f7d7a",
+     "kind": "trousers",
+     "pat": {
+      "type": "windowpane",
+      "hex2": "#d9d4cc"
+     },
+     "cloth": "flannel",
+     "on": true
+    },
+    "socks": {
+     "hex": "#1d2a44",
+     "kind": "socks",
+     "pat": {
+      "type": "solid"
+     },
+     "on": false
+    },
+    "shoes": {
+     "hex": "#3e3d3a",
+     "kind": "oxford",
+     "cloth": "calf",
+     "pat": {
+      "type": "solid"
+     },
+     "on": true
+    },
+    "gloves": {
+     "hex": "#892b38",
+     "kind": "suede",
+     "pat": {
+      "type": "solid"
+     },
+     "on": true,
+     "cloth": "suede"
+    },
+    "name": "Grey windowpane DB suit, white shirt, paisley tie, burgundy square and gloves, b",
+    "occasion": "business",
+    "acc": {
+     "glasses": {
+      "on": false,
+      "frame": "gold",
+      "hex": "#161616"
+     },
+     "watch": {
+      "on": false,
+      "metal": "silver",
+      "size": 38,
+      "strap": "leather",
+      "display": "analogue"
+     },
+     "buckle": {
+      "on": false,
+      "metal": "silver"
+     },
+     "cufflinks": {
+      "on": false,
+      "metal": "silver",
+      "stone": "none",
+      "size": 15
+     },
+     "tiebar": {
+      "on": false,
+      "metal": "silver",
+      "size": 45
+     },
+     "ring": {
+      "on": false,
+      "metal": "silver",
+      "stone": "none",
+      "size": 12
+     },
+     "earring": {
+      "on": false,
+      "metal": "silver",
+      "stone": "none",
+      "size": 4
+     }
+    }
+   }
+  },
+  {
+   "id": "C/28",
+   "who": "C",
+   "gg": "shown",
+   "why": "",
+   "name": "Seersucker suit, white shirt, red paisley bow tie, white square, white bucks",
+   "outfit": {
+    "locks": {},
+    "hat": {
+     "hex": "#3d4045",
+     "kind": "flatcap",
+     "pat": {
+      "type": "solid"
+     },
+     "on": false
+    },
+    "shirt": {
+     "hex": "#e4dede",
+     "kind": "shirt",
+     "pat": {
+      "type": "solid"
+     },
+     "cloth": "oxford",
+     "on": true
+    },
+    "tie": {
+     "hex": "#7d4344",
+     "kind": "bowtie",
+     "pat": {
+      "type": "paisley",
+      "hex2": "#e8d8c8"
+     },
+     "on": true,
+     "cloth": "silktwill"
+    },
+    "scarf": {
+     "hex": "#3d4045",
+     "kind": "scarf",
+     "cloth": "cashmere",
+     "pat": {
+      "type": "solid"
+     },
+     "on": false
+    },
+    "mid": {
+     "hex": "#3d4045",
+     "kind": "crew",
+     "pat": {
+      "type": "solid"
+     },
+     "on": false
+    },
+    "jacket": {
+     "hex": "#eeeef6",
+     "kind": "jacket",
+     "pat": {
+      "type": "solid"
+     },
+     "on": true,
+     "buttons": "silver",
+     "cloth": "seersucker"
+    },
+    "coat": {
+     "hex": "#3d4045",
+     "kind": "overcoat",
+     "cloth": "melton",
+     "pat": {
+      "type": "solid"
+     },
+     "on": false
+    },
+    "square": {
+     "hex": "#d0d5db",
+     "kind": "square",
+     "pat": {
+      "type": "solid"
+     },
+     "on": true,
+     "cloth": "linen"
+    },
+    "boutonniere": {
+     "hex": "#f7f6f2",
+     "kind": "flower",
+     "pat": {
+      "type": "solid"
+     },
+     "on": false,
+     "metal": "silver"
+    },
+    "trousers": {
+     "hex": "#eeeef6",
+     "kind": "trousers",
+     "pat": {
+      "type": "solid"
+     },
+     "cloth": "seersucker",
+     "on": true
+    },
+    "socks": {
+     "hex": "#1d2a44",
+     "kind": "socks",
+     "pat": {
+      "type": "solid"
+     },
+     "on": false
+    },
+    "shoes": {
+     "hex": "#f4f4f4",
+     "kind": "derby",
+     "cloth": "suede",
+     "pat": {
+      "type": "solid"
+     },
+     "on": true
+    },
+    "gloves": {
+     "hex": "#4a3326",
+     "kind": "leather",
+     "pat": {
+      "type": "solid"
+     },
+     "on": false
+    },
+    "name": "Seersucker suit, white shirt, red paisley bow tie, white square, white bucks",
+    "occasion": "smart",
+    "acc": {
+     "glasses": {
+      "on": false,
+      "frame": "gold",
+      "hex": "#161616"
+     },
+     "watch": {
+      "on": false,
+      "metal": "silver",
+      "size": 38,
+      "strap": "leather",
+      "display": "analogue"
+     },
+     "buckle": {
+      "on": false,
+      "metal": "silver"
+     },
+     "cufflinks": {
+      "on": false,
+      "metal": "silver",
+      "stone": "none",
+      "size": 15
+     },
+     "tiebar": {
+      "on": false,
+      "metal": "silver",
+      "size": 45
+     },
+     "ring": {
+      "on": false,
+      "metal": "silver",
+      "stone": "none",
+      "size": 12
+     },
+     "earring": {
+      "on": false,
+      "metal": "silver",
+      "stone": "none",
+      "size": 4
+     }
+    }
+   }
+  },
+  {
+   "id": "C/38",
+   "who": "C",
+   "gg": "shown",
+   "why": "",
+   "name": "Navy blazer, pink-white shirt, red pin-dot tie, white square, grey glen trousers, brown shoes (outdoors)",
+   "outfit": {
+    "locks": {},
+    "hat": {
+     "hex": "#3d4045",
+     "kind": "flatcap",
+     "pat": {
+      "type": "solid"
+     },
+     "on": false
+    },
+    "shirt": {
+     "hex": "#d6c6d1",
+     "kind": "shirt",
+     "pat": {
+      "type": "solid"
+     },
+     "cloth": "poplin",
+     "on": true
+    },
+    "tie": {
+     "hex": "#cf777b",
+     "kind": "tie",
+     "pat": {
+      "type": "pindot",
+      "hex2": "#f4eeee"
+     },
+     "on": true,
+     "cloth": "silktwill"
+    },
+    "scarf": {
+     "hex": "#3d4045",
+     "kind": "scarf",
+     "cloth": "cashmere",
+     "pat": {
+      "type": "solid"
+     },
+     "on": false
+    },
+    "mid": {
+     "hex": "#3d4045",
+     "kind": "crew",
+     "pat": {
+      "type": "solid"
+     },
+     "on": false
+    },
+    "jacket": {
+     "hex": "#25292f",
+     "kind": "blazer",
+     "pat": {
+      "type": "solid"
+     },
+     "on": true,
+     "buttons": "silver",
+     "cloth": "hopsack"
+    },
+    "coat": {
+     "hex": "#3d4045",
+     "kind": "overcoat",
+     "cloth": "melton",
+     "pat": {
+      "type": "solid"
+     },
+     "on": false
+    },
+    "square": {
+     "hex": "#c8c8d9",
+     "kind": "square",
+     "pat": {
+      "type": "solid"
+     },
+     "on": true,
+     "cloth": "linen"
+    },
+    "boutonniere": {
+     "hex": "#f7f6f2",
+     "kind": "flower",
+     "pat": {
+      "type": "solid"
+     },
+     "on": false,
+     "metal": "silver"
+    },
+    "trousers": {
+     "hex": "#8a8989",
+     "kind": "trousers",
+     "pat": {
+      "type": "glen",
+      "hex2": "#5e5e5e"
+     },
+     "cloth": "flannel",
+     "on": true
+    },
+    "socks": {
+     "hex": "#1d2a44",
+     "kind": "socks",
+     "pat": {
+      "type": "solid"
+     },
+     "on": false
+    },
+    "shoes": {
+     "hex": "#5a3a28",
+     "kind": "oxford",
+     "cloth": "calf",
+     "pat": {
+      "type": "solid"
+     },
+     "on": true
+    },
+    "gloves": {
+     "hex": "#4a3326",
+     "kind": "leather",
+     "pat": {
+      "type": "solid"
+     },
+     "on": false
+    },
+    "name": "Navy blazer, pink-white shirt, red pin-dot tie, white square, grey glen trousers",
+    "occasion": "smart",
+    "acc": {
+     "glasses": {
+      "on": false,
+      "frame": "gold",
+      "hex": "#161616"
+     },
+     "watch": {
+      "on": false,
+      "metal": "silver",
+      "size": 38,
+      "strap": "leather",
+      "display": "analogue"
+     },
+     "buckle": {
+      "on": false,
+      "metal": "silver"
+     },
+     "cufflinks": {
+      "on": false,
+      "metal": "silver",
+      "stone": "none",
+      "size": 15
+     },
+     "tiebar": {
+      "on": false,
+      "metal": "silver",
+      "size": 45
+     },
+     "ring": {
+      "on": false,
+      "metal": "silver",
+      "stone": "none",
+      "size": 12
+     },
+     "earring": {
+      "on": false,
+      "metal": "silver",
+      "stone": "none",
+      "size": 4
+     }
+    }
+   }
+  },
+  {
+   "id": "C/54",
+   "who": "C",
+   "gg": "shown",
+   "why": "",
+   "name": "Olive-brown corduroy jacket and waistcoat, striped shirt, brown tie and square, sage trousers, brown shoes",
+   "outfit": {
+    "locks": {},
+    "hat": {
+     "hex": "#3d4045",
+     "kind": "flatcap",
+     "pat": {
+      "type": "solid"
+     },
+     "on": false
+    },
+    "shirt": {
+     "hex": "#b0978a",
+     "kind": "shirt",
+     "pat": {
+      "type": "solid"
+     },
+     "cloth": "oxford",
+     "on": true
+    },
+    "tie": {
+     "hex": "#806a65",
+     "kind": "tie",
+     "pat": {
+      "type": "solid"
+     },
+     "on": true,
+     "cloth": "woolchallis"
+    },
+    "scarf": {
+     "hex": "#3d4045",
+     "kind": "scarf",
+     "cloth": "cashmere",
+     "pat": {
+      "type": "solid"
+     },
+     "on": false
+    },
+    "mid": {
+     "hex": "#413527",
+     "kind": "waistcoat",
+     "pat": {
+      "type": "solid"
+     },
+     "on": true,
+     "cloth": "corduroy"
+    },
+    "jacket": {
+     "hex": "#40352a",
+     "kind": "jacket",
+     "pat": {
+      "type": "solid"
+     },
+     "on": true,
+     "buttons": "silver",
+     "cloth": "corduroy"
+    },
+    "coat": {
+     "hex": "#3d4045",
+     "kind": "overcoat",
+     "cloth": "melton",
+     "pat": {
+      "type": "solid"
+     },
+     "on": false
+    },
+    "square": {
+     "hex": "#826e6a",
+     "kind": "square",
+     "pat": {
+      "type": "solid"
+     },
+     "on": true,
+     "cloth": "silktwill"
+    },
+    "boutonniere": {
+     "hex": "#f7f6f2",
+     "kind": "flower",
+     "pat": {
+      "type": "solid"
+     },
+     "on": false,
+     "metal": "silver"
+    },
+    "trousers": {
+     "hex": "#968f7a",
+     "kind": "trousers",
+     "pat": {
+      "type": "solid"
+     },
+     "cloth": "cotton",
+     "on": true
+    },
+    "socks": {
+     "hex": "#1d2a44",
+     "kind": "socks",
+     "pat": {
+      "type": "solid"
+     },
+     "on": false
+    },
+    "shoes": {
+     "hex": "#706253",
+     "kind": "derby",
+     "cloth": "calf",
+     "pat": {
+      "type": "solid"
+     },
+     "on": true
+    },
+    "gloves": {
+     "hex": "#4a3326",
+     "kind": "leather",
+     "pat": {
+      "type": "solid"
+     },
+     "on": false
+    },
+    "name": "Olive-brown corduroy jacket and waistcoat, striped shirt, brown tie and square, ",
+    "occasion": "smart",
+    "acc": {
+     "glasses": {
+      "on": false,
+      "frame": "gold",
+      "hex": "#161616"
+     },
+     "watch": {
+      "on": false,
+      "metal": "silver",
+      "size": 38,
+      "strap": "leather",
+      "display": "analogue"
+     },
+     "buckle": {
+      "on": false,
+      "metal": "silver"
+     },
+     "cufflinks": {
+      "on": false,
+      "metal": "silver",
+      "stone": "none",
+      "size": 15
+     },
+     "tiebar": {
+      "on": false,
+      "metal": "silver",
+      "size": 45
+     },
+     "ring": {
+      "on": false,
+      "metal": "silver",
+      "stone": "none",
+      "size": 12
+     },
+     "earring": {
+      "on": false,
+      "metal": "silver",
+      "stone": "none",
+      "size": 4
+     }
+    }
+   }
+  },
+  {
+   "id": "C/58",
+   "who": "C",
+   "gg": "shown",
+   "why": "",
+   "name": "Navy windowpane jacket, chartreuse knit, houndstooth bow tie, grey trousers, beige suede",
+   "outfit": {
+    "locks": {},
+    "hat": {
+     "hex": "#3d4045",
+     "kind": "flatcap",
+     "pat": {
+      "type": "solid"
+     },
+     "on": false
+    },
+    "shirt": {
+     "hex": "#e9eae8",
+     "kind": "shirt",
+     "pat": {
+      "type": "solid"
+     },
+     "cloth": "oxford",
+     "on": true
+    },
+    "tie": {
+     "hex": "#9e9182",
+     "kind": "bowtie",
+     "pat": {
+      "type": "houndstooth",
+      "hex2": "#2a2a2a"
+     },
+     "on": true,
+     "cloth": "woolchallis"
+    },
+    "scarf": {
+     "hex": "#3d4045",
+     "kind": "scarf",
+     "cloth": "cashmere",
+     "pat": {
+      "type": "solid"
+     },
+     "on": false
+    },
+    "mid": {
+     "hex": "#a29d64",
+     "kind": "vneck",
+     "pat": {
+      "type": "solid"
+     },
+     "on": true,
+     "cloth": "lambswool"
+    },
+    "jacket": {
+     "hex": "#3c3b46",
+     "kind": "jacket",
+     "pat": {
+      "type": "windowpane",
+      "hex2": "#c9b48e"
+     },
+     "on": true,
+     "buttons": "silver",
+     "cloth": "flannel"
+    },
+    "coat": {
+     "hex": "#3d4045",
+     "kind": "overcoat",
+     "cloth": "melton",
+     "pat": {
+      "type": "solid"
+     },
+     "on": false
+    },
+    "square": {
+     "hex": "#f7f6f2",
+     "kind": "square",
+     "pat": {
+      "type": "solid"
+     },
+     "on": false
+    },
+    "boutonniere": {
+     "hex": "#f7f6f2",
+     "kind": "flower",
+     "pat": {
+      "type": "solid"
+     },
+     "on": false,
+     "metal": "silver"
+    },
+    "trousers": {
+     "hex": "#a09e9d",
+     "kind": "trousers",
+     "pat": {
+      "type": "solid"
+     },
+     "cloth": "flannel",
+     "on": true
+    },
+    "socks": {
+     "hex": "#1d2a44",
+     "kind": "socks",
+     "pat": {
+      "type": "solid"
+     },
+     "on": false
+    },
+    "shoes": {
+     "hex": "#dbcebd",
+     "kind": "derby",
+     "cloth": "suede",
+     "pat": {
+      "type": "solid"
+     },
+     "on": true
+    },
+    "gloves": {
+     "hex": "#4a3326",
+     "kind": "leather",
+     "pat": {
+      "type": "solid"
+     },
+     "on": false
+    },
+    "name": "Navy windowpane jacket, chartreuse knit, houndstooth bow tie, grey trousers, bei",
+    "occasion": "smart",
+    "acc": {
+     "glasses": {
+      "on": false,
+      "frame": "gold",
+      "hex": "#161616"
+     },
+     "watch": {
+      "on": false,
+      "metal": "silver",
+      "size": 38,
+      "strap": "leather",
+      "display": "analogue"
+     },
+     "buckle": {
+      "on": false,
+      "metal": "silver"
+     },
+     "cufflinks": {
+      "on": false,
+      "metal": "silver",
+      "stone": "none",
+      "size": 15
+     },
+     "tiebar": {
+      "on": false,
+      "metal": "silver",
+      "size": 45
+     },
+     "ring": {
+      "on": false,
+      "metal": "silver",
+      "stone": "none",
+      "size": 12
+     },
+     "earring": {
+      "on": false,
+      "metal": "silver",
+      "stone": "none",
+      "size": 4
+     }
+    }
+   }
+  },
+  {
+   "id": "C/66",
+   "who": "C",
+   "gg": "shown",
+   "why": "",
+   "name": "Grey donegal tweed jacket, light blue shirt, red flower, brown cords, tan shoes",
+   "outfit": {
+    "locks": {},
+    "hat": {
+     "hex": "#3d4045",
+     "kind": "flatcap",
+     "pat": {
+      "type": "solid"
+     },
+     "on": false
+    },
+    "shirt": {
+     "hex": "#c0c0ca",
+     "kind": "shirt",
+     "pat": {
+      "type": "solid"
+     },
+     "cloth": "oxford",
+     "on": true
+    },
+    "tie": {
+     "hex": "#5e1f2c",
+     "kind": "tie",
+     "pat": {
+      "type": "solid"
+     },
+     "on": false
+    },
+    "scarf": {
+     "hex": "#3d4045",
+     "kind": "scarf",
+     "cloth": "cashmere",
+     "pat": {
+      "type": "solid"
+     },
+     "on": false
+    },
+    "mid": {
+     "hex": "#3d4045",
+     "kind": "crew",
+     "pat": {
+      "type": "solid"
+     },
+     "on": false
+    },
+    "jacket": {
+     "hex": "#494046",
+     "kind": "jacket",
+     "pat": {
+      "type": "solid"
+     },
+     "on": true,
+     "buttons": "silver",
+     "cloth": "tweed"
+    },
+    "coat": {
+     "hex": "#3d4045",
+     "kind": "overcoat",
+     "cloth": "melton",
+     "pat": {
+      "type": "solid"
+     },
+     "on": false
+    },
+    "square": {
+     "hex": "#8b5e60",
+     "kind": "square",
+     "pat": {
+      "type": "paisley",
+      "hex2": "#d8a0a0"
+     },
+     "on": true,
+     "cloth": "silktwill"
+    },
+    "boutonniere": {
+     "hex": "#6c0e21",
+     "kind": "flower",
+     "pat": {
+      "type": "solid"
+     },
+     "on": true,
+     "metal": "silver"
+    },
+    "trousers": {
+     "hex": "#281816",
+     "kind": "trousers",
+     "pat": {
+      "type": "solid"
+     },
+     "cloth": "corduroy",
+     "on": true
+    },
+    "socks": {
+     "hex": "#1d2a44",
+     "kind": "socks",
+     "pat": {
+      "type": "solid"
+     },
+     "on": false
+    },
+    "shoes": {
+     "hex": "#b87043",
+     "kind": "derby",
+     "cloth": "calf",
+     "pat": {
+      "type": "solid"
+     },
+     "on": true
+    },
+    "gloves": {
+     "hex": "#4a3326",
+     "kind": "leather",
+     "pat": {
+      "type": "solid"
+     },
+     "on": false
+    },
+    "name": "Grey donegal tweed jacket, light blue shirt, red flower, brown cords, tan shoes",
+    "occasion": "smart",
+    "acc": {
+     "glasses": {
+      "on": false,
+      "frame": "gold",
+      "hex": "#161616"
+     },
+     "watch": {
+      "on": false,
+      "metal": "silver",
+      "size": 38,
+      "strap": "leather",
+      "display": "analogue"
+     },
+     "buckle": {
+      "on": false,
+      "metal": "silver"
+     },
+     "cufflinks": {
+      "on": false,
+      "metal": "silver",
+      "stone": "none",
+      "size": 15
+     },
+     "tiebar": {
+      "on": false,
+      "metal": "silver",
+      "size": 45
+     },
+     "ring": {
+      "on": false,
+      "metal": "silver",
+      "stone": "none",
+      "size": 12
+     },
+     "earring": {
+      "on": false,
+      "metal": "silver",
+      "stone": "none",
+      "size": 4
+     }
+    }
+   }
+  },
+  {
+   "id": "C/72",
+   "who": "C",
+   "gg": "shown",
+   "why": "",
+   "name": "Tan tweed jacket, light blue shirt, dark green knit tie, navy trousers, brown suede (outdoors)",
+   "outfit": {
+    "locks": {},
+    "hat": {
+     "hex": "#3d4045",
+     "kind": "flatcap",
+     "pat": {
+      "type": "solid"
+     },
+     "on": false
+    },
+    "shirt": {
+     "hex": "#928c92",
+     "kind": "shirt",
+     "pat": {
+      "type": "solid"
+     },
+     "cloth": "oxford",
+     "on": true
+    },
+    "tie": {
+     "hex": "#1d2726",
+     "kind": "tie",
+     "pat": {
+      "type": "solid"
+     },
+     "on": true,
+     "cloth": "knitsilk"
+    },
+    "scarf": {
+     "hex": "#3d4045",
+     "kind": "scarf",
+     "cloth": "cashmere",
+     "pat": {
+      "type": "solid"
+     },
+     "on": false
+    },
+    "mid": {
+     "hex": "#3d4045",
+     "kind": "crew",
+     "pat": {
+      "type": "solid"
+     },
+     "on": false
+    },
+    "jacket": {
+     "hex": "#7e6759",
+     "kind": "jacket",
+     "pat": {
+      "type": "solid"
+     },
+     "on": true,
+     "buttons": "silver",
+     "cloth": "tweed"
+    },
+    "coat": {
+     "hex": "#3d4045",
+     "kind": "overcoat",
+     "cloth": "melton",
+     "pat": {
+      "type": "solid"
+     },
+     "on": false
+    },
+    "square": {
+     "hex": "#f7f6f2",
+     "kind": "square",
+     "pat": {
+      "type": "solid"
+     },
+     "on": false
+    },
+    "boutonniere": {
+     "hex": "#f7f6f2",
+     "kind": "flower",
+     "pat": {
+      "type": "solid"
+     },
+     "on": false,
+     "metal": "silver"
+    },
+    "trousers": {
+     "hex": "#2b293f",
+     "kind": "trousers",
+     "pat": {
+      "type": "solid"
+     },
+     "cloth": "cotton",
+     "on": true
+    },
+    "socks": {
+     "hex": "#1d2a44",
+     "kind": "socks",
+     "pat": {
+      "type": "solid"
+     },
+     "on": false
+    },
+    "shoes": {
+     "hex": "#674b3b",
+     "kind": "chukka",
+     "cloth": "suede",
+     "pat": {
+      "type": "solid"
+     },
+     "on": true
+    },
+    "gloves": {
+     "hex": "#4a3326",
+     "kind": "leather",
+     "pat": {
+      "type": "solid"
+     },
+     "on": false
+    },
+    "name": "Tan tweed jacket, light blue shirt, dark green knit tie, navy trousers, brown su",
+    "occasion": "smart",
+    "acc": {
+     "glasses": {
+      "on": false,
+      "frame": "gold",
+      "hex": "#161616"
+     },
+     "watch": {
+      "on": false,
+      "metal": "silver",
+      "size": 38,
+      "strap": "leather",
+      "display": "analogue"
+     },
+     "buckle": {
+      "on": false,
+      "metal": "silver"
+     },
+     "cufflinks": {
+      "on": false,
+      "metal": "silver",
+      "stone": "none",
+      "size": 15
+     },
+     "tiebar": {
+      "on": false,
+      "metal": "silver",
+      "size": 45
+     },
+     "ring": {
+      "on": false,
+      "metal": "silver",
+      "stone": "none",
+      "size": 12
+     },
+     "earring": {
+      "on": false,
+      "metal": "silver",
+      "stone": "none",
+      "size": 4
+     }
+    }
+   }
+  },
+  {
+   "id": "all/02 #1",
+   "who": "C",
+   "gg": "cross",
+   "why": "tie and square in the same salmon satin",
+   "name": "Navy suit, white shirt, salmon satin tie and matching square",
+   "outfit": {
+    "locks": {},
+    "hat": {
+     "hex": "#3d4045",
+     "kind": "flatcap",
+     "pat": {
+      "type": "solid"
+     },
+     "on": false
+    },
+    "shirt": {
+     "hex": "#cfced0",
+     "kind": "shirt",
+     "pat": {
+      "type": "solid"
+     },
+     "cloth": "poplin",
+     "on": true
+    },
+    "tie": {
+     "hex": "#fed3ca",
+     "kind": "tie",
+     "pat": {
+      "type": "solid"
+     },
+     "on": true,
+     "cloth": "satin"
+    },
+    "scarf": {
+     "hex": "#3d4045",
+     "kind": "scarf",
+     "cloth": "cashmere",
+     "pat": {
+      "type": "solid"
+     },
+     "on": false
+    },
+    "mid": {
+     "hex": "#3d4045",
+     "kind": "crew",
+     "pat": {
+      "type": "solid"
+     },
+     "on": false
+    },
+    "jacket": {
+     "hex": "#363852",
+     "kind": "jacket",
+     "pat": {
+      "type": "solid"
+     },
+     "on": true,
+     "buttons": "silver",
+     "cloth": "worsted"
+    },
+    "coat": {
+     "hex": "#3d4045",
+     "kind": "overcoat",
+     "cloth": "melton",
+     "pat": {
+      "type": "solid"
+     },
+     "on": false
+    },
+    "square": {
+     "hex": "#fbb2a2",
+     "kind": "square",
+     "pat": {
+      "type": "solid"
+     },
+     "on": true,
+     "cloth": "silktwill"
+    },
+    "boutonniere": {
+     "hex": "#f7f6f2",
+     "kind": "flower",
+     "pat": {
+      "type": "solid"
+     },
+     "on": false,
+     "metal": "silver"
+    },
+    "trousers": {
+     "hex": "#363852",
+     "kind": "trousers",
+     "pat": {
+      "type": "solid"
+     },
+     "cloth": "worsted",
+     "on": true
+    },
+    "socks": {
+     "hex": "#1d2a44",
+     "kind": "socks",
+     "pat": {
+      "type": "solid"
+     },
+     "on": false
+    },
+    "shoes": {
+     "hex": "#1b1b1d",
+     "kind": "oxford",
+     "cloth": "calf",
+     "pat": {
+      "type": "solid"
+     },
+     "on": true
+    },
+    "gloves": {
+     "hex": "#4a3326",
+     "kind": "leather",
+     "pat": {
+      "type": "solid"
+     },
+     "on": false
+    },
+    "name": "Navy suit, white shirt, salmon satin tie and matching square",
+    "occasion": "business",
+    "acc": {
+     "glasses": {
+      "on": false,
+      "frame": "gold",
+      "hex": "#161616"
+     },
+     "watch": {
+      "on": false,
+      "metal": "silver",
+      "size": 38,
+      "strap": "leather",
+      "display": "analogue"
+     },
+     "buckle": {
+      "on": false,
+      "metal": "silver"
+     },
+     "cufflinks": {
+      "on": false,
+      "metal": "silver",
+      "stone": "none",
+      "size": 15
+     },
+     "tiebar": {
+      "on": false,
+      "metal": "silver",
+      "size": 45
+     },
+     "ring": {
+      "on": false,
+      "metal": "silver",
+      "stone": "none",
+      "size": 12
+     },
+     "earring": {
+      "on": false,
+      "metal": "silver",
+      "stone": "none",
+      "size": 4
+     }
+    }
+   }
+  },
+  {
+   "id": "all/02 #2",
+   "who": "C",
+   "gg": "cross",
+   "why": "tie and square in the same salmon satin",
+   "name": "Same, entered as a user would: one salmon colour, same cloth for tie and square",
+   "outfit": {
+    "locks": {},
+    "hat": {
+     "hex": "#3d4045",
+     "kind": "flatcap",
+     "pat": {
+      "type": "solid"
+     },
+     "on": false
+    },
+    "shirt": {
+     "hex": "#cfced0",
+     "kind": "shirt",
+     "pat": {
+      "type": "solid"
+     },
+     "cloth": "poplin",
+     "on": true
+    },
+    "tie": {
+     "hex": "#fed3ca",
+     "kind": "tie",
+     "pat": {
+      "type": "solid"
+     },
+     "on": true,
+     "cloth": "silktwill"
+    },
+    "scarf": {
+     "hex": "#3d4045",
+     "kind": "scarf",
+     "cloth": "cashmere",
+     "pat": {
+      "type": "solid"
+     },
+     "on": false
+    },
+    "mid": {
+     "hex": "#3d4045",
+     "kind": "crew",
+     "pat": {
+      "type": "solid"
+     },
+     "on": false
+    },
+    "jacket": {
+     "hex": "#363852",
+     "kind": "jacket",
+     "pat": {
+      "type": "solid"
+     },
+     "on": true,
+     "buttons": "silver",
+     "cloth": "worsted"
+    },
+    "coat": {
+     "hex": "#3d4045",
+     "kind": "overcoat",
+     "cloth": "melton",
+     "pat": {
+      "type": "solid"
+     },
+     "on": false
+    },
+    "square": {
+     "hex": "#fed3ca",
+     "kind": "square",
+     "pat": {
+      "type": "solid"
+     },
+     "on": true,
+     "cloth": "silktwill"
+    },
+    "boutonniere": {
+     "hex": "#f7f6f2",
+     "kind": "flower",
+     "pat": {
+      "type": "solid"
+     },
+     "on": false,
+     "metal": "silver"
+    },
+    "trousers": {
+     "hex": "#363852",
+     "kind": "trousers",
+     "pat": {
+      "type": "solid"
+     },
+     "cloth": "worsted",
+     "on": true
+    },
+    "socks": {
+     "hex": "#1d2a44",
+     "kind": "socks",
+     "pat": {
+      "type": "solid"
+     },
+     "on": false
+    },
+    "shoes": {
+     "hex": "#1b1b1d",
+     "kind": "oxford",
+     "cloth": "calf",
+     "pat": {
+      "type": "solid"
+     },
+     "on": true
+    },
+    "gloves": {
+     "hex": "#4a3326",
+     "kind": "leather",
+     "pat": {
+      "type": "solid"
+     },
+     "on": false
+    },
+    "name": "Same, entered as a user would: one salmon colour, same cloth for tie and square",
+    "occasion": "business",
+    "acc": {
+     "glasses": {
+      "on": false,
+      "frame": "gold",
+      "hex": "#161616"
+     },
+     "watch": {
+      "on": false,
+      "metal": "silver",
+      "size": 38,
+      "strap": "leather",
+      "display": "analogue"
+     },
+     "buckle": {
+      "on": false,
+      "metal": "silver"
+     },
+     "cufflinks": {
+      "on": false,
+      "metal": "silver",
+      "stone": "none",
+      "size": 15
+     },
+     "tiebar": {
+      "on": false,
+      "metal": "silver",
+      "size": 45
+     },
+     "ring": {
+      "on": false,
+      "metal": "silver",
+      "stone": "none",
+      "size": 12
+     },
+     "earring": {
+      "on": false,
+      "metal": "silver",
+      "stone": "none",
+      "size": 4
+     }
+    }
+   }
+  },
+  {
+   "id": "all/01",
+   "who": "C",
+   "gg": "cross",
+   "why": "tie and square cut from the same tweed",
+   "name": "Tie and square in the same grey-brown herringbone",
+   "outfit": {
+    "locks": {},
+    "hat": {
+     "hex": "#3d4045",
+     "kind": "flatcap",
+     "pat": {
+      "type": "solid"
+     },
+     "on": false
+    },
+    "shirt": {
+     "hex": "#f4f4f2",
+     "kind": "shirt",
+     "pat": {
+      "type": "solid"
+     },
+     "cloth": "poplin",
+     "on": true
+    },
+    "tie": {
+     "hex": "#555045",
+     "kind": "tie",
+     "pat": {
+      "type": "solid"
+     },
+     "on": true,
+     "cloth": "woolchallis"
+    },
+    "scarf": {
+     "hex": "#3d4045",
+     "kind": "scarf",
+     "cloth": "cashmere",
+     "pat": {
+      "type": "solid"
+     },
+     "on": false
+    },
+    "mid": {
+     "hex": "#3d4045",
+     "kind": "crew",
+     "pat": {
+      "type": "solid"
+     },
+     "on": false
+    },
+    "jacket": {
+     "hex": "#1d2a44",
+     "kind": "jacket",
+     "pat": {
+      "type": "solid"
+     },
+     "on": true,
+     "buttons": "silver",
+     "cloth": "worsted"
+    },
+    "coat": {
+     "hex": "#3d4045",
+     "kind": "overcoat",
+     "cloth": "melton",
+     "pat": {
+      "type": "solid"
+     },
+     "on": false
+    },
+    "square": {
+     "hex": "#565243",
+     "kind": "square",
+     "pat": {
+      "type": "solid"
+     },
+     "on": true,
+     "cloth": "woolchallis"
+    },
+    "boutonniere": {
+     "hex": "#f7f6f2",
+     "kind": "flower",
+     "pat": {
+      "type": "solid"
+     },
+     "on": false,
+     "metal": "silver"
+    },
+    "trousers": {
+     "hex": "#8e9196",
+     "kind": "trousers",
+     "pat": {
+      "type": "solid"
+     },
+     "cloth": "flannel",
+     "on": true
+    },
+    "socks": {
+     "hex": "#1d2a44",
+     "kind": "socks",
+     "pat": {
+      "type": "solid"
+     },
+     "on": false
+    },
+    "shoes": {
+     "hex": "#4a3326",
+     "kind": "oxford",
+     "cloth": "calf",
+     "pat": {
+      "type": "solid"
+     },
+     "on": true
+    },
+    "gloves": {
+     "hex": "#4a3326",
+     "kind": "leather",
+     "pat": {
+      "type": "solid"
+     },
+     "on": false
+    },
+    "name": "Tie and square in the same grey-brown herringbone",
+    "occasion": "smart",
+    "acc": {
+     "glasses": {
+      "on": false,
+      "frame": "gold",
+      "hex": "#161616"
+     },
+     "watch": {
+      "on": false,
+      "metal": "silver",
+      "size": 38,
+      "strap": "leather",
+      "display": "analogue"
+     },
+     "buckle": {
+      "on": false,
+      "metal": "silver"
+     },
+     "cufflinks": {
+      "on": false,
+      "metal": "silver",
+      "stone": "none",
+      "size": 15
+     },
+     "tiebar": {
+      "on": false,
+      "metal": "silver",
+      "size": 45
+     },
+     "ring": {
+      "on": false,
+      "metal": "silver",
+      "stone": "none",
+      "size": 12
+     },
+     "earring": {
+      "on": false,
+      "metal": "silver",
+      "stone": "none",
+      "size": 4
+     }
+    }
+   }
+  },
+  {
+   "id": "all/03",
+   "who": "C",
+   "gg": "tick",
+   "why": "tie and square that differ",
+   "name": "Olive herringbone tweed, pink check shirt, navy knit tie, navy square, white flower",
+   "outfit": {
+    "locks": {},
+    "hat": {
+     "hex": "#3d4045",
+     "kind": "flatcap",
+     "pat": {
+      "type": "solid"
+     },
+     "on": false
+    },
+    "shirt": {
+     "hex": "#f2dfd9",
+     "kind": "shirt",
+     "pat": {
+      "type": "tattersall",
+      "hex2": "#7d8fc9"
+     },
+     "cloth": "poplin",
+     "on": true
+    },
+    "tie": {
+     "hex": "#4e4143",
+     "kind": "tie",
+     "pat": {
+      "type": "solid"
+     },
+     "on": true,
+     "cloth": "knitsilk"
+    },
+    "scarf": {
+     "hex": "#3d4045",
+     "kind": "scarf",
+     "cloth": "cashmere",
+     "pat": {
+      "type": "solid"
+     },
+     "on": false
+    },
+    "mid": {
+     "hex": "#3d4045",
+     "kind": "crew",
+     "pat": {
+      "type": "solid"
+     },
+     "on": false
+    },
+    "jacket": {
+     "hex": "#38322a",
+     "kind": "jacket",
+     "pat": {
+      "type": "herringbone",
+      "hex2": "#6b6450"
+     },
+     "on": true,
+     "buttons": "silver",
+     "cloth": "tweed"
+    },
+    "coat": {
+     "hex": "#3d4045",
+     "kind": "overcoat",
+     "cloth": "melton",
+     "pat": {
+      "type": "solid"
+     },
+     "on": false
+    },
+    "square": {
+     "hex": "#333346",
+     "kind": "square",
+     "pat": {
+      "type": "solid"
+     },
+     "on": true,
+     "cloth": "linen"
+    },
+    "boutonniere": {
+     "hex": "#cabcad",
+     "kind": "flower",
+     "pat": {
+      "type": "solid"
+     },
+     "on": true,
+     "metal": "silver"
+    },
+    "trousers": {
+     "hex": "#8e9196",
+     "kind": "trousers",
+     "pat": {
+      "type": "solid"
+     },
+     "cloth": "flannel",
+     "on": true
+    },
+    "socks": {
+     "hex": "#1d2a44",
+     "kind": "socks",
+     "pat": {
+      "type": "solid"
+     },
+     "on": false
+    },
+    "shoes": {
+     "hex": "#4a3326",
+     "kind": "derby",
+     "cloth": "calf",
+     "pat": {
+      "type": "solid"
+     },
+     "on": true
+    },
+    "gloves": {
+     "hex": "#4a3326",
+     "kind": "leather",
+     "pat": {
+      "type": "solid"
+     },
+     "on": false
+    },
+    "name": "Olive herringbone tweed, pink check shirt, navy knit tie, navy square, white flo",
+    "occasion": "smart",
+    "acc": {
+     "glasses": {
+      "on": false,
+      "frame": "gold",
+      "hex": "#161616"
+     },
+     "watch": {
+      "on": false,
+      "metal": "silver",
+      "size": 38,
+      "strap": "leather",
+      "display": "analogue"
+     },
+     "buckle": {
+      "on": false,
+      "metal": "silver"
+     },
+     "cufflinks": {
+      "on": false,
+      "metal": "silver",
+      "stone": "none",
+      "size": 15
+     },
+     "tiebar": {
+      "on": false,
+      "metal": "silver",
+      "size": 45
+     },
+     "ring": {
+      "on": false,
+      "metal": "silver",
+      "stone": "none",
+      "size": 12
+     },
+     "earring": {
+      "on": false,
+      "metal": "silver",
+      "stone": "none",
+      "size": 4
+     }
+    }
+   }
+  },
+  {
+   "id": "all/28",
+   "who": "B",
+   "gg": "cross",
+   "why": "too many layers in one colour (monochrome article)",
+   "name": "Navy jacket over charcoal cardigan, light blue shirt",
+   "outfit": {
+    "locks": {},
+    "hat": {
+     "hex": "#3d4045",
+     "kind": "flatcap",
+     "pat": {
+      "type": "solid"
+     },
+     "on": false
+    },
+    "shirt": {
+     "hex": "#e4eaf6",
+     "kind": "shirt",
+     "pat": {
+      "type": "solid"
+     },
+     "cloth": "oxford",
+     "on": true
+    },
+    "tie": {
+     "hex": "#5e1f2c",
+     "kind": "tie",
+     "pat": {
+      "type": "solid"
+     },
+     "on": false
+    },
+    "scarf": {
+     "hex": "#3d4045",
+     "kind": "scarf",
+     "cloth": "cashmere",
+     "pat": {
+      "type": "solid"
+     },
+     "on": false
+    },
+    "mid": {
+     "hex": "#282426",
+     "kind": "cardigan",
+     "pat": {
+      "type": "solid"
+     },
+     "on": true,
+     "cloth": "lambswool"
+    },
+    "jacket": {
+     "hex": "#222432",
+     "kind": "jacket",
+     "pat": {
+      "type": "solid"
+     },
+     "on": true,
+     "buttons": "silver",
+     "cloth": "worsted"
+    },
+    "coat": {
+     "hex": "#3d4045",
+     "kind": "overcoat",
+     "cloth": "melton",
+     "pat": {
+      "type": "solid"
+     },
+     "on": false
+    },
+    "square": {
+     "hex": "#f7f6f2",
+     "kind": "square",
+     "pat": {
+      "type": "solid"
+     },
+     "on": false
+    },
+    "boutonniere": {
+     "hex": "#f7f6f2",
+     "kind": "flower",
+     "pat": {
+      "type": "solid"
+     },
+     "on": false,
+     "metal": "silver"
+    },
+    "trousers": {
+     "hex": "#8e9196",
+     "kind": "trousers",
+     "pat": {
+      "type": "solid"
+     },
+     "cloth": "flannel",
+     "on": true
+    },
+    "socks": {
+     "hex": "#1d2a44",
+     "kind": "socks",
+     "pat": {
+      "type": "solid"
+     },
+     "on": false
+    },
+    "shoes": {
+     "hex": "#1b1b1d",
+     "kind": "oxford",
+     "cloth": "calf",
+     "pat": {
+      "type": "solid"
+     },
+     "on": true
+    },
+    "gloves": {
+     "hex": "#4a3326",
+     "kind": "leather",
+     "pat": {
+      "type": "solid"
+     },
+     "on": false
+    },
+    "name": "Navy jacket over charcoal cardigan, light blue shirt",
+    "occasion": "smart",
+    "acc": {
+     "glasses": {
+      "on": false,
+      "frame": "gold",
+      "hex": "#161616"
+     },
+     "watch": {
+      "on": false,
+      "metal": "silver",
+      "size": 38,
+      "strap": "leather",
+      "display": "analogue"
+     },
+     "buckle": {
+      "on": false,
+      "metal": "silver"
+     },
+     "cufflinks": {
+      "on": false,
+      "metal": "silver",
+      "stone": "none",
+      "size": 15
+     },
+     "tiebar": {
+      "on": false,
+      "metal": "silver",
+      "size": 45
+     },
+     "ring": {
+      "on": false,
+      "metal": "silver",
+      "stone": "none",
+      "size": 12
+     },
+     "earring": {
+      "on": false,
+      "metal": "silver",
+      "stone": "none",
+      "size": 4
+     }
+    }
+   }
+  },
+  {
+   "id": "all/11",
+   "who": "C",
+   "gg": "tick",
+   "why": "refined accessories",
+   "name": "Navy chalk-stripe DB suit, cream shirt, olive tie, white square, black shoes",
+   "outfit": {
+    "locks": {},
+    "hat": {
+     "hex": "#3d4045",
+     "kind": "flatcap",
+     "pat": {
+      "type": "solid"
+     },
+     "on": false
+    },
+    "shirt": {
+     "hex": "#faf4ec",
+     "kind": "shirt",
+     "pat": {
+      "type": "solid"
+     },
+     "cloth": "poplin",
+     "on": true
+    },
+    "tie": {
+     "hex": "#9d7f47",
+     "kind": "tie",
+     "pat": {
+      "type": "solid"
+     },
+     "on": true,
+     "cloth": "silktwill"
+    },
+    "scarf": {
+     "hex": "#3d4045",
+     "kind": "scarf",
+     "cloth": "cashmere",
+     "pat": {
+      "type": "solid"
+     },
+     "on": false
+    },
+    "mid": {
+     "hex": "#3d4045",
+     "kind": "crew",
+     "pat": {
+      "type": "solid"
+     },
+     "on": false
+    },
+    "jacket": {
+     "hex": "#302d37",
+     "kind": "jacket",
+     "pat": {
+      "type": "chalkstripe",
+      "hex2": "#e8e4dc"
+     },
+     "on": true,
+     "buttons": "silver",
+     "cloth": "flannel"
+    },
+    "coat": {
+     "hex": "#3d4045",
+     "kind": "overcoat",
+     "cloth": "melton",
+     "pat": {
+      "type": "solid"
+     },
+     "on": false
+    },
+    "square": {
+     "hex": "#fffaf4",
+     "kind": "square",
+     "pat": {
+      "type": "solid"
+     },
+     "on": true,
+     "cloth": "linen"
+    },
+    "boutonniere": {
+     "hex": "#f7f6f2",
+     "kind": "flower",
+     "pat": {
+      "type": "solid"
+     },
+     "on": false,
+     "metal": "silver"
+    },
+    "trousers": {
+     "hex": "#302d37",
+     "kind": "trousers",
+     "pat": {
+      "type": "chalkstripe",
+      "hex2": "#e8e4dc"
+     },
+     "cloth": "flannel",
+     "on": true
+    },
+    "socks": {
+     "hex": "#1d2a44",
+     "kind": "socks",
+     "pat": {
+      "type": "solid"
+     },
+     "on": false
+    },
+    "shoes": {
+     "hex": "#1e1d18",
+     "kind": "oxford",
+     "cloth": "calf",
+     "pat": {
+      "type": "solid"
+     },
+     "on": true
+    },
+    "gloves": {
+     "hex": "#4a3326",
+     "kind": "leather",
+     "pat": {
+      "type": "solid"
+     },
+     "on": false
+    },
+    "name": "Navy chalk-stripe DB suit, cream shirt, olive tie, white square, black shoes",
+    "occasion": "business",
+    "acc": {
+     "glasses": {
+      "on": false,
+      "frame": "gold",
+      "hex": "#161616"
+     },
+     "watch": {
+      "on": false,
+      "metal": "silver",
+      "size": 38,
+      "strap": "leather",
+      "display": "analogue"
+     },
+     "buckle": {
+      "on": false,
+      "metal": "silver"
+     },
+     "cufflinks": {
+      "on": false,
+      "metal": "silver",
+      "stone": "none",
+      "size": 15
+     },
+     "tiebar": {
+      "on": false,
+      "metal": "silver",
+      "size": 45
+     },
+     "ring": {
+      "on": false,
+      "metal": "silver",
+      "stone": "none",
+      "size": 12
+     },
+     "earring": {
+      "on": false,
+      "metal": "silver",
+      "stone": "none",
+      "size": 4
+     }
+    }
+   }
+  },
+  {
+   "id": "all/10",
+   "who": "B",
+   "gg": "cross",
+   "why": "too many accessories",
+   "name": "Camel jacket, panama, purple scarf, paisley tie, pink flower, purple square, orange gloves",
+   "outfit": {
+    "locks": {},
+    "hat": {
+     "hex": "#f6e2ca",
+     "kind": "panama",
+     "pat": {
+      "type": "solid"
+     },
+     "on": true,
+     "cloth": "straw",
+     "band": "#66342c"
+    },
+    "shirt": {
+     "hex": "#e0d4f3",
+     "kind": "shirt",
+     "pat": {
+      "type": "solid"
+     },
+     "cloth": "poplin",
+     "on": true
+    },
+    "tie": {
+     "hex": "#6f5d6f",
+     "kind": "tie",
+     "pat": {
+      "type": "paisley",
+      "hex2": "#c9a24a"
+     },
+     "on": true,
+     "cloth": "silktwill"
+    },
+    "scarf": {
+     "hex": "#bb82c9",
+     "kind": "scarf",
+     "cloth": "silktwill",
+     "pat": {
+      "type": "solid"
+     },
+     "on": true
+    },
+    "mid": {
+     "hex": "#3d4045",
+     "kind": "crew",
+     "pat": {
+      "type": "solid"
+     },
+     "on": false
+    },
+    "jacket": {
+     "hex": "#da976f",
+     "kind": "jacket",
+     "pat": {
+      "type": "solid"
+     },
+     "on": true,
+     "buttons": "silver",
+     "cloth": "flannel"
+    },
+    "coat": {
+     "hex": "#3d4045",
+     "kind": "overcoat",
+     "cloth": "melton",
+     "pat": {
+      "type": "solid"
+     },
+     "on": false
+    },
+    "square": {
+     "hex": "#4f6163",
+     "kind": "square",
+     "pat": {
+      "type": "paisley",
+      "hex2": "#6b3fa0"
+     },
+     "on": true,
+     "cloth": "silktwill"
+    },
+    "boutonniere": {
+     "hex": "#ff9eff",
+     "kind": "flower",
+     "pat": {
+      "type": "solid"
+     },
+     "on": true,
+     "metal": "silver"
+    },
+    "trousers": {
+     "hex": "#8e9196",
+     "kind": "trousers",
+     "pat": {
+      "type": "solid"
+     },
+     "cloth": "flannel",
+     "on": true
+    },
+    "socks": {
+     "hex": "#1d2a44",
+     "kind": "socks",
+     "pat": {
+      "type": "solid"
+     },
+     "on": false
+    },
+    "shoes": {
+     "hex": "#4a3326",
+     "kind": "oxford",
+     "cloth": "calf",
+     "pat": {
+      "type": "solid"
+     },
+     "on": true
+    },
+    "gloves": {
+     "hex": "#ff726a",
+     "kind": "suede",
+     "pat": {
+      "type": "solid"
+     },
+     "on": true,
+     "cloth": "suede"
+    },
+    "name": "Camel jacket, panama, purple scarf, paisley tie, pink flower, purple square, ora",
+    "occasion": "smart",
+    "acc": {
+     "glasses": {
+      "on": false,
+      "frame": "gold",
+      "hex": "#161616"
+     },
+     "watch": {
+      "on": false,
+      "metal": "silver",
+      "size": 38,
+      "strap": "leather",
+      "display": "analogue"
+     },
+     "buckle": {
+      "on": false,
+      "metal": "silver"
+     },
+     "cufflinks": {
+      "on": false,
+      "metal": "silver",
+      "stone": "none",
+      "size": 15
+     },
+     "tiebar": {
+      "on": false,
+      "metal": "silver",
+      "size": 45
+     },
+     "ring": {
+      "on": false,
+      "metal": "silver",
+      "stone": "none",
+      "size": 12
+     },
+     "earring": {
+      "on": false,
+      "metal": "silver",
+      "stone": "none",
+      "size": 4
+     }
+    }
+   }
+  },
+  {
+   "id": "all/08",
+   "who": "C",
+   "gg": "cross",
+   "why": "white tennis socks with a dark suit",
+   "name": "Dark suit trousers, white socks, black shoes",
+   "outfit": {
+    "locks": {},
+    "hat": {
+     "hex": "#3d4045",
+     "kind": "flatcap",
+     "pat": {
+      "type": "solid"
+     },
+     "on": false
+    },
+    "shirt": {
+     "hex": "#f4f4f2",
+     "kind": "shirt",
+     "pat": {
+      "type": "solid"
+     },
+     "cloth": "poplin",
+     "on": true
+    },
+    "tie": {
+     "hex": "#1d2a44",
+     "kind": "tie",
+     "pat": {
+      "type": "solid"
+     },
+     "on": true,
+     "cloth": "silktwill"
+    },
+    "scarf": {
+     "hex": "#3d4045",
+     "kind": "scarf",
+     "cloth": "cashmere",
+     "pat": {
+      "type": "solid"
+     },
+     "on": false
+    },
+    "mid": {
+     "hex": "#3d4045",
+     "kind": "crew",
+     "pat": {
+      "type": "solid"
+     },
+     "on": false
+    },
+    "jacket": {
+     "hex": "#000000",
+     "kind": "jacket",
+     "pat": {
+      "type": "solid"
+     },
+     "on": true,
+     "buttons": "silver",
+     "cloth": "worsted"
+    },
+    "coat": {
+     "hex": "#3d4045",
+     "kind": "overcoat",
+     "cloth": "melton",
+     "pat": {
+      "type": "solid"
+     },
+     "on": false
+    },
+    "square": {
+     "hex": "#f7f6f2",
+     "kind": "square",
+     "pat": {
+      "type": "solid"
+     },
+     "on": false
+    },
+    "boutonniere": {
+     "hex": "#f7f6f2",
+     "kind": "flower",
+     "pat": {
+      "type": "solid"
+     },
+     "on": false,
+     "metal": "silver"
+    },
+    "trousers": {
+     "hex": "#000000",
+     "kind": "trousers",
+     "pat": {
+      "type": "solid"
+     },
+     "cloth": "worsted",
+     "on": true
+    },
+    "socks": {
+     "hex": "#fbf3f4",
+     "kind": "socks",
+     "pat": {
+      "type": "solid"
+     },
+     "on": true
+    },
+    "shoes": {
+     "hex": "#161115",
+     "kind": "oxford",
+     "cloth": "calf",
+     "pat": {
+      "type": "solid"
+     },
+     "on": true
+    },
+    "gloves": {
+     "hex": "#4a3326",
+     "kind": "leather",
+     "pat": {
+      "type": "solid"
+     },
+     "on": false
+    },
+    "name": "Dark suit trousers, white socks, black shoes",
+    "occasion": "business",
+    "acc": {
+     "glasses": {
+      "on": false,
+      "frame": "gold",
+      "hex": "#161616"
+     },
+     "watch": {
+      "on": false,
+      "metal": "silver",
+      "size": 38,
+      "strap": "leather",
+      "display": "analogue"
+     },
+     "buckle": {
+      "on": false,
+      "metal": "silver"
+     },
+     "cufflinks": {
+      "on": false,
+      "metal": "silver",
+      "stone": "none",
+      "size": 15
+     },
+     "tiebar": {
+      "on": false,
+      "metal": "silver",
+      "size": 45
+     },
+     "ring": {
+      "on": false,
+      "metal": "silver",
+      "stone": "none",
+      "size": 12
+     },
+     "earring": {
+      "on": false,
+      "metal": "silver",
+      "stone": "none",
+      "size": 4
+     }
+    }
+   }
+  },
+  {
+   "id": "all/07",
+   "who": "C",
+   "gg": "tick",
+   "why": "proper dress shoes with suit trousers",
+   "name": "Navy suit trousers, dark brown monk shoes",
+   "outfit": {
+    "locks": {},
+    "hat": {
+     "hex": "#3d4045",
+     "kind": "flatcap",
+     "pat": {
+      "type": "solid"
+     },
+     "on": false
+    },
+    "shirt": {
+     "hex": "#f4f4f2",
+     "kind": "shirt",
+     "pat": {
+      "type": "solid"
+     },
+     "cloth": "poplin",
+     "on": true
+    },
+    "tie": {
+     "hex": "#5e1f2c",
+     "kind": "tie",
+     "pat": {
+      "type": "solid"
+     },
+     "on": true,
+     "cloth": "silktwill"
+    },
+    "scarf": {
+     "hex": "#3d4045",
+     "kind": "scarf",
+     "cloth": "cashmere",
+     "pat": {
+      "type": "solid"
+     },
+     "on": false
+    },
+    "mid": {
+     "hex": "#3d4045",
+     "kind": "crew",
+     "pat": {
+      "type": "solid"
+     },
+     "on": false
+    },
+    "jacket": {
+     "hex": "#21202f",
+     "kind": "jacket",
+     "pat": {
+      "type": "solid"
+     },
+     "on": true,
+     "buttons": "silver",
+     "cloth": "worsted"
+    },
+    "coat": {
+     "hex": "#3d4045",
+     "kind": "overcoat",
+     "cloth": "melton",
+     "pat": {
+      "type": "solid"
+     },
+     "on": false
+    },
+    "square": {
+     "hex": "#f7f6f2",
+     "kind": "square",
+     "pat": {
+      "type": "solid"
+     },
+     "on": false
+    },
+    "boutonniere": {
+     "hex": "#f7f6f2",
+     "kind": "flower",
+     "pat": {
+      "type": "solid"
+     },
+     "on": false,
+     "metal": "silver"
+    },
+    "trousers": {
+     "hex": "#21202f",
+     "kind": "trousers",
+     "pat": {
+      "type": "solid"
+     },
+     "cloth": "worsted",
+     "on": true
+    },
+    "socks": {
+     "hex": "#1d2a44",
+     "kind": "socks",
+     "pat": {
+      "type": "solid"
+     },
+     "on": false
+    },
+    "shoes": {
+     "hex": "#6a3e28",
+     "kind": "monk",
+     "cloth": "calf",
+     "pat": {
+      "type": "solid"
+     },
+     "on": true
+    },
+    "gloves": {
+     "hex": "#4a3326",
+     "kind": "leather",
+     "pat": {
+      "type": "solid"
+     },
+     "on": false
+    },
+    "name": "Navy suit trousers, dark brown monk shoes",
+    "occasion": "business",
+    "acc": {
+     "glasses": {
+      "on": false,
+      "frame": "gold",
+      "hex": "#161616"
+     },
+     "watch": {
+      "on": false,
+      "metal": "silver",
+      "size": 38,
+      "strap": "leather",
+      "display": "analogue"
+     },
+     "buckle": {
+      "on": false,
+      "metal": "silver"
+     },
+     "cufflinks": {
+      "on": false,
+      "metal": "silver",
+      "stone": "none",
+      "size": 15
+     },
+     "tiebar": {
+      "on": false,
+      "metal": "silver",
+      "size": 45
+     },
+     "ring": {
+      "on": false,
+      "metal": "silver",
+      "stone": "none",
+      "size": 12
+     },
+     "earring": {
+      "on": false,
+      "metal": "silver",
+      "stone": "none",
+      "size": 4
+     }
+    }
+   }
+  },
+  {
+   "id": "all/05",
+   "who": "C",
+   "gg": "cross",
+   "why": "sneakers with a tweed suit",
+   "name": "Tan tweed suit, purple waistcoat, striped socks, green canvas sneakers",
+   "outfit": {
+    "locks": {},
+    "hat": {
+     "hex": "#3d4045",
+     "kind": "flatcap",
+     "pat": {
+      "type": "solid"
+     },
+     "on": false
+    },
+    "shirt": {
+     "hex": "#f4f4f2",
+     "kind": "shirt",
+     "pat": {
+      "type": "solid"
+     },
+     "cloth": "oxford",
+     "on": true
+    },
+    "tie": {
+     "hex": "#5e1f2c",
+     "kind": "tie",
+     "pat": {
+      "type": "solid"
+     },
+     "on": false
+    },
+    "scarf": {
+     "hex": "#3d4045",
+     "kind": "scarf",
+     "cloth": "cashmere",
+     "pat": {
+      "type": "solid"
+     },
+     "on": false
+    },
+    "mid": {
+     "hex": "#712040",
+     "kind": "waistcoat",
+     "pat": {
+      "type": "solid"
+     },
+     "on": true,
+     "cloth": "flannel"
+    },
+    "jacket": {
+     "hex": "#c6866a",
+     "kind": "jacket",
+     "pat": {
+      "type": "solid"
+     },
+     "on": true,
+     "buttons": "silver",
+     "cloth": "tweed"
+    },
+    "coat": {
+     "hex": "#3d4045",
+     "kind": "overcoat",
+     "cloth": "melton",
+     "pat": {
+      "type": "solid"
+     },
+     "on": false
+    },
+    "square": {
+     "hex": "#f7f6f2",
+     "kind": "square",
+     "pat": {
+      "type": "solid"
+     },
+     "on": false
+    },
+    "boutonniere": {
+     "hex": "#f7f6f2",
+     "kind": "flower",
+     "pat": {
+      "type": "solid"
+     },
+     "on": false,
+     "metal": "silver"
+    },
+    "trousers": {
+     "hex": "#c6866a",
+     "kind": "trousers",
+     "pat": {
+      "type": "solid"
+     },
+     "cloth": "tweed",
+     "on": true
+    },
+    "socks": {
+     "hex": "#55353f",
+     "kind": "socks",
+     "pat": {
+      "type": "breton",
+      "hex2": "#3a4a8a"
+     },
+     "on": true
+    },
+    "shoes": {
+     "hex": "#9ac786",
+     "kind": "trainer",
+     "cloth": "canvas",
+     "pat": {
+      "type": "solid"
+     },
+     "on": true
+    },
+    "gloves": {
+     "hex": "#4a3326",
+     "kind": "leather",
+     "pat": {
+      "type": "solid"
+     },
+     "on": false
+    },
+    "name": "Tan tweed suit, purple waistcoat, striped socks, green canvas sneakers",
+    "occasion": "smart",
+    "acc": {
+     "glasses": {
+      "on": false,
+      "frame": "gold",
+      "hex": "#161616"
+     },
+     "watch": {
+      "on": false,
+      "metal": "silver",
+      "size": 38,
+      "strap": "leather",
+      "display": "analogue"
+     },
+     "buckle": {
+      "on": false,
+      "metal": "silver"
+     },
+     "cufflinks": {
+      "on": false,
+      "metal": "silver",
+      "stone": "none",
+      "size": 15
+     },
+     "tiebar": {
+      "on": false,
+      "metal": "silver",
+      "size": 45
+     },
+     "ring": {
+      "on": false,
+      "metal": "silver",
+      "stone": "none",
+      "size": 12
+     },
+     "earring": {
+      "on": false,
+      "metal": "silver",
+      "stone": "none",
+      "size": 4
+     }
+    }
+   }
+  }
+ ]
+}

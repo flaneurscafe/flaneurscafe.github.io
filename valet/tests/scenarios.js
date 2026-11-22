@@ -148,17 +148,18 @@ T('an impossible combination is its own verdict', base({jacket:P('#2d3b2a','waxe
     const good = E.analyseProfile({ samples: Object.assign({}, skin, { white:'#f2f2f2' }), manual: {}, useWhite:true, hairStyle:'none', season:'winter' });
     const gold = base({shirt:P(col('White'),'shirt','poplin'), tie:P('#d0bc87','tie','repsilk')});
     chk('the reading is cool in both, low and trustworthy confidence', gold, low, () => low.tempLevel === 'cool' && good.tempLevel === 'cool' && low.confidence === 'low' && good.confidence !== 'low');
-    chk('gold tie, cool skin, low confidence: a note that says why', gold, low, cs => cs.some(c => c.id === 'face' && c.score === 0.6 && /low confidence/.test(c.text)));
+    chk('gold tie, skin typed in: a note that says the skin was entered by hand (1.16)', gold, low, cs => cs.some(c => c.id === 'face' && c.score === 0.6 && /entered by hand/.test(c.text)));
     chk('gold tie, cool skin, trustworthy reading: also a note since 1.15 (temperature alone never fails)', gold, good, cs => cs.some(c => c.id === 'face' && c.score === 0.6 && !/low confidence/.test(c.text)));
     const flat = base({shirt:P('#7a5a48','shirt','poplin'), tie:P('#d0bc87','tie','repsilk')});   // a shirt that merges with the skin, besides the tie
-    chk('temperature plus another clash, low confidence: still a failure', flat, low, cs => cs.some(c => c.id === 'face' && c.score === 0.3)); }
+    chk('temperature plus another clash, measured skin: still a failure', flat, good, cs => cs.some(c => c.id === 'face' && c.score === 0.3));
+    chk('the same with the skin typed in: a note (1.16)', flat, low, cs => cs.some(c => c.id === 'face' && c.score === 0.6 && /entered by hand/.test(c.text))); }
 }
 
 // ---- 1.14.1: the review of 1.14 ----
 {
   const chk = (name, ok) => { count++; if (!ok) { fails++; console.log('✗', name); } else if (process.env.VERBOSE) console.log('✓', name); };
   const skin = { white:null, skin:'#814c35', hair:'#1a1412', eyes:'#2a1c14' };
-  const low = E.analyseProfile({ samples: skin, manual: { skin:true, hair:true, eyes:true }, useWhite:true, hairStyle:'none', season:'winter' });
+  const low = E.analyseProfile({ samples: Object.assign({}, skin, { white: '#f2f2f2' }), manual: {}, useWhite: true, hairStyle: 'none', season: 'winter' });   // measured since 1.16: a typed skin makes every clash a note
   // a failing face check with one temperature-only piece: that piece is marked, the "is a note" sentence is not added
   const mixed = E.checkOutfit(base({shirt:P('#7a5a48','shirt','poplin'), tie:P('#d0bc87','tie','repsilk')}), low).find(c => c.id === 'face');
   chk('mixed clash: fails, marks the temperature-only piece, no "is a note" sentence', mixed && mixed.score === 0.3 && /temperature only, a note on its own/.test(mixed.text) && !/check it in daylight/.test(mixed.text));
@@ -216,10 +217,10 @@ T('an impossible combination is its own verdict', base({jacket:P('#2d3b2a','waxe
   chk('tie against shirt: a sparse foulard on the same cream ground still merges with the shirt', notes(E.checkOutfit(creamAvg, aW), 'tie').length === 1);
 
   // temperature alone never fails
-  const kyle = prof('#814c35', '#1a1412', '#2a1c14');
+  const kyle = E.analyseProfile({ samples: { white: '#f2f2f2', skin: '#814c35', hair: '#1a1412', eyes: '#2a1c14' }, manual: {}, useWhite: true, hairStyle: 'short', season: 'winter' });
   const goldTie = base({ shirt: P('#f7f6f2', 'shirt', 'poplin'), tie: P('#d0bc87', 'tie', 'repsilk') });
   const fg = E.checkOutfit(goldTie, kyle).find(c => c.id === 'face');
-  chk('temperature alone: a note, whatever the confidence', fg && fg.score === 0.6 && /temperature alone is a note/.test(fg.text), fg && fg.text);
+  chk('temperature alone: a note with a measured skin too', fg && fg.score === 0.6 && /temperature alone is a note/.test(fg.text), fg && fg.text);
 
   // the outfit's contrast against the face's
   const stark = base({ jacket: P('#161616', 'jacket', 'worsted'), shirt: P('#f7f6f2', 'shirt', 'poplin'), trousers: P('#161616', 'trousers', 'worsted') });
@@ -275,6 +276,25 @@ T('an impossible combination is its own verdict', base({jacket:P('#2d3b2a','waxe
   const csE = E.checkOutfit(greyOnly, auburn);
   chk('echo: nothing repeated gets a hint that never changes the verdict', ids(csE, 'echo').some(c => c.score === 0.9) && E.verdict(csE).title === E.verdict(csE.filter(c => c.id !== 'echo')).title);
   chk('echo: black hair and dark brown eyes, nothing to echo, no check', !ids(E.checkOutfit(echoTie, high), 'echo').length || ids(E.checkOutfit(echoTie, high), 'echo').every(c => !/hair/.test(c.text)));
+}
+
+// ---- 1.16: a skin colour typed in, accents echoing the tie ----
+{
+  const chk = (name, ok, why) => { count++; if (!ok) { fails++; console.log('✗', name, why ? '\n   ' + why : ''); } else if (process.env.VERBOSE) console.log('✓', name); };
+  const samples = { skin: '#ecc9bd', hair: '#3b322c', eyes: '#8a9aa6' };
+  const typed = E.analyseProfile({ samples: Object.assign({ white: null }, samples), manual: { skin: true, hair: true, eyes: true }, useWhite: true, hairStyle: 'short', season: 'winter' });
+  const measured = E.analyseProfile({ samples: Object.assign({ white: '#f2f2f2' }, samples), manual: {}, useWhite: true, hairStyle: 'short', season: 'winter' });
+  const pale = base({ shirt: P('#ead8cc', 'shirt', 'poplin') });   // a shirt very close to this skin
+  const fT = E.checkOutfit(pale, typed).find(c => c.id === 'face'), fM = E.checkOutfit(pale, measured).find(c => c.id === 'face');
+  chk('skin typed in: a clash with it is a note, and says why', typed.skinMeasured === false && fT && fT.score === 0.6 && /entered by hand/.test(fT.text), fT && fT.text);
+  chk('skin measured with white paper: the same clash fails', measured.skinMeasured === true && fM && fM.score === 0.3, fM && fM.text);
+  // a flower close to the tie: no near match; the same colour exactly: a note
+  const fl = (h) => base({ jacket: P('#1d2a44', 'blazer', 'hopsack'), tie: P('#c17eac', 'tie', 'grenadine'), boutonniere: P(h, 'flower') });
+  const csN = E.checkOutfit(fl('#ce97d2'), aW);
+  chk('a flower in a similar shade to the tie is not a near match', !csN.some(c => c.id === 'near' && c.slots.indexOf('boutonniere') >= 0) && !csN.some(c => c.id === 'accentmatch'));
+  const csE = E.checkOutfit(fl('#c17eac'), aW);
+  chk('a flower in the tie\'s exact colour is a note', csE.some(c => c.id === 'accentmatch' && c.score === 0.8));
+  chk('near matches between cloths still fail (navy and midnight)', E.checkOutfit(base({ jacket: P(col('Navy'), 'jacket', 'hopsack'), trousers: P(col('Midnight') || col('Ink'), 'trousers', 'flannel') }), aW).some(c => c.id === 'near'));
 }
 console.log((fails ? fails + ' scenario(s) failed' : 'all scenarios pass') + ' (' + count + ' run)');
 if (fails) process.exit(1);

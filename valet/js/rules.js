@@ -73,6 +73,7 @@
     phalves: { name: 'top and trousers for your build', weight: 0.8, reason: 'suits your build', kind: 'convention', how: 'r-halves' },
     ocontrast: { name: "the outfit's contrast", weight: 0.8, reason: "matches your face's contrast", section: 'contrast', kind: 'convention', how: 'r-ocontrast' },
     hank: { name: 'the pocket square with the tie', weight: 0.5, reason: 'suits the tie', section: 'colour', kind: 'convention', how: 'r-square' },
+    accentmatch: { name: 'a flower matching the tie exactly', weight: 0.4, reason: null, section: 'colour', kind: 'convention', how: 'r-near' },
     echo: { name: 'your own colours echoed', weight: 0.3, reason: 'echoes your hair or eyes', section: 'skin', kind: 'convention', how: 'r-echo' },
     bold: { name: 'a second loud colour', weight: 0.5, reason: 'quieter below the belt', section: 'colour', kind: 'convention', how: 'r-below' },
     bout: { name: 'a buttonhole without lapels', weight: 1, reason: null, kind: 'possibility', how: 'r-buttonhole' },

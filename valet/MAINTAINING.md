@@ -128,6 +128,8 @@ State the rule, its numbers and its sources. A web source gets `class="web"` on 
 9. **Look at it in the browser** (section 6).
 10. **Write it down**: a short entry in the revision notes, and in the commit message.
 
+**Check it against taste.** `node tests/taste.js` (also part of `tests/run.js`) judges about forty outfits that a well-dressed eye approved or crossed, and says which verdicts moved since it was recorded, towards or away from that eye. Do not tune a rule to this set alone: it is small and from one source. A change that moves several looks away from it needs a good reason, written in its passage. Record the new numbers with `node tests/taste.js --update` in the same commit.
+
 To **change a threshold only**: edit `PARAMS` and the number in its passage, then steps 8 to 10.
 
 **Check a rule change against your own marks.** The regression test says what changed; your marks say whether it changed for the better. Before the change, save your profile from the You tab (the file holds your saved outfits and their marks) and run `node tools/marks.js valet-yourname.json`. Run it again after the change, on the same file. It lists every outfit where you and Valet disagree (you call it good and Valet fails it, or you call it bad and Valet passes it) and which rules caused it. A change that adds disagreements is a change for the worse on your own clothes, whatever the theory says; one that removes them, without adding others, is evidence for it. Keep the file outside the repository: it is yours.

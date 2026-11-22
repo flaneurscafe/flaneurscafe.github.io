@@ -105,7 +105,7 @@
         if (t > 2) {
           // clashes with your skin: ringed in red; a clash of temperature alone is a note in the Dresser,
           // so it is ringed in a dashed grey instead
-          const soft = !!bestF.s.tempOnly;
+          const soft = !!bestF.s.tempOnly || a.skinMeasured === false;   // a note in the Dresser: temperature alone, or a skin colour typed in
           s.push('<rect x="' + r1(x - 12) + '" y="' + (y - 12) + '" width="24" height="24" rx="5" fill="none" stroke="' + (soft ? '#8a8a8a' : '#b0413e') + '" stroke-width="' + (soft ? 1.4 : 1.8) + '"' + (soft ? ' stroke-dasharray="3 2"' : '') + '/>');
           clashRows.push({ r: r, t: t, soft: soft });
         }
@@ -120,8 +120,8 @@
     // Clashes with your skin come first: they are the one thing no other piece can fix.
     clashRows.forEach(function (c) {
       const why = E.skinReasons ? E.skinReasons(c.r.hex, a) : [];
-      notes.push({ ok: c.soft ? null : false, text: (c.soft ? 'Temperature only, at the face: ' : 'Clashes with your skin: ') + (c.r.name ? c.r.name + ' ' : '') + c.r.label.toLowerCase() + ' is T' + c.t + (why.length ? ', ' + why[0] : '') +
-        (c.soft ? '. A clash of temperature alone is a note, not a failure' + (a.confidence === 'low' ? '; your reading is low confidence, so check it in daylight' : '') : '') + '.' });
+      notes.push({ ok: c.soft ? null : false, text: (c.soft ? (a.skinMeasured === false ? 'Against your skin (as entered): ' : 'Temperature only, at the face: ') : 'Clashes with your skin: ') + (c.r.name ? c.r.name + ' ' : '') + c.r.label.toLowerCase() + ' is T' + c.t + (why.length ? ', ' + why[0] : '') +
+        (c.soft ? (a.skinMeasured === false ? '. Your skin colour was entered by hand, so this is a note until it is measured from a photo with white paper' : '. A clash of temperature alone is a note, not a failure') : '') + '.' });
     });
     function bracket(r1_, r2_, ok, text) {
       const xm = X1 + 38, ya = r1_.y, yb = r2_.y;

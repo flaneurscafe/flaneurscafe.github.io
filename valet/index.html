@@ -13,13 +13,13 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Valet — dressing from theory</title>
 <meta name="description" content="Valet: a browser tool that works out which colours suit you from colour science and tailoring theory, and charts an outfit's lightness against your own colouring. Nothing leaves your browser.">
-<link rel="stylesheet" href="css/valet.css?v=1.15">
+<link rel="stylesheet" href="css/valet.css?v=1.16">
 </head>
 <body>
 <header class="masthead">
   <div class="brand">
     <h1>Valet</h1>
-    <p class="tagline">Dressing from theory, not from cases <button type="button" class="ver" id="verTag" title="What Valet is and how to use it">v1.15</button></p>
+    <p class="tagline">Dressing from theory, not from cases <button type="button" class="ver" id="verTag" title="What Valet is and how to use it">v1.16</button></p>
   </div>
   <div class="season-bar"><span class="flabel" id="seasonLabel">Season</span>
     <div class="seg" id="season" role="radiogroup" aria-labelledby="seasonLabel">
@@ -532,14 +532,14 @@
           <p><span class="badge B">B</span> Once there is a whole outfit, rules apply between pieces. These are the Outfit Check card's questions, made measurable. The card is the one-page checklist that goes with the Style Guide (both unpublished; section 19): six questions (temperature, contrast, frame, sheen, pattern, metal), then the feet; the question numbers below are its numbers. All are convention unless badged otherwise.</p>
           <ul>
             <li><strong>Positions, not fixed garments.</strong> An outfit is a set of positions: a hat, next to the neck, neckwear, a mid layer, an outer layer, a scarf, a pocket square, trousers, socks, shoes and belt. Only next to the neck, trousers and shoes are needed, so a summer shirt and trousers is a whole outfit. Each position holds a garment type: a shirt, roll neck, polo or T-shirt; a tie, bow tie or cravat (ascot); a crew neck, V-neck, cardigan or waistcoat; a jacket, overshirt or coat. A waistcoat, like a V-neck, wants a shirt collar under it; with the lab link, Proportion checks that its points meet the trousers' waistband. Neckwear sits at the collar and needs one; the scarf is its own position, worn over everything, so a tie and a scarf can go together under a coat. The type carries what the rules need: whether it frames the face, which patterns are used on it, and the largest pattern scale that suits it (section 11).</li>
-            <li id="r-face"><strong>At the face.</strong> Every layer above the waist, and the pocket square, is scored at the face: a plain piece by its colour, a pattern by what is seen of it from 3 m (its average if it reads as texture, the better of its main colours if it reads as a pattern; section 11). Each should be tier 1 or 2. A colour below tier 2 fails, with two exceptions that are notes. The first is a small accent: the pocket square, a flower. The second is a colour that only temperature keeps from the face: it would be tier 1 or 2 if temperature were met, and temperature is its weakest rule. Such a clash is always a note, whatever the confidence of the reading. The warm-cool lean is the least certain thing Valet reads from a face, and none of its sources measures it (section 3). In a test on three presenters measured from photographs, all three read as cool, though two had been estimated as warm by eye. Flusser, the source most of Valet's rules rest on, has no warm-cool system at all: he works with contrast and with echoing the face's own colours <span class="cite">[<a href="#ref-50">50</a>, pp. 20–31]</span>.</li>
+            <li id="r-face"><strong>At the face.</strong> Every layer above the waist, and the pocket square, is scored at the face: a plain piece by its colour, a pattern by what is seen of it from 3 m (its average if it reads as texture, the better of its main colours if it reads as a pattern; section 11). Each should be tier 1 or 2. A colour below tier 2 fails, with two exceptions that are notes. The first is a small accent: the pocket square, a flower. The second is a colour that only temperature keeps from the face: it would be tier 1 or 2 if temperature were met, and temperature is its weakest rule. Such a clash is always a note, whatever the confidence of the reading. And when your skin colour was typed in, picked by name, or read from a photo without white paper, every clash with it is a note, whatever its reason: it rests on a guess at the one colour all of these rules compare with. In the Gentleman's Gazette test, a guessed skin for one presenter failed seven of his outfits for shirts "too close to your skin" that his measured skin did not; a beginner who guesses his colouring should not be told an outfit fails because of the guess. Measure your skin from a daylight photo with white paper (the You tab) and these clashes count again. The warm-cool lean is the least certain thing Valet reads from a face, and none of its sources measures it (section 3). In a test on three presenters measured from photographs, all three read as cool, though two had been estimated as warm by eye. Flusser, the source most of Valet's rules rest on, has no warm-cool system at all: he works with contrast and with echoing the face's own colours <span class="cite">[<a href="#ref-50">50</a>, pp. 20–31]</span>.</li>
             <li id="r-echo"><span class="badge B">B</span> <strong>Your own colours, echoed.</strong> Flusser's second way to bring the face forward is to repeat one of its own colours in what is worn near it: a suit in the shade of the hair, so the face is bracketed by its own colour; a tie whose reddish cast picks up a ruddy skin; a blue shirt or tie under blue eyes <span class="cite">[<a href="#ref-50">50</a>, pp. 23–24]</span>. His portraits apply it: gold, rust and brown for a golden blond <span class="cite">[<a href="#ref-50">50</a>, p. 30]</span>, a blue shirt for blue eyes and a burgundy or pink tie for a slightly ruddy skin <span class="cite">[<a href="#ref-50">50</a>, p. 31]</span>. Gentleman's Gazette gives the same technique <span class="cite">[<a class="web" href="#ref-75">75</a>]</span>. Valet looks for a colour near the face, or the jacket, in the hue family (within 35°) of your hair (or brows) or eyes, with some colour of its own (OKLCH chroma 0.03 or more) and within 30 L*. Grey, black or white hair is left out: it is a matter of contrast (section 4). A tick when an outfit does it, a hint when it does not; it never lowers a verdict, because Flusser offers it as one of two ways, not a rule every outfit must keep. This is where warmth enters Valet's judgement of the face: a warm colour is welcome when it repeats a warm colour you have.</li>
             <li id="r-frame"><strong>Something frames the face.</strong> The Outfit Check card's third question: name the thing that frames the face. Flusser puts it as "think of the face as a picture and what surrounds it as the frame" <span class="cite">[<a href="#ref-50">50</a>, p. 123]</span>, an image he also uses with the clothes and with the collar as the frame <span class="cite">[<a href="#ref-50">50</a>, pp. 24, 46]</span>, and Valet measures the light-dark step that makes the frame (section 4). A shirt or polo collar, a roll neck, a shawl collar, lapels, a coat collar or a scarf all count. An open collar must still frame the face, as Flusser says of dressing down without a tie <span class="cite">[<a href="#ref-50">50</a>, p. 269]</span>. A T-shirt or crew neck alone does not, which is noted as casual rather than failed. A tie needs a shirt to sit under: a collar and a full button front, so a polo, whose placket stops halfway, does not take one. A V-neck knit is cut to show a collar; a waistcoat wants a shirt that takes a tie.</li>
             <li id="r-step"><strong>Light-dark step</strong> <span class="badge A">A</span> <span class="badge B">B</span>. The shirt and the layer that meets it at the neck should differ by at least the lower bound of section 4. That layer is the first of these that is worn: a scarf, which lies against the collar whatever is over the shirt; a knit or waistcoat, which goes on before the jacket; the jacket; a coat worn straight over the shirt; a tie. (A scarf is narrow, so when the knit or jacket beside it makes the stronger step over the shirt front, that one counts.) Flusser shows the step on a medium-contrast face: a grey shirt under a grey suit leaves it in shadow, a white one lights it <span class="cite">[<a href="#ref-50">50</a>, p. 26]</span>; he names the contrast between the darker jacket and the lighter shirt as one of the things that draw the eye to the face <span class="cite">[<a href="#ref-50">50</a>, p. 123]</span>. The bound is the one a colour has to clear against your skin. A hat, or a coat over a jacket, cannot stand in for the step: the frame is the line where the shirt meets what is over it. With a single layer, the collar alone frames the face, which is noted but not failed. A step a little short of the bound, within 80% of it, still frames the face and is noted, not failed: the bound is a working value <span class="badge B">B</span>, and a white shirt under a camel jacket on a high-contrast face (a step of 26 against 31) is a frame anyone can see.</li>
             <li id="r-ocontrast"><span class="badge B">B</span> <strong>The outfit's contrast.</strong> Flusser's first way to bring the face forward: the colours of an outfit should show about the same degree of contrast as the face shows between skin and hair <span class="cite">[<a href="#ref-50">50</a>, p. 20]</span>. A high-contrast face (dark hair, light skin) is livened by contrasting colours of equal strength and dampened by a tonal outfit (Tyrone Power in khaki, p. 21; Fumihiko in one colour, p. 27); a muted face is overwhelmed by a stark one, so black and white "bully" it (John, p. 28), while a medium-contrast face has the most latitude (Trevor, p. 26). Gentleman's Gazette states the same rule <span class="cite">[<a class="web" href="#ref-75">75</a>]</span>. Valet measures it as the lightness range of the outfit, darkest to lightest, over the shirt, neckwear, scarf, knit, jacket, coat and trousers, with each pattern that reads at 3 m counted by its main colours. For a low-contrast face, a range above the upper bound of section 4 is noted; for a high-contrast face, a range below the lower bound. Where the light-dark step at the collar has already said the same, it is not said twice. A single patterned piece near the face is judged the same way under Pattern contrast (section 11). Notes only: the bounds are Valet's.</li>
             <li id="r-temp"><strong>One temperature above the waist.</strong> A warm piece among cool ones, or the reverse, reads as the odd one out.</li>
             <li id="r-harmony"><strong>Colours that compete.</strong> Wardrobe neutrals (OKLCH chroma under 0.06) are free. Coloured pieces are grouped into families within 35° of hue. One family is the classic template. Two families are fine when they are complementary (best if one is dark or muted) or when one is only a small accent (tie, shoes, a pattern's second colour). Two families that are neither neighbours nor opposites compete. Three or more is flagged.</li>
-            <li id="r-near"><strong>Near match</strong> <span class="badge A">A</span> <span class="badge B">B</span>. Two pieces between ΔE2000 1.5 and 7 apart, such as navy with midnight, are close enough to look intended to match and far enough to fail. Below 1.5 they match: a jacket and trousers that match read as a suit. Leather shoes are not compared with the trousers: leather and cloth never look like one material meant to match, so black calf boots with black jeans read as black with black, not as a near miss.</li>
+            <li id="r-near"><strong>Near match</strong> <span class="badge A">A</span> <span class="badge B">B</span>. Two pieces between ΔE2000 1.5 and 7 apart, such as navy with midnight, are close enough to look intended to match and far enough to fail. Below 1.5 they match: a jacket and trousers that match read as a suit. A buttonhole flower is the exception: close to the tie's colour is the echo Flusser recommends, a similar shade to the tie or one of its colours, and only an exact match looks studied <span class="cite">[<a href="#ref-50">50</a>, p. 217]</span>. So a flower near the tie's colour is not a near match, and one in exactly its colour gets a note. Leather shoes are not compared with the trousers: leather and cloth never look like one material meant to match, so black calf boots with black jeans read as black with black, not as a near miss.</li>
             <li id="r-halves"><span class="badge B">B</span> <strong>Top and trousers.</strong> Until version 1.15 Valet failed a top and trousers within 12 L* of each other ("the halves blur"). That rule had no source, and the source Valet relies on says the opposite: the less contrast between the halves of the body, the longer the figure, with one colour from top to bottom as the benchmark for a heavy man <span class="cite">[<a href="#ref-50">50</a>, pp. 52–53]</span>; a short man, slim or stout, should avoid a pronounced contrast between his upper and lower halves <span class="cite">[<a href="#ref-50">50</a>, p. 53]</span>; and in casual dress, less contrast above and below the waist reads dressier and longer <span class="cite">[<a href="#ref-50">50</a>, p. 271]</span>. Only a tall man is better served by a break: he needs horizontal lines, and Gary Cooper uses a patterned sport coat and a contrasting trouser to cut his long line <span class="cite">[<a href="#ref-50">50</a>, pp. 53–54]</span>. So it is now a question of build, judged in the Proportion section (section 13) when Proportion &amp; fit is on and your height is known: close halves are a tick for a short or average frame and a note for a tall one (185 cm or more); a strong step (30 L* or more) is a note for a short frame (under 170 cm, or legs shorter than most), alongside the waistline notes. Without your height, close halves get a note about you, not the outfit, which never counts in the verdict: whether they help depends on your build. A matched top and trousers (a suit) is one block and is not judged here. The Style Guide's own pairings that avoid two close dark tones (charcoal with navy) remain advice about those colours.</li>
             <li id="r-statement"><strong>One statement.</strong> A tier 2 colour is "the one chosen colour of an outfit" (section 8). A second, different tier 2 colour at the face competes with it, and so does a tier 4 colour below the belt, which is the bold move of a bold day. Two statements are flagged as a caution, three as a failure. Neutrals do not count, and two pieces in one colour family (hues within 35°, such as salmon and burgundy) count once: a tonal pairing is one statement.</li>
             <li id="r-tie"><strong>Tie against shirt.</strong> The tie should separate from the shirt (12 L*, or a clear colour difference); darker than the shirt is the reliable order. A tie whose pattern reads at 3 m separates by its colours: a cream-and-rust grid stands clear of a cream shirt by its rust, however light its average (section 11).</li>
@@ -935,7 +935,7 @@
         <summary>What it cannot do</summary>
         <p>A colour reading from a photo is only as good as the light it was taken in. Numbers cannot see one shoulder lower than the other, feel how a cloth hangs, or know how a house cuts its sizes, so the sizes are ranges to take into a fitting room, not a replacement for one. And it covers everyday dress, from casual to evening; the codes of black tie, white tie and morning dress are not checked. How it works, section 1, says more.</p>
       </details>
-      <p class="small muted">Version 1.15. Proportion and Fit are still being refined: their numbers are tailoring rules and survey averages, so treat them as a starting point and trust a garment that fits you.</p>
+      <p class="small muted">Version 1.16. Proportion and Fit are still being refined: their numbers are tailoring rules and survey averages, so treat them as a starting point and trust a garment that fits you.</p>
       <div class="wl-foot" id="welcomeFoot"></div>
       <div class="ov-actions">
         <button type="button" class="btn" id="welcomeStart">Set my colouring</button>
@@ -947,32 +947,32 @@
 </div>
 
 <div id="printCard" class="print-card" aria-hidden="true"></div>
-<script src="js/colour.js?v=1.15"></script>
-<script src="js/vision.js?v=1.15"></script>
-<script src="js/patterns.js?v=1.15"></script>
-<script src="js/measure-art.js?v=1.15"></script>
-<script src="js/data.js?v=1.15"></script>
-<script src="js/garments.js?v=1.15"></script>
-<script src="js/rules.js?v=1.15"></script>
-<script src="js/engine.js?v=1.15"></script>
-<script src="js/suggest.js?v=1.15"></script>
-<script src="js/outfit.js?v=1.15"></script>
-<script src="js/closet.js?v=1.15"></script>
-<script src="js/chart.js?v=1.15"></script>
-<script src="js/body.js?v=1.15"></script>
-<script src="js/proportion.js?v=1.15"></script>
-<script src="js/fit.js?v=1.15"></script>
-<script src="js/ui/why.js?v=1.15"></script>
-<script src="js/ui/photos.js?v=1.15"></script>
-<script src="js/ui/closet.js?v=1.15"></script>
-<script src="js/ui/dresser.js?v=1.15"></script>
-<script src="js/ui/core.js?v=1.15"></script>
-<script src="js/ui/you.js?v=1.15"></script>
-<script src="js/ui/palette.js?v=1.15"></script>
-<script src="js/ui/chart-host.js?v=1.15"></script>
-<script src="js/ui/fit.js?v=1.15"></script>
-<script src="js/ui/shape.js?v=1.15"></script>
-<script src="js/ui/main.js?v=1.15"></script>
-<script src="js/ui/mobile.js?v=1.15"></script>
+<script src="js/colour.js?v=1.16"></script>
+<script src="js/vision.js?v=1.16"></script>
+<script src="js/patterns.js?v=1.16"></script>
+<script src="js/measure-art.js?v=1.16"></script>
+<script src="js/data.js?v=1.16"></script>
+<script src="js/garments.js?v=1.16"></script>
+<script src="js/rules.js?v=1.16"></script>
+<script src="js/engine.js?v=1.16"></script>
+<script src="js/suggest.js?v=1.16"></script>
+<script src="js/outfit.js?v=1.16"></script>
+<script src="js/closet.js?v=1.16"></script>
+<script src="js/chart.js?v=1.16"></script>
+<script src="js/body.js?v=1.16"></script>
+<script src="js/proportion.js?v=1.16"></script>
+<script src="js/fit.js?v=1.16"></script>
+<script src="js/ui/why.js?v=1.16"></script>
+<script src="js/ui/photos.js?v=1.16"></script>
+<script src="js/ui/closet.js?v=1.16"></script>
+<script src="js/ui/dresser.js?v=1.16"></script>
+<script src="js/ui/core.js?v=1.16"></script>
+<script src="js/ui/you.js?v=1.16"></script>
+<script src="js/ui/palette.js?v=1.16"></script>
+<script src="js/ui/chart-host.js?v=1.16"></script>
+<script src="js/ui/fit.js?v=1.16"></script>
+<script src="js/ui/shape.js?v=1.16"></script>
+<script src="js/ui/main.js?v=1.16"></script>
+<script src="js/ui/mobile.js?v=1.16"></script>
 </body>
 </html>
