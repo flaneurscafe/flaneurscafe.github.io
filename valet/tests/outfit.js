@@ -75,5 +75,11 @@ const list = [{ id: 'a1', name: 'A', outfit: o }];
 const r = O.mergeWardrobe(list, [{ id: 'a1', name: 'A', outfit: o }, { id: 'a1', name: 'B', outfit: o }, { id: 'c3', name: 'C', outfit: o }]);
 check('merge: a duplicate is skipped, a clashing id is renamed', r.added === 2 && r.same === 1 && new Set(list.map(x => x.id)).size === 3, [r, list.map(x => x.id)]);
 
+// a scarf with a knit and no shirt (a partial outfit) is judged without an error (audit, November 2026)
+const noShirt = O.normOutfit(null); noShirt.shirt.on = false; noShirt.scarf.on = true; noShirt.mid.on = true;
+let threw = null;
+try { E.checkOutfit(O.engineOutfit(noShirt, D.kp, nameOf), E.analyseProfile(E.seasonProfile(D.kp))); } catch (e) { threw = e.message; }
+check('a scarf over a knit with no shirt does not throw', threw === null, threw);
+
 console.log(failed ? failed + ' of ' + n + ' outfit checks failed' : 'outfit: ' + n + ' checks pass (normalising, season, engine form, merge)');
 process.exit(failed ? 1 : 0);

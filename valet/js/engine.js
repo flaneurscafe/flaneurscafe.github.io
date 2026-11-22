@@ -454,7 +454,7 @@
     // and jacket nor is blamed for a strong step.
     let over = ['scarf', 'mid', 'jacket', 'coat', 'tie'].find(function (k) { return L[k]; });
     // a scarf is narrow: the layer over the shirt front beside it frames the face too, so the stronger step counts
-    if (over === 'scarf') {
+    if (over === 'scarf' && L.shirt) {
       const next = ['mid', 'jacket', 'coat'].find(function (k) { return L[k]; });
       if (next && Math.abs(lum(L.shirt.mean) - lum(L[next].mean)) > Math.abs(lum(L.shirt.mean) - lum(L.scarf.mean))) over = next;
     }

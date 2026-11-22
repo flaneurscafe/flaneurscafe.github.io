@@ -30,12 +30,15 @@
     const mean = function (k) { return VP ? VP.mean(o[k], pats[k]) : o[k]; };
     const twoTone = function (k) { const p = VP ? VP.norm(pats[k]) : { type: 'solid' }; return p.type === 'solid' ? null : [o[k], p.hex2]; };
     // one row per worn position, named by the garment type worn there (a coat, a roll neck)
-    const kinds = P.kinds || {};
+    const kinds = P.kinds || {}, pinName = (window.VGARM.byKey.boutonniere.kinds.find(function (x) { return x.id === 'pin'; }) || {}).name;
     window.VGARM.POSITIONS.forEach(function (pos) {
       const k = pos.key; if (!o[k]) return;
       const label = k === 'shoes' ? 'Shoes, belt' : (kinds[k] || pos.label);
       rows.push({ k: k, label: label.length > 13 ? label.replace('Shawl-collar cardigan', 'Shawl cardigan').replace('Crew-neck knit', 'Crew neck').replace('Knitted polo', 'Knit polo') : label,
-        name: n[k], hex: k === 'shoes' ? o.shoes : mean(k), two: k === 'shoes' ? (P.shoesTwo || null) : twoTone(k), face: pos.face });
+        name: n[k], hex: k === 'shoes' ? o.shoes : mean(k), two: k === 'shoes' ? (P.shoesTwo || null) : twoTone(k), face: pos.face,
+        // judged against the skin as the outfit rules judge it: the face layers, and the pieces near the face
+        // (pocket square, flower), except a lapel pin, which is metal
+        near: (pos.face || pos.near) && !(k === 'boutonniere' && kinds[k] === pinName) });
     });
 
     const top = 44, youH = 50, rowH = 40, chartBot = top + youH + rows.length * rowH;
@@ -92,7 +95,7 @@
       if (r.two) r.two.forEach(function (h) { s.push('<line x1="' + r1(X(Lof(h))) + '" x2="' + r1(X(Lof(h))) + '" y1="' + (y - 9) + '" y2="' + (y + 9) + '" stroke="' + h + '" stroke-width="3"/><line x1="' + r1(X(Lof(h))) + '" x2="' + r1(X(Lof(h))) + '" y1="' + (y - 9) + '" y2="' + (y + 9) + '" stroke="#000" stroke-opacity="0.2" stroke-width="0.6"/>'); });
       s.push('<rect x="' + r1(x - 9) + '" y="' + (y - 9) + '" width="18" height="18" rx="3" fill="' + r.hex + '" stroke="' + (P.previewSlot === r.k ? '#111' : 'rgba(0,0,0,0.3)') + '" stroke-width="' + (P.previewSlot === r.k ? 1.6 : 1) + '"/>');
       // tier at the face, from the colour rules
-      if (r.face && a && E) {
+      if (r.near && a && E) {
         const t = E.scoreColour(r.hex, a).tier;
         s.push('<text x="' + (X1 + 8) + '" y="' + (y + 4) + '" class="c-tt" fill="' + TT_COL[t] + '">T' + t + '</text>');
         if (t > 2) {                                  // clashes with your skin: ring it in red
@@ -137,8 +140,10 @@
     const topK = by.jacket ? 'jacket' : by.mid ? 'mid' : 'shirt';
     if (by[topK] && by.trousers) {
       const d = Math.abs(by[topK].L - by.trousers.L), dE = VC.deltaE2000(VC.hexToLab(by[topK].hex), VC.hexToLab(by.trousers.hex));
-      const blur = dE >= 7 && d < 12, suit = dE < 1.5;
-      notes.push({ ok: !blur, text: suit ? 'Top and trousers match: reads as a suit.' : (blur ? 'Halves blur: ' : 'Top and bottom separate: ') + by[topK].label.toLowerCase() + ' and trousers ' + Math.round(d) + ' apart' + (blur ? ' (need 12 or more, or an exact match)' : '') + '.' });
+      // the thresholds of the blur rule (rules.js), not numbers of its own
+      const PR = E && E.PARAMS ? E.PARAMS : { nearFrom: 1.5, nearTo: 7, halvesL: 12 };
+      const blur = dE >= PR.nearTo && d < PR.halvesL, same = dE < PR.nearFrom;
+      notes.push({ ok: !blur, text: same ? 'Top and trousers the same colour: one block from neck to shoes' + (topK === 'jacket' ? ', as a suit reads' : '') + '.' : (blur ? 'Halves blur: ' : 'Top and bottom separate: ') + by[topK].label.toLowerCase() + ' and trousers ' + Math.round(d) + ' apart' + (blur ? ' (need ' + PR.halvesL + ' or more, or an exact match)' : '') + '.' });
     }
     if (by.shoes && by.trousers) {
       const lighter = by.shoes.L > by.trousers.L + 8;

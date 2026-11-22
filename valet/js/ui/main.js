@@ -19,7 +19,7 @@
       redness: s.redness || 'none', underEye: s.underEye || 'none',
       hairStyle: E.HAIR[s.hairStyle] ? s.hairStyle : 'short',
       manual: Object.assign({}, s.manual || {}),
-      grey: Math.max(0, Math.min(100, +s.grey || 0)), named: Object.assign({}, s.named || {}), fitMark: V.state.fitMark !== false,
+      grey: Math.max(0, Math.min(100, +s.grey || 0)), named: Object.assign({}, s.named || {}), fitMark: s.fitMark !== undefined ? s.fitMark !== false : V.state.fitMark !== false,
       season: (s.season || V.state.season) === 'summer' ? 'summer' : 'winter', summer: newSummer(s.summer),
       // the body's shape goes with its measurements, so erase and the demo reset it
       outfit: normOutfit(s.outfit || V.state.outfit),
@@ -59,7 +59,7 @@
      palette is rebuilt from it with the current rules, and any colour whose tier differs from the
      saved palette is listed. A file with a palette but no colouring gets its colouring from the
      palette, as set by hand. */
-  const VERSION = '1.13';
+  const VERSION = '1.13.2';
   function paletteFor(season) {
     const a = E.analyseProfile(E.seasonProfile(V.state, season)); if (!a) return null;
     const r1 = function (x) { return Math.round(x * 10) / 10; };
