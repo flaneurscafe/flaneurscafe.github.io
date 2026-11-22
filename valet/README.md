@@ -45,17 +45,20 @@ Every outfit rule has one entry in the `RULES` table in `js/rules.js`: its name 
 `node tests/run.js` (Node.js only, no other dependencies) runs every test:
 - the version is the same everywhere it is written (`tests/version.js`);
 - unit tests of the colour science, the pattern visibility model, the body survey, the proportion targets and the size logic (`tests/units.js`), and of the outfit as data: making a file safe, its season, merging imports (`tests/outfit.js`);
+- My garments: the list made safe, the outfits found around a garment (each judged exactly as the Dresser judges it), the colour-to-buy comparison, your marks and the marks report (`tests/closet.js`);
 - every rule has a complete entry (`tests/rules.js`), and every named threshold is wired to its rule and compares in the right direction (`tests/boundaries.js`);
 - the rule scenarios (`tests/scenarios.js`), a stress test of thousands of random outfits (`tests/stress.js`), and a regression test that compares 800 fixed outfits with a stored record (`tests/regression.js`).
 
 It also runs on GitHub for every change. When you change a rule on purpose, change its scenario with it, and record the new behaviour with `node tests/regression.js --update`, so the change shows in the same commit. To release, set the version with `node tools/release.js <version>`: it writes it to every place it appears, including the `?v=` on each script, so returning visitors get the new files.
 
+To see where your own judgement and Valet's disagree, mark outfits good, so-so or bad in the Dresser (My garments, Saved outfits), save your profile from the You tab, and run `node tools/marks.js valet-yourname.json`. Run it before and after changing a rule.
+
 ### How the code is organised
 
 Plain scripts, loaded in order by `index.html`, with no build step, so the page also opens straight from the folder. Each file is wrapped in a function and shares one named object on `window`.
 
-- **Logic, no page code** (`js/`), each testable in Node: `colour.js` (colorimetry), `vision.js` and `patterns.js` (what the eye can see of a pattern), `data.js` (the colour library), `garments.js` (garments, cloths, occasions), `rules.js` (the rule and threshold tables), `engine.js` (your colouring and the checks), `suggest.js` (suggestions, Choose the best colours, Keep this), `outfit.js` (the outfit as data), `body.js`, `proportion.js` and `fit.js` (the body survey, the targets and the sizes). `chart.js` builds the lightness chart.
-- **The interface** (`js/ui/`): `core.js` (shared helpers, the profile, tabs), then one file per tab (`you.js`, `palette.js`, `dresser.js`, `shape.js` for Proportion, `fit.js` for Fit), `photos.js` (reading colour from a photo, and the Colours from photos window behind My colours), `chart-host.js`, `main.js` (start-up), and `mobile.js` (the phone layout). The parts share `window.VAPP`. Instructions that differ on a touch screen are written both ways (`VAPP.say`, or `data-touch` in the page), and each tab announces its result with `VAPP.result`.
+- **Logic, no page code** (`js/`), each testable in Node: `colour.js` (colorimetry), `vision.js` and `patterns.js` (what the eye can see of a pattern), `data.js` (the colour library), `garments.js` (garments, cloths, occasions), `rules.js` (the rule and threshold tables), `engine.js` (your colouring and the checks), `suggest.js` (suggestions, Choose the best colours, Keep this), `outfit.js` (the outfit as data, and your marks), `closet.js` (My garments: the outfits your clothes make), `body.js`, `proportion.js` and `fit.js` (the body survey, the targets and the sizes). `chart.js` builds the lightness chart.
+- **The interface** (`js/ui/`): `core.js` (shared helpers, the profile, tabs), then one file per tab (`you.js`, `palette.js`, `dresser.js`, `shape.js` for Proportion, `fit.js` for Fit), `photos.js` (reading colour from a photo, and the Colours from photos window behind My colours), `closet.js` (the My garments view), `chart-host.js`, `main.js` (start-up), and `mobile.js` (the phone layout). The parts share `window.VAPP`. Instructions that differ on a touch screen are written both ways (`VAPP.say`, or `data-touch` in the page), and each tab announces its result with `VAPP.result`.
 
 ## Credits
 

@@ -54,6 +54,9 @@
       if (out[k].rise != null && ['high', 'mid', 'low'].indexOf(out[k].rise) < 0) delete out[k].rise;
       if (out[k].length != null && ['short', 'regular', 'long'].indexOf(out[k].length) < 0) delete out[k].length;
       if (out[k].hex2 != null && !isHex(out[k].hex2)) delete out[k].hex2;                 // a spectator's second colour
+      if (out[k].band != null && !isHex(out[k].band)) delete out[k].band;                 // a hat's band
+      if (out[k].gid != null && !(typeof out[k].gid === 'string' && /^[a-z0-9]{1,40}$/i.test(out[k].gid))) delete out[k].gid;   // the garment it is (My garments)
+      if (out[k].brim != null && !window.VGARM.BRIMS.some(function (b) { return b.id === out[k].brim; })) delete out[k].brim;
       if (out[k].buttons != null && !window.VGARM.BUTTONS.some(function (b) { return b[0] === out[k].buttons; })) delete out[k].buttons;
       if (out[k].metal != null && !window.VGARM.metalBy[out[k].metal]) out[k].metal = 'silver';           // a lapel pin's metal
       if (!out[k].pat || typeof out[k].pat !== 'object') out[k].pat = { type: 'solid' };
@@ -94,9 +97,28 @@
     if (!Array.isArray(list)) return [];
     return list.slice(0, 500).filter(function (w) { return w && typeof w === 'object' && w.outfit && typeof w.id === 'string' && /^[a-z0-9]{1,40}$/i.test(w.id); }).map(function (w) {
       const o = normOutfit(w.outfit); delete o.savedId; o.locks = {};
-      return { id: w.id, name: String(w.name || '').slice(0, 80) || 'Untitled outfit', saved: /^\d{4}-\d{2}-\d{2}$/.test(w.saved || '') ? w.saved : '',
+      const out = { id: w.id, name: String(w.name || '').slice(0, 80) || 'Untitled outfit', saved: /^\d{4}-\d{2}-\d{2}$/.test(w.saved || '') ? w.saved : '',
         season: ['winter', 'summer', 'all', 'mixed'].indexOf(w.season) >= 0 ? w.season : 'all', occasion: o.occasion, outfit: o };
+      // your own verdict (1.13): good, so-so or bad, with the day and Valet's verdict at the time
+      if (MARKS.indexOf(w.mark) >= 0) {
+        out.mark = w.mark;
+        if (/^\d{4}-\d{2}-\d{2}$/.test(w.marked || '')) out.marked = w.marked;
+        if (typeof w.markVerdict === 'string') out.markVerdict = w.markVerdict.slice(0, 40);
+      }
+      if (w.fromMarks === true) out.fromMarks = true;   // saved by marking it in My garments: unmarking takes it out again
+      // the garments it was made from (My garments): position → garment id
+      if (w.from && typeof w.from === 'object') {
+        const f = {}; G.SLOTS.forEach(function (k) { if (typeof w.from[k] === 'string' && /^[a-z0-9]{1,40}$/i.test(w.from[k])) f[k] = w.from[k]; });
+        if (Object.keys(f).length) out.from = f;
+      }
+      return out;
     });
+  }
+  const MARKS = ['good', 'mid', 'bad'];
+  /* Whether your mark and Valet's verdict disagree: you call it good and Valet fails it, or you call
+     it bad and Valet passes it. So-so never disagrees. level: Valet's verdict level. */
+  function disagrees(mark, level) {
+    return (mark === 'good' && (level === 'fix' || level === 'bad')) || (mark === 'bad' && (level === 'good' || level === 'ok'));
   }
 
   /* ---------- Saved outfits ---------- */
@@ -123,6 +145,17 @@
     o = JSON.parse(JSON.stringify(o)); delete o.savedId; o.locks = {}; return o;
   }
   function newId() { return 'w' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6); }
+  /* What makes two outfits the same for a mark: the pieces worn (type, cloth, colour, pattern…) and
+     the occasion. Accessories, names and locks do not count. */
+  const SIG_FIELDS = ['hex', 'kind', 'cloth', 'pat', 'rise', 'length', 'hex2', 'buttons', 'metal', 'band', 'brim'];
+  function outfitSig(o) {
+    const out = [o.occasion || 'smart'];
+    G.SLOTS.forEach(function (k) {
+      const x = o[k]; if (!x || x.on === false) return;
+      out.push(k, SIG_FIELDS.map(function (f) { const c = f === 'cloth' ? G.cloth(k, x) : null, v = f === 'pat' ? VP.norm(x.pat) : f === 'cloth' ? (c ? c.id : null) : x[f]; return v === undefined ? null : v; }));
+    });
+    return JSON.stringify(out);
+  }
   /* Importing adds to the list: an outfit already there (same name and pieces) is skipped, and a
      different one that happens to carry the same id is kept under a new id. incoming must already be
      made safe (normWardrobe). Changes list; returns { added, same }. */
@@ -177,6 +210,6 @@
     return notes.join(' ');
   }
 
-  window.VOUTFIT = { DEFAULT_OUTFIT: DEFAULT_OUTFIT, isHex: isHex, normOutfit: normOutfit, normWardrobe: normWardrobe, SEASONS: SEASONS, seasonOf: seasonOf,
-    autoName: autoName, snapshotOutfit: snapshotOutfit, newId: newId, mergeWardrobe: mergeWardrobe, engineOutfit: engineOutfit, fitPatterns: fitPatterns, clothWord: clothWord };
+  window.VOUTFIT = { DEFAULT_OUTFIT: DEFAULT_OUTFIT, isHex: isHex, normOutfit: normOutfit, normWardrobe: normWardrobe, MARKS: MARKS, disagrees: disagrees, SEASONS: SEASONS, seasonOf: seasonOf,
+    autoName: autoName, snapshotOutfit: snapshotOutfit, newId: newId, outfitSig: outfitSig, mergeWardrobe: mergeWardrobe, engineOutfit: engineOutfit, fitPatterns: fitPatterns, clothWord: clothWord };
 })();

@@ -41,6 +41,27 @@ async def run(browser, name, ctx):
     gone = await pg.evaluate("document.querySelector('#photoOv').hidden")
     if not (shown and gone): errs.append('Colours from photos: did not open and close')
     print(f'{name}: Colours from photos opened and closed')
+    # My garments: save the jacket, trousers and shoes from the editor, ask about the jacket, mark the
+    # first outfit found and find the mark in Saved outfits
+    await pg.evaluate("document.querySelector('.dr-views [data-view=outfit]').click()"); await pg.wait_for_timeout(200)
+    for k in ['jacket', 'trousers', 'shoes']:
+        for _ in range(2):   # a click on an open piece closes it: open it again
+            await pg.evaluate(f"document.querySelector('.ov-piece[data-k={k}] .ov-pick').click()"); await pg.wait_for_timeout(150)
+            if await pg.evaluate("!!document.querySelector('[data-gsave=new]')"): break
+        await pg.evaluate("document.querySelector('[data-gsave=new]') && document.querySelector('[data-gsave=new]').click()"); await pg.wait_for_timeout(150)
+    await pg.evaluate("document.querySelector('.dr-views [data-view=garments]').click()"); await pg.wait_for_timeout(200)
+    have = await pg.evaluate("document.querySelectorAll('.cl-item').length")
+    await pg.evaluate("document.querySelector('.cl-item [data-ask]').click()")
+    for _ in range(40):
+        if await pg.evaluate("!!document.querySelector('.cl-sum')"): break
+        await pg.wait_for_timeout(250)
+    found = await pg.evaluate("document.querySelectorAll('.cl-outfit').length")
+    await pg.evaluate("document.querySelector('.cl-outfit [data-mark=good]') && document.querySelector('.cl-outfit [data-mark=good]').click()")
+    await pg.evaluate("document.querySelector('.dr-views [data-view=wardrobe]').click()"); await pg.wait_for_timeout(200)
+    marked = await pg.evaluate("document.querySelectorAll('.dr-item [data-wmark=good][aria-pressed=true]').length")
+    if have != 3 or not found or marked != 1: errs.append(f'My garments: {have} garments saved, {found} outfits found, {marked} marked')
+    print(f'{name}: My garments, {have} garments, {found} outfits found, {marked} marked')
+    await pg.evaluate("document.querySelector('.dr-views [data-view=outfit]').click()"); await pg.wait_for_timeout(200)
     # Fit: each garment
     await pg.evaluate("document.querySelector('.tabs [data-tab=proportion]').click()"); await pg.wait_for_timeout(300)
     await pg.evaluate("[...document.querySelectorAll('.tab-panel.active button')].find(b => b.textContent.trim() === 'Fit').click()"); await pg.wait_for_timeout(400)

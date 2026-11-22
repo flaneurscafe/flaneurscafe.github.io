@@ -13,13 +13,13 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Valet — dressing from theory</title>
 <meta name="description" content="Valet: a browser tool that works out which colours suit you from colour science and tailoring theory, and charts an outfit's lightness against your own colouring. Nothing leaves your browser.">
-<link rel="stylesheet" href="css/valet.css?v=1.12">
+<link rel="stylesheet" href="css/valet.css?v=1.13">
 </head>
 <body>
 <header class="masthead">
   <div class="brand">
     <h1>Valet</h1>
-    <p class="tagline">Dressing from theory, not from cases <button type="button" class="ver" id="verTag" title="What Valet is and how to use it">v1.12</button></p>
+    <p class="tagline">Dressing from theory, not from cases <button type="button" class="ver" id="verTag" title="What Valet is and how to use it">v1.13</button></p>
   </div>
   <div class="season-bar"><span class="flabel" id="seasonLabel">Season</span>
     <div class="seg" id="season" role="radiogroup" aria-labelledby="seasonLabel">
@@ -264,11 +264,13 @@
         <h2>Dresser</h2>
         <div class="seg dr-views" role="tablist" aria-label="Dresser">
           <button type="button" role="tab" data-view="outfit" aria-selected="true">Outfit</button>
+          <button type="button" role="tab" data-view="garments" aria-selected="false">My garments <span class="dr-count" id="clCount"></span></button>
           <button type="button" role="tab" data-view="wardrobe" aria-selected="false">Saved outfits <span class="dr-count" id="drCount"></span></button>
         </div>
+        <div id="drGarments" class="dr-garments" hidden></div>
         <div id="drWardrobe" class="dr-wardrobe" hidden></div>
         <div id="drOutfit">
-        <p class="lede">Put an outfit together, piece by piece: what each piece is, its cloth, colour and pattern, and the accessories. Valet checks the whole of it question by question (temperature, contrast, frame, sheen, pattern, metal, then the feet), and adds formality for the occasion and cloth for the season. Lock what you have already chosen or own; suggestions and Choose the best colours change only the rest. For a piece you own that does not fit, open it and choose Keep this, fix the rest. Save the outfits you like under Saved outfits.</p>
+        <p class="lede">Put an outfit together, piece by piece: what each piece is, its cloth, colour and pattern, and the accessories. Valet checks the whole of it question by question (temperature, contrast, frame, sheen, pattern, metal, then the feet), and adds formality for the occasion and cloth for the season. Lock what you have already chosen or own; suggestions and Choose the best colours change only the rest. For a piece you own that does not fit, open it and choose Keep this, fix the rest. Keep the clothes you own under My garments, where Valet finds what goes with each of them; save the outfits you like under Saved outfits.</p>
         <div id="ovOccasion" class="ov-occasion"></div>
         <div id="ovVerdict" class="ov-verdict" aria-live="polite"></div>
         <div id="ovOverview" class="ov-overview" aria-label="The card's questions at a glance"></div>
@@ -564,6 +566,11 @@
           <p id="r-watch"><span class="badge B">B</span> <strong>The watch beyond its size.</strong> A digital display or a rubber strap reads as sport, so both are noted with business or evening dress. That is the formality register applied to the watch, and nothing more is judged. Whether a watch is mechanical or quartz cannot be seen, so it is not judged either.</p>
           <p><strong>Left out on purpose.</strong> Version 1.6 added rules here that rested on etiquette writers rather than on any of Valet's principles, and 1.7 took them out: a limit of two accents by day and three in the evening; glove colour matched to the shoes by a ΔE threshold; gloves banned in summer; a flower called costume on a casual day; flower and square required to "harmonise rather than match"; strap colour tied to the shoe leather; the evening dial colours; fabric straps and black cases; spectators banned from business and from winter; coloured patent; cufflinks inferred from the shirt's cloth. Each had a number or a list with no derivation behind it. They may be good advice, but Valet only checks what it can explain, so they are left to your judgement.</p>
           <p><strong>Saved outfits.</strong> Outfits you have put together and checked can be saved on the Dresser's Saved outfits view. They are grouped first by season, read from their cloths (winter cloth only, summer cloth only, both mixed, or all year), and then by occasion. Each verdict and season is worked out again whenever the list is shown, so it follows your colouring, and the rules, if they change. Saved outfits are part of your profile: they stay in this browser and go into the file when you save your profile. They can also be exported on their own, as a backup or to move them to another browser, and imported again: importing adds to the list and skips outfits already in it. Valet saves whole outfits, not single garments.</p>
+          <h3 id="h-garments">My garments: what goes with what you own</h3>
+          <p>The Dresser's <em>My garments</em> view keeps the clothes you own, one entry per piece: what it is, its cloth, colour and pattern, as the Outfit editor sets them. A piece is added from the editor with <em>Save to my garments</em>, or a list is imported from a file. A piece you are only thinking of buying is kept too, marked as such, and left out of everything except the questions asked about it.</p>
+          <p><strong>What goes with it?</strong> Valet puts the garment on and tries it with every combination of your other garments: each next-to-the-neck layer, each pair of trousers, each pair of shoes, with and without each knit or waistcoat and each jacket. Every one of these outfits is judged by exactly the checks of the Outfit view, for the occasion chosen above the list, a summer outfit with your summer colouring and a winter one with winter's. Neckwear, a pocket square and socks are then added one at a time, the tie first, each only where it lowers the outfit's penalty, and only to an outfit that is not already good and fails at most one rule: one piece can mend one failure, not two. So a tie appears only where Valet's rules want one; to see what a tie goes with, ask about the tie. Coats, hats, scarves, gloves and buttonholes are worn only when they are the garment asked about. The answer counts the outfits by verdict, lists the best of them (one per combination of shirt, knit, jacket and trousers, and no more than a third of the list with the same trousers, shoes or shirt, so that it shows the range), and then the closest outfits Valet turns down, with the rule that turned each down. The search adds no rule of its own: it only asks the rules about many outfits at once.</p>
+          <p><strong>Which colour to buy?</strong> Choose a position, a type and a cloth. Valet tries the piece in every library colour that suits you there (tier 1 or 2 at the face, up to tier 3 below it), each in the same sample of up to 150 outfits made from your garments, spread evenly over all the combinations, and the pieces you already own in that position in the same outfits. The share is how many of the outfits pass. To keep it quick, only the core of each outfit is judged here, without the tie, square and socks; <em>Think about it</em> adds a colour as a garment you might buy and asks what goes with it, which gives the full count. Below the belt the share often barely changes from one colour to the next: the rules judge colour mainly at the face, and trousers and shoes mostly by their lightness against the top and against each other.</p>
+          <p><strong>Your marks.</strong> Each outfit found can be marked <em>Good</em>, <em>So-so</em> or <em>Bad</em>: your own judgement, after looking at it or wearing it. A marked outfit is kept in Saved outfits with the mark, the day and Valet's verdict at the time; clearing the mark takes it out again unless you had saved it yourself. Outfits saved from the Outfit view can be marked there too. Saved outfits counts where you and Valet disagree: an outfit you call good that Valet fails, or one you call bad that Valet passes. So-so never counts as a disagreement. Those disagreements are the evidence the rules most need, because the thresholds that turn a rule into a pass or a fail are working values (section 1), and your clothes, on you, in your light, are the test that matters. <code>node tools/marks.js</code> reads a saved profile file and lists the disagreements with the rules that caused them, so a change to a rule can be checked against your own marks before it is made.</p>
           <h3 id="h-keep">Keep this, fix the rest</h3>
           <p>For a piece you own that does not fit the outfit. Valet locks it and searches around it. First it tries the best colour for every other open piece. Then it tries layers: putting on a jacket or a knit, a collared shirt in place of a collarless one, or taking off an optional piece. A change is kept only when the outfit improves. If the kept piece still fails afterwards, no change elsewhere can mend it. When that failure is its colour at the face, it is not for you near the face, though the colour can still be worn lower down; otherwise it is not for this outfit.</p>
           <p>Every row on the Palette and Dresser tabs also says when its piece is part of a problem, with the reason, using the same judgement as the marks below. A change to one piece can make another the problem, and that row then says so.</p>
@@ -748,7 +755,7 @@
 
         <section id="h-privacy">
           <h2>17. Privacy</h2>
-          <p>Everything happens in your browser. The photo of your face is never uploaded or stored; only the sampled colours, your measurements, settings and the outfit (colours, cloth and locks) are kept in this browser's local storage. Photos of your clothes (Colours from photos, in the Dresser) are kept only as a small crop around the points you clicked on the cloth, so a face in the picture is usually left out, and only in this browser: never in the saved file. Each can be forgotten, or not kept at all, and its colours stay. “Save to a file” writes them to a JSON file you control, together with your palette for winter and summer (each colour's tier, and the reading it came from), so the file can be read on its own. When a file is opened, the palette is rebuilt from its colouring with the current rules, and any colour that has changed tier since the file was saved is listed. A file that holds only a palette takes its colouring from it. Valet loads nothing from the network: every script is a file in this folder, and the page is set so it cannot contact other sites. The links to sources open in a new tab; the sites they lead to are not part of Valet and run their own scripts and advertising. No cookies, no analytics.</p>
+          <p>Everything happens in your browser. The photo of your face is never uploaded or stored; only the sampled colours, your measurements, settings, the outfit (colours, cloth and locks), your saved outfits with your marks, and My garments are kept in this browser's local storage, and in the file when you save one. Photos of your clothes (Colours from photos, in the Dresser) are kept only as a small crop around the points you clicked on the cloth, so a face in the picture is usually left out, and only in this browser: never in the saved file. Each can be forgotten, or not kept at all, and its colours stay. “Save to a file” writes them to a JSON file you control, together with your palette for winter and summer (each colour's tier, and the reading it came from), so the file can be read on its own. When a file is opened, the palette is rebuilt from its colouring with the current rules, and any colour that has changed tier since the file was saved is listed. A file that holds only a palette takes its colouring from it. Valet loads nothing from the network: every script is a file in this folder, and the page is set so it cannot contact other sites. The links to sources open in a new tab; the sites they lead to are not part of Valet and run their own scripts and advertising. No cookies, no analytics.</p>
         </section>
 
 
@@ -913,7 +920,7 @@
         <li><strong>Palette.</strong> Every named colour by where it can go on you: <span class="tt t1">T1</span> anywhere, <span class="tt t2">T2</span> the one deliberate colour, <span class="tt t3">T3</span> below the belt, <span class="tt t4">T4</span> away from the face. Your core palette sits on top. Put colours in the study to see which go together, or build around one colour.</li>
         <li><strong>Proportion.</strong> With your measurements (You tab), where each garment should end and how wide its parts should be, for your build and a period from the 1930s to today.</li>
         <li><strong>Fit.</strong> Before you buy: a shop's measurements or size label against you, or against one of yours that fits. Your sizes, and what to check at a try-on.</li>
-        <li><strong>Dresser.</strong> Put an outfit together piece by piece, head to feet: what each piece is, its cloth, colour and pattern, and the accessories. The checks ask the same questions in order (temperature, contrast, frame, sheen, pattern, metal, then the feet); lock what you own and let Valet choose the rest. Save the outfits you like under Saved outfits, grouped by season and occasion, or print a one-page card.</li>
+        <li><strong>Dresser.</strong> Put an outfit together piece by piece, head to feet: what each piece is, its cloth, colour and pattern, and the accessories. The checks ask the same questions in order (temperature, contrast, frame, sheen, pattern, metal, then the feet); lock what you own and let Valet choose the rest. Keep your clothes under My garments and ask what goes with each piece, or which colour to buy next; mark the outfits it finds good, so-so or bad. Save the outfits you like under Saved outfits, grouped by season and occasion, or print a one-page card.</li>
       </ol>
         <p class="small">The lightness chart beside each tab shows your colouring and the outfit on one scale of light to dark. <span data-touch="Tap any colour to try it; every “?” explains its control.">Point at any colour to try it; every “?” explains its control.</span> <em>Save to a file</em> on the You tab keeps your colouring, palette and outfit; <em>How it works</em> gives the theory and its sources.</p>
       </details>
@@ -921,7 +928,7 @@
         <summary>What it cannot do</summary>
         <p>A colour reading from a photo is only as good as the light it was taken in. Numbers cannot see one shoulder lower than the other, feel how a cloth hangs, or know how a house cuts its sizes, so the sizes are ranges to take into a fitting room, not a replacement for one. And it covers everyday dress, from casual to evening; the codes of black tie, white tie and morning dress are not checked. How it works, section 1, says more.</p>
       </details>
-      <p class="small muted">Version 1.12. Proportion and Fit are still being refined: their numbers are tailoring rules and survey averages, so treat them as a starting point and trust a garment that fits you.</p>
+      <p class="small muted">Version 1.13. Proportion and Fit are still being refined: their numbers are tailoring rules and survey averages, so treat them as a starting point and trust a garment that fits you.</p>
       <div class="wl-foot" id="welcomeFoot"></div>
       <div class="ov-actions">
         <button type="button" class="btn" id="welcomeStart">Set my colouring</button>
@@ -933,30 +940,32 @@
 </div>
 
 <div id="printCard" class="print-card" aria-hidden="true"></div>
-<script src="js/colour.js?v=1.12"></script>
-<script src="js/vision.js?v=1.12"></script>
-<script src="js/patterns.js?v=1.12"></script>
-<script src="js/measure-art.js?v=1.12"></script>
-<script src="js/data.js?v=1.12"></script>
-<script src="js/garments.js?v=1.12"></script>
-<script src="js/rules.js?v=1.12"></script>
-<script src="js/engine.js?v=1.12"></script>
-<script src="js/suggest.js?v=1.12"></script>
-<script src="js/outfit.js?v=1.12"></script>
-<script src="js/chart.js?v=1.12"></script>
-<script src="js/body.js?v=1.12"></script>
-<script src="js/proportion.js?v=1.12"></script>
-<script src="js/fit.js?v=1.12"></script>
-<script src="js/ui/why.js?v=1.12"></script>
-<script src="js/ui/photos.js?v=1.12"></script>
-<script src="js/ui/dresser.js?v=1.12"></script>
-<script src="js/ui/core.js?v=1.12"></script>
-<script src="js/ui/you.js?v=1.12"></script>
-<script src="js/ui/palette.js?v=1.12"></script>
-<script src="js/ui/chart-host.js?v=1.12"></script>
-<script src="js/ui/fit.js?v=1.12"></script>
-<script src="js/ui/shape.js?v=1.12"></script>
-<script src="js/ui/main.js?v=1.12"></script>
-<script src="js/ui/mobile.js?v=1.12"></script>
+<script src="js/colour.js?v=1.13"></script>
+<script src="js/vision.js?v=1.13"></script>
+<script src="js/patterns.js?v=1.13"></script>
+<script src="js/measure-art.js?v=1.13"></script>
+<script src="js/data.js?v=1.13"></script>
+<script src="js/garments.js?v=1.13"></script>
+<script src="js/rules.js?v=1.13"></script>
+<script src="js/engine.js?v=1.13"></script>
+<script src="js/suggest.js?v=1.13"></script>
+<script src="js/outfit.js?v=1.13"></script>
+<script src="js/closet.js?v=1.13"></script>
+<script src="js/chart.js?v=1.13"></script>
+<script src="js/body.js?v=1.13"></script>
+<script src="js/proportion.js?v=1.13"></script>
+<script src="js/fit.js?v=1.13"></script>
+<script src="js/ui/why.js?v=1.13"></script>
+<script src="js/ui/photos.js?v=1.13"></script>
+<script src="js/ui/closet.js?v=1.13"></script>
+<script src="js/ui/dresser.js?v=1.13"></script>
+<script src="js/ui/core.js?v=1.13"></script>
+<script src="js/ui/you.js?v=1.13"></script>
+<script src="js/ui/palette.js?v=1.13"></script>
+<script src="js/ui/chart-host.js?v=1.13"></script>
+<script src="js/ui/fit.js?v=1.13"></script>
+<script src="js/ui/shape.js?v=1.13"></script>
+<script src="js/ui/main.js?v=1.13"></script>
+<script src="js/ui/mobile.js?v=1.13"></script>
 </body>
 </html>

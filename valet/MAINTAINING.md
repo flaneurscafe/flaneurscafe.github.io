@@ -29,6 +29,8 @@ Valet is one page, `index.html`, plus plain JavaScript files that it loads in or
 | What a tab shows | `js/ui/you.js`, `palette.js`, `shape.js` (Proportion), `fit.js`, `dresser.js` | `VAPP` |
 | The "Why" and "Sources" bubbles | `js/ui/why.js` | |
 | Reading colour from a photo; Colours from photos and My colours | `js/ui/photos.js` (the window, kept photos); the strip in `dresser.js` | `VPHOTOS` |
+| My garments: what goes with a garment, which colour to buy | `js/closet.js` (finding and counting outfits); `js/ui/closet.js` (the view) | `VCLOSET`, `VCLOSETUI` |
+| Your marks (good, so-so, bad) on saved outfits | `js/outfit.js` (`outfitSig`, `disagrees`, kept by `normWardrobe`); `dresser.js` (Saved outfits) | `VOUTFIT` |
 | Start-up, the welcome window, How it works' contents list | `js/ui/main.js` | |
 | The phone layout | `js/ui/mobile.js`, and `@media` blocks in `css/valet.css` | |
 
@@ -128,6 +130,8 @@ State the rule, its numbers and its sources. A web source gets `class="web"` on 
 
 To **change a threshold only**: edit `PARAMS` and the number in its passage, then steps 8 to 10.
 
+**Check a rule change against your own marks.** The regression test says what changed; your marks say whether it changed for the better. Before the change, save your profile from the You tab (the file holds your saved outfits and their marks) and run `node tools/marks.js valet-yourname.json`. Run it again after the change, on the same file. It lists every outfit where you and Valet disagree (you call it good and Valet fails it, or you call it bad and Valet passes it) and which rules caused it. A change that adds disagreements is a change for the worse on your own clothes, whatever the theory says; one that removes them, without adding others, is evidence for it. Keep the file outside the repository: it is yours.
+
 To **remove a rule**: delete its check, its `RULES` entry, its scenarios and boundary lines, and either delete its passage or say there why it was removed (readers may remember it). `tests/rules.js` reports a `RULES` entry that nothing emits.
 
 ## 5. A worked example, not yet built
@@ -156,6 +160,7 @@ The Node tests cover the logic, not the page. After any change to `index.html`, 
 - the welcome window opens on a first visit (clear the site's storage to see it again);
 - **Load the demo profile**; each tab opens without an error in the browser console (F12);
 - on the Palette, **Next: try an outfit** leads to the Dresser; in the Dresser, **Choose the best colours**, **Undo** and a fix button work, and **Why** opens its passage;
+- in the Dresser, open a piece and **Save to my garments**; under **My garments**, **What goes with it?** answers within a few seconds, and an outfit marked **Good** appears in **Saved outfits** with the mark;
 - Proportion & fit: each garment button in Fit, and a **Sources** button;
 - How it works: the contents list jumps to each section.
 
@@ -174,6 +179,7 @@ If you have Python, `tools/smoke.py` does the clicking for you and reports conso
 - **Text that differs on a phone.** Instructions written for a mouse ("Click", "Point at") have a touch version: `V.say(mouse, touch)` in JavaScript, or `data-touch="…"` on an element in the page. Write both.
 - **Ids the code looks for.** Many elements in `index.html` are found by `id` (`#ovComplete`, `#welcomeDemo`…). Search the `js/` folder for an id before renaming it.
 - **The order of scripts** at the bottom of `index.html`. A file can only use the objects of files loaded before it.
+- **The speed of My garments.** Each outfit is judged by the full engine (about a quarter of a millisecond each), so the number of outfits tried decides how long an answer takes: about 1,600 outfits with 50 garments for a jacket, 6,500 for a hat. If you make the search try more (a new optional position in `CORE`, or the tie pass on more outfits), time it with a real wardrobe first. The search runs in small steps so the page stays responsive, and **Stop** ends it.
 - **The "Why" and "Sources" maps** in `js/ui/why.js`. A new Proportion target or Fit size row needs a line there; `tests/why.js` tells you if it is missing.
 - **No network.** The page's security settings forbid any connection, on purpose (privacy). Do not add fonts, libraries or images from the web; put them in the folder.
 - **Reference numbers.** Sources in How it works, section 19, are numbered in list order and cited as `[n]`. If you insert one in the middle, every later number moves: add new sources at the end of their group, or renumber all citations together.

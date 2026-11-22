@@ -98,6 +98,8 @@
     $('#ovUndo').disabled = !undo.length;
     aCache = {};
     renderWardrobe(a);
+    const gc = $('#clCount'); if (gc) gc.textContent = window.VCLOSETUI.count() ? '(' + window.VCLOSETUI.count() + ')' : '';
+    if (view === 'garments') window.VCLOSETUI.render();   // a change of colouring or season asks its question again
   }
 
   /* ---------- The wardrobe: outfits you have composed, checked and kept ----------
@@ -105,7 +107,7 @@
      season, read from the cloths (winter cloth only: winter; summer cloth only: summer; neither: all
      year; both: mixed, which the season rule fails), then by the occasion. Each verdict is worked out again when the wardrobe is
      shown, so it follows your colouring if that changes. */
-  let view = 'outfit', removed = null, wNote = '';
+  let view = 'outfit', removed = null, wNote = '', onlyDisagree = false;
   const SEASONS = O.SEASONS, seasonOf = O.seasonOf, clothWord = O.clothWord;
   function wardrobe() { const st = S(); if (!Array.isArray(st.wardrobe)) st.wardrobe = []; return st.wardrobe; }
   /* The colouring a saved outfit is judged with: a summer outfit with your summer colouring and the
@@ -121,6 +123,8 @@
     const list = wardrobe(), cur = S().outfit, o = O.snapshotOutfit(cur);
     const name = (cur.name || '').trim() || O.autoName(o, api.nameOf);
     const existing = !asNew && cur.savedId ? list.find(function (w) { return w.id === cur.savedId; }) : null;
+    // a changed outfit is no longer the one you marked
+    if (existing && O.outfitSig(existing.outfit) !== O.outfitSig(o)) { delete existing.mark; delete existing.marked; delete existing.markVerdict; delete existing.fromMarks; }
     if (existing) { existing.outfit = o; existing.name = name; existing.season = seasonOf(o); existing.occasion = o.occasion; existing.saved = new Date().toISOString().slice(0, 10); lastNote = 'Updated in Saved outfits: ' + name + '.'; }
     else {
       const id = O.newId();
@@ -141,36 +145,73 @@
   function setView(v) {
     view = v;
     $$('.dr-views [data-view]').forEach(function (b) { b.setAttribute('aria-selected', String(b.dataset.view === v)); });
-    $('#drOutfit').hidden = v !== 'outfit'; $('#drWardrobe').hidden = v !== 'wardrobe';
-    const body = $('#outfitBody'); if (body) body.classList.toggle('wardrobe-view', v === 'wardrobe');
+    $('#drOutfit').hidden = v !== 'outfit'; $('#drWardrobe').hidden = v !== 'wardrobe'; $('#drGarments').hidden = v !== 'garments';
+    const body = $('#outfitBody'); if (body) body.classList.toggle('wardrobe-view', v !== 'outfit');   // the lists use the whole width
     if (v === 'wardrobe') renderWardrobe(api.analysis());
+    if (v === 'garments') window.VCLOSETUI.render();
     document.dispatchEvent(new Event('valet:layout'));
     if (window.scrollY > 0 && $('.dr-views')) $('.dr-views').scrollIntoView({ block: 'nearest' });
+  }
+  const MARK_NAMES = { good: 'Good', mid: 'So-so', bad: 'Bad' };
+  function markSeg(w) {
+    return '<span class="cl-marks" role="group" aria-label="Your verdict on ' + esc(w.name) + '">' + O.MARKS.map(function (m) {
+      return '<button type="button" class="btn ghost small cl-mark m-' + m + '" data-wmark="' + m + '" aria-pressed="' + (w.mark === m) + '">' + MARK_NAMES[m] + '</button>';
+    }).join('') + '</span>';
+  }
+  /* Marks set from My garments: the saved outfit with the same pieces and occasion carries the mark;
+     an outfit not saved yet is saved with it, and taken out again if the mark is cleared. */
+  function findBySig(sig) { return wardrobe().find(function (w) { return O.outfitSig(w.outfit) === sig; }) || null; }
+  function markOf(sig) { const w = findBySig(sig); return w ? w.mark || null : null; }
+  function setMark(o, sig, m, info) {
+    const list = wardrobe(), today = new Date().toISOString().slice(0, 10);
+    let w = findBySig(sig);
+    if (!m) {
+      if (w) { delete w.mark; delete w.marked; delete w.markVerdict; if (w.fromMarks) list.splice(list.indexOf(w), 1); }
+    } else if (w) { w.mark = m; w.marked = today; w.markVerdict = info.verdict; }
+    else {
+      const snap = O.snapshotOutfit(o);
+      w = { id: O.newId(), name: info.name, saved: today, season: seasonOf(snap), occasion: snap.occasion || 'smart', outfit: snap,
+        mark: m, marked: today, markVerdict: info.verdict, from: info.from, fromMarks: true };
+      list.push(w);
+    }
+    api.save();
+    const cnt = $('#drCount'); if (cnt) cnt.textContent = list.length ? '(' + list.length + ')' : '';
   }
   function renderWardrobe(a) {
     const list = wardrobe(), cnt = $('#drCount'); if (cnt) cnt.textContent = list.length ? '(' + list.length + ')' : '';
     const box = $('#drWardrobe'); if (!box || view !== 'wardrobe' || !a) return;
+    // your marks against Valet's verdicts (from My garments, or set here)
+    list.forEach(function (w) { w.season = seasonOf(w.outfit); });   // from the cloths as the rules now read them, not as saved
+    const vOf = {}; list.forEach(function (w) { vOf[w.id] = E.verdict(E.checkOutfit(engineOutfit(w.outfit), analysisFor(w, a))); });
+    const marked = list.filter(function (w) { return w.mark; });
+    const against = marked.filter(function (w) { return O.disagrees(w.mark, vOf[w.id].level); });
+    if (!against.length) onlyDisagree = false;
+    const shown = onlyDisagree ? against : list;
     const undoBar = (removed ? '<div class="dr-undo">Removed “' + esc(removed.item.name) + '”. <button type="button" class="btn ghost small" id="drUndo">Undo</button></div>' : '') +
       '<div class="dr-tools"><button type="button" class="btn ghost small" id="drPrint"' + (list.length ? '' : ' disabled') + '>Print or save as PDF</button>' +
       '<button type="button" class="btn ghost small" id="drExport"' + (list.length ? '' : ' disabled') + '>Export saved outfits</button>' +
       '<label class="btn ghost small">Import saved outfits<input type="file" id="drImport" accept="application/json,.json" hidden></label></div>' +
-      (wNote ? '<p class="dr-note" role="status">' + esc(wNote) + '</p>' : '');
+      (wNote ? '<p class="dr-note" role="status">' + esc(wNote) + '</p>' : '') +
+      (marked.length ? '<div class="dr-marks"><p>You have marked ' + marked.length + ' outfit' + (marked.length === 1 ? '' : 's') + '. ' +
+        (against.length ? 'You and Valet disagree on <strong>' + against.length + '</strong>: you call it good and Valet fails it, or you call it bad and Valet passes it. Those are the cases that show where a rule may be wrong.' : 'Valet agrees with all of them.') + '</p>' +
+        (against.length ? '<label class="dr-only"><input type="checkbox" id="drOnly"' + (onlyDisagree ? ' checked' : '') + '> Show only where we disagree</label>' : '') + '</div>' : '');
     if (!list.length) { box.innerHTML = undoBar + '<p class="dr-empty">Nothing saved yet. Put an outfit together under <strong>Outfit</strong>, check it, and press <strong>Save outfit</strong>. Saved outfits are grouped here by season and occasion.</p>'; wireUndo(box); return; }
     const occName = {}; G.OCCASIONS.forEach(function (x) { occName[x.id] = x.name; });
-    list.forEach(function (w) { w.season = seasonOf(w.outfit); });   // from the cloths as the rules now read them, not as saved
     const order = SEASONS.slice().sort(function (x, y) { return (y[0] === a.season) - (x[0] === a.season); });
     box.innerHTML = undoBar + order.map(function (se) {
-      const inSeason = list.filter(function (w) { return w.season === se[0]; }); if (!inSeason.length) return '';
+      const inSeason = shown.filter(function (w) { return w.season === se[0]; }); if (!inSeason.length) return '';
       return '<section class="dr-season"><h3>' + se[1] + ' <span class="dr-n">' + inSeason.length + '</span></h3><div class="dr-occs">' + G.OCCASIONS.map(function (oc) {
         const items = inSeason.filter(function (w) { return (w.occasion || 'smart') === oc.id; }); if (!items.length) return '';
         return '<div class="dr-occgroup"><h4 class="dr-occ">' + esc(oc.name) + '</h4><ul class="dr-list">' + items.map(function (w) {
-          const o = engineOutfit(w.outfit), v = E.verdict(E.checkOutfit(o, analysisFor(w, a)));
+          const v = vOf[w.id], dis = w.mark && O.disagrees(w.mark, v.level);
           const strip = G.SLOTS.filter(function (k) { return w.outfit[k] && w.outfit[k].on !== false; }).map(function (k) {
             return '<i title="' + esc(api.nameOf(w.outfit[k].hex) + ' ' + G.kind(k, w.outfit[k]).name.toLowerCase()) + '" style="' + chipStyle(w.outfit[k]) + '"></i>';
           }).join('');
           const isCur = S().outfit.savedId === w.id;
-          return '<li class="dr-item lv-' + esc(v.level || '') + (isCur ? ' cur' : '') + '" data-id="' + esc(w.id) + '"><div class="dr-strip" aria-hidden="true">' + strip + '</div>' +
-            '<div class="dr-text"><strong>' + esc(w.name) + '</strong><span class="dr-verdict">' + esc(v.title || '') + '</span><span class="dr-date">Saved ' + esc(w.saved || '') + (isCur ? ' · being worn' : '') + '</span></div>' +
+          return '<li class="dr-item lv-' + esc(v.level || '') + (isCur ? ' cur' : '') + (dis ? ' disagree' : '') + '" data-id="' + esc(w.id) + '"><div class="dr-strip" aria-hidden="true">' + strip + '</div>' +
+            '<div class="dr-text"><strong>' + esc(w.name) + '</strong><span class="dr-verdict">Valet: ' + esc(v.title || '') + (v.level === 'fix' || v.level === 'bad' ? ' <span class="dr-why">(' + esc(String(v.text).replace(/^Fails on /, '').replace(/\..*$/, '')) + ')</span>' : '') + '</span>' +
+            '<span class="dr-mine">You: ' + markSeg(w) + (dis ? ' <span class="dr-dis">disagree</span>' : '') + '</span>' +
+            '<span class="dr-date">Saved ' + esc(w.saved || '') + (isCur ? ' · being worn' : '') + '</span></div>' +
             '<div class="dr-acts"><button type="button" class="btn small" data-wear>Wear</button><button type="button" class="btn ghost small" data-del aria-label="Delete ' + esc(w.name) + '">Delete</button></div></li>';
         }).join('') + '</ul></div>';
       }).join('') + '</div></section>';
@@ -186,7 +227,16 @@
         const i = list.findIndex(function (x) { return x.id === id; }); if (i < 0) return;
         removed = { item: list[i], at: i }; list.splice(i, 1); api.save(); render();
       });
+      $$('[data-wmark]', li).forEach(function (b) {
+        b.addEventListener('click', function () {
+          const w = list.find(function (x) { return x.id === id; }); if (!w) return;
+          if (w.mark === b.dataset.wmark) { delete w.mark; delete w.marked; delete w.markVerdict; }
+          else { w.mark = b.dataset.wmark; w.marked = new Date().toISOString().slice(0, 10); w.markVerdict = vOf[id].title; }
+          api.save(); renderWardrobe(api.analysis());
+        });
+      });
     });
+    const only = $('#drOnly', box); if (only) only.addEventListener('change', function () { onlyDisagree = only.checked; renderWardrobe(api.analysis()); });
     wireUndo(box);
   }
   /* Export and import. A wardrobe file holds only the saved outfits, to move them to another browser,
@@ -417,7 +467,7 @@
     // A Cloth tab only when there is something to choose there: a fresh flower has no cloth and a
     // lapel pin is its metal, so neither gets one. A pin has no Colour list either: its metal row sets it.
     const hasCloth = p.cloth && !cur.metal && (!!cur.cloths || cur.pats.length > 1);
-    ed.innerHTML = kindRow + cutRow + extraRow + keepRow + (hasCloth ? '<div class="seg ed-tabs" role="tablist"><button type="button" role="tab" data-t="colour" aria-selected="' + (tab === 'colour') + '">Colour</button>' +
+    ed.innerHTML = kindRow + cutRow + extraRow + keepRow + (cur.metal ? '' : window.VCLOSETUI.editorRow(k, x)) + (hasCloth ? '<div class="seg ed-tabs" role="tablist"><button type="button" role="tab" data-t="colour" aria-selected="' + (tab === 'colour') + '">Colour</button>' +
       '<button type="button" role="tab" data-t="cloth" aria-selected="' + (tab === 'cloth') + '">' + (k === 'shoes' ? 'Upper' : kindOf(k).pats.length > 1 ? 'Cloth and pattern' : 'Cloth') + '</button></div>' : '') +
       '<div class="ed-body"></div>';
     $$('.ed-tabs button', ed).forEach(function (b) { b.addEventListener('click', function () { tab = b.dataset.t; renderEditor(ed, k, a); }); });
@@ -427,6 +477,7 @@
     $$('.spec2', ed).forEach(function (b) { b.addEventListener('click', function () { snapshot(); piece(k).hex2 = b.dataset.hex2; commit('Toe cap and heel: ' + b.textContent.toLowerCase() + '.'); }); });
     $$('.cut', ed).forEach(function (b) { b.addEventListener('click', function () { snapshot(); piece(k)[cut.key] = b.dataset.cut; commit(cut.label + ': ' + b.textContent.toLowerCase() + '.'); }); });
     $('.ov-keep', ed).addEventListener('click', function () { keepAndFix(k); });
+    window.VCLOSETUI.wireEditor(ed, k);
     const body = $('.ed-body', ed);
     if (cur.metal) body.innerHTML = '';
     else if (tab === 'cloth' && hasCloth) clothEditor(body, k, x, a); else colourEditor(body, k, x, a, p);
@@ -1071,8 +1122,27 @@
     commit('Changed ' + changed.join(', ') + '. Undo to go back.');
   }
 
+  /* A garment from My garments put on in its position of the outfit being edited. */
+  const PIECE_FIELDS = ['hex', 'kind', 'cloth', 'pat', 'rise', 'length', 'hex2', 'buttons', 'metal', 'band', 'brim'];
+  function wearGarment(g) {
+    snapshot();
+    const k = g.slot, x = piece(k);
+    PIECE_FIELDS.forEach(function (f) { delete x[f]; });
+    Object.assign(x, JSON.parse(JSON.stringify(g.piece)), { gid: g.id });
+    const notes = applyKind(k, x.kind).slice(1);   // what follows from its type (not "… chosen.")
+    const why = blockedWhy(k);
+    if (why) { x.on = false; notes.unshift(why); } else { const n = putOn(k); if (n) notes.push(n); }
+    open = k; tab = 'colour';
+    setView('outfit');
+    commit((x.on ? 'Wearing “' + g.name + '”.' : 'Could not put on “' + g.name + '”.') + (notes.length ? ' ' + notes.join(' ') : ''));
+  }
+  function wearOutfit(o, msg) {
+    snapshot(true); api.setOutfit(o); open = null;
+    setView('outfit'); commit(msg);
+  }
   function init(theApi) {
     api = theApi;
+    window.VCLOSETUI.init({ api: api, chipStyle: chipStyle, wearGarment: wearGarment, wearOutfit: wearOutfit, markOf: markOf, mark: setMark, note: note });
     $$('.dr-views [data-view]').forEach(function (b) { b.addEventListener('click', function () { setView(b.dataset.view); }); });
     $('#ovComplete').addEventListener('click', completeOutfit);
     $('#ovUndo').addEventListener('click', function () {
