@@ -3,6 +3,7 @@
 /* Valet — the Fit tab: sizes from your measurements, a garment's measurements or its label checked
    against you, and what to look for at the try-on. Drawing only: every number comes from js/fit.js
    (window.VFIT), which has no page code and is tested on its own. Part of the interface. */
+// @ts-check
 (function () {
   'use strict';
   const F = window.VFIT;

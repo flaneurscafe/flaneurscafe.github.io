@@ -49,4 +49,74 @@ interface ValetCtx {
   add: (c: ValetCheck) => ValetCheck; nm: (k: string) => string; lum: (hex: string) => number; lo: number; hi: number;
 }
 
-interface Window { [global: string]: any }
+/** The page's shared state and functions, window.VAPP (js/ui/core.js and the other files of js/ui/).
+    Each member is listed (the names the page holds once loaded) so that a misspelt one is reported;
+    their types are left open for now. */
+interface ValetApp {
+  $: any;
+  $$: any;
+  CHART: any;
+  D: any;
+  E: any;
+  F: any;
+  HELPER_TEXT: any;
+  MEASURES: any;
+  PLACEHOLDER: any;
+  PLACES: any;
+  SAMPLERS: any;
+  VC: any;
+  activeSampler: any;
+  activeTab: any;
+  analysis: any;
+  byId: any;
+  cleanProfile: any;
+  coreRows: any;
+  esc: any;
+  fillSelects: any;
+  glassesToOutfit: any;
+  infoBtn: any;
+  load: any;
+  marks: any;
+  mountChart: any;
+  nameOf: any;
+  newSummer: any;
+  normOutfit: any;
+  normWardrobe: any;
+  openMeasures: any;
+  previewTimer: any;
+  previewing: any;
+  refreshEffects: any;
+  renderColour: any;
+  renderFit: any;
+  renderHair: any;
+  renderMeasures: any;
+  renderProfileCard: any;
+  renderProportion: any;
+  renderSamplers: any;
+  renderSeason: any;
+  result: any;
+  results: any;
+  save: any;
+  say: any;
+  showGuide: any;
+  showPalPane: any;
+  showTab: any;
+  showYouPane: any;
+  state: any;
+  study: any;
+  summerOn: any;
+  syncChart: any;
+  syncChartSoon: any;
+  touch: any;
+  tt: any;
+  update: any;
+  upgrade: any;
+  warmPairs: any;
+  palPane?: string;   // set when a pane of the Palette tab is chosen
+  shapeSub?: string;  // set when Proportion or Fit is chosen
+}
+
+interface Window { VAPP: ValetApp; [global: string]: any }
+/** Globals some page files name without window. (the page's globals are window's properties). */
+declare var VWARD: any;
+declare var VPHOTOS: any;

@@ -5,6 +5,7 @@
    outfit is judged by the same engine as the Outfit view. Outfits you mark here (good, so-so, bad)
    are kept in Saved outfits with your mark beside Valet's verdict, so the two can be compared.
    Started by the Dresser (js/ui/dresser.js) with an API; window.VCLOSETUI. */
+// @ts-check
 (function () {
   'use strict';
   const G = window.VGARM, E = window.VENGINE, O = window.VOUTFIT, C = window.VCLOSET, D = window.VDATA;
@@ -81,7 +82,7 @@
   }
 
   /* ---------- Drawing ---------- */
-  let note = '', removed = null, buyOpen = false, buySpec = { slot: 'mid', kind: 'vneck', cloth: 'merino' };
+  let note = '', removed = null, buyOpen = false, buySpec = /** @type {{ slot: string, kind: string, cloth?: string }} */ ({ slot: 'mid', kind: 'vneck', cloth: 'merino' });
   function render() {
     const box = $('#drGarments'); if (!box) return;
     // an answer worked out for another colouring, season or list is asked again

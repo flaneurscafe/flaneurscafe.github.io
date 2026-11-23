@@ -2,6 +2,7 @@
    SPDX-License-Identifier: GPL-3.0-or-later */
 /* Valet — The You tab: colour samplers and the photo, measurements and their guide, the season switch, the profile card.
    Part of the interface; the parts share window.VAPP (see core.js). */
+// @ts-check
 (function () {
   'use strict';
   const V = window.VAPP;
@@ -434,7 +435,7 @@
   function seasonWhy(A, B) {
     const by = function (r) { const o = {}; r.rules.forEach(function (x) { o[x.id] = x; }); return o; };
     const a = by(A), b = by(B);
-    let best = null;
+    let best = /** @type {{ id: string, d: number } | null} */ (null);
     Object.keys(Object.assign({}, a, b)).forEach(function (id) {
       const sa = a[id] ? a[id].score : 1, sb = b[id] ? b[id].score : 1, d = sb - sa;
       if (!best || Math.abs(d) > Math.abs(best.d)) best = { id: id, d: d };

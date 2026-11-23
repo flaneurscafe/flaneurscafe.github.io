@@ -19,6 +19,7 @@
      analysis() the colouring worked out from it, or null
      save()     store the profile
      changed()  something in My colours changed: redraw what shows them */
+// @ts-check
 (function () {
   'use strict';
   const VC = window.VC, E = window.VENGINE, D = window.VDATA;

@@ -5,6 +5,7 @@
    open pieces can be suggested or filled in around the ones that are locked. The outfit as data (its
    defaults, making it safe, its season, the form the engine reads) is in js/outfit.js; the rules are
    in js/engine.js. Started by the interface (js/ui/main.js) with an API; window.VWARD. */
+// @ts-check
 (function () {
   'use strict';
   const VC = window.VC, E = window.VENGINE, D = window.VDATA, VP = window.VPAT, O = window.VOUTFIT;
@@ -199,7 +200,7 @@
         (against.length ? '<label class="dr-only"><input type="checkbox" id="drOnly"' + (onlyDisagree ? ' checked' : '') + '> Show only where we disagree</label>' : '') + '</div>' : '');
     if (!list.length) { box.innerHTML = undoBar + '<p class="dr-empty">Nothing saved yet. Put an outfit together under <strong>Outfit</strong>, check it, and press <strong>Save outfit</strong>. Saved outfits are grouped here by season and occasion.</p>'; wireUndo(box); return; }
     const occName = {}; G.OCCASIONS.forEach(function (x) { occName[x.id] = x.name; });
-    const order = SEASONS.slice().sort(function (x, y) { return (y[0] === a.season) - (x[0] === a.season); });
+    const order = SEASONS.slice().sort(function (x, y) { return Number(y[0] === a.season) - Number(x[0] === a.season); });
     box.innerHTML = undoBar + order.map(function (se) {
       const inSeason = shown.filter(function (w) { return w.season === se[0]; }); if (!inSeason.length) return '';
       return '<section class="dr-season"><h3>' + se[1] + ' <span class="dr-n">' + inSeason.length + '</span></h3><div class="dr-occs">' + G.OCCASIONS.map(function (oc) {
@@ -398,6 +399,7 @@
         (why ? '<span class="slot-why" id="why-' + p.key + '">' + esc(why) + '</span>' : '') + '</button>';
     };
     const byKey = {}; PIECES.forEach(function (p) { byKey[p.key] = p; });
+    /** @type {{ label: string, id: string, acc?: string[], list: any[] }[]} */
     const zones = ZONES.map(function (z) { return { label: z.label, id: z.id, acc: z.acc, list: z.keys.filter(function (k) { return byKey[k]; }).map(function (k) { return byKey[k]; }) }; });
     // anything a later version adds that has no place yet goes at the end, so nothing is lost
     const rest = PIECES.filter(function (p) { return !placed[p.key]; });
@@ -908,7 +910,7 @@
         '<h4>About life size</h4><div class="life"><canvas class="life-cv"></canvas><div class="ruler"></div><p class="ed-note">10 cm of cloth at screen scale (approximate: screens differ).</p></div>' +
         '<h4>From a distance <button type="button" class="info" data-info="distance" aria-label="What is this?">?</button></h4>' +
         '<p class="ed-note">The same patch of cloth (<span class="dist-cm"></span>), then what the eye can still see of it from each distance, enlarged.</p>' +
-        '<div class="dist-row">' + [0].concat(V().DISTANCES).map(function (d) {
+        '<div class="dist-row">' + /** @type {any[]} */ ([0]).concat(V().DISTANCES).map(function (d) {
           return '<figure class="dist" data-m="' + (d.m || 0) + '"><canvas></canvas><figcaption><strong>' + (d.m ? d.label : 'up close') + '</strong><span class="dist-state"></span><span class="dist-note">' + (d.m ? d.note : 'in your hand') + '</span></figcaption></figure>';
         }).join('') + '</div><p class="dist-why"></p><p class="dist-cam" hidden></p>');
 
@@ -1260,7 +1262,7 @@
     const a = api.analysis(), list = wardrobe(); if (!a || !list.length) return '';
     const date = new Date().toLocaleDateString(undefined, { year: 'numeric', month: 'long', day: 'numeric' });
     list.forEach(function (w) { w.season = seasonOf(w.outfit); });   // from the cloths as the rules now read them, not as saved
-    const order = SEASONS.slice().sort(function (x, y) { return (y[0] === a.season) - (x[0] === a.season); });
+    const order = SEASONS.slice().sort(function (x, y) { return Number(y[0] === a.season) - Number(x[0] === a.season); });
     const block = function (w) {
       const aw = analysisFor(w, a), o = engineOutfit(w.outfit), checks = E.checkOutfit(o, aw), v = E.verdict(checks), hd = headline(v, E.skinClashes(o, aw));
       const rows = PIECES.filter(function (p) { return o[p.key]; }).map(function (p) {

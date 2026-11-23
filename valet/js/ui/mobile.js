@@ -8,6 +8,7 @@
    - The header scrolls away, but its tab bar stays at the top of the screen.
    - How it works gets a button back to its contents.
    On wider screens none of this applies: the sheet bar and the button are hidden by CSS. */
+// @ts-check
 (function () {
   'use strict';
   const $ = function (s, r) { return (r || document).querySelector(s); };
@@ -69,7 +70,7 @@
     document.addEventListener('keydown', function (e) { if (e.key === 'Escape') closeAll(); });
     // keep each bar's summary current: a tab announces its result when it draws it
     document.addEventListener('valet:result', function (e) {
-      $$('.tab-panel aside.side').forEach(function (a) { if (tabOf(a) === e.detail.tab) refresh(a); });
+      $$('.tab-panel aside.side').forEach(function (a) { if (tabOf(a) === /** @type {CustomEvent} */ (e).detail.tab) refresh(a); });
     });
 
     // the chosen tab stays in view in the tab bar (switching tabs closes an open sheet: valet:layout, below)
@@ -119,7 +120,7 @@
   function setUpTouch() {
     if (!touch.matches) return;
     document.addEventListener('click', function (e) {
-      const el = e.target.closest && e.target.closest('[title]');
+      const t = /** @type {HTMLElement} */ (e.target), el = t.closest && t.closest('[title]');
       if (!el || el.closest('button, a, input, select, label, summary, [role=button], [role=radio], [role=tab]')) return;
       showTip(el.getAttribute('title'));
     });

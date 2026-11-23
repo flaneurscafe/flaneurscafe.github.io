@@ -1,7 +1,7 @@
 /* SPDX-FileCopyrightText: 2026 Budgie Perruche <https://flaneurs.cafe/contact/>
    SPDX-License-Identifier: GPL-3.0-or-later */
 /* Valet — the development type check: TypeScript's compiler reads the plain JavaScript files that start
-   with // @ts-check (every file in js/ and js/checks/; the page's own code in js/ui/ is not yet) against
+   with // @ts-check (every file in js/, js/checks/ and, since 1.18.2, the page's code in js/ui/) against
    the shapes in types/valet.d.ts, and reports a misspelt field, a wrong type or an unknown name. Nothing
    is compiled or shipped: the page runs the same files from file://.
    Run: node tools/typecheck.js. It uses a TypeScript installed with npm if there is one, and otherwise

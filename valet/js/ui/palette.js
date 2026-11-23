@@ -2,6 +2,7 @@
    SPDX-License-Identifier: GPL-3.0-or-later */
 /* Valet — The Palette tab: tiers and the colour map, the study, build around one colour, saved combinations, what goes together.
    Part of the interface; the parts share window.VAPP (see core.js). */
+// @ts-check
 (function () {
   'use strict';
   const V = window.VAPP;
@@ -612,7 +613,7 @@
         else out.push({ places: [p.label], state: j.state, why: j.why });
       }
     });
-    return out.sort(function (x, y) { return (y.state === 'out') - (x.state === 'out'); });
+    return out.sort(function (x, y) { return Number(y.state === 'out') - Number(x.state === 'out'); });
   }
   function comboVerdict(c) {
     const o = studyOutfit(null, false, c), n = PLACES.filter(function (p) { return c[p.key]; }).length;

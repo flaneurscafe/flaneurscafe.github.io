@@ -126,7 +126,7 @@ State the rule, its numbers and its sources. A web source gets `class="web"` on 
    ```
 
 7. **If it has a threshold**, add a line to `tests/boundaries.js` (`flip(...)`): it measures the quantity in an outfit, moves the threshold just past it both ways and checks that the rule flips.
-8. **Run the tests**: `node tests/run.js`, and `node tools/typecheck.js` (it catches a misspelt field such as `scroe` or `p.tempLevl`; a new field on a check or on your colouring is added to `types/valet.d.ts`). The regression test will now fail, listing outfits whose verdicts changed. **Read the list**: every change should be one you meant. Then record the new behaviour with `node tests/regression.js --update`.
+8. **Run the tests**: `node tests/run.js`, and `node tools/typecheck.js` (it catches a misspelt field such as `scroe` or `p.tempLevl`; a new field on a check or on your colouring, or a new member of the page's shared `window.VAPP`, is added to `types/valet.d.ts`). The regression test will now fail, listing outfits whose verdicts changed. **Read the list**: every change should be one you meant. Then record the new behaviour with `node tests/regression.js --update`.
 9. **Look at it in the browser** (section 6).
 10. **Write it down**: a short entry in the revision notes, and in the commit message.
 

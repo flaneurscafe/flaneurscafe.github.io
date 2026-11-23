@@ -2,6 +2,7 @@
    SPDX-License-Identifier: GPL-3.0-or-later */
 /* Valet — The Proportion and Fit tabs (proportion.js, fit.js).
    Part of the interface; the parts share window.VAPP (see core.js). */
+// @ts-check
 (function () {
   'use strict';
   const V = window.VAPP;

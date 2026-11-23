@@ -2,6 +2,7 @@
    SPDX-License-Identifier: GPL-3.0-or-later */
 /* Valet — Shared by every tab: helpers, the profile and its storage, tabs, the "?" popovers.
    Part of the interface; the parts share window.VAPP (see core.js). */
+// @ts-check
 (function () {
   'use strict';
   /* The interface is split into parts (core, you, palette, chart-host, shape, main), loaded in that
@@ -11,7 +12,7 @@
        and V.previewTimer;
      - helpers and constants from an earlier part are taken from it at the top of a later part;
      - a function in a later part is called through it (V.update), so it is looked up when called. */
-  const V = window.VAPP = {};
+  const V = window.VAPP = /** @type {ValetApp} */ ({});
   /* Touch screens. Instructions written for a mouse ("point at", "click") have a second wording for
      a screen with no hover, chosen when the text is drawn: V.say(mouse, touch) in scripts, and
      data-touch="…" on a sentence in the page (swapped once, below). Read once at load. */
@@ -400,7 +401,7 @@
   let popFor = null;
   function closePop() { pop.hidden = true; popFor = null; }
   document.addEventListener('click', function (e) {
-    const b = e.target.closest('.info');
+    const b = /** @type {HTMLElement} */ (/** @type {HTMLElement} */ (e.target).closest('.info'));
     if (b) {
       e.preventDefault(); e.stopPropagation();
       if (b.dataset.info.indexOf('m-') === 0) { closePop(); V.showGuide(b.dataset.info.slice(2), true); return; }
@@ -419,7 +420,7 @@
       pop.style.top = (r.bottom + window.scrollY + 8) + 'px';
       return;
     }
-    if (!e.target.closest('.popover')) closePop();
+    if (!/** @type {HTMLElement} */ (e.target).closest('.popover')) closePop();
   });
   document.addEventListener('keydown', function (e) { if (e.key === 'Escape') closePop(); });
 

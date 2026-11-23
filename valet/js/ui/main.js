@@ -2,6 +2,7 @@
    SPDX-License-Identifier: GPL-3.0-or-later */
 /* Valet — Files (demo, open, save), How it works, the update cycle, the welcome window and start-up.
    Part of the interface; the parts share window.VAPP (see core.js). */
+// @ts-check
 (function () {
   'use strict';
   const V = window.VAPP;
@@ -59,7 +60,7 @@
      palette is rebuilt from it with the current rules, and any colour whose tier differs from the
      saved palette is listed. A file with a palette but no colouring gets its colouring from the
      palette, as set by hand. */
-  const VERSION = '1.18.1';
+  const VERSION = '1.18.2';
   function paletteFor(season) {
     const a = E.analyseProfile(E.seasonProfile(V.state, season)); if (!a) return null;
     const r1 = function (x) { return Math.round(x * 10) / 10; };
@@ -259,7 +260,7 @@
 
   // arrow keys move between the choices of a segmented control
   document.addEventListener('keydown', function (e) {
-    const b = e.target.closest && e.target.closest('.seg[role="radiogroup"] button');
+    const t = /** @type {HTMLElement} */ (e.target), b = t.closest && t.closest('.seg[role="radiogroup"] button');
     if (!b || (e.key !== 'ArrowLeft' && e.key !== 'ArrowRight')) return;
     const all = $$('button', b.parentNode), n = all[(all.indexOf(b) + (e.key === 'ArrowRight' ? 1 : all.length - 1)) % all.length];
     n.focus(); n.click(); e.preventDefault();

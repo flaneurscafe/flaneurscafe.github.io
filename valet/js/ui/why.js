@@ -7,6 +7,7 @@
    One listener serves the whole page, so a tab that redraws needs no new wiring.
    The maps below say which passage explains each Proportion target, each Fit size row and each kind of
    Fit result; tests/why.js checks that every one is mapped and every passage exists. */
+// @ts-check
 (function () {
   'use strict';
   const MAP = {
@@ -123,7 +124,7 @@
       '<button type="button" class="rule-more">How it works, ' + esc(h2 ? h2.textContent.trim() : 'the rule') + ' \u2192</button>';
     host.appendChild(bubble); btn.setAttribute('aria-expanded', 'true');
     bubble.querySelector('.rule-more').addEventListener('click', function () {
-      const tab = document.querySelector('.tabs [data-tab=how]'); if (tab) tab.click();
+      const tab = /** @type {HTMLElement} */ (document.querySelector('.tabs [data-tab=how]')); if (tab) tab.click();
       setTimeout(function () { el.scrollIntoView({ block: 'center' }); el.classList.add('rule-flash'); setTimeout(function () { el.classList.remove('rule-flash'); }, 2200); }, 60);
     });
   }
@@ -133,9 +134,9 @@
     const e = SOURCES[btn.dataset.src] || {}, lv = btn.dataset.level || 'B';
     const refs = (e.refs || []).map(function (n) {
       const li = document.getElementById('ref-' + n); if (!li) return '';
-      const c = li.cloneNode(true); c.removeAttribute('id');
+      const c = /** @type {HTMLElement} */ (li.cloneNode(true)); c.removeAttribute('id');
       c.querySelectorAll('.ref-n').forEach(function (x) { x.remove(); });       // the number is shown once, in its own column
-      c.querySelectorAll('a[href^="http"]').forEach(function (a) { a.target = '_blank'; a.rel = 'noopener noreferrer'; });
+      /** @type {NodeListOf<HTMLAnchorElement>} */ (c.querySelectorAll('a[href^="http"]')).forEach(function (a) { a.target = '_blank'; a.rel = 'noopener noreferrer'; });
       return '<li><span class="src-n">' + n + '</span><span>' + c.innerHTML.trim() + '</span></li>';
     }).join('');
     const sec = el.closest('section'), h2 = sec && sec.querySelector('h2');
@@ -147,13 +148,13 @@
       '<button type="button" class="rule-more">The explanation: How it works, ' + esc(h2 ? h2.textContent.trim() : 'this section') + ' \u2192</button>';
     host.appendChild(bubble); btn.setAttribute('aria-expanded', 'true');
     bubble.querySelector('.rule-more').addEventListener('click', function () {
-      const tab = document.querySelector('.tabs [data-tab=how]'); if (tab) tab.click();
+      const tab = /** @type {HTMLElement} */ (document.querySelector('.tabs [data-tab=how]')); if (tab) tab.click();
       setTimeout(function () { el.scrollIntoView({ block: 'center' }); el.classList.add('rule-flash'); setTimeout(function () { el.classList.remove('rule-flash'); }, 2200); }, 60);
     });
   }
   if (typeof document !== 'undefined' && document.addEventListener) {
     document.addEventListener('click', function (ev) {
-      const btn = ev.target.closest && ev.target.closest('.rule-help[data-how], .why-btn[data-how]');
+      const t = /** @type {HTMLElement} */ (ev.target), btn = t.closest && t.closest('.rule-help[data-how], .why-btn[data-how]');
       if (!btn) return;
       ev.preventDefault(); ev.stopPropagation(); open(btn);
     });
