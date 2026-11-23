@@ -14,6 +14,7 @@
    size chart or a tailor gives. Each target also says where its hem lands on the body.
 
    Loads without a DOM (the tests run it in Node); the page is drawn by render(). */
+// @ts-check
 (function () {
   'use strict';
   const B = window.VBODY;

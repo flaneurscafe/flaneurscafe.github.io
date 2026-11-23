@@ -2,6 +2,7 @@
    SPDX-License-Identifier: GPL-3.0-or-later */
 /* Valet — colour maths. sRGB <-> linear <-> XYZ (D65) <-> CIELAB, OKLCH, CIEDE2000.
    Plain script: exposes window.VC so the tool also runs from file:// */
+// @ts-check
 (function () {
   'use strict';
 

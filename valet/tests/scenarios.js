@@ -4,7 +4,7 @@
    Run with Node from the project folder: node tests/scenarios.js (VERBOSE=1 lists each). Exits 1 on failure.
    When a rule changes on purpose, change its scenario with it. */
 global.window={}; const path=require('path'); const ROOT=path.join(__dirname,'..');
-for (const f of ['colour','vision','patterns','data','garments', 'rules', 'engine', 'suggest','body','proportion','chart']) require(path.join(ROOT,'js',f+'.js'));
+require('./load')(['colour','vision','patterns','data','garments', 'rules', 'engine', 'suggest','body','proportion','chart']);
 const E=window.VENGINE, G=window.VGARM, D=window.VDATA;
 const aW=E.analyseProfile(Object.assign({},D.demo,{season:'winter'})), aS=E.analyseProfile(Object.assign({},D.demo,{season:'summer'}));
 const P=(hex,kind,cloth,extra)=>Object.assign({hex,name:hex,kind,cloth,pat:{type:'solid'}},extra||{});

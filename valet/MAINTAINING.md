@@ -17,7 +17,8 @@ Valet is one page, `index.html`, plus plain JavaScript files that it loads in or
 |---|---|---|
 | A number that decides a verdict (a threshold) | `js/rules.js`, `PARAMS` | `VRULES` |
 | A rule's name, weight, kind, section or passage | `js/rules.js`, `RULES` | `VRULES` |
-| What a rule checks, its score, its text, its fixes | `js/engine.js`, `checkOutfit` | `VENGINE` |
+| What a rule checks, its score, its text, its fixes | `js/checks/`, one file per question of the card (`skin.js`, `contrast.js`, `pattern.js`, `collar.js`…) | `VENGINE.part` |
+| The order the checks run in, and what they share | `js/engine.js`, `ORDER` and `checkOutfit` | `VENGINE` |
 | How your colouring is read, the tiers, the palette | `js/engine.js`, top half | `VENGINE` |
 | Suggestions, Choose the best colours, Keep this | `js/suggest.js` | `VENGINE` |
 | Garments, cloths, occasions, what each piece is | `js/garments.js` | `VGARM` |
@@ -40,7 +41,7 @@ The rule is simple: **files in `js/` never touch the page**, so the tests can ru
 
 1. **Your colouring** is measured once (`analyseProfile` in `engine.js`): contrast, depth, warmth, vividness and the band of lightness steps that suits your face. It does not change while you dress.
 2. **Each piece** is reduced to what is seen of it across a room (`look` in `engine.js`): the colour it adds up to (`mean`), its pattern and whether that reads as pattern or texture at 3 m (`visible`, `texture`).
-3. **Each rule** inside `checkOutfit` looks at one relationship and calls `add({...})` with a **score**:
+3. **Each rule**, in one of the files of `js/checks/` that `checkOutfit` runs in turn, looks at one relationship and calls `add({...})` with a **score**:
    - `score < 0.5`: **fails** (counted in the verdict, with a fix where there is one);
    - `0.5 ≤ score < 0.85`: **to note**;
    - `score ≥ 0.85`: **passes** (often added with score 1 and a short sentence, so the card can say why it passed).
@@ -82,12 +83,13 @@ sockFamilyHue: 35, sockLoudC: 0.2,   // B §10 socks in the trousers' colour fam
 
 Never write a deciding number straight into `engine.js`. Name it here, so it can be found, argued with and tested.
 
-**c. The check**, in `checkOutfit` in `js/engine.js`. The function is long but flat: one block per rule, grouped under comments (`/* --- colour --- */`, `/* --- pattern --- */`, `/* --- accessories --- */` and so on). Inside it you have:
+**c. The check**, in the file of `js/checks/` for its question: `skin.js`, `contrast.js`, `frame.js`, `colours.js`, `feet.js`, `square.js`, `accents.js`, `pattern.js`, `hat.js`, `whole.js` (sheen, formality, season), `collar.js`, `lines.js` (proportion) or `accessories.js`. Each is a classic script that registers one function with `E.part('name', function (ctx) { … })`; `checkOutfit` in `engine.js` runs them in the order of `ORDER`, and that is the order the findings are listed in. A new file needs three things: its name in `ORDER` (`js/engine.js`), a `<script>` tag after `engine.js` in `index.html` (`tests/scripts.js` fails if it is missing or out of order), and nothing else for the tests, which load the files through `tests/load.js`. Helpers shared with the engine come from `window.VENGINE.kit` (`look`, `scoreCached`, `okc`, `PARAMS`, `G`…), taken at the top of each file. Inside the function, from `ctx`, you have:
 
 - `L[k]`: what is seen of the piece in position `k` (`shirt`, `jacket`, `tie`, `trousers`, `socks`, `shoes`, `square`…), or `undefined` if it is not worn. `L[k].mean` is its colour from a distance, `L[k].hex` its ground colour, `L[k].visible` true if its pattern reads at 3 m.
 - `K[k]`: what kind of piece it is (from `garments.js`): `K.tie.knotted`, `K.jacket.pocket`, `K.shirt.frame` and so on.
 - `p`: your analysed colouring (`p.band`, `p.contrastLevel`, and `p.season`, the season switch); `o.occasion` for the outfit.
-- Helpers: `lum(hex)` (lightness L\*), `okc(hex)` (OKLCH), `VC.deltaE2000(VC.hexToLab(a), VC.hexToLab(b))` (colour difference), `nm(k)` (a piece's name for a sentence).
+- `out`: the findings so far, and `add`, which appends one.
+- Helpers: `lum(hex)` (lightness L\*, from `ctx`), `okc(hex)` (OKLCH, from the kit), `VC.deltaE2000(VC.hexToLab(a), VC.hexToLab(b))` (colour difference), `nm(k)` (a piece's name for a sentence).
 
 A check calls `add`:
 
@@ -116,7 +118,7 @@ State the rule, its numbers and its sources. A web source gets `class="web"` on 
 2. **Write the passage first**, in How it works, with its source. If you cannot write it, the rule is not ready.
 3. **Name its thresholds** in `PARAMS`, with badge and section.
 4. **Add the registry entry** in `RULES`.
-5. **Write the check** in `checkOutfit`, next to the rules it belongs with.
+5. **Write the check** in the file of `js/checks/` for its question, next to the rules it belongs with.
 6. **Add scenarios** in `tests/scenarios.js`: at least one outfit where it should fire and one where it should not. The helpers are `base({...})` (a plain smart-casual outfit you override), `P(hex, kind, cloth)` (a piece) and `T(name, outfit, [[/^id: /, true]])` (expect a note matching the pattern, or `false` for none):
 
    ```js
@@ -124,7 +126,7 @@ State the rule, its numbers and its sources. A web source gets `class="web"` on 
    ```
 
 7. **If it has a threshold**, add a line to `tests/boundaries.js` (`flip(...)`): it measures the quantity in an outfit, moves the threshold just past it both ways and checks that the rule flips.
-8. **Run the tests**: `node tests/run.js`. The regression test will now fail, listing outfits whose verdicts changed. **Read the list**: every change should be one you meant. Then record the new behaviour with `node tests/regression.js --update`.
+8. **Run the tests**: `node tests/run.js`, and `node tools/typecheck.js` (it catches a misspelt field such as `scroe` or `p.tempLevl`; a new field on a check or on your colouring is added to `types/valet.d.ts`). The regression test will now fail, listing outfits whose verdicts changed. **Read the list**: every change should be one you meant. Then record the new behaviour with `node tests/regression.js --update`.
 9. **Look at it in the browser** (section 6).
 10. **Write it down**: a short entry in the revision notes, and in the commit message.
 
@@ -144,7 +146,7 @@ Flusser gives a rule Valet did not check until 1.15: *a plain pocket square only
 2. **Passage:** a sentence in `<li id="r-square">` with the page cited, and the rule taken out of the "not checked yet" paragraph in section 18 (`id="flusser-unchecked"`).
 3. **Threshold:** none needed; "patterned" is `L.tie.visible`, "plain" is `!L.square.visible`.
 4. **Registry:** a new id, `hank` ("the pocket square with the tie"), kind `convention`. It could not reuse `square`, because `square` is a *possibility* rule (a square needs a breast pocket), and a failing possibility rule makes the verdict "Not possible as set".
-5. **Check**, in the pocket-square block of `checkOutfit`, after the test for a square cut from the tie's own cloth (`sqmatch`, a failure since 1.16.1), skipped for white linen:
+5. **Check**, in `js/checks/square.js`, after the test for a square cut from the tie's own cloth (`sqmatch`, a failure since 1.16.1), skipped for white linen:
 
    ```js
    if (sqPlain && tiePlain) add({ id: 'hank', score: 0.7, slots: ['square', 'tie'],
@@ -185,5 +187,5 @@ If you have Python, `tools/smoke.py` does the clicking for you and reports conso
 - **The speed of My garments.** Each outfit is judged by the full engine (about a quarter of a millisecond each), so the number of outfits tried decides how long an answer takes: about 1,600 outfits with 50 garments for a jacket, 6,500 for a hat. If you make the search try more (a new optional position in `CORE`, or the tie pass on more outfits), time it with a real wardrobe first. The search runs in small steps so the page stays responsive, and **Stop** ends it.
 - **The "Why" and "Sources" maps** in `js/ui/why.js`. A new Proportion target or Fit size row needs a line there; `tests/why.js` tells you if it is missing.
 - **No network.** The page's security settings forbid any connection, on purpose (privacy). Do not add fonts, libraries or images from the web; put them in the folder.
-- **A new setting on a piece** (like a trouser's `rise` or, since 1.17, a shirt's `collar`, `collarBand` and `collarHex`) has to be carried in five places, or it is silently dropped somewhere: checked and cleaned in `normOutfit` (`js/outfit.js`); passed to the engine in `engineOutfit` (same file); kept with a garment in `FIELDS` (`js/closet.js`); copied when a garment is worn in `PIECE_FIELDS` (`js/ui/dresser.js`); and counted in an outfit's identity for marks in `outfitSig` (`js/outfit.js`). Add it to `outfitSig` only when it is set and not at its default (see `SIG_EXTRA`), or every outfit marked before loses its mark. Give it a default that no rule judges, so outfits saved before read as they did; `tests/regression.js` shows whether they do.
+- **A new setting on a piece** (like a trouser's `rise` or a shirt's `collar`): add it once, to `PIECE_FIELDS` in `js/garments.js`. From there it is kept with a garment (`js/closet.js`), replaced when a garment is worn (`js/ui/dresser.js`), passed to the engine (`engineOutfit`) and counted in an outfit's identity for marks (`outfitSig`, both in `js/outfit.js`). Two things are still by hand: checking its values in `normOutfit` (`js/outfit.js`), and the rule that reads it. Give it `sig: 'set'` and a `dflt`, so it counts in the identity only when set away from its default, or every outfit marked before loses its mark; and give it a default no rule judges, so outfits saved before read as they did (`tests/regression.js` shows whether they do).
 - **Reference numbers.** Sources in How it works, section 19, are numbered in list order and cited as `[n]`. If you insert one in the middle, every later number moves: add new sources at the end of their group, or renumber all citations together.

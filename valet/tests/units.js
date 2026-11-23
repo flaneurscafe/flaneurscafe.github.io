@@ -8,7 +8,7 @@
 'use strict';
 const path = require('path');
 global.window = {};
-for (const f of ['colour', 'vision', 'patterns', 'body', 'proportion', 'fit']) require(path.join(__dirname, '..', 'js', f + '.js'));
+require('./load')(['colour', 'vision', 'patterns', 'body', 'proportion', 'fit']);
 const C = window.VC, VP = window.VPAT, B = window.VBODY, P = window.VPROP, F = window.VFIT;
 
 let n = 0, failed = 0;

@@ -43,12 +43,14 @@ Issues and suggestions are welcome. Because Valet is also offered under a separa
 Every outfit rule has one entry in the `RULES` table in `js/rules.js`: its name in verdicts, its weight, the reason a suggestion gives when it mends the rule, its section, and its kind (perceptual, convention, possibility or context), which decides how it counts in a verdict. A new rule needs an entry there. Thresholds are named in `PARAMS` beside it, with their badge and the section of How it works that explains them. The checks themselves are in `js/engine.js`.
 
 `node tests/run.js` (Node.js only, no other dependencies) runs every test:
-- the version is the same everywhere it is written (`tests/version.js`);
+- the version is the same everywhere it is written (`tests/version.js`), and the page loads every script, the checks after the engine and in its order (`tests/scripts.js`);
 - unit tests of the colour science, the pattern visibility model, the body survey, the proportion targets and the size logic (`tests/units.js`), and of the outfit as data: making a file safe, its season, merging imports (`tests/outfit.js`);
 - My garments: the list made safe, the outfits found around a garment (each judged exactly as the Dresser judges it), the colour-to-buy comparison, your marks and the marks report (`tests/closet.js`);
 - every rule has a complete entry (`tests/rules.js`), and every named threshold is wired to its rule and compares in the right direction (`tests/boundaries.js`);
 - the rule scenarios (`tests/scenarios.js`), a stress test of thousands of random outfits (`tests/stress.js`), and a regression test that compares 800 fixed outfits with a stored record (`tests/regression.js`).
 - taste (`tests/taste.js`): how often Valet agrees with a well-dressed eye, on outfits Gentleman's Gazette's presenters wear in published photos (colours only; no photos or names are kept). A number to watch, not a test to pass: it never fails the run, and it lists the looks whose verdict moved since it was recorded (`--update` to record).
+
+`node tools/typecheck.js` is a separate check for development: TypeScript's compiler reads the plain JavaScript (every file in `js/` and `js/checks/`, which start with `// @ts-check`) against the shapes in `types/valet.d.ts` and reports a misspelt field or a wrong type. Nothing is compiled; the page runs the same files. It needs TypeScript, installed with npm or fetched once by npx, so it is not part of `node tests/run.js`.
 
 It also runs on GitHub for every change. When you change a rule on purpose, change its scenario with it, and record the new behaviour with `node tests/regression.js --update`, so the change shows in the same commit. To release, set the version with `node tools/release.js <version>`: it writes it to every place it appears, including the `?v=` on each script, so returning visitors get the new files.
 

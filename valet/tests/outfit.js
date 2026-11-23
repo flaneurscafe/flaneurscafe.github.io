@@ -5,7 +5,7 @@
 'use strict';
 const path = require('path');
 global.window = {};
-for (const f of ['colour', 'vision', 'patterns', 'data', 'garments', 'rules', 'engine', 'suggest', 'outfit', 'body', 'proportion']) require(path.join(__dirname, '..', 'js', f + '.js'));
+require('./load')(['colour', 'vision', 'patterns', 'data', 'garments', 'rules', 'engine', 'suggest', 'outfit', 'body', 'proportion']);
 const O = window.VOUTFIT, G = window.VGARM, E = window.VENGINE, D = window.VDATA;
 let n = 0, failed = 0;
 function check(name, ok, info) { n++; if (!ok) { failed++; console.log('FAIL ' + name + (info !== undefined ? '  ' + JSON.stringify(info) : '')); } }

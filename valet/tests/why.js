@@ -7,7 +7,7 @@
 'use strict';
 const fs = require('fs'), path = require('path');
 global.window = {};
-for (const f of ['colour', 'data', 'body', 'proportion', 'fit']) require(path.join(__dirname, '..', 'js', f + '.js'));
+require('./load')(['colour', 'data', 'body', 'proportion', 'fit']);
 require(path.join(__dirname, '..', 'js', 'ui', 'why.js'));
 const page = fs.readFileSync(path.join(__dirname, '..', 'index.html'), 'utf8');
 const uifit = fs.readFileSync(path.join(__dirname, '..', 'js', 'ui', 'fit.js'), 'utf8');

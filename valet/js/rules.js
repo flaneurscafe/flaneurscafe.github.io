@@ -3,6 +3,7 @@
 /* Valet — the rule registry: every named threshold (PARAMS) and every rule the checks can emit
    (RULES), with the Outfit Check card's sections. Data only; the checks that use them are in
    js/engine.js, and tests/rules.js and tests/boundaries.js check that the two agree. window.VRULES. */
+// @ts-check
 (function () {
   'use strict';
   /* ---------- Thresholds, named ----------

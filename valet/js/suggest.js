@@ -4,6 +4,7 @@
    piece (fitFor), Choose the best colours (complete), Keep this, fix the rest (rescue) and the theme
    palettes. It changes outfits and asks js/engine.js what the rules say about each; the rules
    themselves are not here. Adds its functions to window.VENGINE. */
+// @ts-check
 (function () {
   'use strict';
   const E = window.VENGINE, VC = window.VC, G = E.G, R = window.VRULES;
@@ -106,7 +107,7 @@
     const open = SLOTS.filter(function (k) { return cur[k] && !locked[k]; });
     for (let step = 0; step < 6; step++) {
       const now = totalCost(cur, p), nowFails = verdict(checkOutfit(cur, p)).fails;
-      let best = null;
+      let best = /** @type {any} */ (null);
       open.forEach(function (k) {
         suggest(cur, p, k, 3).forEach(function (c) {
           const next = withPiece(cur, k, c.hex, c.name), cost = totalCost(next, p);
@@ -171,7 +172,7 @@
     const piece = function (h, kind) { return h ? { hex: h, name: h, kind: kind, pat: { type: 'solid' } } : null; };
     const others = t.neutrals.length ? t.neutrals : [null];
     const accents = face ? [null] : [null].concat(t.partners.slice(0, 8));
-    let best = null;
+    let best = /** @type {any} */ (null);
     others.forEach(function (n) {
       accents.forEach(function (acc) {
         const o = { study: true, shirt: piece(face ? hex : n && n.hex, 'shirt'), scarf: piece(acc && acc.hex, 'scarf'), trousers: piece(face ? n && n.hex : hex, 'trousers') };
@@ -210,7 +211,7 @@
       }
       G.POSITIONS.forEach(function (pos) { if (pos.optional && cur[pos.key] && !lock[pos.key]) { const t = copy(cur); t[pos.key] = null; tries.push(t); } });
       const now = totalCost(cur, p);
-      let best = null;
+      let best = /** @type {any} */ (null);
       tries.forEach(function (t) { const c = totalCost(t, p); if (c < now - 0.1 && (!best || c < best.c)) best = { t: t, c: c }; });
       if (!best) break;
       cur = complete(best.t, p, lock);

@@ -2,6 +2,7 @@
    SPDX-License-Identifier: GPL-3.0-or-later */
 /* Valet — reference data. Colour names follow common menswear usage; hex values are
    representative cloth colours, not brand-specific. */
+// @ts-check
 (function () {
   'use strict';
   window.VDATA = {

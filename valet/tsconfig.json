@@ -1,0 +1,10 @@
+// For the development type check only (node tools/typecheck.js); the page does not use it.
+// Files are checked when they start with // @ts-check; the rest are read for their globals only.
+{
+  "compilerOptions": {
+    "allowJs": true, "checkJs": false, "noEmit": true,
+    "target": "ES2017", "lib": ["ES2017", "DOM"],
+    "strict": false, "noImplicitAny": false, "skipLibCheck": true
+  },
+  "include": ["types/*.d.ts", "js/**/*.js"]
+}

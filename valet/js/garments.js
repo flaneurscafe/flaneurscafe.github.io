@@ -13,6 +13,7 @@
    pats:  the patterns the guide uses on it (ids from patterns.js).
    maxScale: the largest pattern scale class that is usual on it; one class above is a bold move,
           two above is wrong. */
+// @ts-check
 (function () {
   'use strict';
   const SOLID_ONLY = ['solid'];
@@ -257,6 +258,23 @@
     { id: 'camp', name: 'Camp', spread: 'wide', f: 2, open: 'falls', noBand: true, note: 'No collar band: the collar lies flat and open. A casual summer shirt, not made for a tie.' }
   ];
   const collarBy = {}; COLLARS.forEach(function (c) { collarBy[c.id] = c; });
+
+  /* Every setting a piece carries, in one list. A new setting added here is kept with a garment
+     (closet.js), replaced when a garment is worn (the Dresser), passed to the engine (engineOutfit)
+     and counted in an outfit's identity for marks (outfitSig, both in outfit.js). Its values are
+     still checked by hand in normOutfit (outfit.js), and the engine reads it where a rule uses it.
+     sig 'always': part of the identity as it was written before 1.17, even when unset, so the marks
+     on outfits saved before keep matching. sig 'set': counted only when set and not at its default
+     (dflt), so adding a setting never changes the identity of an outfit that does not use it. */
+  const PIECE_FIELDS = [
+    { key: 'hex', sig: 'always' }, { key: 'kind', sig: 'always' }, { key: 'cloth', sig: 'always' }, { key: 'pat', sig: 'always' },
+    { key: 'rise', sig: 'always' }, { key: 'length', sig: 'always' }, { key: 'hex2', sig: 'always' }, { key: 'buttons', sig: 'always' },
+    { key: 'metal', sig: 'always' }, { key: 'band', sig: 'always' }, { key: 'brim', sig: 'always' },
+    { key: 'collar', sig: 'set', dflt: function (v) { return v === 'semispread'; } },
+    { key: 'collarBand', sig: 'set', dflt: function (v) { return v === 'standard'; } },
+    { key: 'collarHex', sig: 'set', dflt: function (v, x) { return String(v).toLowerCase() === String(x.hex).toLowerCase(); } }
+  ];
+  const PIECE_KEYS = PIECE_FIELDS.map(function (f) { return f.key; });
   const COLLAR_BANDS = [{ id: 'standard', name: 'Standard' }, { id: 'tall', name: 'Tall' }];
   function collarOf(piece) { return collarBy[piece && piece.collar] || COLLARS[0]; }
   /* The colour of a contrast (Winchester) collar, when the shirt has one: a different colour from the
@@ -358,5 +376,6 @@
   function scaleOver(k, clsId) { return Math.max(0, SCALE_ORDER.indexOf(clsId) - SCALE_ORDER.indexOf(k.maxScale)); }
 
   window.VGARM = { FRAMES: FRAMES, FRAME_COLOURS: FRAME_COLOURS, STRAPS: STRAPS, BUTTONS: BUTTONS, CLOTH_PATS: CLOTH_PATS, patOK: patOK, BRIMS: BRIMS, BANDS: BANDS, CLOTHS: CLOTHS, cloth: cloth, formality: formality, OCCASIONS: OCCASIONS, POSITIONS: POSITIONS, SLOTS: SLOTS, FACE: FACE, NEAR: NEAR, METALS: METALS, STONES: STONES, ACCESSORIES: ACCESSORIES, metalBy: metalBy, stoneBy: stoneBy, accBy: accBy, byKey: byKey, kind: kind, neckwearAllowed: neckwearAllowed, scaleOver: scaleOver,
-    COLLARS: COLLARS, COLLAR_BANDS: COLLAR_BANDS, collarBy: collarBy, collarOf: collarOf, contrastCollar: contrastCollar };
+    COLLARS: COLLARS, COLLAR_BANDS: COLLAR_BANDS, collarBy: collarBy, collarOf: collarOf, contrastCollar: contrastCollar,
+    PIECE_FIELDS: PIECE_FIELDS, PIECE_KEYS: PIECE_KEYS };
 })();

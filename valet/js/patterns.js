@@ -4,6 +4,7 @@
    the garment's own colour is the ground. Tiles are drawn on a canvas so the same drawing is
    used for the previews and swatches.
    Loads without a DOM (for tests); drawing needs a canvas. */
+// @ts-check
 (function () {
   'use strict';
   const VC = window.VC;

@@ -9,6 +9,7 @@
    straight between the shoulder bones, while Valet's shoulder follows the curve of the back, so
    shoulders are not compared. One population: the comparison says where a measurement sits among
    those men, nothing more. */
+// @ts-check
 (function () {
   'use strict';
   const PCT = [1, 5, 10, 25, 50, 75, 90, 95, 99];

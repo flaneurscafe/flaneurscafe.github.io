@@ -5,7 +5,7 @@
 'use strict';
 const path = require('path');
 global.window = {};
-for (const f of ['colour', 'vision', 'patterns', 'data', 'garments', 'rules', 'engine', 'suggest', 'outfit', 'body', 'proportion', 'closet']) require(path.join(__dirname, '..', 'js', f + '.js'));
+require('./load')(['colour', 'vision', 'patterns', 'data', 'garments', 'rules', 'engine', 'suggest', 'outfit', 'body', 'proportion', 'closet']);
 const C = window.VCLOSET, O = window.VOUTFIT, G = window.VGARM, E = window.VENGINE, D = window.VDATA;
 const marks = require(path.join(__dirname, '..', 'tools', 'marks.js'));
 let n = 0, failed = 0;

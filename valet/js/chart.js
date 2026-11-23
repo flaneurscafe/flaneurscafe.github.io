@@ -14,6 +14,7 @@
 
    It sits on white, so the dark text and thin rules read clearly (How it works, section 12); the
    colours themselves are judged on cloth, not on a screen. window.VCHART = { mount, update }. */
+// @ts-check
 (function () {
   'use strict';
   const VC = window.VC;

@@ -17,6 +17,7 @@
       shirt with a collar band, a square a jacket with a breast pocket).
    4. Each outfit is judged with the colouring of its season (summer cloth: summer colouring), like
       Saved outfits. */
+// @ts-check
 (function () {
   'use strict';
   const G = window.VGARM, O = window.VOUTFIT, E = window.VENGINE;
@@ -24,7 +25,7 @@
   const CORE = ['shirt', 'trousers', 'shoes', 'mid', 'jacket'];
   const NEEDED = ['shirt', 'trousers', 'shoes'];
   const EXTRA = ['tie', 'square', 'socks'];          // added one at a time where they help
-  const FIELDS = ['hex', 'kind', 'cloth', 'pat', 'rise', 'length', 'hex2', 'buttons', 'metal', 'band', 'brim', 'collar', 'collarBand', 'collarHex'];
+  const FIELDS = G.PIECE_KEYS;                       // every setting a piece carries (garments.js)
   const LEVELS = { good: 0, ok: 1, fix: 2, bad: 3 };
   const GOOD = function (level) { return level === 'good' || level === 'ok'; };
   const idOk = function (id) { return typeof id === 'string' && /^[a-z0-9]{1,40}$/i.test(id); };

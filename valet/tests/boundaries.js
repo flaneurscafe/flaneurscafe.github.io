@@ -6,7 +6,7 @@
 'use strict';
 const path = require('path');
 global.window = {};
-for (const f of ['colour', 'vision', 'patterns', 'data', 'garments', 'rules', 'engine', 'suggest', 'body']) require(path.join(__dirname, '..', 'js', f + '.js'));
+require('./load')(['colour', 'vision', 'patterns', 'data', 'garments', 'rules', 'engine', 'suggest', 'body']);
 const E = window.VENGINE, D = window.VDATA, VC = window.VC, PARAMS = E.PARAMS;
 const col = n => D.colours.find(c => c.name === n).hex;
 const P = (hex, kind, cloth, extra) => Object.assign({ hex, name: hex, kind, cloth, pat: { type: 'solid' } }, extra || {});

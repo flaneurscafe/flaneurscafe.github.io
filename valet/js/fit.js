@@ -9,6 +9,7 @@
    are half the chest in cm), B where it is tailoring convention (ease, the half inch on a collar).
    Every size here is a starting point: brands cut differently, so the shop check (garment
    measurements against your body) is the reliable test. Loads without a DOM; render() needs one. */
+// @ts-check
 (function () {
   'use strict';
   const IN = 2.54;

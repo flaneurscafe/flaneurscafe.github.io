@@ -12,7 +12,7 @@
 'use strict';
 const fs = require('fs'), path = require('path');
 global.window = global.window || {};
-for (const f of ['colour', 'vision', 'patterns', 'data', 'garments', 'rules', 'engine', 'suggest', 'outfit', 'body', 'proportion']) require(path.join(__dirname, '..', 'js', f + '.js'));
+require('./load')(['colour', 'vision', 'patterns', 'data', 'garments', 'rules', 'engine', 'suggest', 'outfit', 'body', 'proportion']);
 const E = window.VENGINE, O = window.VOUTFIT, D = window.VDATA;
 const T = JSON.parse(fs.readFileSync(path.join(__dirname, 'taste.json'), 'utf8'));
 const RECORD = path.join(__dirname, 'taste-record.json');

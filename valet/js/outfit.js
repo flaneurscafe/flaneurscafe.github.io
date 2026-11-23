@@ -4,6 +4,7 @@
    normWardrobe), the season of an outfit read from its cloths, the outfit as the rule engine reads
    it, and merging imported saved outfits. No page code: the Dresser (js/ui/dresser.js) draws and
    edits outfits through these, and tests/outfit.js checks them on their own. window.VOUTFIT. */
+// @ts-check
 (function () {
   'use strict';
   const G = window.VGARM, VP = window.VPAT;
@@ -152,18 +153,21 @@
   function newId() { return 'w' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6); }
   /* What makes two outfits the same for a mark: the pieces worn (type, cloth, colour, pattern…) and
      the occasion. Accessories, names and locks do not count. */
-  const SIG_FIELDS = ['hex', 'kind', 'cloth', 'pat', 'rise', 'length', 'hex2', 'buttons', 'metal', 'band', 'brim'];
-  // added in 1.17, and only when set, so the marks on outfits saved before keep their signature
-  const SIG_EXTRA = ['collar', 'collarBand', 'collarHex'];
+  // The settings counted, and how, are in G.PIECE_FIELDS (garments.js).
   function outfitSig(o) {
     const out = [o.occasion || 'smart'];
     G.SLOTS.forEach(function (k) {
       const x = o[k]; if (!x || x.on === false) return;
-      const sig = SIG_FIELDS.map(function (f) { const c = f === 'cloth' ? G.cloth(k, x) : null, v = f === 'pat' ? VP.norm(x.pat) : f === 'cloth' ? (c ? c.id : null) : x[f]; return v === undefined ? null : v; });
-      // a value at its default is the same collar: semi-spread, a standard band, a collar in the body's own colour
-      SIG_EXTRA.forEach(function (f) {
-        const v = x[f], dflt = v == null || (f === 'collar' && v === 'semispread') || (f === 'collarBand' && v === 'standard') || (f === 'collarHex' && String(v).toLowerCase() === String(x.hex).toLowerCase());
-        if (!dflt) sig.push(f + ':' + v);
+      const sig = [];
+      G.PIECE_FIELDS.forEach(function (f) {
+        if (f.sig === 'always') {
+          // the cloth by its id (a cloth left at its type's default is the same cloth), the pattern normalised
+          const c = f.key === 'cloth' ? G.cloth(k, x) : null, v = f.key === 'pat' ? VP.norm(x.pat) : f.key === 'cloth' ? (c ? c.id : null) : x[f.key];
+          sig.push(v === undefined ? null : v);
+        } else {
+          const v = x[f.key];
+          if (!(v == null || f.dflt(v, x))) sig.push(f.key + ':' + v);
+        }
       });
       out.push(k, sig);
     });
@@ -192,7 +196,10 @@
     const out = {};
     G.SLOTS.forEach(function (k) {
       const x = o[k];
-      out[k] = !x || x.on === false ? null : { hex: x.hex, name: nameOf(x.hex), kind: x.kind, cloth: x.cloth, band: x.band, brim: x.brim, pat: x.pat || { type: 'solid' }, rise: x.rise, length: x.length, hex2: x.hex2, buttons: x.buttons, metal: x.metal, collar: x.collar, collarBand: x.collarBand, collarHex: x.collarHex, collarName: isHex(x.collarHex) ? nameOf(x.collarHex) : undefined };
+      if (!x || x.on === false) { out[k] = null; return; }
+      // every setting (G.PIECE_FIELDS), plus what the engine is given ready: names, and a pattern always
+      const e = {}; G.PIECE_KEYS.forEach(function (f) { e[f] = x[f]; });
+      out[k] = Object.assign(e, { name: nameOf(x.hex), pat: x.pat || { type: 'solid' }, collarName: isHex(x.collarHex) ? nameOf(x.collarHex) : undefined });
     });
     out.propOn = true;
     const m = profile.measurements;

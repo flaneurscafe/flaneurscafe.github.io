@@ -14,7 +14,7 @@
 'use strict';
 const path = require('path');
 global.window = global.window || {};
-for (const f of ['colour', 'vision', 'patterns', 'data', 'garments', 'rules', 'engine', 'suggest', 'outfit', 'body', 'proportion']) require(path.join(__dirname, '..', 'js', f + '.js'));
+require('../tests/load')(['colour', 'vision', 'patterns', 'data', 'garments', 'rules', 'engine', 'suggest', 'outfit', 'body', 'proportion']);
 const E = window.VENGINE, O = window.VOUTFIT, D = window.VDATA;
 
 const nameOf = function (h) { const c = D.colours.find(function (x) { return x.hex.toLowerCase() === String(h).toLowerCase(); }); return c ? c.name : String(h).toUpperCase(); };

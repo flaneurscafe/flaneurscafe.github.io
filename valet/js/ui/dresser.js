@@ -1170,7 +1170,7 @@
   }
 
   /* A garment from My garments put on in its position of the outfit being edited. */
-  const PIECE_FIELDS = ['hex', 'kind', 'cloth', 'pat', 'rise', 'length', 'hex2', 'buttons', 'metal', 'band', 'brim', 'collar', 'collarBand', 'collarHex'];
+  const PIECE_FIELDS = G.PIECE_KEYS;   // every setting a piece carries (garments.js)
   function wearGarment(g) {
     snapshot();
     const k = g.slot, x = piece(k);

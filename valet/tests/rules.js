@@ -1,18 +1,22 @@
 /* SPDX-FileCopyrightText: 2026 Budgie Perruche <https://flaneurs.cafe/contact/>
    SPDX-License-Identifier: GPL-3.0-or-later */
 /* Valet — the rules table is complete. Run with Node from the project folder: node tests/rules.js
-   Every rule id the checks can emit (an `id: '…'` in engine.js) must have one entry in RULES, with a
+   Every rule id the checks can emit (an `id: '…'` in engine.js or js/checks/) must have one entry in RULES, with a
    name, a numeric weight, a reason (a phrase, or null where a colour cannot change the rule), a kind
    (perceptual, convention, possibility or context) and, if it names a section, one that exists. Entries no check emits are reported too. Exits 1 on failure. */
 'use strict';
 const fs = require('fs'), path = require('path');
 global.window = {};
-for (const f of ['colour', 'vision', 'patterns', 'data', 'garments', 'rules', 'engine', 'suggest']) require(path.join(__dirname, '..', 'js', f + '.js'));
-const E = window.VENGINE, src = fs.readFileSync(path.join(__dirname, '..', 'js', 'engine.js'), 'utf8');
+require('./load')(['colour', 'vision', 'patterns', 'data', 'garments', 'rules', 'engine', 'suggest']);
+const E = window.VENGINE;
+const read = function (f) { return fs.readFileSync(path.join(__dirname, '..', 'js', f + '.js'), 'utf8'); };
+const src = read('engine');
 const page = fs.readFileSync(path.join(__dirname, '..', 'index.html'), 'utf8');
 const from = src.indexOf('  function checkOutfit('), to = src.indexOf('  function penalty(');
 const sections = new Set(E.SECTIONS.map(function (s) { return s.id; }));
-const body = src.slice(from, to);   // the RULES table itself is in js/rules.js
+// what can emit a rule id: the engine from checkOutfit on, and every file of js/checks/ (in ORDER);
+// the RULES table itself is in js/rules.js
+const body = src.slice(from, to) + '\n' + E.ORDER.map(function (n) { return read('checks/' + n); }).join('\n');
 const emitted = [...new Set([...body.matchAll(/id: '([a-z0-9]+)'/g)].map(function (m) { return m[1]; }))].sort();
 const problems = [];
 emitted.forEach(function (id) {

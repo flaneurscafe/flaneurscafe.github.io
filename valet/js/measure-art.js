@@ -2,6 +2,7 @@
    SPDX-License-Identifier: GPL-3.0-or-later */
 /* Valet — illustrations for the measurement guide. Line drawings in SVG: a figure (front, back,
    face) or a garment laid flat, with the tape drawn where it goes. Colours come from CSS. */
+// @ts-check
 (function () {
   'use strict';
 

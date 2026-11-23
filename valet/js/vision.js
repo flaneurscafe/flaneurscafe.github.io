@@ -3,6 +3,7 @@
 /* Valet — how fine detail survives distance. The eye's contrast sensitivity (Barten 1999), the
    size of a pattern in degrees, and the colour channels' lower limit (Mullen 1985).
    Plain script: exposes window.VVIS; loads without a DOM (for tests). */
+// @ts-check
 (function () {
   'use strict';
 

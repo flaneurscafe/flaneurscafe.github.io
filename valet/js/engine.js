@@ -3,6 +3,7 @@
 /* Valet — rules engine for the profile, the Palette tab, the Dresser and the lightness chart.
    Every rule returns a verdict plus the reason and its evidence level:
    A = perception science, B = tailoring/colour convention, C = popular system. */
+// @ts-check
 (function () {
   'use strict';
   const VC = window.VC;
@@ -111,6 +112,7 @@
   /* The difference between two hue angles in degrees, 0 to 180. */
   function hueDist(a, b) { let d = Math.abs(a - b) % 360; return d > 180 ? 360 - d : d; }
 
+  /** @returns {ValetAnalysis | null} */
   function analyseProfile(profile) {
     const grey = greyOf(profile), hairBase = corrected(profile, 'hair');
     const hex = {
@@ -119,12 +121,13 @@
       eyes: corrected(profile, 'eyes')
     };
     if (!hex.skin) return null;
-    const lab = {};
+    const lab = /** @type {{ [feature: string]: number[] }} */ ({});
     Object.keys(hex).forEach(function (k) { if (hex[k]) lab[k] = VC.hexToLab(hex[k]); });
     const feats = Object.keys(lab);
     const style = hairStyleOf(profile), H = HAIR[style], Ls = lab.skin[0];
 
     // Face contrast: the strongest weighted lightness step between the skin and a feature.
+    /** @type {{ key?: string, pair: string, L: number, dL: number, w: number, assumed?: boolean, value?: number }[]} */
     const edges = [];
     if (lab.hair) edges.push({ key: 'hair', pair: 'skin – ' + H.feature, L: lab.hair[0], dL: Math.abs(Ls - lab.hair[0]), w: H.edge });
     if (lab.eyes) edges.push({ key: 'eyes', pair: 'skin – eyes', L: lab.eyes[0], dL: Math.abs(Ls - lab.eyes[0]), w: EYE_EDGE });
@@ -195,7 +198,6 @@
     if (m.backNeckFloor && m.height) out.push({ label: 'Jacket length guide', value: round(m.backNeckFloor / 2, 1) + ' cm', note: 'half of back-neck to floor' });
     return out;
   }
-
 
   /* The named thresholds and the table of rules are in js/rules.js (window.VRULES). */
   const R = window.VRULES, PARAMS = R.PARAMS, RULES = R.RULES, SECTIONS = R.SECTIONS, sectionOf = R.sectionOf, ruleOf = R.ruleOf, checkRules = R.checkRules;
@@ -405,9 +407,9 @@
     return c[1] < 0.035 || (c[0] < 0.4 && c[1] < 0.1 && hueDist(c[2], 262) < 22);   // nearly grey, or navy
   }
 
-
   /* What a piece looks like: its colours, the colour it adds up to, and whether its pattern
      reads as pattern or as texture. */
+  /** @param {ValetPiece} piece @returns {ValetLook} */
   function look(piece) {
     const pat = P() ? P().norm(piece.pat) : { type: 'solid' };
     const out = { hex: piece.hex, name: piece.name || piece.hex, pat: pat, mean: piece.hex, colours: [piece.hex], visible: false, texture: false };
@@ -469,6 +471,18 @@
     return over || null;
   }
 
+  /* The checks, in the order they run and are listed. Each name is a file in js/checks/ that calls
+     part(name, fn) when it loads; index.html loads them after this file, and tests/load.js does the
+     same for the tests. A missing file stops checkOutfit with its name rather than silently skipping. */
+  const ORDER = ['skin', 'contrast', 'frame', 'colours', 'feet', 'square', 'accents', 'pattern', 'hat', 'whole', 'collar', 'lines', 'accessories'];
+  const PARTS = {};
+  /** @param {string} name @param {(ctx: ValetCtx) => void} fn */
+  function part(name, fn) {
+    if (ORDER.indexOf(name) < 0) throw new Error('Valet: unknown check part ' + name);
+    PARTS[name] = fn;
+  }
+
+  /** @param {{ [slot: string]: any }} o the outfit (engineOutfit) @param {ValetAnalysis} p @returns {ValetCheck[]} */
   function checkOutfit(o, p) {
     const L = {}, worn = SLOTS.filter(function (k) { return o[k]; });
     worn.forEach(function (k) { L[k] = look(o[k]); });
@@ -481,7 +495,7 @@
     // the face layers, the pocket square and a buttonhole flower; a lapel pin is metal, judged with the metals
     const near = G.NEAR.filter(function (k) { return L[k] && !(k === 'boutonniere' && o[k].kind === 'pin'); });
     const out = [];
-    const add = function (c) { c.group = c.group || 'colour'; c.level = c.level || 'B'; out.push(c); return c; };
+    const add = /** @param {ValetCheck} c */ function (c) { c.group = c.group || 'colour'; c.level = c.level || 'B'; out.push(c); return c; };
     // Every position has a type, worn or not, so a rule can ask what is (or would be) there.
     // Pieces may be missing: the palette's study checks two or three colours on their own.
     const K = {}; SLOTS.forEach(function (k) { K[k] = G.kind(k, o[k]); });
@@ -489,740 +503,20 @@
     const lum = function (hex) { return VC.hexToLab(hex)[0]; };
     const lo = p.band[0], hi = p.band[1];      // the face's contrast band (section 4), the same as for a colour against the skin
 
-    /* --- colour --- */
-    // Each piece is judged by the colour it shows best at the face: its one colour, or for a pattern
-    // that reads at 3 m, the better of its main colours (seenColours).
-    const best = {}; near.forEach(function (k) { best[k] = bestAtFace(L[k], p); });
-    if (LC && best.shirt) {
-      const bc = bestAtFace(LC, p);
-      if (bc.s.tier > best.shirt.s.tier || (bc.s.tier === best.shirt.s.tier && bc.s.score < best.shirt.s.score)) best.shirt = Object.assign({ collar: true }, bc);
-    }
-    const weak = !near.length ? [] : near.filter(function (k) { return best[k].s.tier > 2; });
-    // A small accent (square, flower) is a note. So is a colour kept from the face by temperature alone:
-    // the warm-cool lean is the least certain thing Valet reads from a face, and the sources that use
-    // it give no measurement for it (section 3), so on its own it never fails an outfit.
-    const tempSoft = function (k) { return best[k].s.tempOnly; };
-    // With a skin colour typed in or picked by name, every clash with it is a note: it rests on a guess
-    // (in the GG test, a guessed skin produced seven false failures that the measured skin did not).
-    const softFace = function (k) { return k === 'square' || k === 'boutonniere' || tempSoft(k) || p.skinMeasured === false; };
-    const allSoft = weak.length && weak.every(softFace);
-    // When the whole check is a note because of temperature, the sentence says so; when it fails anyway,
-    // each piece that would only be a note is marked as such, so the reason is not misread.
-    const tempOnlyNote = allSoft && p.skinMeasured === false && weak.some(function (k) { return k !== 'square' && k !== 'boutonniere'; })
-      ? ' Your skin colour was entered by hand (or read without white paper), so a clash with it is a note: measure it from a daylight photo with white paper and it counts.'
-      : allSoft && weak.some(tempSoft) ? ' A clash of temperature alone is a note, not a failure (section 3).' : '';
-    const showColour = function (k) { const x = L[k]; if (best[k].collar) return ', its ' + LC.name.toLowerCase() + ' collar'; return x.visible && seenColours(x).length > 1 && best[k].hex !== x.hex ? ' at its best colour, ' + best[k].hex.toUpperCase() : ''; };
-    if (near.length) add(weak.length
-      ? { id: 'face', level: 'A/B', score: allSoft ? 0.6 : 0.3, n: weak.length, slots: weak, text: 'Clashes with your skin: ' + weak.map(function (k) { const r = skinReasons(best[k].hex, p); return nm(k) + ' (tier ' + best[k].s.tier + showColour(k) + (r.length ? ', ' + r[0] : '') + (!allSoft && tempSoft(k) ? '; temperature only, a note on its own' : '') + ')'; }).join(' and ') + '. Swap it, or move that colour below the belt.' + tempOnlyNote }
-      : { id: 'face', level: 'A/B', score: 1, slots: face, text: 'Against your skin: everything near the face is tier 1 or 2 for you.' });
-
-    // A light-dark step at the face (Outfit Check, question 2), in proportion to the face: the layer
-    // next to the neck against the one that meets it at the neck. In the order they sit there: a
-    // scarf, which lies against the collar whatever is worn over the shirt; else a knit or waistcoat,
-    // which is put on before the jacket; else the jacket; else a coat worn straight over the shirt;
-    // else a tie. A hat, or a coat over a jacket, is further out, so it neither rescues a flat shirt
-    // and jacket nor is blamed for a strong step.
-    // with a contrast collar, the collar is what meets the next layer at the neck
-    const neckMean = LC ? LC.mean : L.shirt ? L.shirt.mean : null;
-    const nmNeck = function () { return LC ? nm('shirt') + ' (' + LC.name.toLowerCase() + ' collar)' : nm('shirt'); };
-    const over = stepOver(function (k) { return !!L[k]; }, function (k) { return lum(k === 'shirt' && LC ? LC.mean : L[k].mean); });
-    if (L.shirt && over) {
-      const best = Math.abs(lum(neckMean) - lum(L[over].mean)), pair = ['shirt', over];
-      if (best < lo * PARAMS.stepNear) add({ id: 'step', score: 0.35, slots: [over, 'shirt'], level: 'A/B',
-        text: 'Light-dark step: ' + nmNeck() + ' and ' + nm(over) + ' are close in lightness (' + round(best) + '; your face carries at least ' + round(lo) + '). The frame goes flat: make one clearly lighter or darker.' });
-      else if (best < lo) add({ id: 'step', score: 0.65, slots: [over, 'shirt'], level: 'A/B',
-        text: 'Light-dark step: ' + nmNeck() + ' against ' + nm(over) + ' (' + round(best) + ') is a little short of what your face carries (' + round(lo) + '). It still frames the face; a slightly lighter shirt or darker layer frames it more clearly.' });
-      else if (p.contrastLevel === 'low' && best > hi) add({ id: 'step', score: 0.6, slots: pair, level: 'A/B',
-        text: 'Light-dark step: ' + nmNeck() + ' against ' + nm(over) + ' (' + round(best) + ') is far stronger than your own low contrast.' });
-      else add({ id: 'step', score: 1, slots: pair, level: 'A/B', text: 'Light-dark step: ' + nmNeck() + ' against ' + nm(over) + ' (' + round(best) + ') gives the face a frame.' });
-    } else if (L.shirt && K.shirt.frame) {
-      add({ id: 'step', score: 0.75, slots: ['shirt'],
-        text: 'One layer at the face: ' + (K.shirt.frame === 'neck' ? 'the roll neck' : 'the collar of the ' + K.shirt.name.toLowerCase()) + ' is the only frame. Fine on a warm day; a jacket, a knit or a tie adds a second (rule 8).' });
-    }
-
-    // The outfit's contrast against the face's (Flusser, Dressing the Man, pp. 20-22, 26-29): the colours of
-    // an outfit should show about as much light-dark contrast as the face shows between skin and hair. Only
-    // the ends of the scale are judged, as Flusser does: a muted face is overwhelmed by a stark outfit, and a
-    // high-contrast face is dampened by a tonal one; a medium face carries the widest range. Measured over
-    // the main pieces and the colours a pattern shows (seenColours), as the lightness range from darkest to
-    // lightest. Where the light-dark step at the collar has already said the same, it is not said twice.
-    {
-      // at the face, as in Flusser's examples (the tie's stripes, the shirt against the suit): the trousers are
-      // far from it, and a dark pair under a pale top does not give the face the contrast it carries
-      let pieces = ['shirt', 'tie', 'scarf', 'mid', 'jacket', 'coat'].filter(function (k) { return L[k]; });
-      // with a single top the outfit is that top and the trousers, seen together, so they count
-      if (pieces.length < 2 && L.trousers) pieces = pieces.concat(['trousers']);
-      const Ls = []; pieces.forEach(function (k) { seenColours(L[k]).forEach(function (h) { Ls.push(lum(h)); }); });
-      if (LC && pieces.indexOf('shirt') >= 0) Ls.push(lum(LC.mean));   // a contrast collar is a colour at the face too
-      const stepSaid = out.some(function (c) { return c.id === 'step' && c.score < 0.85 && /^Light-dark step/.test(c.text); });   // not the one-layer note
-      if (Ls.length >= 2 && !stepSaid) {
-        const range = Math.max.apply(null, Ls) - Math.min.apply(null, Ls);
-        if (p.contrastLevel === 'low' && range > hi) add({ id: 'ocontrast', level: 'B', score: 0.65, slots: [],
-          text: 'Outfit contrast: from darkest to lightest the outfit spans ' + round(range) + ' in lightness, more than your low-contrast colouring carries (' + round(hi) + '). Stark light-dark contrast takes the eye from a muted face; softer steps suit it (Flusser).' });
-        // "the same degree of contrast" (Flusser, Dressing the Man, p. 20): a high-contrast face asks for a high-contrast outfit at the face,
-        // the same band that makes the face high contrast (PARAMS.contrastHigh), not half of it
-        else if (p.contrastLevel === 'high' && range < PARAMS.contrastHigh) add({ id: 'ocontrast', level: 'B', score: 0.65, slots: [],
-          text: 'Outfit contrast: at the face the outfit spans only ' + round(range) + ' in lightness, less than your high-contrast colouring shows (' + round(PARAMS.contrastHigh) + ' or more). A tonal outfit dampens a face like yours; a clearly lighter or darker piece near the face livens it (Flusser).' });
-        else if (p.contrastLevel !== 'medium') add({ id: 'ocontrast', level: 'B', score: 1, slots: [],
-          text: 'Outfit contrast: a range of ' + round(range) + ' in lightness, in keeping with your ' + p.contrastLevel + '-contrast colouring.' });
-      }
-    }
-
-    // What frames the face: a collar, a roll neck, a shawl collar, lapels or a scarf. A T-shirt
-    // or a crew-neck knit leaves the neck bare, so the face has no edge (Outfit Check, question 2).
-    const framers = face.filter(function (k) { return K[k].frame; });
-    const necked = face.filter(function (k) { return k !== 'hat'; });
-    if (framers.length) add({ id: 'frame', score: 1, slots: [],
-      text: 'Frame: ' + framers.map(function (k) { return nm(k) + ' (' + { collar: 'collar', neck: 'roll neck', lapel: 'lapels', shawl: 'shawl collar', scarf: 'scarf' }[K[k].frame] + ')'; }).join(', ') + (framers.length > 1 ? ' frame' : ' frames') + ' the face.' });
-    if (necked.length && !framers.length) add({ id: 'frame', score: 0.6, slots: [K.mid && L.mid ? 'mid' : 'shirt'],
-      text: 'Nothing frames the face: ' + face.filter(function (k) { return k !== 'hat'; }).map(nm).join(' and ') + (face.filter(function (k) { return k !== 'hat'; }).length > 1 ? ' leave' : ' leaves') + ' the neck bare. A collar, a roll neck or a jacket gives the face an edge. Fine for casual summer wear.' });
-    // A V-neck is cut to show a collar (and a tie); over a collarless top the V shows bare skin or a T-shirt.
-    // a waistcoat is cut for a dress shirt (and a tie); a V-neck knit for any collar, a polo's included
-    if (L.mid && K.mid.needsCollarUnder && !(K.mid.vest ? K.shirt.tieable : K.shirt.collar)) add({ id: 'layer', score: 0.65, slots: ['mid'],
-      text: (K.mid.vest ? 'A waistcoat is cut to show a dress shirt\'s collar (and a tie). Over a ' + K.shirt.name.toLowerCase() + ' it does not sit right; wear a shirt under it.' : 'A V-neck knit is cut to show a shirt collar. Over a ' + K.shirt.name.toLowerCase() + ' the V frames nothing; choose a crew neck, or a collared shirt under it.') });
-    if (L.tie && !G.neckwearAllowed(K.tie, K.shirt)) add({ id: 'neck', score: 0.2, slots: ['tie'],
-      text: 'A ' + K.tie.name.toLowerCase() + ' needs a shirt\'s collar and full button front to sit under' + (K.shirt.collar ? '; a ' + K.shirt.name.toLowerCase() + '\'s soft collar and short placket are not cut for one' : '') + '. Take it off, or wear a shirt.' });
-
-    // One temperature above the waist.
-    const temps = near.map(function (k) { return [k, scoreCached(L[k].mean, p).temperature]; }).filter(function (t) { return Math.abs(t[1]) > 0.3; });
-    const warm = temps.filter(function (t) { return t[1] > 0; }), cool = temps.filter(function (t) { return t[1] < 0; });
-    if (warm.length && cool.length) {
-      const odd = warm.length <= cool.length ? warm : cool;
-      add({ id: 'temp', score: 0.5, n: odd.length, slots: odd.map(function (t) { return t[0]; }),
-        text: 'Temperature: ' + odd.map(function (t) { return nm(t[0]); }).join(' and ') + ' is ' + (odd === warm ? 'warm' : 'cool') + ' among ' + (odd === warm ? 'cool' : 'warm') + ' pieces above the waist. One temperature at a time (rule 2).' });
-    }
-
-    // How many colours, and whether they get on (section 9). Wardrobe neutrals are free.
-    const chrom = [];
-    worn.forEach(function (k) {
-      L[k].colours.forEach(function (hex, i) {
-        if (i === 1 && !L[k].visible && !L[k].twoTone) return;   // a texture's accent does not count; a spectator's second leather does
-        const c = okc(hex);
-        if (!wardrobeNeutral(hex) && c[1] >= 0.06) chrom.push({ k: k, hex: hex, h: c[2], C: c[1], Lk: c[0], small: k === 'tie' || k === 'shoes' || k === 'socks' || k === 'square' || k === 'boutonniere' || k === 'gloves' || i === 1 });
-      });
+    // The checks themselves are in js/checks/, one classic script per question of the card (or per
+    // group of rules); each registered itself with part(). They run here in ORDER, each adding its
+    // findings to out, so the order of the findings is the order of ORDER.
+    const ctx = { o: o, p: p, L: L, K: K, LC: LC, collarHex: collarHex, face: face, near: near, out: out, add: add, nm: nm, lum: lum, lo: lo, hi: hi, worn: worn };
+    ORDER.forEach(function (n) {
+      if (!PARTS[n]) throw new Error('Valet: js/checks/' + n + '.js is not loaded');
+      PARTS[n](ctx);
     });
-    const fam = [];
-    chrom.forEach(function (c) {
-      const f = fam.find(function (g) { return hueDist(g.h, c.h) <= PARAMS.familyHue; });
-      if (f) f.items.push(c); else fam.push({ h: c.h, items: [c] });
-    });
-    if (fam.length === 2) {
-      const a = fam[0], b = fam[1], d = hueDist(a.h, b.h);
-      const calm = function (g) { return g.items.every(function (c) { return c.Lk < 0.45 || c.C < 0.09; }); };
-      const accent = a.items.every(function (c) { return c.small; }) || b.items.every(function (c) { return c.small; });
-      const names = a.items[0].k + ' and ' + b.items[0].k;
-      if (Math.abs(d - 180) <= 30) add({ id: 'harmony', score: calm(a) || calm(b) ? 1 : 0.7, slots: [b.items[0].k], level: 'B',
-        text: 'Colours: the ' + names + ' are complementary (about ' + Math.round(d) + '° apart). ' + (calm(a) || calm(b) ? 'One is dark or muted, which keeps it calm.' : 'Lively; it calms down if one of them is dark or muted.') });
-      else if (accent) add({ id: 'harmony', score: 0.9, slots: [], text: 'Colours: two colour families, but one is a small accent (' + names + '). Accents may stand apart.' });
-      else add({ id: 'harmony', score: 0.45, slots: [b.items[0].k], text: 'Colours: the ' + names + ' are ' + Math.round(d) + '° apart in hue, neither neighbours nor opposites. Two such colours compete. Make one a neutral, or move them closer.' });
-    } else if (fam.length > 2) {
-      const big = fam.filter(function (g) { return !g.items.every(function (c) { return c.small; }); });
-      add({ id: 'harmony', score: big.length > 2 ? 0.35 : 0.6, slots: chrom.filter(function (c) { return !c.small; }).map(function (c) { return c.k; }).slice(1),
-        text: 'Colours: ' + fam.length + ' colour families in one outfit. The template that never fails is two neutrals and one colour (rule 4).' });
-    } else {
-      add({ id: 'harmony', score: 1, slots: [], text: fam.length ? 'Colours: one colour family against neutrals, the classic template.' : 'Colours: all neutrals. Calm; a colour near the face would add interest.' });
-    }
-
-    // Near misses: two pieces almost but not quite the same colour (A: they read as a failed match).
-    // Pieces that meet or sit near each other; the tie and the floor are only compared with neighbours.
-    const pairs = [['jacket', 'trousers'], ['mid', 'jacket'], ['shirt', 'mid'], ['tie', 'mid'], ['shirt', 'jacket'], ['shirt', 'tie'], ['tie', 'jacket'],
-      ['mid', 'trousers'], ['trousers', 'shoes'], ['shirt', 'trousers'],
-      ['scarf', 'jacket'], ['scarf', 'mid'], ['scarf', 'shirt'], ['tie', 'scarf'],
-      ['coat', 'jacket'], ['coat', 'mid'], ['coat', 'trousers'], ['scarf', 'coat'], ['boutonniere', 'tie']];
-    let suitText = null;
-    // Leather shoes are not compared with the trousers: leather and cloth never look like one material
-    // meant to match, so black calf boots with black jeans read as black with black, not as a near miss.
-    const leatherShoes = L.shoes && !!(G.cloth('shoes', o.shoes) || {}).leather;
-    pairs.forEach(function (pr) {
-      if (!L[pr[0]] || !L[pr[1]]) return;
-      if (pr[1] === 'shoes' && leatherShoes) return;
-      // A buttonhole flower close to the tie's colour is the echo Flusser recommends ("a similar shade"); only
-      // an exact match looks studied (Dressing the Man, p. 217). So no near match here, and a note for an exact one.
-      if (pr[0] === 'boutonniere' && pr[1] === 'tie') {
-        const dA = VC.deltaE2000(VC.hexToLab(L.boutonniere.mean), VC.hexToLab(L.tie.mean));
-        if (dA < PARAMS.nearFrom) add({ id: 'accentmatch', score: 0.8, slots: ['boutonniere'],
-          text: nm('boutonniere') + ' and ' + nm('tie') + ' are exactly one colour: it looks studied. A similar shade, or a colour from the tie\'s pattern, echoes it better (Flusser).' });
-        return;
-      }
-      const dE = VC.deltaE2000(VC.hexToLab(L[pr[0]].mean), VC.hexToLab(L[pr[1]].mean));
-      if (dE < PARAMS.nearFrom && pr[0] === 'jacket' && pr[1] === 'trousers') {
-        // a suit is one cloth as well as one colour; the same colour in two cloths looks like a
-        // suit jacket that lost its trousers
-        const cj = G.cloth('jacket', o.jacket), ct = G.cloth('trousers', o.trousers);
-        const pj = L.jacket.pat, pt = L.trousers.pat, samePat = samePattern(pj, pt);
-        if (K.jacket.suit && (!cj || !ct || cj.id === ct.id) && samePat) suitText = 'Jacket and trousers match in colour, cloth and pattern: this reads as a suit.';
-        else if (K.jacket.suit && (!cj || !ct || cj.id === ct.id)) add({ id: 'orphan', group: 'formality', score: 0.5, slots: ['trousers'],
-          text: 'Jacket and trousers are one colour and cloth but not one pattern (' + (pj.type === 'solid' ? 'plain' : L.jacket.typeName.toLowerCase()) + ' against ' + (pt.type === 'solid' ? 'plain' : L.trousers.typeName.toLowerCase()) + '): it reads as a suit jacket with the wrong trousers. Match the pattern, or make the trousers clearly different.' });
-        else if (K.jacket.suit) add({ id: 'orphan', group: 'formality', score: 0.5, slots: ['trousers'],
-          text: 'Jacket in ' + cj.name.toLowerCase() + ' and trousers in ' + ct.name.toLowerCase() + ', both ' + L.jacket.name.toLowerCase() + ': the same colour in two cloths looks like a suit jacket worn with the wrong trousers. Match the cloth too, or make the trousers clearly different.' });
-      }
-      else if (dE >= PARAMS.nearFrom && dE < PARAMS.nearTo) add({ id: 'near', score: 0.45, slots: [pr[1] === 'shoes' ? pr[0] : pr[1]], level: 'A/B',
-        text: 'Near match: ' + nm(pr[0]) + ' and ' + nm(pr[1]) + ' are almost the same colour (ΔE ' + round(dE, 1) + '). Close but not equal reads as a mistake: match them or separate them.' });
-    });
-    if (suitText) add({ id: 'suit', score: 1, slots: [], text: suitText });
-
-    // Top and bottom: clearly different in lightness, unless matched.
-    const top = L.jacket ? 'jacket' : L.mid ? 'mid' : L.shirt ? 'shirt' : null;    // the outermost layer meets the trousers
-    if (top && L.trousers) {
-      const dTop = Math.abs(lum(L[top].mean) - lum(L.trousers.mean));
-      const dETop = VC.deltaE2000(VC.hexToLab(L[top].mean), VC.hexToLab(L.trousers.mean));
-      // Close in lightness, not matched. Whether that is good depends on the build (Flusser, pp. 52-54, 271):
-      // it lengthens a short or heavy figure and is the dressier choice, and a tall one gains from a break.
-      // With height known and Proportion & fit on, proportionChecks judges it; otherwise this is a note
-      // about the wearer (context), never counted.
-      const heightKnown = o.propOn && +((o.m || {}).height) > 0;
-      if (dETop >= PARAMS.nearTo && dTop < PARAMS.halvesL && !heightKnown && !o.study) add({ id: 'halves', score: 0.8, slots: [],
-        text: nm(top) + ' and ' + nm('trousers') + ' are close in lightness (step ' + round(dTop) + '). Whether that helps depends on your build: it lengthens a short or heavy figure and reads dressier, while a tall one gains from a contrasting trouser (Flusser). Turn on Proportion & fit and enter your height for a verdict.' });
-
-      // One colour from collar to shoe. A matching top and trousers in a wardrobe neutral is tonal
-      // dressing (the guide's charcoal-on-charcoal and all-black evening outfits); in a colour it reads
-      // as a uniform, and a colour is meant to be one piece among neutrals (rule 4). A coloured suit
-      // is the exception: jacket and trousers cut as one.
-      if (!(top === 'jacket' && K.jacket.suit && dETop < PARAMS.nearFrom)) {
-        const cT = okc(L[top].mean), cB = okc(L.trousers.mean);
-        if (!wardrobeNeutral(L[top].mean) && !wardrobeNeutral(L.trousers.mean) && cT[1] >= 0.03 && cB[1] >= 0.03 && hueDist(cT[2], cB[2]) <= 30) {
-          const same = dETop < 10;
-          add({ id: 'dose', score: same ? 0.4 : 0.6, slots: ['trousers'],
-            text: nm(top) + ' and ' + nm('trousers') + ': ' + (same ? 'one colour from collar to shoe reads as a uniform' : 'one colour family over the top and the legs is most of the body') +
-              '. A colour works best as one piece in an outfit of neutrals (rule 4): grey, charcoal or navy trousers' + (L.jacket ? '' : ', or a neutral jacket over it') + '.' });
-        }
-      }
-    }
-
-    // Below the belt.
-    if (L.trousers && scoreCached(L.trousers.mean, p).tier === 4) add({ id: 'bold', score: 0.7, slots: ['trousers'],
-      text: nm('trousers') + ': a tier 4 colour is loud anywhere. Allowed below the belt as the one bold move.' });
-    if (L.shoes && L.trousers) {
-      if (lum(L.shoes.mean) > lum(L.trousers.mean) + 8) add({ id: 'shoes', score: 0.6, slots: ['shoes'],
-        text: 'Shoes lighter than the trousers pull the eye to the floor. Same depth or darker.' });
-      const st = scoreCached(L.shoes.mean, p).temperature, topCool = face.every(function (k) { return scoreCached(L[k].mean, p).temperature <= 0.3; });
-      if (st > 0.4 && lum(L.shoes.mean) > 45 && topCool) add({ id: 'shoes', score: 0.55, slots: ['shoes'],
-        text: 'Light warm shoes clash with a cool outfit even at floor level. Keep brown shoes dark.' });
-    }
-
-    // Socks (Flusser, Dressing the Man, p. 173; Gentleman's Gazette; section 10 of How it works): the trousers are the anchor, never the
-    // shoes. In business and evening dress the sock stays in the trousers' colour family, ideally a
-    // distinct tone of it, lighter or darker (light blue with navy); an exact match is safe, and a deep,
-    // muted colour is the one step outside the family (burgundy with grey). Below that, a muted
-    // contrasting or complementary colour is fine. Never electric or neon, never white sports socks.
-    if (L.socks && L.trousers) {
-      const lS = lum(L.socks.mean), lT = lum(L.trousers.mean), dE = VC.deltaE2000(VC.hexToLab(L.socks.mean), VC.hexToLab(L.trousers.mean));
-      const sc = okc(L.socks.mean), tc = okc(L.trousers.mean), formalOcc = o.occasion === 'business' || o.occasion === 'evening';
-      const sockNeutral = sc[1] < 0.025, trNeutral = tc[1] < 0.025;
-      const family = dE < PARAMS.nearTo || (sockNeutral && trNeutral) || (!sockNeutral && !trNeutral && hueDist(sc[2], tc[2]) <= PARAMS.sockFamilyHue);
-      const deep = lS < PARAMS.sockDeepL && sc[1] <= PARAMS.sockDeepC;   // deep: dark and muted (burgundy, wine, forest), not royal blue
-      const toShoes = L.shoes && VC.deltaE2000(VC.hexToLab(L.socks.mean), VC.hexToLab(L.shoes.mean)) < PARAMS.nearTo && dE >= 15;
-      const fx = function (label) { return [{ label: label, slot: 'socks', set: { hex: L.trousers.mean } }]; };
-      if (lS > 82 && sc[1] < 0.025) add({ id: 'socks', score: 0.3, slots: ['socks'],
-        text: 'White socks with shoes: the eye goes straight to the ankle. Take the trousers\' colour family instead (no white sports socks with leather shoes).' });
-      else if (sc[1] >= PARAMS.sockLoudC) add({ id: 'socks', score: formalOcc ? 0.4 : 0.6, slots: ['socks'],
-        text: nm('socks') + ': an electric colour at the ankle is loud' + (formalOcc ? ', and the more formal the occasion the stricter the rule.' : '. A muted version of it works.') });
-      else if (toShoes) add({ id: 'socks', score: 0.45, slots: ['socks'],
-        text: nm('socks') + ' match the shoes, not the trousers: the colour changes at the trouser hem and the transition looks muddy. Take the trousers\' colour family.' });
-      else if (family) add({ id: 'socks', score: 1, slots: ['socks'],
-        text: nm('socks') + ': ' + (dE < PARAMS.nearTo ? 'the trousers\' own colour, the safe choice; a distinct tone of it (lighter or darker) is the more considered one.' : 'a distinct tone of the trousers\' colour: it belongs with them without simply copying them.') });
-      else if (deep) add({ id: 'socks', score: formalOcc ? 0.95 : 1, slots: ['socks'],
-        text: nm('socks') + ': a deep, muted colour at the ankle' + (formalOcc ? ', the one step outside the trousers\' family that business dress allows (burgundy with grey).' : ', which harmonises with the trousers.') });
-      else if (formalOcc) add({ id: 'socks', score: 0.7, slots: ['socks'], fixes: fx('Socks in the trousers\' colour'),
-        text: nm('socks') + ': outside the trousers\' colour family. For ' + (o.occasion === 'evening' ? 'evening' : 'business') + ' dress keep the socks in that family, or a deep muted colour; contrast is for less formal days.' });
-      else add({ id: 'socks', score: 1, slots: ['socks'],
-        text: nm('socks') + ': a contrasting colour at the ankle, which a smart-casual or casual outfit carries well.' });
-    }
-
-    // Pocket square: needs a breast pocket; white linen is never wrong; matching the tie exactly
-    // looks bought as a set. A square picks up a colour from the tie or shirt rather than copying it.
-    if (L.square) {
-      if (!((L.jacket && K.jacket.pocket) || (L.coat && K.coat.pocket))) add({ id: 'square', score: 0.2, slots: ['square'],
-        text: 'A pocket square needs a breast pocket: a tailored jacket, a blazer, or an overcoat with one. Take it off, or wear one of them.' });
-      else {
-        const sq = VC.hexToLab(L.square.mean), white = sq[0] > 88 && okc(L.square.mean)[1] < 0.03;
-        // an exact match: the same colour, the same pattern and the same cloth, as if cut from one piece (Gentleman's
-        // Gazette's crossed example is a tie and square of one tweed). The same colour in another cloth is tone on
-        // tone, which the softer notes below judge.
-        const oneCloth = L.tie && (G.cloth('tie', o.tie) || {}).id === (G.cloth('square', o.square) || {}).id;
-        if (L.tie && K.tie.knotted && oneCloth && VC.deltaE2000(sq, VC.hexToLab(L.tie.mean)) < PARAMS.squareSetDE && L.square.pat.type === L.tie.pat.type)
-          add({ id: 'sqmatch', score: 0.3, slots: ['square'], fixes: [{ label: 'A white linen square', slot: 'square', set: { hex: '#f7f6f2', cloth: 'linen', pat: { type: 'solid' } } }],
-            text: 'Square and ' + K.tie.name.toLowerCase() + ' match: Flusser calls a matching tie and handkerchief the sign of an unsure dresser, and a way to lead the eye across the body and away from the face (Dressing the Man, pp. 216\u2013217). Let the square echo a colour of the tie, shirt or jacket, or wear white linen.' });
-        else if (white) add({ id: 'square', score: 1, slots: ['square'], text: 'White linen square: never wrong.' });
-
-        // With a tie (Flusser, Dressing the Man, pp. 216-217): the tie decides the square. A plain square goes
-        // with a patterned tie, and not in the tie's ground colour; a plain square echoes a colour of the tie,
-        // shirt or jacket rather than matching it; and the two differ in surface, a matte square with a silk
-        // tie's lustre and a silk square with a dull wool or linen tie. White linen is the fallback that always
-        // works, so it is exempt from all of this.
-        if (!white && L.tie && K.tie.knotted && !out.some(function (c) { return (c.id === 'square' || c.id === 'sqmatch') && c.score < 0.85; })) {
-          const sqPlain = !L.square.visible, tiePlain = !L.tie.visible;
-          if (sqPlain && tiePlain) add({ id: 'hank', score: 0.7, slots: ['square', 'tie'],
-            text: 'A plain square with a plain ' + K.tie.name.toLowerCase() + ': Flusser keeps the plain square for a patterned tie. A patterned square, or white linen, sits better here.' });
-          else if (sqPlain && VC.deltaE2000(sq, VC.hexToLab(L.tie.hex)) < PARAMS.squareSetDE) add({ id: 'hank', score: 0.7, slots: ['square'],
-            text: 'The square is the ground colour of the ' + K.tie.name.toLowerCase() + ': it brackets the chest and leads the eye away from the face. Pick up one of the tie\'s other colours, or the shirt\'s (Flusser).' });
-          else if (sqPlain) {
-            const others = [].concat(L.tie.colours, L.shirt ? L.shirt.colours : [], L.jacket ? L.jacket.colours : []);
-            const echoes = others.some(function (h) { return VC.deltaE2000(sq, VC.hexToLab(h)) < PARAMS.patternShareDE; });
-            add({ id: 'hank', score: echoes ? 1 : 0.9, slots: echoes ? [] : ['square'], hint: !echoes,   // hint: shown as advice (i), not a tick
-              text: echoes ? 'The square echoes a colour of the tie, shirt or jacket without matching the tie, as Flusser advises.' : 'Hint: the square repeats no colour of the tie, shirt or jacket; Flusser would have it echo one of them.' });
-          }
-          const sheenOf = function (k) { const c = G.cloth(k, o[k]); return c ? c.sheen || 0 : 0; };
-          const tieSilk = sheenOf('tie') >= 1, sqSilk = sheenOf('square') >= 1;
-          if (tieSilk === sqSilk) add({ id: 'hank', score: 0.8, slots: ['square'],
-            text: tieSilk ? 'A silk square with a silk ' + K.tie.name.toLowerCase() + ': Flusser pairs a tie\'s lustre with a matte square, in linen or cotton, so the two do not look like a set.'
-              : 'A matte square with a matte ' + K.tie.name.toLowerCase() + ': Flusser gives a dull wool or linen tie the lift of a silk square.' });
-        }
-      }
-    }
-
-    // Your own colours echoed (Flusser, Dressing the Man, pp. 23-24, 29-31): the second of his two ways to
-    // bring the face forward is to repeat one of its own colours, of the hair (or brows) and of the eyes,
-    // in a piece near it: a suit in the shade of the hair, a blue shirt or tie for blue eyes. Only colours
-    // with some hue are echoed (a grey or black hair is a matter of contrast, section 4). A tick when it is
-    // done, a hint when it is not: it never lowers a verdict.
-    if (near.length && p.lab && (p.lab.hair || p.lab.eyes)) {
-      const feats = [];
-      if (p.lab.hair) feats.push({ what: 'your ' + (p.hairStyle === 'none' ? 'brows' : 'hair'), hex: VC.labToHex(p.lab.hair) });
-      if (p.lab.eyes) feats.push({ what: 'your eyes', hex: VC.labToHex(p.lab.eyes) });
-      const chromatic = feats.filter(function (f) { return okc(f.hex)[1] >= PARAMS.echoC; });
-      if (chromatic.length) {
-        let hit = null;
-        near.concat(L.jacket && near.indexOf('jacket') < 0 ? ['jacket'] : []).some(function (k) {
-          return seenColours(L[k]).some(function (h) {
-            const c = okc(h);
-            const f = c[1] >= PARAMS.echoC && chromatic.find(function (f) { const fc = okc(f.hex); return hueDist(c[2], fc[2]) <= PARAMS.familyHue && Math.abs(lum(h) - lum(f.hex)) <= PARAMS.echoL; });
-            if (f) hit = { k: k, f: f };
-            return !!f;
-          });
-        });
-        add({ id: 'echo', score: hit ? 1 : 0.9, slots: [], hint: !hit,   // hint: shown as advice (i), not a tick
-          text: hit ? 'Echo: the ' + nm(hit.k) + ' picks up the colour of ' + hit.f.what + ', which draws the eye to the face (Flusser).'
-            : 'Hint: nothing near the face repeats the colour of ' + chromatic.map(function (f) { return f.what; }).join(' or ') + '. Echoing one of them is Flusser\'s second way to bring the face forward.' });
-      }
-    }
-
-    // The under-eye area: removed in 1.8. That dark clothing near the face deepens under-eye shadows is
-    // colour-analysis lore with no study behind it and no established menswear writer stating it, so by
-    // Valet's own definition it is C, and C claims do not judge (How it works, section 16).
-
-    // One statement per outfit (Style Guide rule 4 and the bold-day rule). Tier 2 is "the one chosen
-    // colour": a second, different tier 2 colour at the face competes with it, and so does a
-    // tier 4 below the belt. Neutrals are not statements, and two pieces of one colour count once.
-    const stated = [];
-    face.forEach(function (k) {
-      const sc = scoreCached(L[k].mean, p);
-      if (sc.tier !== 2 || wardrobeNeutral(L[k].mean)) return;      // a menswear neutral (camel, navy, brown) is not a statement
-      const f = stated.find(function (g) { return g.h != null && hueDist(g.h, sc.oklch[2]) <= PARAMS.familyHue; });
-      if (f) f.slots.push(k); else stated.push({ h: sc.oklch[2], slots: [k], what: nm(k) + ' (tier 2)' });
-    });
-    if (L.trousers && scoreCached(L.trousers.mean, p).tier === 4) stated.push({ h: null, slots: ['trousers'], what: nm('trousers') + ' (tier 4)' });
-    if (stated.length > 1) add({ id: 'budget', score: stated.length === 2 ? 0.6 : 0.4, slots: stated.slice(1).map(function (g) { return g.slots[0]; }),
-      text: 'Statements: ' + stated.map(function (g) { return g.what; }).join(' and ') + '. A deliberate colour works as the one chosen colour of an outfit; keep everything else tier 1 or neutral (rule 4).' });
-
-    // Tie against shirt.
-    if (L.tie && L.shirt && K.tie.knotted) {
-      // a tie whose pattern reads at 3 m stands clear of the shirt by its colours, not by their average
-      const tieCols = seenColours(L.tie), shirtL = lum(L.shirt.mean), shirtLab = VC.hexToLab(L.shirt.mean);
-      const dT = Math.max.apply(null, tieCols.map(function (h) { return Math.abs(lum(h) - shirtL); }));
-      const dE = Math.max.apply(null, tieCols.map(function (h) { return VC.deltaE2000(VC.hexToLab(h), shirtLab); }));
-      const tn = K.tie.name, tl = tn.toLowerCase();
-      if (dT < PARAMS.tieL && dE < PARAMS.mergeTo) add({ id: 'tie', score: 0.45, slots: ['tie'], text: tn + ' and shirt are too alike to separate. The ' + tl + ' is usually darker than the shirt.' });
-      else if (lum(L.tie.mean) > lum(L.shirt.mean) + 12) add({ id: 'tie', score: 0.75, slots: ['tie'], text: tn + ' lighter than the shirt: possible, but a darker ' + tl + ' on a lighter shirt is the reliable order.' });
-    }
-
-    /* --- pattern --- */
-    const pats = near.filter(function (k) { return L[k].visible; });   // the face layers and the pocket square, a hand from the face
-    const allPats = worn.filter(function (k) { return L[k].visible; });
-    const tex = worn.filter(function (k) { return L[k].texture; });
-    // Why a patterned cloth does not count: tonal, or too fine or faint to read from 3 m.
-    const texWhy = function (k) {
-      const r = L[k].reads[3];
-      return nm(k) + (r.state === 'plain' ? ' (plain from 3 m)' : ' (texture from 3 m)');
-    };
-    if (!allPats.length) {
-      add({ id: 'pcount', group: 'pattern', score: 1, slots: [],
-        text: 'No visible pattern' + (tex.length ? '; ' + tex.map(texWhy).join(', ') + (tex.length > 1 ? ' read' : ' reads') + ' as texture, which adds interest without competing.' : '. Texture in the cloth adds interest without pattern (rule 6).') });
-    }
-    if (allPats.length && pats.length <= 2) add({ id: 'pcount', group: 'pattern', score: 1, slots: [],
-      text: (pats.length ? pats.length + ' visible pattern' + (pats.length > 1 ? 's' : '') + ' near the face, within the limit of two.' : 'Pattern only below the face, where it competes least.') +
-        (tex.length ? ' ' + tex.map(texWhy).join(', ') + (tex.length > 1 ? ' do' : ' does') + ' not count.' : '') });
-    if (pats.length > 2) add({ id: 'pcount', group: 'pattern', score: 0.3, slots: pats.slice(1),
-      text: pats.length + ' patterns near the face. At most two (rule 7): make one of them plain.', fix: { kind: 'solid', slot: pats[pats.length - 1] } });
-    if (face.length >= 2 && face.every(function (k) { return L[k].visible; })) add({ id: 'anchor', group: 'pattern', score: 0.45, slots: pats.slice(-1),
-      text: 'Every layer at the face is patterned. One plain layer anchors the others (rule 7).', fix: { kind: 'solid', slot: pats[pats.length - 1] } });
-    const shareColour = function (A, B) { return A.colours.some(function (x) { return B.colours.some(function (y) { return VC.deltaE2000(VC.hexToLab(x), VC.hexToLab(y)) < PARAMS.patternShareDE; }); }); };
-    for (let i = 0; i < pats.length; i++) for (let j = i + 1; j < pats.length; j++) {
-      const A = L[pats[i]], B = L[pats[j]], ratio = Math.max(A.pat.scale, B.pat.scale) / Math.min(A.pat.scale, B.pat.scale);
-      // A/B: the eye's channels are tuned to orientation as well as size (Blakemore and Campbell 1969), and
-      // colour is seen partly apart from lightness (Mullen 1985), so two patterns of a different kind (a stripe
-      // and a check) and in different colours interfere less at one scale: a note. Alike in kind or colour, they fail.
-      const apart = A.family !== B.family && !shareColour(A, B);
-      if (ratio < 1.8 && apart) add({ id: 'pscale', group: 'pattern', level: 'A/B', score: 0.6, slots: [pats[j]],
-        text: nm(pats[i]) + ' (' + A.label + ') and ' + nm(pats[j]) + ' (' + B.label + ') are at nearly the same scale, but different in kind and colour, which keeps them apart. A clearer difference in scale (about two or more) is the safer choice.' });
-      else if (ratio < 1.8) add({ id: 'pscale', group: 'pattern', level: 'A/B', score: 0.4, slots: [pats[j]],
-        text: nm(pats[i]) + ' (' + A.label + ') and ' + nm(pats[j]) + ' (' + B.label + ') are at nearly the same scale. Patterns of similar size interfere and seem to move; vary the scale by about two or more.' });
-      else if (pats.length === 2) add({ id: 'pscale', group: 'pattern', level: 'A/B', score: 1, slots: [],
-        text: nm(pats[i]) + ' and ' + nm(pats[j]) + ' are at different scales (' + A.label + ' against ' + B.label + '), so each keeps its own identity.' });
-    }
-    // a suit is one cloth: its jacket and trousers are one pattern, not two (hips, medium patterns, busy)
-    const suitPat = suitWorn(o, L, K, (function () { const c = {}; ['jacket', 'trousers'].forEach(function (k) { c[k] = G.cloth(k, o[k]); }); return c; })());
-    const onePats = suitPat ? allPats.filter(function (k) { return k !== 'trousers'; }) : allPats;
-    // the top layer and the trousers meet at the hips; the same scale interferes there too (unless a suit)
-    const topP = L.jacket ? 'jacket' : L.mid ? 'mid' : null;
-    if (topP && L[topP].visible && L.trousers && L.trousers.visible && !(topP === 'jacket' && suitPat)) {
-      const A = L[topP], Bt = L.trousers, ratio = Math.max(A.pat.scale, Bt.pat.scale) / Math.min(A.pat.scale, Bt.pat.scale);
-      if (ratio < 1.8) add({ id: 'phip', group: 'pattern', level: 'A/B', score: 0.5, slots: ['trousers'],
-        text: nm(topP) + ' (' + A.label + ') and ' + nm('trousers') + ' (' + Bt.label + ') meet at the hips at nearly the same scale: patterns of similar size interfere. Vary the scale by about two or more, or make one plain.' });
-    }
-    /* Echo (B): a pattern's colour picked up elsewhere in the outfit, subtly, ties it together
-       (Flusser, Dressing the Man, p. 70; Gentleman's Gazette; Permanent Style). It helps but is not required, and the sources warn against
-       obvious matching (Boyer), so this never lowers a verdict: a tick when it is done, a suggestion when
-       it is not. Whether the colours relate at all is judged with every colour, under colours together. */
-    {
-      const elsewhere = function (k, hex) {
-        return worn.find(function (o) { return o !== k && L[o].colours.some(function (h, i) { return (i === 0 || L[o].visible) && VC.deltaE2000(VC.hexToLab(h), VC.hexToLab(hex)) < PARAMS.patternShareDE; }); });
-      };
-      const echoed = [], loose = [];
-      allPats.forEach(function (k) {
-        L[k].colours.filter(function (h) { return !wardrobeNeutral(h); }).forEach(function (h) {
-          const o = elsewhere(k, h); (o ? echoed : loose).push({ k: k, hex: h, o: o });
-        });
-      });
-      if (loose.length) add({ id: 'pecho', group: 'pattern', score: 0.9, slots: [loose[0].k],
-        text: 'The ' + colourName(loose[0].hex) + ' in the ' + nm(loose[0].k).toLowerCase() + ' appears nowhere else. Picking it up somewhere, subtly (socks, a pocket square, a knit), ties the outfit together; it is a choice, not a rule.' });
-      else if (echoed.length) add({ id: 'pecho', group: 'pattern', score: 1, slots: [],
-        text: 'The ' + colourName(echoed[0].hex) + ' in the ' + nm(echoed[0].k).toLowerCase() + ' is picked up by the ' + nm(echoed[0].o).toLowerCase() + ': a repeated colour ties the outfit together.' });
-    }
-    const medium = onePats.filter(function (k) { return L[k].cls.id === 'medium'; });
-    if (medium.length > 1) add({ id: 'pmed', group: 'pattern', score: 0.5, slots: medium.slice(1),
-      text: 'Two medium-scale patterns (' + medium.map(nm).join(', ') + '). The medium pattern is the one statement of an outfit.' });
-    // Which patterns and what scale each garment type takes (Style Guide, section 7), from garments.js.
-    worn.forEach(function (k) {
-      const t = L[k].pat.type, cl = G.cloth(k, o[k]);
-      if (t !== 'solid' && cl && !G.patOK(cl.id, t)) add({ id: 'ptype', group: 'pattern', score: 0.3, slots: [k],
-        text: nm(k) + ': ' + L[k].typeName.toLowerCase() + ' is not made in ' + cl.name.toLowerCase().replace(/ \(shiny\)$/, '') + '. The weave or print does not exist in that cloth.' });
-      else if (t !== 'solid' && K[k].pats.indexOf(t) < 0) add({ id: 'ptype', group: 'pattern', score: 0.6, slots: [k],
-        text: nm(k) + ': ' + L[k].typeName.toLowerCase() + ' is not a cloth the guide uses for a ' + K[k].name.toLowerCase() + '.' +
-          (K[k].pats.length > 1 ? ' It uses ' + K[k].pats.filter(function (x) { return x !== 'solid'; }).map(function (x) { return P().byId[x].name.toLowerCase(); }).join(', ') + '.' : ' It is worn plain.') });
-    });
-    allPats.forEach(function (k) {
-      const c = L[k].cls.id, over = G.scaleOver(K[k], c), kn = K[k].name.toLowerCase();
-      if (c === 'huge') add({ id: 'psize', group: 'pattern', score: 0.3, slots: [k], text: nm(k) + ': a repeat over 15 cm is too large to wear.' });
-      else if (over >= 2) add({ id: 'psize', group: 'pattern', score: 0.4, slots: [k], text: nm(k) + ': a ' + L[k].cls.label + ' repeat (' + L[k].label + ') is far too big for a ' + kn + ', which takes ' + SCALE_TEXT[K[k].maxScale] + '.' });
-      else if (over === 1 && o.propOn && o.frame === 'big') add({ id: 'psize', group: 'pattern', score: 0.8, slots: [k], text: nm(k) + ': a ' + L[k].cls.label + ' repeat (' + L[k].label + ') is a step above what a ' + kn + ' usually takes, but a broad frame carries it.' });
-      else if (over === 1) add({ id: 'psize', group: 'pattern', score: 0.6, slots: [k], text: nm(k) + ': a ' + L[k].cls.label + ' repeat (' + L[k].label + ') is loud on a ' + kn + ', which usually takes ' + SCALE_TEXT[K[k].maxScale] + '. A bold move.' + (o.propOn && o.frame === 'small' ? ' On a slight frame even more so.' : '') });
-      else if (over === 0 && o.propOn && o.frame === 'small' && c === 'medium') add({ id: 'psize', group: 'pattern', score: 0.85, slots: [k], text: nm(k) + ': a medium repeat (' + L[k].label + ') is at the top of what a slight frame carries; the smaller end of medium suits it better.' });
-      if (FACE.indexOf(k) >= 0 && L[k].dL > hi) add({ id: 'pcontrast', group: 'pattern', level: 'A/B', score: 0.6, slots: [k],
-        text: nm(k) + ': the pattern\'s own light-dark contrast (' + round(L[k].dL) + ') is stronger than your face carries (up to ' + round(hi) + '). It will take the attention.' });
-    });
-    if (onePats.length > 3) add({ id: 'pbusy', group: 'pattern', score: 0.5, slots: onePats.slice(3), text: onePats.length + ' patterned pieces in one outfit: busy' + (suitPat ? ', counting the suit once.' : '.') });
-
-    /* --- a brimmed hat: its band sits at the face; its brim follows the frame (B) --- */
-    if (L.hat && K.hat.brim) hatChecks(o.hat, K.hat, p, add, nm, o.m || {});
-
-    /* --- the whole outfit: sheen, formality, season (cloth and shoe type) --- */
-    if (!o.study) wholeChecks(o, L, K, p, add, nm);
-
-    /* --- the shirt's collar with what is worn with it: a tie, a jacket, the occasion --- */
-    if (!o.study) collarChecks(o, L, K, LC, add, nm, out);
-
-    /* --- proportion: the outfit's lines on the body, and cuts that belong together --- */
-    if (o.propOn && !o.study) proportionChecks(o, L, K, add, nm);
-
-    /* --- accessories --- */
-    accessoryChecks(o.acc || {}, L, K, p, add, nm, o.occasion, o);
-    const gl = framesOf(o), fw = frameWeight(p, gl);
-    if (fw) add({ id: 'gweight', group: 'accessory', level: 'A/B', score: fw.score, slots: [], acc: 'glasses', text: fw.text });
-    // Frames and the colours beside them (B): a metal or coloured frame is a second temperature at the
-    // face, against you only when the pair pulls away from your colouring: warm frames with a warm
-    // colour on a face that is not warm, cool frames with a cool colour on a warm face.
-    const ft = frameTemp(gl);
-    if (ft) {
-      const fName = gl.frame === 'acetate' ? 'your ' + ft + '-coloured frames' : gl.frame + ' frames';
-      const pull = ft === 'warm' ? p.tempLevel !== 'warm' : p.tempLevel === 'warm';
-      const second = pull ? near.filter(function (k) { const t = scoreCached(L[k].mean, p).temperature; return ft === 'warm' ? t > 0.4 : t < -0.4; }) : [];
-      if (second.length) add({ id: 'glasses', group: 'colour', score: 0.8, slots: second,
-        text: 'With ' + fName + ', ' + second.map(nm).join(' and ') + (second.length > 1 ? ' are' : ' is') + ' a second ' + ft + ' note at the face, beside the frames. Let the frames be the one ' + ft + ' note: a ' + (ft === 'warm' ? 'cool or neutral' : 'warm or neutral') + ' colour there instead.' });
-    }
     return checkRules(out);
   }
 
-  /* The shirt's collar with what is worn with it (B), for a woven shirt, which records its collar (1.17).
-     Each rule is the source's, and nothing is judged for a collar a source does not speak of:
-     - Open under a jacket (Flusser, Dressing the Man, p. 273): a button-down's fastened points make it
-       stand up round the neck and frame the face; a collar with no band (camp) slides down the neck,
-       leaves the throat bare and looks dishevelled. A cravat or neckerchief fills the open neck, so then
-       nothing is said.
-     - A tab collar is made for a tie (Gentleman's Gazette, ref. 78: it "can only really be worn with a
-       necktie"); a camp collar has no band to button under a knot.
-     - Formality (Gentleman's Gazette): a button-down is a casual dress shirt, for a blazer, a sports
-       jacket or a knit, not a suit (ref. 79; the formality ceiling in garments.js does the rest);
-       a contrast (Winchester) collar is business dress, less suited to casual wear (ref. 80). */
-  function collarChecks(o, L, K, LC, add, nm, out) {
-    if (!L.shirt || !K.shirt.collars) return;
-    // a tie or bow tie closes the collar; a cravat (ascot) is worn inside an open one
-    const cs = G.collarOf(o.shirt), knotted = !!(L.tie && K.tie.knotted && K.tie.id !== 'cravat');
-    const ad = function (c) { c.group = 'collar'; c.slots = c.slots || ['shirt']; return add(c); };
-    if (cs.noBand && knotted) ad({ id: 'collartie', score: 0.3, slots: ['shirt', 'tie'],
-      text: 'A ' + K.tie.name.toLowerCase() + ' with a camp collar: the collar has no band to button under a knot, and is cut to lie open (Flusser; Gentleman\'s Gazette keeps it for casual shirts). Take off the ' + K.tie.name.toLowerCase() + ', or wear a shirt with a standing collar.',
-      fixes: [{ label: 'Take off the ' + K.tie.name.toLowerCase(), slot: 'tie', on: false }, { label: 'A semi-spread collar', slot: 'shirt', set: { collar: 'semispread' } }] });
-    if (cs.tieOnly && !knotted) ad({ id: 'collartie', score: 0.45,
-      text: 'A tab collar worn open: it is made to be worn with a tie, its tab joining the points under the knot, and not open at the neck (Gentleman\'s Gazette).',
-      fixes: [{ label: 'A semi-spread collar', slot: 'shirt', set: { collar: 'semispread' } }, { label: 'Add a tie', slot: 'tie', kind: 'tie', set: { on: true } }] });
-    // open under a tailored jacket, with nothing filling the neck
-    if (!L.tie && L.jacket && K.jacket.frame === 'lapel') {
-      if (cs.open === 'stands') ad({ id: 'collaropen', score: 1,
-        text: 'A button-down worn open under a jacket: its fastened points stand up round the neck and frame the face (Flusser).' });
-      else if (cs.open === 'falls') ad({ id: 'collaropen', score: 0.65,
-        text: 'A camp collar worn open under a jacket: with no collar band it slides down the neck and leaves the throat bare, which looks dishevelled (Flusser). A button-down stands up instead; a neckerchief fills the space.',
-        fixes: [{ label: 'A button-down collar', slot: 'shirt', set: { collar: 'buttondown' } }] });
-    }
-    // formality: the ceiling in garments.js already lowers the shirt; say why where the general rules do not
-    const C = { jacket: L.jacket ? G.cloth('jacket', o.jacket) : null, trousers: L.trousers ? G.cloth('trousers', o.trousers) : null };
-    const occSaid = out.some(function (c) { return (c.id === 'occasion' || c.id === 'formal') && c.score < 0.85 && (c.slots || []).indexOf('shirt') >= 0; });
-    if (cs.id === 'buttondown' && suitWorn(o, L, K, C) && !occSaid) ad({ id: 'collarformal', score: 0.65,
-      text: 'A button-down with a suit: Gentleman\'s Gazette calls it a very informal dress shirt, worn with a blazer, a sports jacket or a knit and nothing more formal (it allows a summer suit). A point or semi-spread collar suits the suit.',
-      fixes: [{ label: 'A semi-spread collar', slot: 'shirt', set: { collar: 'semispread' } }, { label: 'A point collar', slot: 'shirt', set: { collar: 'point' } }] });
-    if (LC && o.occasion === 'casual') ad({ id: 'collarformal', score: 0.7,
-      text: 'A contrast collar (' + LC.name.toLowerCase() + ') for a casual outfit: Gentleman\'s Gazette finds a Winchester shirt slightly more formal than one with a self collar, well suited to business wear and less so to casual wear.',
-      fixes: [{ label: 'A collar in the shirt\'s own colour', slot: 'shirt', set: { collarHex: null } }] });
-    else if (LC && knotted) ad({ id: 'collarformal', score: 1,
-      text: 'A contrast collar (' + LC.name.toLowerCase() + ') with a ' + K.tie.name.toLowerCase() + ': the plain collar is a neutral background for the knot (Gentleman\'s Gazette).' });
-
-    /* What Valet cannot see, said as advice (collarhint: information, never counted). Where a source gives
-       a test, the advice is that test to do in a mirror; where no source speaks, the text says so. Only for
-       a collar that has been chosen: a shirt saved without one is read as before. */
-    if (!o.shirt.collar || !G.collarBy[o.shirt.collar]) return;
-    const hint = function (text) { ad({ id: 'collarhint', score: 1, text: text }); };
-    const cn = cs.name.toLowerCase(), tall = o.shirt.collarBand === 'tall';
-    // open under a jacket: only the button-down and the bandless collar have a source (above)
-    if (!L.tie && L.jacket && K.jacket.frame === 'lapel' && !cs.open && !cs.tieOnly)
-      hint('Not judged: no source says how a ' + cn + ' collar behaves worn open. Flusser\'s test for any open collar is that it still frames the face: in a mirror, see whether the points stand up round the neck or fall flat onto the lapels. ' +
-        (tall ? 'A tall band helps them stand.' : 'If they fall, a button-down or a taller band holds better.'));
-    // the knot is not recorded; its tests are in How it works, not repeated on every outfit with a tie (1.18)
-    // a contrast collar: Permanent Style on the tie, and on the jacket; nothing on wearing it open
-    if (LC && knotted) hint('Valet cannot judge the tie for a contrast collar. Permanent Style: a tie dark or colourful enough draws the eye from the white collar; a pale or plain one is not strong enough, and the collar dominates.');
-    else if (LC) hint('Not judged: no source covers a contrast collar worn ' + (L.tie ? 'with a cravat' : 'without a tie') + '; Gentleman\'s Gazette shows it only with a tie.' + (L.jacket ? '' : ' Permanent Style finds it looks a lot better with the jacket kept on.'));
-  }
-
-  /* Proportion. Two kinds of check.
-     Lines: where the outfit changes from light to dark falls on the body, and the eye reads the
-     figure in those pieces. The waistband is where the legs appear to start; a strong step at the
-     hips (a jacket hem over contrasting trousers) starts them lower, a strong step at the ankle
-     ends them sooner. On legs that are long for the height none of this matters much; on legs
-     shorter than most it does (B). A tonal column, every main piece close in lightness, is the
-     one clothing change found to raise height estimates in photos (Lee 2018, A). These are notes,
-     scored 0.75 at the lowest, so they never mark a colour as a clash.
-     Cuts: pieces of one period were cut to meet. A short knit (to a high 1930s waistband) over
-     mid- or low-rise trousers leaves a band of shirt showing; a long knit hides a high waist; a
-     standard tie hangs past a high waistband (B).
-     o.body holds the percentiles from body.js (legRatio, height...), or nothing without measurements. */
-  function proportionChecks(o, L, K, add, nm) {
-    const pc = o.body || {}, leg = pc.legRatio, shortLegs = leg != null && leg < PARAMS.shortLegsPct, legWord = shortLegs ? ' Your legs are shorter than most for your height, so this line matters for you.' : '';
-    const lum = function (k) { return L[k] ? VC.hexToLab(L[k].mean)[0] : null; };
-    const ad = function (c) { c.group = 'proportion'; c.level = c.level || 'B'; c.slots = c.slots || []; return add(c); };
-    const top = L.jacket ? 'jacket' : L.mid ? 'mid' : 'shirt', rise = (o.trousers && o.trousers.rise) || 'mid';
-    // A tall frame with legs short for its height gets two pieces of advice about one contrast (1.18):
-    // the height takes a break between top and trousers (phalves, below), the legs want that break at
-    // the waist, not lower (pline). They are said together, once: the contrast is fine, its place is not.
-    const hgt = +((o.m || {}).height) || 0, tallFrame = hgt >= PARAMS.frameTall;
-    const lowBreak = function (d) { return d >= PARAMS.halvesStrong && (top === 'jacket' || rise === 'low'); };
-    const tallWord = shortLegs && tallFrame ? ' Your height takes a contrast between top and trousers (Flusser); it is where the break falls that costs you leg length.' : '';
-    if (L[top] && L.trousers) {
-      const d = Math.abs(lum(top) - lum('trousers')), jacketHem = top === 'jacket';
-      if (d >= PARAMS.halvesStrong && jacketHem) ad({ id: 'pline', score: shortLegs ? 0.75 : 0.9, slots: [],
-        text: 'A strong light-dark step at the ' + nm('jacket') + '\'s hem, over the hips: the eye starts the legs there, lower than the waist.' + legWord + tallWord + (shortLegs ? ' Closer lightness between jacket and trousers moves the line up.' : '') });
-      else if (d >= PARAMS.halvesStrong && rise === 'low') ad({ id: 'pline', score: shortLegs ? 0.75 : 0.9, slots: [],
-        text: 'The light-dark change sits at a low waistband, below your waist: the legs read shorter than they are.' + legWord + tallWord + (shortLegs ? ' Higher-rise trousers move the line to your waist.' : '') });
-      else if (d >= PARAMS.halvesStrong) ad({ id: 'pline', score: 1, slots: [], text: 'The light-dark change between top and trousers falls at the waistband, where the legs appear to start.' });
-    }
-    // Top against trousers by build (Flusser, Dressing the Man, pp. 52-54, 271): the less contrast between the
-    // halves, the longer and dressier the figure, which a short man wants; a tall man wants horizontal breaks,
-    // such as a contrasting trouser. Matched (a suit, ΔE under nearFrom) is one block and not judged here.
-    if (L[top] && L.trousers && VC.deltaE2000(VC.hexToLab(L[top].mean), VC.hexToLab(L.trousers.mean)) >= PARAMS.nearFrom) {
-      const d = Math.abs(lum(top) - lum('trousers')), h = hgt;
-      const tall = tallFrame, short = (h && h < PARAMS.frameShort) || shortLegs;
-      if (h && d < PARAMS.halvesL && tall) ad({ id: 'phalves', score: 0.8, slots: ['trousers'],
-        text: nm(top) + ' and ' + nm('trousers') + ' are close in lightness (step ' + Math.round(d) + '): one long column on a tall frame. A contrasting trouser, or a patterned jacket, breaks the line (Flusser).' });
-      else if (h && d < PARAMS.halvesL) ad({ id: 'phalves', score: 1, slots: [],
-        text: nm(top) + ' and ' + nm('trousers') + ' close in lightness: ' + (short ? 'the less contrast between the halves, the longer the figure, which suits your build (Flusser).' : 'a long, dressy line (Flusser).') });
-      else if (h && d >= PARAMS.halvesStrong && short && !(shortLegs && (top === 'jacket' || rise === 'low'))) ad({ id: 'phalves', score: 0.8, slots: ['trousers'],
-        text: 'A strong light-dark step between ' + nm(top) + ' and ' + nm('trousers') + ' (' + Math.round(d) + ') cuts a shorter figure in two; closer tones lengthen it (Flusser).' });
-      else if (h && d >= PARAMS.halvesL && tall && !(shortLegs && lowBreak(d))) ad({ id: 'phalves', score: 1, slots: [],
-        text: 'A contrasting top and trousers break a tall frame\'s long line, as Flusser advises.' });
-    }
-    if (L.trousers && L.shoes) {
-      const ds = Math.abs(lum('trousers') - lum('shoes')), bridge = L.socks && Math.abs(lum('socks') - lum('trousers')) < PARAMS.ankleBridgeL;
-      if (ds >= 35 && !bridge && shortLegs) ad({ id: 'pankle', score: 0.75, slots: [],
-        text: 'A strong step at the ankle, from the trousers to the shoes, ends the leg line early.' + legWord + ' Shoes, or at least socks, closer to the trousers carry it on.' });
-    }
-    const main = ['jacket', 'mid', 'shirt', 'trousers', 'shoes'].filter(function (k) { return L[k]; }).map(lum);
-    if (main.length >= 3 && Math.max.apply(null, main) - Math.min.apply(null, main) <= PARAMS.columnL) ad({ id: 'pcolumn', level: 'A/B', score: 1, slots: [],
-      text: 'A tonal column: every main piece is close in lightness. Of the tricks said to add height, this is the one found to work in photos.' });
-    // cuts that belong to different periods
-    const vest = L.mid && K.mid.vest, len = o.mid && !vest && o.mid.length;
-    if (vest && rise === 'low') ad({ id: 'pperiod', score: 0.45, slots: [],
-      text: 'A waistcoat over low-rise trousers: its points end above the waistband, and a band of shirt shows between them.',
-      fixes: [{ label: 'High-rise trousers', slot: 'trousers', set: { rise: 'high' } }, { label: 'Mid-rise trousers', slot: 'trousers', set: { rise: 'mid' } }] });
-    else if (vest && rise === 'high') ad({ id: 'pperiod', score: 1, slots: [], text: 'Waistcoat and high-rise trousers meet at the waist: the 1930s line, worn with braces.' });
-    else if (vest) ad({ id: 'pperiod', score: 0.9, slots: [], text: 'A waistcoat over mid-rise trousers: check its points cover the waistband; higher trousers make that easy.' });
-    else if (L.mid && len === 'short' && rise !== 'high') ad({ id: 'pperiod', score: 0.45, slots: [],
-      text: 'A short knit, cut to end at a high 1930s waistband, over ' + rise + '-rise trousers: a band of shirt shows at the waist.',
-      fixes: [{ label: 'High-rise trousers', slot: 'trousers', set: { rise: 'high' } }, { label: 'A regular-length knit', slot: 'mid', set: { length: 'regular' } }] });
-    else if (L.mid && len === 'long' && rise === 'high') ad({ id: 'pperiod', score: 0.85, slots: [],
-      text: 'A long knit over high-rise trousers covers the high waist, so the period line is lost; a knit ending at the waistband keeps it.',
-      fixes: [{ label: 'A short knit', slot: 'mid', set: { length: 'short' } }] });
-    else if (L.mid && len && L.trousers) ad({ id: 'pperiod', score: 1, slots: [], text: 'Knit and trousers meet at the waist: their cuts belong together.' });
-    if (L.tie && rise === 'high' && !L.mid) ad({ id: 'ptie', score: 0.85, slots: [],
-      text: 'With high-rise trousers a standard-length tie hangs past the waistband; tie a larger knot, or wear a knit or waistcoat over it, as the 1930s did.' });
-    // The collar against the face (Flusser, Dressing the Man, pp. 124–126: counterbalance, not repeat).
-    // A woven shirt records its collar (1.17), so it is judged: long points set close together narrow
-    // a face, a wide spread broadens it. A polo's or knit's collar is part of its type, so for those
-    // this stays advice for the shirt you choose. Broad or long only beyond the tape's error (body.js);
-    // the percentile alone is not trusted.
-    const fs = pc.faceClass === 'broad' ? 70 : pc.faceClass === 'long' ? 30 : null, bald = o.hairStyle === 'none';
-    // judged only when the collar has been chosen: a shirt saved without one gets the advice, as before 1.17
-    const cs = L.shirt && K.shirt && K.shirt.collars && o.shirt.collar && G.collarBy[o.shirt.collar] ? G.collarOf(o.shirt) : null, cn = cs ? cs.name.toLowerCase() : '';
-    if (cs && fs != null) {
-      if (fs >= 70 && cs.spread === 'wide') ad({ id: 'collarface', score: 0.65, slots: ['shirt'],
-        text: 'Your face is broad for its length, and a ' + cn + ' collar spreads its points wide, which broadens it further. Longer points with a moderate spread balance it: a point or semi-spread collar (Flusser).',
-        fixes: [{ label: 'A point collar', slot: 'shirt', set: { collar: 'point' } }, { label: 'A semi-spread collar', slot: 'shirt', set: { collar: 'semispread' } }] });
-      else if (fs >= 70) ad({ id: 'collarface', score: 1, slots: ['shirt'],
-        text: cs.spread === 'narrow' ? 'A ' + cn + ' collar: its long points, set close together, balance your broad face (Flusser).' : 'A ' + cn + ' collar: its moderate spread suits your broad face; longer points set closer would balance it more (Flusser).' });
-      else if (cs.spread === 'narrow') ad({ id: 'collarface', score: 0.65, slots: ['shirt'],
-        text: 'Your face is long for its width, and a ' + cn + ' collar\'s long points, set close together, lengthen it further. A wider spread balances it (Flusser).',
-        fixes: [{ label: 'A spread collar', slot: 'shirt', set: { collar: 'spread' } }, { label: 'A semi-spread collar', slot: 'shirt', set: { collar: 'semispread' } }] });
-      else ad({ id: 'collarface', score: 1, slots: ['shirt'],
-        text: cs.spread === 'wide' ? 'A ' + cn + ' collar: its wide spread balances your long face (Flusser).' : 'A ' + cn + ' collar: its moderate spread suits your long face; a wider spread would balance it more (Flusser).' });
-    }
-    // a chosen collar that the face rule cannot judge: say why (information, never counted)
-    if (cs && fs == null) ad({ id: 'collarhint', score: 1, slots: ['shirt'], text: pc.faceClass === 'middle'
-      ? 'A ' + cn + ' collar: your face is neither clearly broad nor clearly long, so no collar has to counterbalance it; Gentleman\'s Gazette finds a spread collar suits most faces.'
-      : 'Not judged against your face: Valet needs your face width and length (You tab) to say whether a ' + cn + ' collar balances it.' });
-    if (cs && o.shirt.collarBand === 'tall' && !bald) ad({ id: 'collarhint', score: 1, slots: ['shirt'],
-      text: 'A tall band: not judged. Flusser gives a long neck a taller band and a short neck a lower one, and Valet does not measure the neck.' });
-    // advice, never counted: the collar to choose where none is recorded, and the band for a head with no hair
-    const tall = cs && o.shirt && o.shirt.collarBand === 'tall';
-    if (L.shirt && K.shirt && K.shirt.collar && ((!cs && fs != null) || bald)) ad({ id: 'pcollar', score: 1, slots: ['shirt'],
-      text: (!cs && fs >= 70 ? 'Your face is broad for its length: a collar with longer points and a moderate spread balances it; a wide cutaway would widen it further.'
-        : !cs && fs != null && fs <= 30 ? 'Your face is long for its width: a wider spread balances it; long narrow points would lengthen it further.' : '') +
-        (bald ? (!cs && fs != null ? ' ' : '') + (tall ? 'With no hair the collar is the frame, and its tall band stands up to do that job.' : 'With no hair the collar is the frame: a taller band stands up and does that job.') : '') });
-    // a prominent seat or hollow lower back and a low waistband (tailoring advice): the back of the
-    // waistband stands away and the cloth pulls under the seat. Only the low rise is marked; a flat
-    // seat is a matter of the trousers' cut, which the outfit does not record, so Proportion and Fit say it.
-    if (L.trousers && o.shape && o.shape.seat === 'prominent' && rise === 'low') ad({ id: 'pseat', score: 0.85, slots: [],
-      text: 'With a prominent seat or a hollow lower back, low-rise trousers gap at the back of the waistband and pull under the seat. A higher rise, with side adjusters or braces, follows the back.',
-      fixes: [{ label: 'Mid-rise trousers', slot: 'trousers', set: { rise: 'mid' } }, { label: 'High-rise trousers', slot: 'trousers', set: { rise: 'high' } }] });
-    // a full stomach and the waistband (tailoring advice: trousers held above the stomach do not roll)
-    if (L.trousers && o.shape && o.shape.stomach === 'full') {
-      if (rise === 'high') ad({ id: 'pstomach', score: 1, slots: [], text: 'High-rise trousers sit above a full stomach rather than under it; braces or side adjusters keep them there without a tight waistband.' });
-      else ad({ id: 'pstomach', score: rise === 'low' ? 0.75 : 0.85, slots: [],
-        text: 'With a full stomach a ' + rise + '-rise waistband sits under it and rolls forward and down, and the front of the trousers creases. High-rise trousers on braces or side adjusters sit above it.',
-        fixes: [{ label: 'High-rise trousers', slot: 'trousers', set: { rise: 'high' } }] });
-    }
-  }
-
-  /* The band is a small colour right at the face, so it is judged like one: a band in a colour
-     that does not suit you is noted (a navy band helps a natural straw panama, Style Guide). The
-     brim should follow the frame: a narrow brim looks small on a tall, broad man, a wide one
-     swamps a slight one; medium is the safe middle (B). m holds the body measurements, if any. */
-  function hatChecks(piece, kd, p, add, nm, m) {
-    const band = piece.band, nmHat = piece.name + ' ' + kd.name.toLowerCase();
-    if (band) {
-      const t = scoreCached(band, p).tier, dE = VC.deltaE2000(VC.hexToLab(band), VC.hexToLab(piece.hex));
-      if (t > 2) add({ id: 'band', score: 0.7, slots: ['hat'], text: 'The band of the ' + nmHat + ' sits at the face, and its colour is tier ' + t + ' for you. A navy, charcoal, black or burgundy band would help.' });
-      else if (dE < 6) add({ id: 'band', score: 0.9, slots: ['hat'], text: 'The band is almost the hat\'s colour, so it disappears; a band clearly darker than the hat gives it a line.' });
-      else add({ id: 'band', score: 1, slots: [], text: 'Hat band: a colour that suits you at the face, clearly separate from the hat.' });
-    }
-    const brim = piece.brim || 'medium', h = +m.height || 0, sh = +m.shoulder || 0;
-    const big = h >= PARAMS.frameTall || sh >= PARAMS.frameBroad, small = (h && h < PARAMS.frameShort) || (sh && sh < PARAMS.frameNarrow);
-    if (brim === 'narrow' && big) add({ id: 'brim', score: 0.75, slots: ['hat'], text: 'A narrow brim looks small on a tall or broad frame; a medium brim keeps the hat in proportion to the shoulders.' });
-    else if (brim === 'wide' && small) add({ id: 'brim', score: 0.75, slots: ['hat'], text: 'A wide brim can swamp a slight frame; a medium or narrow brim keeps the face the focus.' });
-    else add({ id: 'brim', score: 1, slots: [], text: 'Brim: ' + brim + (h || sh ? ', in proportion to your frame.' : '. Medium is the safe middle for most frames.') });
-  }
-
-  /* Sheen, formality and season: what the cloths and shoe types say (Style Guide sections 4 to 6).
-     o.occasion is 'casual', 'smart', 'business' or 'evening'; p.season is the season switch. */
-  function wholeChecks(o, L, K, p, add, nm) {
-    const C = {}, F = {};
-    Object.keys(L).forEach(function (k) { C[k] = G.cloth(k, o[k]); F[k] = G.formality(k, o[k]); });
-    // a dress shirt worn without a tie is open-collared: smart, not business (B)
-    if (F.shirt != null && K.shirt.tieable && !(L.tie && K.tie.knotted)) F.shirt = Math.min(F.shirt, 4);
-    const cn = function (k) { return C[k] ? C[k].name.toLowerCase().replace(/ \(shiny\)$/, '') : ''; };
-    const csw = L.shirt && K.shirt.collars ? G.collarOf(o.shirt) : null;   // a collar that lowers the shirt's formality is named (garments.js)
-    const what = function (k) { return L[k].name + ' ' + (C[k] ? cn(k) + ' ' : '') + (k === 'shirt' && csw && csw.f != null ? csw.name.toLowerCase() + ' ' : '') + K[k].name.toLowerCase(); };
-    const occ = G.OCCASIONS.find(function (x) { return x.id === o.occasion; }) || G.OCCASIONS[1];
-
-    // 4. Sheen: anything glossy near the face fails; below it, a caution; patent is for black tie.
-    const shiny = Object.keys(L).filter(function (k) { return C[k] && C[k].sheen === 2; });
-    const nearFace = G.NEAR.concat(['hat']);
-    shiny.forEach(function (k) {
-      if (nearFace.indexOf(k) >= 0) add({ id: 'sheen', group: 'sheen', score: 0.6, slots: [k], cloth: true,
-        text: what(k) + ': shiny cloth near the face reads as cheap cloth: too much shine is the classic mark of polyester and of very fine, glossy suiting (Outfit Check, question 4). A matte version looks better.' });
-      else if (k === 'shoes') {
-        add({ id: 'sheen', group: 'sheen', score: o.occasion === 'evening' ? 0.85 : 0.55, slots: [k], cloth: true,
-          text: 'Patent shoes are for black tie' + (o.occasion === 'evening' ? '; for a formal evening they are right.' : '. Polish calf to a glow instead.') });
-      }
-      else add({ id: 'sheen', group: 'sheen', score: 0.6, slots: [k], cloth: true, text: what(k) + ': shiny cloth looks cheap below the belt too. The matte version is the classic one.' });
-    });
-    if (!shiny.length) add({ id: 'sheen', group: 'sheen', score: 1, slots: [], text: 'Sheen: everything is matte or has only a soft sheen, which suits skin and keeps the outfit quiet.' });
-
-    // Specific pairings from the Style Guide first; a piece named there is not repeated in the
-    // general formality messages below.
-    const shoeF = L.shoes ? F.shoes : null, tie = L.tie && K.tie.knotted, handled = {};
-    const smart = Object.keys(L).some(function (k) { return k !== 'shoes' && F[k] != null && F[k] >= 3; });
-    if (L.shoes && K.shoes.id === 'chunky' && smart) {
-      handled.shoes = true;
-      add({ id: 'shoe', group: 'formality', score: 0.35, slots: ['shoes'], text: 'Chunky or technical trainers fail with anything smart: they pull the eye to the floor, and the eye should stay at the face (Style Guide, shoes).' });
-    } else if (tie && shoeF != null && shoeF <= 1) {
-      handled.shoes = true;
-      add({ id: 'shoe', group: 'formality', score: 0.4, slots: ['shoes'], text: 'A ' + K.tie.name.toLowerCase() + ' with trainers: the tie says business, the shoes say weekend. Wear leather shoes, or lose the tie.' });
-    } else if (suitWorn(o, L, K, C) && shoeF != null && shoeF <= 1) {
-      handled.shoes = true;
-      add({ id: 'shoe', group: 'formality', score: 0.65, slots: ['shoes'], text: 'A suit with trainers is a fashion look rather than a classic one; loafers or derbies keep the suit\'s register.' });
-    }
-    // Neckwear with jeans (Gentleman's Gazette): a tie, bow tie or cravat formalises; jeans do not take it.
-    if (tie && L.trousers && C.trousers && C.trousers.id === 'denim')
-      add({ id: 'denimtie', group: 'formality', score: 0.45, slots: ['tie'],
-        fixes: [{ label: 'Take off the ' + K.tie.name.toLowerCase(), slot: 'tie', on: false }, { label: 'Cotton twill trousers instead of jeans', slot: 'trousers', set: { cloth: 'cotton' } }],
-        text: 'A ' + K.tie.name.toLowerCase() + ' with jeans: a clash of formalities. Neckwear dresses an outfit up and denim keeps it casual; skip the neckwear, or wear chinos or flannel.' });
-
-    // Formality: the pieces that set the register (not scarf, socks, square, hat or an overcoat).
-    const reg = Object.keys(L).filter(function (k) { return F[k] != null && k !== 'hat' && k !== 'coat' && k !== 'gloves' && !handled[k]; });
-    outerwear(o, L, K, F, C, p, add, what);
-    const W = ['', 'casual', 'relaxed', 'smart casual', 'smart', 'business'];
-    const word = function (f) { return f <= 0 ? 'sportswear' : W[f]; };
-    if (reg.length) {
-      const lo = reg.reduce(function (a, k) { return F[k] < F[a] ? k : a; }), hi = reg.reduce(function (a, k) { return F[k] > F[a] ? k : a; });
-      const spread = F[hi] - F[lo];
-      if (spread >= PARAMS.formalMistake) add({ id: 'formal', group: 'formality', score: 0.4, slots: [lo],
-        text: what(hi) + ' (' + word(F[hi]) + ') and ' + what(lo) + ' (' + word(F[lo]) + ') are too far apart in formality: one of them looks like a mistake.' });
-      else if (spread === PARAMS.formalWide) add({ id: 'formal', group: 'formality', score: 0.65, slots: [lo],
-        text: what(hi) + ' (' + word(F[hi]) + ') with ' + what(lo) + ' (' + word(F[lo]) + '): a wide mix. It can work as a deliberate contrast; usually one step closer looks surer.' });
-      else add({ id: 'formal', group: 'formality', score: 1, slots: [],
-        text: 'Formality: the pieces sit within ' + (spread ? 'two steps' : 'one register') + ' of each other, from ' + word(F[lo]) + ' to ' + word(F[hi]) + '.' });
-      // against the occasion
-      const r = occ.range, under = reg.filter(function (k) { return F[k] < r[0]; }), over = reg.filter(function (k) { return F[k] > r[1]; });
-      if (under.length) {
-        const gap = r[0] - Math.min.apply(null, under.map(function (k) { return F[k]; }));
-        add({ id: 'occasion', group: 'formality', score: gap >= 2 ? 0.4 : 0.7, slots: under,
-          text: 'For ' + occ.name.toLowerCase() + ', ' + under.map(what).join(' and ') + (under.length > 1 ? ' are' : ' is') + ' too casual (' + occ.note + ').' });
-      } else if (over.length) {
-        add({ id: 'occasion', group: 'formality', score: over.some(function (k) { return F[k] - r[1] >= 2; }) ? 0.65 : 0.85, slots: over,
-          text: 'For ' + occ.name.toLowerCase() + ', ' + over.map(what).join(' and ') + (over.length > 1 ? ' are' : ' is') + ' dressier than the occasion. Fine if you mean it; the room will notice.' });
-      } else add({ id: 'occasion', group: 'formality', score: 1, slots: [], text: 'Right for ' + occ.name.toLowerCase() + ': ' + occ.note + '.' });
-    }
-    // Season: cloth weight against the season switch, and two seasons in one outfit.
-    const season = p.season === 'summer' ? 'summer' : 'winter', other = season === 'summer' ? 'winter' : 'summer';
-    // the pocket square is left out: a linen or silk square is worn all year, with tweed and flannel too
-    const seasonal = Object.keys(L).filter(function (k) { return k !== 'square'; });
-    const wrong = seasonal.filter(function (k) { return C[k] && C[k].season === other; });
-    const sum = seasonal.filter(function (k) { return C[k] && C[k].season === 'summer'; }), win = seasonal.filter(function (k) { return C[k] && C[k].season === 'winter'; });
-    if (sum.length && win.length) add({ id: 'season', group: 'season', score: 0.55, slots: [sum[0]],
-      text: what(sum[0]) + ' and ' + what(win[0]) + ' belong to different seasons: summer and winter cloth in one outfit look as if one of them was a mistake.' });
-    else if (wrong.length) add({ id: 'season', group: 'season', score: 0.65, slots: wrong,
-      text: wrong.map(what).join(' and ') + ': ' + (season === 'winter' ? 'summer cloth in winter looks cold and out of place; flannel, tweed, wool and heavier knits belong now.' : 'winter cloth in summer is too warm, and looks it; linen, fresco, cotton and lighter knits belong now.') + ' (The season switch at the top sets this.)' });
-    else add({ id: 'season', group: 'season', score: 1, slots: [], text: 'Season: the cloths suit ' + season + (win.length || sum.length ? '' : ', and all of them work year round') + '.' });
-  }
   /* One cloth's pattern on two pieces: the same type, at the same repeat. */
   function colourName(hex) {
-    const lab = VC.hexToLab(hex); let best = null, d = 1e9;
+    const lab = VC.hexToLab(hex); let best = /** @type {any} */ (null), d = 1e9;
     window.VDATA.colours.forEach(function (c) { const e = VC.deltaE2000(lab, VC.hexToLab(c.hex)); if (e < d) { d = e; best = c; } });
     return best ? best.name.toLowerCase() : 'colour';
   }
@@ -1273,7 +567,6 @@
     return out;
   }
 
-
   /* ---------- Glasses: the frame's weight against the face (A/B) ----------
      Section 4's rule applied to the one dark line that is always at the face. A thick acetate
      frame is a solid light-dark edge across the face; its lightness step against the skin is
@@ -1311,197 +604,9 @@
       text: 'Glasses: your ' + name + ' frame against your skin (lightness step ' + round(step) + ') is stronger than the contrast your face carries (up to ' + round(hi) + '), so it is seen before the face. ' + lighter + ' would sit with the face rather than over it.' };
   }
 
-  /* Coats, gloves, hats and the buttonhole (B). Only the occasion register (the same scale every
-     garment is judged on) and what a piece physically needs are checked. Etiquette that rests on no
-     principle Valet can state (which leather gloves should match, how many accents to wear, when a
-     flower is costume) is left out on purpose; see How it works, section 10. */
-  function outerwear(o, L, K, F, C, p, add, what) {
-    const occ = o.occasion || 'smart', formal = occ === 'business' || occ === 'evening';
-    const occWord = { casual: 'casual', smart: 'smart casual', business: 'business', evening: 'evening' }[occ];
-    if (L.coat) {
-      // Against what it is worn over: the most formal of the jacket and the knit. The general rule
-      // calls four steps apart a mistake (wholeChecks); a coat comes off indoors and lives in the
-      // register of the street, so it gets one step more: five apart, a parka over a worsted suit.
-      const under = ['jacket', 'mid'].filter(function (k) { return L[k] && F[k] != null; }).sort(function (a, b) { return F[b] - F[a]; })[0];
-      if (F.coat != null && under && F[under] - F.coat >= PARAMS.coatSteps) add({ id: 'coat', group: 'formality', score: 0.65, slots: ['coat'],
-        text: 'A ' + K.coat.name.toLowerCase() + ' over ' + what(under) + ': the coat is sportswear and what it covers is the most formal tailoring, five steps apart. An overcoat, a covert coat or a trench coat goes over tailoring like this.',
-        fixes: [{ label: 'An overcoat instead', slot: 'coat', kind: 'overcoat' }, { label: 'Take off the coat', slot: 'coat', on: false }] });
-      else if (formal && F.coat <= 1) add({ id: 'coat', group: 'formality', score: 0.65, slots: ['coat'],
-        text: 'A ' + K.coat.name.toLowerCase() + ' is casual outerwear; over ' + occWord + ' dress it sits two steps below the rest. An overcoat, a covert coat or a trench coat is in the same register.',
-        fixes: [{ label: 'An overcoat instead', slot: 'coat', kind: 'overcoat' }, { label: 'Take off the coat', slot: 'coat', on: false }] });
-      else add({ id: 'coat', group: 'formality', score: 1, slots: [],
-        text: 'Coat: a ' + K.coat.name.toLowerCase() + ', in the register of the occasion.' });
-    }
-    if (L.gloves && K.gloves.id === 'knit' && formal) add({ id: 'gloves', group: 'formality', score: 0.65, slots: ['gloves'],
-      text: 'Knitted gloves are casual; with ' + occWord + ' dress they sit below the rest, where leather or suede gloves are in the same register.',
-      fixes: [{ label: 'Leather gloves instead', slot: 'gloves', kind: 'leather' }] });
-    // A hat by its type against the occasion, a step of grace either side: a homburg or bowler with
-    // casual dress, a baseball cap or beanie with business or evening dress.
-    if (L.hat && K.hat.f != null) {
-      const r = (G.OCCASIONS.find(function (x) { return x.id === occ; }) || G.OCCASIONS[1]).range, hn = K.hat.name.toLowerCase();
-      if (K.hat.f > r[1] + 1) add({ id: 'hatf', group: 'formality', score: 0.65, slots: ['hat'],
-        text: 'A ' + hn + ' is a formal town hat; with ' + occWord + ' dress it is two steps above the rest. A flat cap, a trilby or no hat is in the same register.',
-        fixes: [{ label: 'A trilby instead', slot: 'hat', kind: 'trilby' }, { label: 'Take off the hat', slot: 'hat', on: false }] });
-      else if (K.hat.f < r[0] - 1) add({ id: 'hatf', group: 'formality', score: 0.55, slots: ['hat'],
-        text: 'A ' + hn + ' is ' + (K.hat.f <= 0 ? 'sportswear' : 'casual') + '; with ' + occWord + ' dress it is two steps below the rest. Go bareheaded, or wear a fedora or a homburg.',
-        fixes: [{ label: 'Take off the hat', slot: 'hat', on: false }, { label: 'A fedora instead', slot: 'hat', kind: 'fedora' }] });
-    }
-    // The buttonhole: a flower or pin is worn through the lapel's buttonhole, so it needs lapels.
-    if (L.boutonniere) {
-      const lapel = (L.jacket && K.jacket.frame === 'lapel') || (L.coat && K.coat.frame === 'lapel');
-      if (!lapel) add({ id: 'bout', group: 'formality', score: 0.2, slots: ['boutonniere'],
-        text: 'A ' + (K.boutonniere.id === 'pin' ? 'lapel pin' : 'flower in the lapel') + ' is worn through the lapel buttonhole, so it needs lapels: a tailored jacket, a blazer or a coat with lapels.',
-        fixes: [{ label: 'Take it off', slot: 'boutonniere', on: false }] });
-    }
-  }
-
-  function accessoryChecks(acc, L, K, p, add, nm, occasion, o) {
-    const A = G.ACCESSORIES, M = G.metalBy, worn = A.filter(function (a) { return acc[a.key] && acc[a.key].on && !a.plain; });   // braces have no metal
-    const ad = function (c) { c.group = 'accessory'; c.slots = c.slots || []; return add(c); };
-    const glf = framesOf(o), glassMetal = glf && (glf.frame === 'gold' || glf.frame === 'silver') ? glf.frame : null;
-    const cool = p.tempLevel === 'cool', warm = p.tempLevel === 'warm';   // the profile's own bands (cool under -0.35, warm over 0.35)
-    worn.forEach(function (a) {
-      if (a.needs === 'cuffs' && !(L.shirt && K.shirt.tieable)) ad({ id: 'acc', score: 0.2, acc: a.key,
-        text: 'Cufflinks need a shirt with double cuffs; a ' + K.shirt.name.toLowerCase() + ' has none.' });
-      if (a.needs === 'tie' && !(L.tie && K.tie.id === 'tie')) ad({ id: 'acc', score: 0.2, acc: a.key, text: 'A tie bar needs a tie to hold.' });
-    });
-    /* The belt and what holds the trousers (B). A waistcoat asks for braces: it must cover the waistband, and
-       a belt beneath it makes a bulge at the waist and drags the trousers down until shirt shows (Gentleman's
-       Gazette; No Man Walks Alone; Flusser, Dressing the Man, pp. 60, 222). A belt and braces together are one
-       too many, and a failure in every source. */
-    const belt = acc.buckle && acc.buckle.on, braces = acc.braces && acc.braces.on, vest = L.mid && K.mid.vest;
-    if (belt && braces) ad({ id: 'beltbraces', score: 0.3, acc: 'buckle',
-      text: 'A belt and braces together: either holds the trousers, and wearing both says neither was trusted. Take off the belt.',
-      fixes: [{ label: 'Take off the belt', acc: 'buckle', set: { on: false } }] });
-    else if (belt && vest) ad({ id: 'beltvest', score: 0.3, acc: 'buckle',
-      text: 'A belt with a waistcoat: the waistcoat should cover the waistband, and a belt beneath it bulges at the waist and lets the trousers slip until shirt shows. A waistcoat is worn with braces, or with trousers that have side adjusters.',
-      fixes: [{ label: 'Braces instead of the belt', acc: 'buckle', set: { on: false }, and: [{ acc: 'braces', set: { on: true } }] }] });
-    // matching: everything but the ring and the face pieces
-    const match = worn.filter(function (a) { return a.key !== 'ring' && !a.face && acc[a.key].metal !== 'twotone' && acc[a.key].metal !== 'black'; });
-    // metal blazer buttons are worn metal too
-    const btn = o && o.jacket && K.jacket && K.jacket.buttons ? G.BUTTONS.find(function (b) { return b[0] === (o.jacket.buttons || 'silver'); }) : null;
-    if (btn && btn[2]) match.push({ key: 'buttons', name: 'Blazer buttons', btn: btn[2], slot: 'jacket' });   // checked even with no watch or belt
-    if (o && o.boutonniere && K.boutonniere && K.boutonniere.id === 'pin') match.push({ key: 'pin', name: 'Lapel pin', btn: o.boutonniere.metal || 'silver', slot: 'boutonniere' });
-    const metalOf = function (a) { return a.btn || acc[a.key].metal; };
-    const fam = function (m) { return M[m] && M[m].warm ? 'warm' : 'cool'; };
-    const fams = match.map(function (a) { return fam(metalOf(a)); }).filter(function (x, i, arr) { return arr.indexOf(x) === i; });
-    const desc = function (list) { return list.map(function (a) { return a.name.toLowerCase() + ' in ' + M[metalOf(a)].name.toLowerCase(); }).join(', '); };
-    if (fams.length > 1) {
-      // match the odd one out to the majority
-      const nWarm = match.filter(function (a) { return fam(metalOf(a)) === 'warm'; }).length, keepWarm = nWarm > match.length - nWarm;
-      const odd = match.filter(function (a) { return (fam(metalOf(a)) === 'warm') !== keepWarm; });
-      const to = keepWarm ? 'gold' : 'silver';
-      ad({ id: 'metal', score: 0.5, text: 'Mixed metals: ' + desc(match) + '. Keep one metal through the outfit; a two-tone watch is the one exception.',
-        fixes: odd.map(function (a) {
-          const label = 'Make the ' + a.name.toLowerCase() + ' ' + to;
-          // a worn accessory, the blazer's buttons or the lapel pin: each is set where it lives
-          if (a.key === 'buttons') return { label: label, slot: 'jacket', set: { buttons: to } };
-          if (a.key === 'pin') return { label: label, slot: 'boutonniere', set: { metal: to, hex: M[to].hex } };
-          return a.metals.indexOf(to) >= 0 ? { label: label, acc: a.key, set: { metal: to } } : null;
-        }).filter(Boolean).concat(odd.some(function (a) { return a.key === 'buttons'; }) ? [{ label: 'Horn buttons, which are not metal', slot: 'jacket', set: { buttons: 'horn' } }] : []).slice(0, 2) });
-    }
-    else if (match.length) {
-      const f = fams[0];
-      if (f === 'warm' && cool) ad({ id: 'metal', score: 0.45, text: 'Warm metal (' + desc(match) + ') against cool colouring: a stray warm note. Silver, steel or gunmetal agree with you.' });
-      else if (f === 'cool' && warm) ad({ id: 'metal', score: 0.7, text: 'Cool metal (' + desc(match) + ') against warm colouring. Gold agrees with you better.' });
-      else ad({ id: 'metal', score: 1, text: 'Metal: ' + desc(match) + ', one metal through the outfit' + (glassMetal && fam(glassMetal) !== f ? '. Your ' + glassMetal + ' frames are judged with your face, so the rest can stay as it is.' : '.') });
-    }
-    if (acc.ring && acc.ring.on && match.length && fam(acc.ring.metal) !== fams[0]) ad({ id: 'metal', score: 0.95,
-      text: 'The ' + M[acc.ring.metal].name.toLowerCase() + ' ring differs from the other metal. A ring worn every day is usually let stand outside the matching rule.' });
-    sizeChecks(acc, L, K, p, ad, worn, occasion, o);
-
-    // stones: a small accent that reads best echoing a colour already worn
-    const colours = [];
-    Object.keys(L).forEach(function (k) { L[k].colours.forEach(function (h) { colours.push(h); }); });
-    worn.filter(function (a) { return a.stone && acc[a.key].stone && acc[a.key].stone !== 'none'; }).forEach(function (a) {
-      const st = G.stoneBy[acc[a.key].stone]; if (!st || !st.hex) return;
-      const c = okc(st.hex);
-      if (c[1] < 0.06) return;                           // onyx, pearl, diamond: neutral
-      const echo = colours.some(function (h) { const q = okc(h); return q[1] >= 0.04 && hueDist(q[2], c[2]) <= 35; });
-      ad({ id: 'stone', score: echo ? 1 : 0.9, text: st.name + ' ' + a.name.toLowerCase() + (echo ? ': echoes a colour in the outfit, so the accent looks chosen.' : ': a small accent of its own. It looks more deliberate when it echoes a colour you wear (lapis with navy, garnet with a burgundy tie).') });
-    });
-  }
-
-  /* Sizes of accessories. Each has a classic range with its reason. Over the range, the check
-     lists what elsewhere in the outfit carries the piece (each one done lifts the score), with a
-     button for each that can be done here. Far over the range nothing compensates, and the check
-     says to take it off for this outfit. Ties are taken as 8 cm wide, the width of every tie in
-     the Style Guide. */
-  const TIE_MM = 80;
   function watchRange(wrist) {
     if (!wrist) return [36, 40];
     const r = PARAMS.watchByWrist.find(function (w) { return wrist < w[0]; }); return [r[1], r[2]];
-  }
-  function sizeChecks(acc, L, K, p, ad, worn, occasion, o) {
-    const has = function (k) { return acc[k] && acc[k].on; };
-    const tie = !!(L.tie && K.tie.id === 'tie');
-    // A check over the range: comps are { done, text, fix } and lift the score from base to at most 0.85.
-    const carry = function (key, base, head, comps) {
-      const done = comps.filter(function (c) { return c.done; }), todo = comps.filter(function (c) { return !c.done; });
-      const score = Math.min(0.85, base + 0.3 * done.length / Math.max(1, comps.length));
-      ad({ id: 'asize', score: score, acc: key,
-        text: head + (done.length ? ' Already helping: ' + done.map(function (c) { return c.text; }).join('; ') + '.' : '') +
-          (todo.length ? ' To carry it: ' + todo.map(function (c) { return c.text; }).join('; ') + '.' : ''),
-        fixes: todo.filter(function (c) { return c.fix; }).map(function (c) { return c.fix; }) });
-    };
-    const out = function (key, text, fix) { ad({ id: 'asize', score: 0.3, acc: key, text: text, fixes: [fix || { label: 'Take it off', acc: key, set: { on: false } }] }); };
-    const ok = function (key, text) { ad({ id: 'asize', score: 1, acc: key, text: text }); };
-
-    if (has('watch')) {
-      const mm = +acc.watch.size || 38, r = watchRange(acc.wrist), over = mm - r[1];
-      const why = (acc.wrist ? 'For a ' + acc.wrist + ' cm wrist the case suits ' + r[0] + '–' + r[1] + ' mm' : 'The classic dress range is 36–40 mm') + '.';
-      if (over <= 0 && mm >= r[0] - 4) ok('watch', 'Watch, ' + mm + ' mm: ' + why + ' The lugs stay inside the wrist and the case slips under a shirt cuff, which is the classic aim with tailoring.');
-      else if (over <= 0) ok('watch', 'Watch, ' + mm + ' mm: small for the wrist, the size of a vintage dress watch. Quiet and correct.');
-      else if (over <= PARAMS.watchOver) carry('watch', 0.55, 'Watch, ' + mm + ' mm: large. ' + why + ' A bigger case overhangs the wrist and will not go under a shirt cuff, so it shows at every gesture.', [
-        { done: !has('cufflinks'), text: 'no cufflinks, so the cuff does not have to close over it', fix: { label: 'Take off the cufflinks', acc: 'cufflinks', set: { on: false } } },
-        { done: !tie, text: 'an open collar: a big watch belongs to casual dress', fix: { label: 'Take off the tie', slot: 'tie', on: false } },
-        { done: !!(L.jacket && !K.jacket.suit) || !!L.mid || !!L.coat, text: 'a heavier layer (overshirt, coat or knit) to match its weight' }
-      ]);
-      else if (tie || has('cufflinks')) out('watch', 'Watch, ' + mm + ' mm: far over ' + r[1] + ' mm. ' + why + ' With a tie or cufflinks nothing makes up for it. For this outfit, take it off or wear a smaller watch; keep this one for casual days.');
-      else carry('watch', 0.45, 'Watch, ' + mm + ' mm: far over ' + r[1] + ' mm. ' + why + ' It reads as sports equipment.', [
-        { done: !L.jacket || !K.jacket.suit, text: 'no tailored jacket' },
-        { done: !!(L.jacket && !K.jacket.suit) || !!L.mid, text: 'a heavy casual layer beside it' }
-      ]);
-    }
-    // The watch against the occasion: a digital display and a rubber strap are sportswear, so with
-    // business or evening dress they sit below the register, as a baseball cap or a parka would.
-    // Strap colour, dial colour and case finish are a matter of taste and are not judged.
-    if (has('watch')) {
-      const w = acc.watch, strap = G.STRAPS.find(function (x) { return x.id === (w.strap || 'leather'); }) || G.STRAPS[1];
-      const formal = occasion === 'business' || occasion === 'evening', occWord = occasion === 'evening' ? 'evening' : 'business';
-      const notes = [];
-      if (w.display === 'digital' && formal) notes.push([0.55, 'A digital display is sportswear; with ' + occWord + ' dress it sits below the rest, where an analogue watch is in the same register.', [{ label: 'An analogue watch', acc: 'watch', set: { display: 'analogue' } }]]);
-      if (strap.id === 'rubber' && formal) notes.push([0.55, 'A rubber strap is sportswear; with ' + occWord + ' dress it sits below the rest, where leather or a bracelet is in the same register.', [{ label: 'A leather strap', acc: 'watch', set: { strap: 'leather' } }]]);
-      notes.forEach(function (n) { ad({ id: 'wstyle', score: n[0], acc: 'watch', text: n[1], fixes: n[2] || [] }); });
-    }
-    if (has('cufflinks')) {
-      const mm = +acc.cufflinks.size || 15, stone = acc.cufflinks.stone || 'none';
-      if (mm <= PARAMS.cufflinksMax) ok('cufflinks', 'Cufflinks, ' + mm + ' mm: the classic size (about 12–18 mm). A link this size shows a little below the jacket sleeve and does not catch every light.');
-      else if (mm <= PARAMS.cufflinksFar) carry('cufflinks', 0.55, 'Cufflinks, ' + mm + ' mm: large. Past about 18 mm a link stands out from the cuff and flashes at each gesture.', [
-        { done: stone === 'none' || stone === 'onyx', text: 'plain metal or a dark stone, so it does not sparkle', fix: stone !== 'none' && stone !== 'onyx' ? { label: 'Use onyx links', acc: 'cufflinks', set: { stone: 'onyx' } } : null },
-        { done: !has('tiebar'), text: 'no tie bar: one piece of metal at a time on the front', fix: { label: 'Take off the tie bar', acc: 'tiebar', set: { on: false } } },
-        { done: !has('watch') || (+acc.watch.size || 38) <= watchRange(acc.wrist)[1], text: 'a watch within its range, so the wrists do not compete' }
-      ]);
-      else out('cufflinks', 'Cufflinks, ' + mm + ' mm: costume size. Nothing else in a classic outfit balances links this large. Take them off; plain 15 mm links or silk knots are the classic pair.');
-    }
-    if (has('tiebar') && tie) {
-      const mm = +acc.tiebar.size || 45, f = mm / TIE_MM;
-      if (f <= 0.78) ok('tiebar', 'Tie bar, ' + mm + ' mm: about ' + Math.round(f * 100) + '% of an 8 cm tie. The classic proportion is about three quarters of the tie\'s width, so the bar sits inside its edges.');
-      else if (f <= 1) carry('tiebar', 0.55, 'Tie bar, ' + mm + ' mm: nearly the width of an 8 cm tie, so it reads as a line drawn across it.', [
-        { done: false, text: 'a wider tie (9 cm) to bring it inside the edges, if you own one' },
-        { done: acc.tiebar.metal === 'gunmetal', text: 'a matte metal that keeps it quiet' }
-      ]);
-      else out('tiebar', 'Tie bar, ' + mm + ' mm: longer than the tie is wide, so its ends stick out past the edges. Nothing else can hide that. Not for this tie: take it off, or keep it for a wider tie.');
-    }
-    if (has('ring')) {
-      const mm = +acc.ring.size || 12;
-      if (mm <= PARAMS.ringMax) ok('ring', 'Ring, ' + mm + ' mm: a classic signet or band size (up to about 15 mm across the face).');
-      else if (mm <= PARAMS.ringFar) carry('ring', 0.6, 'Ring, ' + mm + ' mm: a large face. It draws the eye to the hand.', [
-        { done: !has('cufflinks'), text: 'no cufflinks, so the hand carries one piece', fix: { label: 'Take off the cufflinks', acc: 'cufflinks', set: { on: false } } },
-        { done: !has('watch') || (+acc.watch.size || 38) <= watchRange(acc.wrist)[1], text: 'a watch within its range' }
-      ]);
-      else out('ring', 'Ring, ' + mm + ' mm: a statement ring. In a classic outfit nothing balances it; take it off for this one.');
-    }
   }
 
   /* One number for comparing outfits: the sum of shortfalls, weighted. */
@@ -1574,13 +679,16 @@
         if (o[1] < 0.03) return c.oklch[1] < 0.03 && Math.abs(c.lab[0] - lab[0]) < 18;
         return c.oklch[1] >= 0.03 && hueDist(c.oklch[2], o[2]) <= 28;
       }).map(function (c) { return Object.assign({ d: VC.deltaE2000(c.lab, lab) }, c); })
-        .sort(function (a, b) { return (a.tier > 2) - (b.tier > 2) || a.d - b.d; }).slice(0, 2);
+        .sort(function (a, b) { return Number(a.tier > 2) - Number(b.tier > 2) || a.d - b.d; }).slice(0, 2);
       list.forEach(function (c) { out.push({ name: c.name, hex: c.hex, tier: c.tier, of: f[1] }); });
     });
     return out;
   }
 
   window.VENGINE = {
+    ORDER: ORDER, part: part,
+    // the helpers the files in js/checks/ share with this one
+    kit: { VC: VC, G: G, PARAMS: PARAMS, FACE: FACE, SLOTS: SLOTS, P: P, SCALE_TEXT: SCALE_TEXT, round: round, look: look, seenColours: seenColours, bestAtFace: bestAtFace, skinReasons: skinReasons, stepOver: stepOver, scoreCached: scoreCached, okc: okc, wardrobeNeutral: wardrobeNeutral, hueDist: hueDist, samePattern: samePattern, suitWorn: suitWorn, colourName: colourName, framesOf: framesOf, frameWeight: frameWeight, frameTemp: frameTemp, watchRange: watchRange, isNeutral: isNeutral },
     analyseProfile: analyseProfile, bodyRatios: bodyRatios, scoreColour: scoreColour,
     RULES: RULES, PARAMS: PARAMS, stepOver: stepOver, seenColours: seenColours, bestAtFace: bestAtFace, ruleOf: ruleOf, kindOf: kindOf, wardrobeNeutral: wardrobeNeutral, checkOutfit: checkOutfit, verdict: verdict, penalty: penalty, SECTIONS: SECTIONS, sectionOf: sectionOf, watchRange: watchRange, summary: summary, look: look, SLOTS: SLOTS, FACE: FACE, TIER_TEXT: TIER_TEXT, corrected: corrected, HAIR: HAIR,
     okc: okc, hueDist: hueDist, scoreCached: scoreCached, round: round, G: G,
