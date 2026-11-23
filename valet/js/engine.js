@@ -559,7 +559,7 @@
         const range = Math.max.apply(null, Ls) - Math.min.apply(null, Ls);
         if (p.contrastLevel === 'low' && range > hi) add({ id: 'ocontrast', level: 'B', score: 0.65, slots: [],
           text: 'Outfit contrast: from darkest to lightest the outfit spans ' + round(range) + ' in lightness, more than your low-contrast colouring carries (' + round(hi) + '). Stark light-dark contrast takes the eye from a muted face; softer steps suit it (Flusser).' });
-        // "the same degree of contrast" (p. 20): a high-contrast face asks for a high-contrast outfit at the face,
+        // "the same degree of contrast" (Flusser, Dressing the Man, p. 20): a high-contrast face asks for a high-contrast outfit at the face,
         // the same band that makes the face high contrast (PARAMS.contrastHigh), not half of it
         else if (p.contrastLevel === 'high' && range < PARAMS.contrastHigh) add({ id: 'ocontrast', level: 'B', score: 0.65, slots: [],
           text: 'Outfit contrast: at the face the outfit spans only ' + round(range) + ' in lightness, less than your high-contrast colouring shows (' + round(PARAMS.contrastHigh) + ' or more). A tonal outfit dampens a face like yours; a clearly lighter or darker piece near the face livens it (Flusser).' });
