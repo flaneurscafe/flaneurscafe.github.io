@@ -363,7 +363,7 @@
       const st = worst < 0.5 ? 'no' : worst < 0.85 ? 'meh' : 'ok';
       return '<button type="button" class="ovw ' + st + '" data-sec="' + sec.id + '" title="' + esc(sec.q) + '"><span class="ovw-i">' + (st === 'ok' ? '✓' : st === 'meh' ? '~' : '✕') + '</span>' + sec.title.replace(/^\d\. /, '') + '</button>';
     }).join('');
-    $$('.ovw', box).forEach(function (b) { b.addEventListener('click', function () { const t = $('#sec-' + b.dataset.sec); if (t) t.scrollIntoView({ behavior: 'smooth', block: 'start' }); }); });
+    $$('.ovw', box).forEach(function (b) { b.addEventListener('click', function () { const t = $('#sec-' + b.dataset.sec); if (t) { t.open = true; t.scrollIntoView({ behavior: 'smooth', block: 'start' }); } }); });
   }
 
   function chipStyle(x) {
@@ -380,7 +380,7 @@
      layers from the innermost on the left to the outermost on the right. A position not worn keeps
      its place as an empty slot, so a piece is added where it is worn. */
   const ZONES = [
-    { id: 'head', label: 'Head', keys: ['hat'], acc: ['glasses', 'earring'] },
+    { id: 'head', label: 'Head', keys: ['hat'], acc: ['glasses'] },
     { id: 'upper', label: 'Head to belt', keys: ['shirt', 'tie', 'mid', 'jacket', 'square', 'boutonniere', 'coat', 'scarf'], acc: ['tiebar'] },
     { id: 'hands', label: 'Hands', keys: ['gloves'], acc: ['watch', 'cufflinks', 'ring'] },
     { id: 'legs', label: 'Waist and legs', keys: ['trousers'], acc: ['buckle', 'braces'] },
@@ -636,7 +636,7 @@
       const st = mine ? { state: mine.score < 0.5 ? 'out' : 'care', why: mine.text } : null;
       const x = acc[d.key], on = !!x.on, blocked = (d.needs === 'tie' && !(worn('tie') && kindOf('tie').id === 'tie')) ? 'Needs a tie.' : (d.needs === 'cuffs' && !kindOf('shirt').tieable) ? 'Needs a shirt with cuffs.' : '';
       const hint = d.key === 'watch' ? (wrist ? 'suits ' + E.watchRange(wrist).join('–') + ' mm for your wrist' : 'classic 36–40 mm') :
-        { cufflinks: 'classic 12–18 mm', tiebar: 'about ¾ of the tie: up to 60 mm on an 8 cm tie', ring: 'classic up to 15 mm', earring: 'up to about 5 mm' }[d.key];
+        { cufflinks: 'classic 12–18 mm', tiebar: 'about ¾ of the tie: up to 60 mm on an 8 cm tie', ring: 'classic up to 15 mm' }[d.key];
       return '<div class="acc-item acc-open' + (on ? '' : ' off') + (st ? ' st-' + st.state : '') + '" data-a="' + d.key + '">' +
         '<div class="acc-head"><button type="button" class="acc-pick" aria-expanded="true"><strong>' + d.name + '</strong></button>' + statusLine(st) + '<button type="button" class="btn ghost small acc-rm">Take off</button></div>' +
         (blocked ? '<span class="ed-note fit-care-t">' + blocked + '</span>' : '') +
@@ -1080,7 +1080,9 @@
      Proportion and Fit. */
 
   function renderChecks(checks, a) {
-    const icon = function (s, c) { return c && E.kindOf(c) === 'context' ? '<span class="ck-i" aria-label="information">i</span>' : s >= 0.85 ? '<span class="ok">✓</span>' : s >= 0.5 ? '<span class="meh">~</span>' : '<span class="no">✕</span>'; };
+    // advice (a context check, or a hint that only suggests) gets an i, not a tick that reads as a pass
+    const advice = function (c) { return E.kindOf(c) === 'context' || (c.hint && c.score >= 0.85); };
+    const icon = function (s, c) { return c && advice(c) ? '<span class="ck-i" aria-label="information">i</span>' : s >= 0.85 ? '<span class="ok">✓</span>' : s >= 0.5 ? '<span class="meh">~</span>' : '<span class="no">✕</span>'; };
     const badge = function (lv) { return '<span class="badge ' + lv.replace('/', '') + '">' + lv + '</span>'; };
     const fixMap = [];
     const rank = function (c) {
@@ -1090,7 +1092,7 @@
     const flagged = checks.filter(function (c) { return c.score < 0.85 && E.kindOf(c) !== 'context'; }).sort(function (x, y) { return rank(x) - rank(y); });
     const row = function (c) {
         const fx = fixesFor(c, a), base = fixMap.length; fixMap.push(fx);
-        const ctx = E.kindOf(c) === 'context';
+        const ctx = advice(c);
         const how = E.RULES[c.id] && E.RULES[c.id].how;
         return '<li class="' + (ctx ? 'ctx' : c.score < 0.5 ? 'fail' : c.score < 0.85 ? 'warn' : 'pass') + '">' + icon(c.score, c) + '<span>' +
           (how ? '<button type="button" class="rule-help" data-how="' + how + '" data-level="' + esc(c.level || 'B') + '" aria-expanded="false">' + badge(c.level) + ' ' + escs(c.text) +
@@ -1101,15 +1103,22 @@
           }).join('') + '</span>' : '') + '</span></li>';
     };
     const top = flagged.slice(0, 2);
+    // A check shown under What matters most is not repeated in its section (1.18); the section says where it is.
+    // A section with only ticks is folded: its chip at the top already shows the tick, and it opens on a click.
     const sections = E.SECTIONS.map(function (sec) {
-      const list = checks.filter(function (c) { return E.sectionOf(c) === sec.id; }).sort(function (x, y) { return x.score - y.score; });
-      if (!list.length) return '';
+      const all = checks.filter(function (c) { return E.sectionOf(c) === sec.id; });
+      const list = all.filter(function (c) { return top.indexOf(c) < 0; }).sort(function (x, y) { return x.score - y.score; });
+      const moved = all.length - list.length;
+      if (!all.length) return '';
+      const quiet = !moved && list.every(function (c) { return c.score >= 0.85 && !advice(c); });
       // what the eye measures first, then the conventions, each under a caption when a section has both
       const measured = list.filter(function (c) { return E.kindOf(c) === 'perceptual'; }), rest = list.filter(function (c) { return E.kindOf(c) !== 'perceptual'; });
       const both = measured.length && rest.length;
       const ul = function (l, cap) { return l.length ? (both ? '<p class="ck-kind">' + cap + '</p>' : '') + '<ul class="rules ck">' + l.map(row).join('') + '</ul>' : ''; };
-      return '<h3 class="ck-h" id="sec-' + sec.id + '">' + sec.title + '<span class="ck-q">' + esc(sec.q) + '</span></h3>' +
+      const head = '<h3 class="ck-h">' + sec.title + '<span class="ck-q">' + esc(sec.q) + (quiet ? (list.length === 1 ? ' It passes.' : ' All ' + list.length + ' pass.') : '') + '</span></h3>';
+      const body = (moved ? '<p class="ck-moved">' + (moved === 1 ? 'One check' : moved + ' checks') + ' of this question ' + (moved === 1 ? 'is' : 'are') + ' under What matters most, above.</p>' : '') +
         ul(measured, 'Measured: what the eye sees') + ul(rest, 'Convention: what tailoring expects');
+      return '<details class="ck-sec" id="sec-' + sec.id + '"' + (quiet ? '' : ' open') + '><summary>' + head + '</summary>' + body + '</details>';
     }).join('');
     const more = flagged.length - top.length;
     $('#ovChecks').innerHTML = (top.length ? '<h3 class="ck-h ck-top">What matters most</h3><ul class="rules ck ck-first">' + top.map(row).join('') + '</ul>' : '') +

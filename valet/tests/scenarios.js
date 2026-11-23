@@ -11,7 +11,7 @@ const P=(hex,kind,cloth,extra)=>Object.assign({hex,name:hex,kind,cloth,pat:{type
 function base(over){
   const o={hat:null,shirt:P('#c3d7ee','shirt','poplin'),tie:null,scarf:null,mid:null,jacket:P('#1d2a44','jacket','hopsack'),coat:null,square:null,
     trousers:P('#8e9196','trousers','flannel'),socks:P('#1d2a44','socks'),shoes:P('#4a3326','loafer','calf'),gloves:null,
-    occasion:'smart',propOn:false,body:{},shape:{},m:{},acc:{watch:{on:false},buckle:{on:false},cufflinks:{on:false},tiebar:{on:false},ring:{on:false},earring:{on:false}}};
+    occasion:'smart',propOn:false,body:{},shape:{},m:{},acc:{watch:{on:false},buckle:{on:false},cufflinks:{on:false},tiebar:{on:false},ring:{on:false}}};
   return Object.assign(o, over||{});
 }
 let fails=0;
@@ -378,8 +378,7 @@ T('an impossible combination is its own verdict', base({jacket:P('#2d3b2a','waxe
   const tie2 = P('#5e1f2c', 'tie', 'grenadine');
   count++; if (!hints(hb({ collar: 'cutaway' })).some(c => /^Not judged: no source says how a cutaway/.test(c.text))) { fails++; console.log('✗ a cutaway worn open: the mirror test, said as not judged'); }
   count++; if (hints(hb({ collar: 'buttondown' })).some(c => /behaves worn open/.test(c.text))) { fails++; console.log('✗ a button-down worn open is judged, so no hint'); }
-  count++; if (!hints(hb({ collar: 'cutaway' }, { tie: tie2 })).some(c => /knot.*Windsor/.test(c.text))) { fails++; console.log('✗ a cutaway with a tie: the knot test'); }
-  count++; if (!hints(hb({ collar: 'point' }, { tie: tie2 })).some(c => /small knot/.test(c.text))) { fails++; console.log('✗ a point collar with a tie: a small knot'); }
+  count++; if (hints(hb({ collar: 'cutaway' }, { tie: tie2 })).some(c => /knot/.test(c.text))) { fails++; console.log('✗ the knot advice is in How it works, not on every outfit (1.18)'); }
   count++; if (!hints(hb({ collar: 'point' })).some(c => /face width and length/.test(c.text))) { fails++; console.log('✗ no face measurements: said so'); }
   count++; if (!hints(hb({ collar: 'point' }, { body: { faceClass: 'middle' } })).some(c => /neither clearly broad/.test(c.text))) { fails++; console.log('✗ a middle face: no collar has to counterbalance it'); }
   count++; if (!hints(hb({ collarHex: '#f7f6f2', collar: 'spread' }, { jacket: null })).some(c => /no source covers a contrast collar worn without a tie.*jacket kept on/.test(c.text))) { fails++; console.log('✗ a contrast collar open, no jacket'); }
@@ -388,6 +387,17 @@ T('an impossible combination is its own verdict', base({jacket:P('#2d3b2a','waxe
   { const a = E.checkOutfit(hb({ collar: 'cutaway' }, { tie: tie2 }), aW), b = a.filter(c => c.id !== 'collarhint'); count++; if (E.verdict(a).title !== E.verdict(b).title) { fails++; console.log('✗ hints never change the verdict'); } }
   // a polo records no collar: the fields are ignored
   count++; if (G.contrastCollar('shirt', { kind: 'polo', hex: '#1d2a44', collarHex: '#f7f6f2' }) !== null) { fails++; console.log('✗ a polo has no contrast collar'); }
+}
+// ---- 1.18: a tall frame with short legs gets one message about a contrasting jacket, not a tick and a note ----
+{
+  const legs = (legRatio, height) => base({ jacket: P('#1d2a44', 'jacket', 'hopsack'), trousers: P('#8e9196', 'trousers', 'flannel'), propOn: true, body: { legRatio }, m: { height } });
+  const ids = o => E.checkOutfit(o, aW).filter(c => /^p(line|halves)$/.test(c.id));
+  const both = ids(legs(10, 190));
+  count++; if (both.some(c => c.id === 'phalves' && c.score >= 0.85) || !both.some(c => c.id === 'pline' && /Your height takes a contrast/.test(c.text))) { fails++; console.log('✗ tall and short-legged: one message', both); }
+  const tallLong = ids(legs(60, 190));
+  count++; if (!tallLong.some(c => c.id === 'phalves' && /tall frame/.test(c.text)) || tallLong.some(c => /Your height takes/.test(c.text))) { fails++; console.log('✗ tall with ordinary legs: the tick stays', tallLong); }
+  const shortLegsOnly = ids(legs(10, 172));
+  count++; if (shortLegsOnly.some(c => /Your height takes/.test(c.text))) { fails++; console.log('✗ not tall: no height clause', shortLegsOnly); }
 }
 console.log((fails ? fails + ' scenario(s) failed' : 'all scenarios pass') + ' (' + count + ' run)');
 if (fails) process.exit(1);

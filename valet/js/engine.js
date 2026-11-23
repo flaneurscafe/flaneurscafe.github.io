@@ -759,7 +759,7 @@
           else if (sqPlain) {
             const others = [].concat(L.tie.colours, L.shirt ? L.shirt.colours : [], L.jacket ? L.jacket.colours : []);
             const echoes = others.some(function (h) { return VC.deltaE2000(sq, VC.hexToLab(h)) < PARAMS.patternShareDE; });
-            add({ id: 'hank', score: echoes ? 1 : 0.9, slots: echoes ? [] : ['square'],
+            add({ id: 'hank', score: echoes ? 1 : 0.9, slots: echoes ? [] : ['square'], hint: !echoes,   // hint: shown as advice (i), not a tick
               text: echoes ? 'The square echoes a colour of the tie, shirt or jacket without matching the tie, as Flusser advises.' : 'Hint: the square repeats no colour of the tie, shirt or jacket; Flusser would have it echo one of them.' });
           }
           const sheenOf = function (k) { const c = G.cloth(k, o[k]); return c ? c.sheen || 0 : 0; };
@@ -791,7 +791,7 @@
             return !!f;
           });
         });
-        add({ id: 'echo', score: hit ? 1 : 0.9, slots: [],
+        add({ id: 'echo', score: hit ? 1 : 0.9, slots: [], hint: !hit,   // hint: shown as advice (i), not a tick
           text: hit ? 'Echo: the ' + nm(hit.k) + ' picks up the colour of ' + hit.f.what + ', which draws the eye to the face (Flusser).'
             : 'Hint: nothing near the face repeats the colour of ' + chromatic.map(function (f) { return f.what; }).join(' or ') + '. Echoing one of them is Flusser\'s second way to bring the face forward.' });
       }
@@ -995,13 +995,7 @@
     if (!L.tie && L.jacket && K.jacket.frame === 'lapel' && !cs.open && !cs.tieOnly)
       hint('Not judged: no source says how a ' + cn + ' collar behaves worn open. Flusser\'s test for any open collar is that it still frames the face: in a mirror, see whether the points stand up round the neck or fall flat onto the lapels. ' +
         (tall ? 'A tall band helps them stand.' : 'If they fall, a button-down or a taller band holds better.'));
-    // the knot: Valet does not record it, so it gives Flusser's and Gentleman's Gazette's tests
-    if (L.tie && K.tie.id === 'tie') {
-      if (cs.spread === 'wide' || cs.id === 'semispread') hint('Valet cannot see the knot. Flusser: a semi-spread to cutaway collar should leave no tie space above the knot' +
-        (cs.id === 'cutaway' ? ', and Gentleman\'s Gazette finds a large knot (a half or full Windsor) essential with a cutaway' : '') + '. Check that the knot fills the space between the points.');
-      else if (cs.spread === 'narrow') hint('Valet cannot see the knot. With long points close together, a small knot (a four-in-hand) sits best: a bulky knot pushes the points off the chest (Flusser).' +
-        (cs.tieOnly ? ' Gentleman\'s Gazette warns against a half Windsor with a tab.' : '') + ' Check that the points stay flat on the shirt when you turn your head.');
-    }
+    // the knot is not recorded; its tests are in How it works, not repeated on every outfit with a tie (1.18)
     // a contrast collar: Permanent Style on the tie, and on the jacket; nothing on wearing it open
     if (LC && knotted) hint('Valet cannot judge the tie for a contrast collar. Permanent Style: a tie dark or colourful enough draws the eye from the white collar; a pale or plain one is not strong enough, and the collar dominates.');
     else if (LC) hint('Not judged: no source covers a contrast collar worn ' + (L.tie ? 'with a cravat' : 'without a tie') + '; Gentleman\'s Gazette shows it only with a tie.' + (L.jacket ? '' : ' Permanent Style finds it looks a lot better with the jacket kept on.'));
@@ -1024,27 +1018,33 @@
     const lum = function (k) { return L[k] ? VC.hexToLab(L[k].mean)[0] : null; };
     const ad = function (c) { c.group = 'proportion'; c.level = c.level || 'B'; c.slots = c.slots || []; return add(c); };
     const top = L.jacket ? 'jacket' : L.mid ? 'mid' : 'shirt', rise = (o.trousers && o.trousers.rise) || 'mid';
+    // A tall frame with legs short for its height gets two pieces of advice about one contrast (1.18):
+    // the height takes a break between top and trousers (phalves, below), the legs want that break at
+    // the waist, not lower (pline). They are said together, once: the contrast is fine, its place is not.
+    const hgt = +((o.m || {}).height) || 0, tallFrame = hgt >= PARAMS.frameTall;
+    const lowBreak = function (d) { return d >= PARAMS.halvesStrong && (top === 'jacket' || rise === 'low'); };
+    const tallWord = shortLegs && tallFrame ? ' Your height takes a contrast between top and trousers (Flusser); it is where the break falls that costs you leg length.' : '';
     if (L[top] && L.trousers) {
       const d = Math.abs(lum(top) - lum('trousers')), jacketHem = top === 'jacket';
       if (d >= PARAMS.halvesStrong && jacketHem) ad({ id: 'pline', score: shortLegs ? 0.75 : 0.9, slots: [],
-        text: 'A strong light-dark step at the ' + nm('jacket') + '\'s hem, over the hips: the eye starts the legs there, lower than the waist.' + legWord + (shortLegs ? ' Closer lightness between jacket and trousers moves the line up.' : '') });
+        text: 'A strong light-dark step at the ' + nm('jacket') + '\'s hem, over the hips: the eye starts the legs there, lower than the waist.' + legWord + tallWord + (shortLegs ? ' Closer lightness between jacket and trousers moves the line up.' : '') });
       else if (d >= PARAMS.halvesStrong && rise === 'low') ad({ id: 'pline', score: shortLegs ? 0.75 : 0.9, slots: [],
-        text: 'The light-dark change sits at a low waistband, below your waist: the legs read shorter than they are.' + legWord + (shortLegs ? ' Higher-rise trousers move the line to your waist.' : '') });
+        text: 'The light-dark change sits at a low waistband, below your waist: the legs read shorter than they are.' + legWord + tallWord + (shortLegs ? ' Higher-rise trousers move the line to your waist.' : '') });
       else if (d >= PARAMS.halvesStrong) ad({ id: 'pline', score: 1, slots: [], text: 'The light-dark change between top and trousers falls at the waistband, where the legs appear to start.' });
     }
     // Top against trousers by build (Flusser, Dressing the Man, pp. 52-54, 271): the less contrast between the
     // halves, the longer and dressier the figure, which a short man wants; a tall man wants horizontal breaks,
     // such as a contrasting trouser. Matched (a suit, ΔE under nearFrom) is one block and not judged here.
     if (L[top] && L.trousers && VC.deltaE2000(VC.hexToLab(L[top].mean), VC.hexToLab(L.trousers.mean)) >= PARAMS.nearFrom) {
-      const d = Math.abs(lum(top) - lum('trousers')), h = +((o.m || {}).height) || 0;
-      const tall = h >= PARAMS.frameTall, short = (h && h < PARAMS.frameShort) || shortLegs;
+      const d = Math.abs(lum(top) - lum('trousers')), h = hgt;
+      const tall = tallFrame, short = (h && h < PARAMS.frameShort) || shortLegs;
       if (h && d < PARAMS.halvesL && tall) ad({ id: 'phalves', score: 0.8, slots: ['trousers'],
         text: nm(top) + ' and ' + nm('trousers') + ' are close in lightness (step ' + Math.round(d) + '): one long column on a tall frame. A contrasting trouser, or a patterned jacket, breaks the line (Flusser).' });
       else if (h && d < PARAMS.halvesL) ad({ id: 'phalves', score: 1, slots: [],
         text: nm(top) + ' and ' + nm('trousers') + ' close in lightness: ' + (short ? 'the less contrast between the halves, the longer the figure, which suits your build (Flusser).' : 'a long, dressy line (Flusser).') });
       else if (h && d >= PARAMS.halvesStrong && short && !(shortLegs && (top === 'jacket' || rise === 'low'))) ad({ id: 'phalves', score: 0.8, slots: ['trousers'],
         text: 'A strong light-dark step between ' + nm(top) + ' and ' + nm('trousers') + ' (' + Math.round(d) + ') cuts a shorter figure in two; closer tones lengthen it (Flusser).' });
-      else if (h && d >= PARAMS.halvesL && tall) ad({ id: 'phalves', score: 1, slots: [],
+      else if (h && d >= PARAMS.halvesL && tall && !(shortLegs && lowBreak(d))) ad({ id: 'phalves', score: 1, slots: [],
         text: 'A contrasting top and trousers break a tall frame\'s long line, as Flusser advises.' });
     }
     if (L.trousers && L.shoes) {
@@ -1408,22 +1408,7 @@
     }
     if (acc.ring && acc.ring.on && match.length && fam(acc.ring.metal) !== fams[0]) ad({ id: 'metal', score: 0.95,
       text: 'The ' + M[acc.ring.metal].name.toLowerCase() + ' ring differs from the other metal. A ring worn every day is usually let stand outside the matching rule.' });
-    // the earring is at the face, beside the frames
-    if (acc.earring && acc.earring.on) {
-      const em = acc.earring.metal;
-      if (glassMetal && fam(glassMetal) !== fam(em)) ad({ id: 'metal', score: 0.7, acc: 'earring',
-        text: 'The ' + M[em].name.toLowerCase() + ' earring and your ' + glassMetal + ' frames are two metals at the face, a hand apart. Match them.',
-        fixes: [{ label: 'Make the earring ' + (glassMetal === 'gold' ? 'gold' : 'silver'), acc: 'earring', set: { metal: glassMetal } }] });
-      else if (fam(em) === 'warm' && cool && !glassMetal) ad({ id: 'metal', score: 0.75, acc: 'earring',
-        text: 'A gold earring is a warm point at the face of cool colouring. Small, but it sits beside the skin; silver or white gold agrees with you.' });
-      else ad({ id: 'metal', score: 1, text: 'Earring: a single small stud in ' + M[em].name.toLowerCase() + ' is the quiet choice' + (glassMetal ? ', and it agrees with your frames.' : '.') });
-    }
     sizeChecks(acc, L, K, p, ad, worn, occasion, o);
-    // Formality: a stud is unremarkable in casual and evening dress; in traditional business
-    // dress it is still noticed, so it is a caution there, not a fault (B).
-    if (acc.earring && acc.earring.on && occasion === 'business')
-      ad({ id: 'acc', score: 0.8, acc: 'earring', text: 'For business, a stud is still noticed in traditional settings such as law, banking or a formal meeting. A small plain stud (silver, up to 4 mm) is the quiet choice; for the most formal days, leave it out.',
-        fixes: [{ label: 'Take it off for business', acc: 'earring', set: { on: false } }] });
 
     // stones: a small accent that reads best echoing a colour already worn
     const colours = [];
@@ -1433,9 +1418,7 @@
       const c = okc(st.hex);
       if (c[1] < 0.06) return;                           // onyx, pearl, diamond: neutral
       const echo = colours.some(function (h) { const q = okc(h); return q[1] >= 0.04 && hueDist(q[2], c[2]) <= 35; });
-      const warmStone = scoreCached(st.hex, p).temperature > 0.4;
-      if (a.face && warmStone && cool) ad({ id: 'stone', score: 0.7, acc: a.key, text: st.name + ' at the ear is a warm point beside the skin. A cool or neutral stone (onyx, sapphire, diamond) agrees with you.' });
-      else ad({ id: 'stone', score: echo ? 1 : 0.9, text: st.name + ' ' + a.name.toLowerCase().replace(' (stud)', '') + (echo ? ': echoes a colour in the outfit, so the accent looks chosen.' : ': a small accent of its own. It looks more deliberate when it echoes a colour you wear (lapis with navy, garnet with a burgundy tie).') });
+      ad({ id: 'stone', score: echo ? 1 : 0.9, text: st.name + ' ' + a.name.toLowerCase() + (echo ? ': echoes a colour in the outfit, so the accent looks chosen.' : ': a small accent of its own. It looks more deliberate when it echoes a colour you wear (lapis with navy, garnet with a burgundy tie).') });
     });
   }
 
@@ -1451,7 +1434,7 @@
   }
   function sizeChecks(acc, L, K, p, ad, worn, occasion, o) {
     const has = function (k) { return acc[k] && acc[k].on; };
-    const tie = !!(L.tie && K.tie.id === 'tie'), facePats = G.FACE.filter(function (k) { return L[k] && L[k].visible; });
+    const tie = !!(L.tie && K.tie.id === 'tie');
     // A check over the range: comps are { done, text, fix } and lift the score from base to at most 0.85.
     const carry = function (key, base, head, comps) {
       const done = comps.filter(function (c) { return c.done; }), todo = comps.filter(function (c) { return !c.done; });
@@ -1518,19 +1501,6 @@
         { done: !has('watch') || (+acc.watch.size || 38) <= watchRange(acc.wrist)[1], text: 'a watch within its range' }
       ]);
       else out('ring', 'Ring, ' + mm + ' mm: a statement ring. In a classic outfit nothing balances it; take it off for this one.');
-    }
-    if (has('earring')) {
-      const glf = framesOf(o), gm = glf && (glf.frame === 'gold' || glf.frame === 'silver') ? glf.frame : null, mm = +acc.earring.size || 4, st = acc.earring.stone || 'none';
-      const bright = st === 'diamond' || st === 'pearl' || (st === 'none' && acc.earring.metal !== 'gunmetal');
-      const why = ' The pupil is 2 to 8 mm and the iris about 12 mm: a stud up to about 5 mm reads as a point of light beside the face, and the eyes stay the focus.';
-      if (mm <= PARAMS.studMax) ok('earring', 'Earring, ' + mm + ' mm: a small stud, one ear.' + why);
-      else if (mm <= PARAMS.studFar) carry('earring', 0.5, 'Earring, ' + mm + ' mm: large for a stud.' + why + ' Past that it competes with them.', [
-        { done: !bright, text: 'a dark or matte face (onyx, gunmetal) so it does not sparkle', fix: bright ? { label: 'Swap the stone for onyx', acc: 'earring', set: { stone: 'onyx' } } : null },
-        { done: !gm || (G.metalBy[acc.earring.metal] || {}).warm === (gm === 'gold'), text: 'its metal matching your frames, so the face has one metal' },
-        { done: !facePats.length, text: 'no pattern at the face, so it is the only detail there', fix: facePats.length ? { label: 'Make the ' + K[facePats[0]].name.toLowerCase() + ' plain', slot: facePats[0], pat: { type: 'solid' } } : null },
-        { done: !L.square, text: 'no pocket square, one bright point near the face at a time', fix: L.square ? { label: 'Take off the square', slot: 'square', on: false } : null }
-      ]);
-      else out('earring', 'Earring, ' + mm + ' mm: past 8 mm it is an object beside the eye rather than a point.' + why + ' No change elsewhere quiets it in a classic outfit: take it off for these outfits, or wear a stud of 5 mm or less.');
     }
   }
 

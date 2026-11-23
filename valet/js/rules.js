@@ -43,8 +43,7 @@
     watchByWrist: [[15.5, 34, 38], [17, 36, 40], [18.5, 38, 42], [Infinity, 40, 44]],   // B §10  wrist under (cm): case range (mm)
     watchOver: 4,                                  // B §10  mm over the range: large; more than this, far over
     cufflinksMax: 18, cufflinksFar: 24,            // B §10  classic up to 18 mm; past 24 nothing makes up for it
-    ringMax: 15, ringFar: 20,                      // B §10  a classic face up to 15 mm
-    studMax: 5, studFar: 8                         // B §10  a stud up to the pupil's size; past 8 it competes with the eyes
+    ringMax: 15, ringFar: 20                       // B §10  a classic face up to 15 mm
   };
 
   /* ---------- The rules, one entry each ----------

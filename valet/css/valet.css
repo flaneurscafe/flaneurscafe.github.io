@@ -1392,3 +1392,15 @@ ul.sources { list-style: none; padding-left: 0; }
 .src-list a { overflow-wrap: anywhere; }
 .src-kind { margin: 0.3rem 0 0.2rem; font-weight: 600; font-size: 0.82rem; }
 .src-note { margin: 0 0 0.4rem; color: var(--muted); font-size: 0.8rem; }
+
+/* Check sections fold (1.18): a section with only ticks is closed, its question still showing */
+.ck-sec { scroll-margin-top: 1rem; }
+.ck-sec > summary { list-style: none; cursor: pointer; }
+.ck-sec > summary::-webkit-details-marker { display: none; }
+.ck-sec > summary .ck-h::before { content: '▾'; display: inline-block; width: 1.1em; color: var(--muted, #777); }
+.ck-sec:not([open]) > summary .ck-h::before { content: '▸'; }
+.ck-sec > summary:focus-visible { outline: 2px solid currentColor; outline-offset: 2px; }
+.ck-moved { font-size: 0.85rem; color: var(--muted, #777); margin: 0.2rem 0 0.4rem 1.1em; }
+.dr-how { margin: -0.4rem 0 0.9rem; font-size: 0.9rem; }
+.dr-how > summary { cursor: pointer; color: var(--muted); }
+.dr-how p { margin: 0.5rem 0 0; }

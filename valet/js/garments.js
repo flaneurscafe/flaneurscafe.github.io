@@ -285,7 +285,7 @@
   /* Accessories: small metal pieces, some with a stone. They are judged on metal (Outfit Check,
      question 6: one metal, a two-tone watch the only exception), on what they need to be worn
      with, and, for a stone, as a small accent colour. Glasses frames are set with the face on
-     the You tab and judged there; an earring is at the face too, so it is compared with them. */
+     the You tab and judged there. (An earring was removed in 1.18: nothing but the eye's anatomy stood behind it.) */
   const METALS = [
     { id: 'silver', name: 'Silver or steel', warm: false, hex: '#b9bcc0' },
     { id: 'white', name: 'White gold or platinum', warm: false, hex: '#d6d6d2' },
@@ -311,8 +311,7 @@
   ];
   const ACCESSORIES = [
     // Glasses: worn with an outfit, so set in the Dresser and saved with each outfit. At the face, so
-    // judged with the colours there (temperature) and against the face's contrast (weight), and
-    // compared with an earring rather than with the belt.
+    // judged with the colours there (temperature) and against the face's contrast (weight), not with the belt.
     { key: 'glasses', name: 'Glasses', glasses: true, face: true, metals: [],
       note: 'Frames sit at the face: a metal frame adds its temperature there, and an acetate frame is a line whose weight is judged against your contrast.' },
     { key: 'watch', name: 'Watch', watch: true, size: { label: 'Case diameter', min: 26, max: 50 }, metals: ['silver', 'white', 'gunmetal', 'gold', 'rose', 'twotone', 'black'] },
@@ -326,9 +325,7 @@
     { key: 'tiebar', name: 'Tie bar', needs: 'tie', size: { label: 'Length', min: 25, max: 90 }, metals: ['silver', 'white', 'gunmetal', 'gold'],
       note: 'Holds a tie to the shirt, between the third and fourth button; narrower than the tie.' },
     { key: 'ring', name: 'Ring', stone: true, size: { label: 'Face width', min: 2, max: 30 }, metals: ['silver', 'white', 'gold', 'rose'],
-      note: 'A signet or a wedding band. Most writers let a ring worn every day stand outside the matching rule.' },
-    { key: 'earring', name: 'Earring (stud)', stone: true, face: true, size: { label: 'Diameter', min: 1, max: 20 }, metals: ['silver', 'white', 'gunmetal', 'gold', 'rose'],
-      note: 'At the face, so it is read with your glasses frames and skin, not with the belt.' }
+      note: 'A signet or a wedding band. Most writers let a ring worn every day stand outside the matching rule.' }
   ];
   /* A watch beyond its case: the strap or bracelet and the display. Whether
      it is mechanical or quartz cannot be seen and is not judged; a digital display can be, and is

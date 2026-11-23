@@ -27,7 +27,7 @@
       glasses: { on: false, frame: 'gold', hex: '#161616' },
       watch: { on: true, metal: 'silver', size: 38, strap: 'leather', display: 'analogue' }, buckle: { on: true, metal: 'silver' }, braces: { on: false },
       cufflinks: { on: false, metal: 'silver', stone: 'none', size: 15 }, tiebar: { on: false, metal: 'silver', size: 45 },
-      ring: { on: false, metal: 'silver', stone: 'none', size: 12 }, earring: { on: false, metal: 'silver', stone: 'none', size: 4 }
+      ring: { on: false, metal: 'silver', stone: 'none', size: 12 }
     }
   };
   /* Until 1.5 a coat was a kind of outer layer in the jacket's place. It moves to its own position,

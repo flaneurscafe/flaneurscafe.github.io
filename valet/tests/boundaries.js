@@ -91,8 +91,8 @@ const has = (id, re) => cs => cs.some(c => c.id === id && c.score < 0.85 && (!re
 // accessory sizes: the mm limits
 // over the classic range the check says so (other pieces may carry it, so the score is not the test);
 // far over it, nothing carries it and the check fails
-// each at a size between its two limits (an earring past 8 mm is already far over)
-for (const [acc, maxKey, farKey, extra, mm] of [['cufflinks', 'cufflinksMax', 'cufflinksFar', { stone: 'none' }, 10], ['ring', 'ringMax', 'ringFar', {}, 10], ['earring', 'studMax', 'studFar', { stone: 'none' }, 6]]) {
+// each at a size between its two limits
+for (const [acc, maxKey, farKey, extra, mm] of [['cufflinks', 'cufflinksMax', 'cufflinksFar', { stone: 'none' }, 10], ['ring', 'ringMax', 'ringFar', {}, 10]]) {
   const o = base({ acc: { [acc]: Object.assign({ on: true, metal: 'silver', size: mm }, extra) } });
   const keepMax = PARAMS[maxKey];
   flip(acc + ' over its classic size', maxKey, mm, o, cs => cs.some(c => c.acc === acc && /mm: (large|a large face)/.test(c.text)), false);
