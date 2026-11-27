@@ -50,6 +50,14 @@
       const v = o && o[k];
       out[k] = typeof v === 'string' ? Object.assign({}, d[k], { hex: v }) : Object.assign({}, d[k], v || {});
       if (!window.VGARM.byKey[k].kinds.some(function (t) { return t.id === out[k].kind; })) out[k].kind = d[k].kind;
+      // 1.19: a chunky knit is a construction, not a yarn. "Chunky cable knit" was a cloth; it is now
+      // lambswool (what a chunky cable is usually knitted from) knitted chunky, which judges the same:
+      // formality 1, winter, matt (garments.js, KNITS). "Derby or brogue" is now a derby, plain unless
+      // said otherwise, at the same formality.
+      if (out[k].cloth === 'chunky') { out[k].cloth = 'lambswool'; out[k].knit = 'chunky'; }
+      const kn = window.VGARM.byKey[k].kinds.find(function (t) { return t.id === out[k].kind; });
+      if (out[k].knit != null && !(kn && kn.knit && window.VGARM.knitBy[out[k].knit])) delete out[k].knit;
+      if (out[k].brogue != null && !(kn && kn.brogue && window.VGARM.BROGUES.some(function (b) { return b.id === out[k].brogue; }))) delete out[k].brogue;
       // colours go into the page's markup, so anything that is not a colour is replaced
       if (!isHex(out[k].hex)) out[k].hex = d[k].hex;
       if (out[k].rise != null && ['high', 'mid', 'low'].indexOf(out[k].rise) < 0) delete out[k].rise;
@@ -164,6 +172,8 @@
           // the cloth by its id (a cloth left at its type's default is the same cloth), the pattern normalised
           const c = f.key === 'cloth' ? G.cloth(k, x) : null, v = f.key === 'pat' ? VP.norm(x.pat) : f.key === 'cloth' ? (c ? c.id : null) : x[f.key];
           sig.push(v === undefined ? null : v);
+        } else if (f.key === 'knit' && x.knit === 'chunky' && sig[2] === 'lambswool') {
+          sig[2] = 'chunky';   // a chunky lambswool knit is what "Chunky cable knit" was before 1.19: same identity, so its marks keep matching
         } else {
           const v = x[f.key];
           if (!(v == null || f.dflt(v, x))) sig.push(f.key + ':' + v);

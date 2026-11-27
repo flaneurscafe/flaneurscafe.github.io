@@ -50,6 +50,7 @@
   /* What goes with a garment. */
   function ask(id) {
     const g = byId(id); if (!g) return;
+    setTimeout(function () { const b = $('#clAsk'); if (b && !b.hidden) b.scrollIntoView({ block: 'nearest' }); }, 0);
     const job = C.around(garments(), g, opts());
     start(job, 'around', { gid: id, occ: opts().occasion }, function (run) {
       run.sum = C.summarise(job);
@@ -82,6 +83,8 @@
   }
 
   /* ---------- Drawing ---------- */
+  // after a garment is added or saved, the note offers the next step for it (justAdded: { id, note })
+  let justAdded = null;
   let note = '', removed = null, buyOpen = false, buySpec = /** @type {{ slot: string, kind: string, cloth?: string }} */ ({ slot: 'mid', kind: 'vneck', cloth: 'merino' });
   function render() {
     const box = $('#drGarments'); if (!box) return;
@@ -93,13 +96,15 @@
     }
     const list = garments();
     box.innerHTML =
-      '<p class="cl-lede">The clothes you own, one piece each. Add one here with <em>Add a garment</em>, or from the Outfit view with <em>Save to my garments</em> on any piece; <em>Wear</em> takes a garment back into the Outfit view, to check it with the rest of what you are wearing. <em>What goes with it?</em> tries a garment with all your others and judges every outfit as the Outfit view does. Mark the outfits you would and would not wear; Saved outfits then shows where you and Valet disagree. Untick <em>I own it</em> for a piece you are only thinking of buying: it is then tried only when you ask about it.</p>' +
+      '<p class="lede">The clothes you own, one piece each, and the outfits they make.</p>' +
+      '<details class="dr-how"><summary>How My garments works</summary><p class="cl-lede">Add one here with <em>Add a garment</em>, or from the Outfit view with <em>Save to my garments</em> on any piece; <em>Wear</em> takes a garment back into the Outfit view, to check it with the rest of what you are wearing. <em>What goes with it?</em> tries a garment with all your others and judges every outfit as the Outfit view does. Mark the outfits you would and would not wear; Saved outfits then shows where you and Valet disagree. Untick <em>I own it</em> for a piece you are only thinking of buying: it is then tried only when you ask about it.</p></details>' +
       '<div class="dr-tools"><button type="button" class="btn small" id="clAdd">Add a garment</button>' +
       '<label class="btn ghost small">Import garments<input type="file" id="clImport" accept="application/json,.json" hidden></label>' +
       '<button type="button" class="btn ghost small" id="clExport"' + (list.length ? '' : ' disabled') + '>Export garments</button>' +
       '<button type="button" class="btn ghost small" id="clClear"' + (list.length ? '' : ' disabled') + '>Delete all</button></div>' +
       '<div id="clEdit"></div>' +
-      (note ? '<p class="dr-note" role="status">' + esc(note) + '</p>' : '') +
+      (note ? '<div class="dr-note" role="status"><span>' + esc(note) + '</span>' + (justAdded && justAdded.note === note && byId(justAdded.id) ?
+        ' <span class="cl-next"><button type="button" class="btn small" data-nask>What goes with it?</button><button type="button" class="btn ghost small" data-nwear>Wear</button></span>' : '') + '</div>' : '') +
       '<div class="cl-occ"><span class="flabel">Occasion of the outfits Valet builds</span><div class="seg" role="radiogroup" aria-label="Occasion for the outfits">' + G.OCCASIONS.map(function (x) {
         return '<button type="button" role="radio" data-cocc="' + x.id + '" aria-checked="' + (opts().occasion === x.id) + '">' + esc(x.name) + '</button>';
       }).join('') + '</div></div>' +
@@ -107,6 +112,9 @@
       '<div id="clBuy"></div>' +
       '<div id="clList"></div>';
     wireTop(box);
+    const na = $('[data-nask]', box), nw = $('[data-nwear]', box), id = justAdded && justAdded.id;
+    if (na) na.addEventListener('click', function () { ask(id); paintList(); });
+    if (nw) nw.addEventListener('click', function () { const g = byId(id); if (g) h.wearGarment(g); });
     paintEdit(); paintAsk(); paintBuy(); paintList();
   }
   function wireTop(box) {
@@ -142,7 +150,8 @@
     editing = g ? { id: g.id, name: g.name, slot: g.slot, own: g.own, note: g.note || '', piece: JSON.parse(JSON.stringify(g.piece)) }
       : { id: null, name: '', slot: 'shirt', own: true, note: '', piece: C.cleanPiece('shirt', {}) };
     paintEdit();
-    const box = $('#clEdit'); if (box) { box.scrollIntoView({ block: 'nearest' }); const f = $('select, input', box); if (f) f.focus(); }
+    // focus the first choice for keyboard users; not on a touch screen, where focusing a field opens the keyboard over the form
+    const box = $('#clEdit'); if (box) { box.scrollIntoView({ block: 'nearest' }); const f = $('select', box); if (f && window.matchMedia && window.matchMedia('(pointer: fine)').matches) f.focus(); }
   }
   /* Keep the piece consistent after its position, type or cloth changes: cloth among the type's,
      a pattern the type and cloth can take. */
@@ -175,25 +184,30 @@
     const pt = e.piece.pat.type, two = pt !== 'solid', spect = e.slot === 'shoes' && kind.id === 'spectator';
     box.innerHTML = '<form class="cl-edit" novalidate><h3>' + (e.id ? 'Edit garment' : 'Add a garment') + '</h3>' +
       '<div class="cl-eform">' +
-      '<label>Name<input type="text" data-f="name" maxlength="80" value="' + esc(e.name) + '" placeholder="' + esc(C.autoName(e.slot, e.piece, h.api.nameOf)) + '"></label>' +
       '<label>Position<select data-f="slot">' + G.SLOTS.map(function (k) { return '<option value="' + k + '"' + (k === e.slot ? ' selected' : '') + '>' + esc(G.byKey[k].label) + '</option>'; }).join('') + '</select></label>' +
       '<label>Type<select data-f="kind">' + pos.kinds.map(function (k) { return '<option value="' + k.id + '"' + (k.id === kind.id ? ' selected' : '') + '>' + esc(k.name) + '</option>'; }).join('') + '</select></label>' +
       (cloths.length ? '<label>Cloth<select data-f="cloth">' + cloths.map(function (c) { return '<option value="' + c + '"' + (c === e.piece.cloth ? ' selected' : '') + '>' + esc(G.CLOTHS[c].name) + '</option>'; }).join('') + '</select></label>' : '') +
       (pats.length > 1 ? '<label>Pattern<select data-f="pat">' + pats.map(function (t) { return '<option value="' + t + '"' + (t === pt ? ' selected' : '') + '>' + esc(window.VPAT.byId[t].name) + '</option>'; }).join('') + '</select></label>' : '') +
-      // how much of the cloth is the second colour (patterns.js; the same steps as the Dresser's pattern editor)
-      (two ? '<label>Second colour covers<select data-f="cover">' + [['', 'as usually made (' + Math.round(window.VPAT.byId[pt].cover * 100) + '%)'], ['0.1', 'a touch'], ['0.33', 'about a third'], ['0.5', 'about half'], ['0.7', 'most']].concat(
-          e.piece.pat.cover != null && [0.1, 0.33, 0.5, 0.7].indexOf(e.piece.pat.cover) < 0 ? [[String(e.piece.pat.cover), Math.round(e.piece.pat.cover * 100) + '% (measured)']] : []).map(function (c) {
-          return '<option value="' + c[0] + '"' + ((e.piece.pat.cover == null ? '' : String(e.piece.pat.cover)) === c[0] ? ' selected' : '') + '>' + esc(c[1]) + '</option>'; }).join('') + '</select></label>' : '') +
+      // how a knit is knitted and whether a shoe is brogued (1.19; garments.js, KNITS, BROGUES)
+      (kind.knit ? '<label>Knit<select data-f="knit">' + G.KNITS.map(function (n) { return '<option value="' + n.id + '"' + (n.id === (e.piece.knit || 'fine') ? ' selected' : '') + '>' + esc(n.name) + '</option>'; }).join('') + '</select></label>' : '') +
+      (kind.brogue ? '<label>Toe<select data-f="brogue">' + G.BROGUES.map(function (n) { return '<option value="' + n.id + '"' + (n.id === (e.piece.brogue || 'plain') ? ' selected' : '') + '>' + esc(n.name) + '</option>'; }).join('') + '</select></label>' : '') +
       '</div>' +
       colourField('hex', two ? 'Ground colour' : 'Colour', e.piece.hex) +
       (two ? colourField('hex2', 'The pattern\'s second colour', e.piece.pat.hex2 || '', false) : '') +
+      (two && ['tartan', 'glen', 'tattersall', 'repp', 'paisley', 'foulard'].indexOf(pt) >= 0 ? '<p class="cl-hint">If it has more colours, choose the one that shows most against the ground; if two show about equally, try each with <em>What goes with it?</em> and see whether the answer holds.</p>' : '') +
+      // how much of the cloth is the second colour (patterns.js; the same steps as the Dresser's pattern editor)
+      (two ? '<div class="cl-eform"><label>Second colour covers<select data-f="cover">' + [['', 'as usually made (' + Math.round(window.VPAT.byId[pt].cover * 100) + '%)'], ['0.1', 'a touch'], ['0.33', 'about a third'], ['0.5', 'about half'], ['0.7', 'most']].concat(
+          e.piece.pat.cover != null && [0.1, 0.33, 0.5, 0.7].indexOf(e.piece.pat.cover) < 0 ? [[String(e.piece.pat.cover), Math.round(e.piece.pat.cover * 100) + '% (measured)']] : []).map(function (c) {
+          return '<option value="' + c[0] + '"' + ((e.piece.pat.cover == null ? '' : String(e.piece.pat.cover)) === c[0] ? ' selected' : '') + '>' + esc(c[1]) + '</option>'; }).join('') + '</select></label></div>' : '') +
+
       (spect ? colourField('spec', 'Toe cap and heel', e.piece.hex2 || '#f2efe6', false) : '') +
       (kind.brim ? colourField('band', 'Hat band', e.piece.band || '', true) : '') +
       // a woven shirt's collar (1.17): style, band, and a contrast colour ("None": the shirt's own)
       (kind.collars ? '<div class="cl-eform"><label>Collar<select data-f="collar">' + G.COLLARS.map(function (c) { return '<option value="' + c.id + '"' + (c.id === G.collarOf(e.piece).id ? ' selected' : '') + '>' + esc(c.name) + '</option>'; }).join('') + '</select></label>' +
         '<label>Collar band<select data-f="collarBand">' + G.COLLAR_BANDS.map(function (b) { return '<option value="' + b.id + '"' + (b.id === (e.piece.collarBand || 'standard') ? ' selected' : '') + '>' + esc(b.name) + '</option>'; }).join('') + '</select></label></div>' +
         colourField('collar', 'Collar colour, if not the shirt\'s own (a contrast collar)', e.piece.collarHex || '', true) : '') +
-      '<div class="cl-eform"><label class="cl-own"><input type="checkbox" data-f="own"' + (e.own ? ' checked' : '') + '> I own it (untick for a piece you are thinking of buying)</label>' +
+      '<div class="cl-eform"><label>Name<input type="text" data-f="name" maxlength="80" value="' + esc(e.name) + '" placeholder="' + esc(C.autoName(e.slot, e.piece, h.api.nameOf)) + '"></label>' +
+      '<label class="cl-own"><input type="checkbox" data-f="own"' + (e.own ? ' checked' : '') + '> I own it (untick for a piece you are thinking of buying)</label>' +
       '<label class="cl-enote">Note<input type="text" data-f="note" maxlength="200" value="' + esc(e.note) + '" placeholder="Anything to remember about it"></label></div>' +
       '<div class="cl-eacts"><button type="submit" class="btn small">' + (e.id ? 'Save changes' : 'Add to my garments') + '</button><button type="button" class="btn ghost small" data-ecancel>Cancel</button></div></form>';
     const f = $('form', box);
@@ -207,6 +221,8 @@
         else if (k === 'kind') { e.piece.kind = el.value; paintEdit(); }
         else if (k === 'cloth') { e.piece.cloth = el.value; paintEdit(); }
         else if (k === 'pat') { e.piece.pat = el.value === 'solid' ? { type: 'solid' } : { type: el.value, hex2: e.piece.pat.hex2 || '#f2efe6' }; paintEdit(); }
+        else if (k === 'knit') { if (el.value === 'fine') delete e.piece.knit; else e.piece.knit = el.value; }
+        else if (k === 'brogue') { if (el.value === 'plain') delete e.piece.brogue; else e.piece.brogue = el.value; }
         else if (k === 'collar') e.piece.collar = el.value;
         else if (k === 'collarBand') e.piece.collarBand = el.value;
         else if (k === 'cover') { e.piece.pat = Object.assign({}, e.piece.pat); if (el.value === '') delete e.piece.pat.cover; else e.piece.pat.cover = +el.value; }
@@ -232,11 +248,11 @@
       const notes = e.note.replace(/[\u0000-\u001f]/g, ' ').trim().slice(0, 200);
       if (e.id) {
         const g = byId(e.id);
-        if (g) { g.name = name; g.slot = e.slot; g.piece = piece; g.own = e.own; g.note = notes; note = 'Saved “' + name + '”.'; }
+        if (g) { g.name = name; g.slot = e.slot; g.piece = piece; g.own = e.own; g.note = notes; note = 'Saved “' + name + '”.'; justAdded = { id: g.id, note: note }; }
       } else {
         if (garments().length >= C.MAX) { note = 'My garments is full (' + C.MAX + ').'; editing = null; render(); return; }
         const g = C.fromPiece(e.slot, piece, name, e.own); g.note = notes; garments().push(g);
-        note = 'Added “' + name + '”. Press What goes with it? to see the outfits it makes, or Wear to check it in the Outfit view.';
+        note = 'Added “' + name + '”.'; justAdded = { id: g.id, note: note };
       }
       editing = null; h.api.save(); render();
     });
@@ -324,7 +340,7 @@
       (g.own ? '' : ' Bought, it would join <strong>' + plural(s.joins, 'good outfit') + '</strong> (good or works).') +
       (C.EXTRA.indexOf(g.slot) < 0 ? ' A tie, square or socks are added only where they make an outfit better; ask about one to see what it goes with.' : '') + '</p>';
     if (!s.tried) html += '<p class="dr-empty">' + (job.needs ? 'Nothing to try it with: it needs ' + esc(job.needs) + ', and there is none among your garments.' : 'Nothing to try it with: add garments for the other positions.') + '</p>';
-    if (s.tried) html += '<p class="cl-hint cl-keys"><strong>Wear</strong> opens the outfit in the Outfit view, with every check and its reason. <strong>Good</strong>, <strong>So-so</strong> and <strong>Bad</strong> are your own verdict, not Valet\'s: an outfit you mark is kept in Saved outfits with your verdict beside Valet\'s, and the ones where the two disagree show where a rule may be wrong. Press a pressed mark again to clear it.</p>';
+    if (s.tried) html += '<details class="dr-how cl-keys"><summary>Wear, Good, So-so and Bad: what they do</summary><p class="cl-hint"><strong>Wear</strong> opens the outfit in the Outfit view, with every check and its reason. <strong>Good</strong>, <strong>So-so</strong> and <strong>Bad</strong> are your own verdict, not Valet\'s: an outfit you mark is kept in Saved outfits with your verdict beside Valet\'s, and the ones where the two disagree show where a rule may be wrong. Press a pressed mark again to clear it.</p></details>';
     if (s.best.length) html += '<h4>The best</h4><ul class="cl-outfits">' + s.best.map(card).join('') + '</ul>';
     else if (s.tried) html += '<p class="dr-empty">None of these outfits passes. The closest are below.</p>';
     const no = s.nearly.concat(s.no);
@@ -416,12 +432,14 @@
     const g = x.gid ? byId(x.gid) : null;
     const same = g && g.slot === k && JSON.stringify(C.cleanPiece(k, x)) === JSON.stringify(g.piece);
     return '<div class="keep-row cl-save-row">' + (g
-      ? (same ? '<span class="ed-note">This is your garment “' + esc(g.name) + '”.</span>'
+      ? (same ? '<span class="ed-note">This is your garment “' + esc(g.name) + '”.</span><button type="button" class="btn small ghost" data-gask>What goes with it?</button>'
         : '<button type="button" class="btn small ghost" data-gsave="update">Update “' + esc(g.name) + '”</button><button type="button" class="btn small ghost" data-gsave="new">Save as a new garment</button>')
       : '<button type="button" class="btn small ghost" data-gsave="new">Save to my garments</button><button type="button" class="btn small ghost" data-gsave="maybe">…as thinking of buying</button>') +
       '<span class="ed-note">My garments keeps what it is, its cloth, colour and pattern, so Valet can find what goes with it.</span></div>';
   }
   function wireEditor(ed, k) {
+    const ga = $('[data-gask]', ed);
+    if (ga) ga.addEventListener('click', function () { const g = byId(S().outfit[k].gid); if (g) { h.showGarments(); ask(g.id); paintList(); } });
     $$('[data-gsave]', ed).forEach(function (b) {
       b.addEventListener('click', function () {
         const x = S().outfit[k], how = b.dataset.gsave;
@@ -433,7 +451,7 @@
         if (garments().length >= C.MAX) { h.note('My garments is full (' + C.MAX + ').'); return; }
         const g = C.fromPiece(k, x, C.autoName(k, x, h.api.nameOf), how !== 'maybe');
         garments().push(g); x.gid = g.id; h.api.save();
-        h.note('Saved “' + g.name + '” to My garments' + (how === 'maybe' ? ', as thinking of buying' : '') + '. Rename it there.');
+        h.note('Saved “' + g.name + '” to My garments' + (how === 'maybe' ? ', as thinking of buying' : '') + '. What goes with it? tries it with your other garments; rename it in My garments.');
       });
     });
   }

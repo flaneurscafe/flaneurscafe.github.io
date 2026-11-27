@@ -52,6 +52,7 @@ check('at most ' + C.MAX + ' garments', C.normGarments(Array.from({ length: C.MA
 const fp = C.fromPiece('jacket', Object.assign({}, O.normOutfit(null).jacket, { on: true, gid: 'zz', locks: 1 }), '', true);
 check('a garment from a piece keeps only the piece fields, not on or gid', !('on' in fp.piece) && !('gid' in fp.piece) && fp.name === 'Untitled' && /^g/.test(fp.id), fp);
 check('an automatic name: colour and type', C.autoName('jacket', { hex: hex('Navy'), kind: 'blazer' }, nameOf) === 'Navy blazer');
+check('an automatic name says the pattern, so two navy jackets are told apart', C.autoName('jacket', { hex: hex('Navy'), kind: 'jacket', cloth: 'flannel', pat: { type: 'tartan', hex2: '#2d4a32' } }, nameOf) === 'Navy tartan jacket');
 check('a description: type, cloth and pattern', C.describe(byName('Burgundy cravat')) === 'Cravat (ascot), silk twill, foulard', C.describe(byName('Burgundy cravat')));
 const list = C.normGarments(W.slice(0, 3)), inc = C.normGarments([W[0], Object.assign({}, W[5], { id: W[1].id })]);
 const mr = C.merge(list, inc);

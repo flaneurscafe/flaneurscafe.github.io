@@ -15,6 +15,7 @@ interface ValetPiece {
   hex: string; name?: string; kind?: string; cloth?: string; pat?: ValetPattern;
   rise?: string; length?: string; hex2?: string; buttons?: string; metal?: string; band?: string; brim?: string;
   collar?: string | null; collarBand?: string; collarHex?: string | null; collarName?: string;
+  knit?: string; brogue?: string;
   on?: boolean; gid?: string;
 }
 

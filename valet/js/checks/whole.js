@@ -20,7 +20,9 @@
     if (F.shirt != null && K.shirt.tieable && !(L.tie && K.tie.knotted)) F.shirt = Math.min(F.shirt, 4);
     const cn = function (k) { return C[k] ? C[k].name.toLowerCase().replace(/ \(shiny\)$/, '') : ''; };
     const csw = L.shirt && K.shirt.collars ? G.collarOf(o.shirt) : null;   // a collar that lowers the shirt's formality is named (garments.js)
-    const what = function (k) { return L[k].name + ' ' + (C[k] ? cn(k) + ' ' : '') + (k === 'shirt' && csw && csw.f != null ? csw.name.toLowerCase() + ' ' : '') + K[k].name.toLowerCase(); };
+    // a cloth the type's own name already says is not said twice ("suede gloves", not "suede suede gloves")
+    const said = function (k) { return K[k].name.toLowerCase().indexOf(cn(k).split(/[ ,(]/)[0]) >= 0; };
+    const what = function (k) { return L[k].name + ' ' + (C[k] && !said(k) ? cn(k) + ' ' : '') + (k === 'shirt' && csw && csw.f != null ? csw.name.toLowerCase() + ' ' : '') + (K[k].brogue && o[k].brogue === 'brogue' ? 'brogue ' : '') + K[k].name.toLowerCase(); };
     const occ = G.OCCASIONS.find(function (x) { return x.id === o.occasion; }) || G.OCCASIONS[1];
 
     // 4. Sheen: anything glossy near the face fails; below it, a caution; patent is for black tie.

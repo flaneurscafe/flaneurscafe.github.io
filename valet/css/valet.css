@@ -408,9 +408,18 @@ svg.ma { width: 100%; height: auto; max-height: 360px; overflow: visible; }
 .pat-use { color: var(--muted); font-size: 0.68rem; }
 .scale-read { font: 0.82rem var(--sans); margin: 0.35rem 0 0; display: flex; flex-wrap: wrap; align-items: center; gap: 0.35rem 0.5rem; }
 .sc-hand { color: var(--muted); }
-.acc-row { display: flex; flex-wrap: wrap; gap: 0.35rem; align-items: center; }
-.acc { width: 28px; height: 28px; border-radius: var(--sw-r); border: var(--sw-edge); cursor: pointer; padding: 0; }
-.acc.sel { outline: 2px solid var(--gold); outline-offset: 2px; }
+/* a pattern's second colour (Dresser, Cloth and pattern): named picks, then More colours */
+.sec-now { font-weight: 400; color: var(--muted); }
+.sec-more { margin-top: 0.5rem; }
+.sec-more > summary { cursor: pointer; font: 0.85rem var(--sans); color: var(--accent); min-height: 44px; display: flex; align-items: center; }
+.sec-more > summary::-webkit-details-marker { display: none; }
+.sec-more > summary::before { content: '▸'; display: inline-block; width: 1.1em; transition: transform 0.15s; }
+.sec-more[open] > summary::before { transform: rotate(90deg); }
+@media (prefers-reduced-motion: reduce) { .sec-more > summary::before { transition: none; } }
+.sec-sub { font: 600 0.8rem var(--sans); margin: 0.5rem 0 0.35rem; }
+.sec-other { display: flex; flex-wrap: wrap; align-items: center; gap: 0.6rem 1rem; margin-top: 0.6rem; font: 0.82rem var(--sans); }
+.sec-any { display: inline-flex; align-items: center; gap: 0.45rem; min-height: 44px; }
+.sec-any input { width: 44px; height: 32px; padding: 0; border: var(--sw-edge); border-radius: var(--sw-r); background: none; }
 .life-cv { display: block; border-radius: 4px; border: 1px solid rgba(0,0,0,0.2); max-width: 100%; }
 .ruler { height: 12px; margin-top: 3px; max-width: 100%; background: repeating-linear-gradient(90deg, var(--muted) 0 1px, transparent 1px calc(100% / 10)); border-bottom: 1px solid var(--muted); opacity: 0.6; }
 .ck-h { font: 600 0.9rem var(--sans); margin: 1rem 0 0.1rem; }
@@ -1404,3 +1413,5 @@ ul.sources { list-style: none; padding-left: 0; }
 .dr-how { margin: -0.4rem 0 0.9rem; font-size: 0.9rem; }
 .dr-how > summary { cursor: pointer; color: var(--muted); }
 .dr-how p { margin: 0.5rem 0 0; }
+/* the next step offered after a garment is added or saved (My garments) */
+.dr-note .cl-next { display: inline-flex; flex-wrap: wrap; gap: 0.4rem; margin-top: 0.35rem; }

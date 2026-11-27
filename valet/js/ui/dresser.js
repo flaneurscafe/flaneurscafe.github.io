@@ -35,6 +35,8 @@
   const spec2Name = function (h) { const c = SPEC2.find(function (x) { return x[1] === String(h).toLowerCase(); }); return c ? c[0].toLowerCase() : api.nameOf(h); };
 
   let api = null, open = null, tab = 'colour', filter = { fam: 'all', q: '', faceOnly: true }, undo = [], lastNote = '';
+  // the second colour of a pattern: whether "More colours" is open, and its own search (1.19.1)
+  let secMore = false; const secFilter = { fam: 'all', q: '' };
 
   const S = function () { return api.state(); };
   // the first sentence, with its full stop (no lookbehind: Safari before 16.4 cannot parse one)
@@ -562,6 +564,8 @@
     if (t.twoTone && !x.hex2) x.hex2 = '#f2efe6';                     // spectators start brown and white
     if (t.buttons && !x.buttons) x.buttons = 'silver';                // silver, so a new blazer agrees with the default steel watch
     if (!t.collars) { delete x.collar; delete x.collarBand; delete x.collarHex; }   // only a woven shirt records its collar
+    if (!t.knit) delete x.knit;                                       // only a knit records how it is knitted
+    if (!t.brogue) delete x.brogue;                                   // only an oxford or a derby is brogued
     return notes;
   }
   function keepAndFix(k) {
@@ -717,17 +721,18 @@
         : '<p class="ed-note">Colours read from photos of your own clothes, kept and named, so every piece can wear them again.</p>') +
       '<button type="button" class="btn small ghost mine-open">From photos…</button>';
   }
+  function openPhotos(k) {
+    const pat = VP.norm(piece(k).pat);
+    window.VPHOTOS.open({
+      piece: kindOf(k).name, patterned: pat.type !== 'solid',
+      fit: function (hex) { return fitLine(k, hex); },
+      wear: function (hex) { setColour(k, hex); },
+      second: function (hex) { snapshot(); piece(k).pat = Object.assign({}, pat, { hex2: hex }); commit(kindOf(k).name + ': second colour from a photo.'); }
+    });
+  }
   function mineWire(body, k) {
     const b = $('.mine-open', body); if (!b) return;
-    b.addEventListener('click', function () {
-      const pat = VP.norm(piece(k).pat);
-      window.VPHOTOS.open({
-        piece: kindOf(k).name, patterned: pat.type !== 'solid',
-        fit: function (hex) { return fitLine(k, hex); },
-        wear: function (hex) { setColour(k, hex); },
-        second: function (hex) { snapshot(); piece(k).pat = { type: pat.type, scale: pat.scale, hex2: hex }; commit(kindOf(k).name + ': second colour from a photo.'); }
-      });
-    });
+    b.addEventListener('click', function () { openPhotos(k); });
   }
 
   function previewOn(el, k, getter) {
@@ -836,14 +841,32 @@
   function clothHtml(k, x) {
     const kd = kindOf(k); if (!kd.cloths) return '';
     const cur = G.cloth(k, x);
+    // the tags say what this piece would be in that cloth, its knit and broguing included (G.cloth, G.formality)
+    const as = function (id) { return Object.assign({}, x, { cloth: id }); };
     return (k === 'shoes' ? '<h4>Upper</h4><p class="ed-note">The leather of the upper sets how formal the shoe is and whether it shines.</p>'
       : '<h4>Cloth</h4><p class="ed-note">What it is made of sets how formal it is, which season it belongs to, and whether it shines.</p>') + '<div class="cloth-grid">' +
       kd.cloths.map(function (id) {
-        const c = G.CLOTHS[id], f = kd.f == null ? null : Math.min(kd.f, c.f);
+        const c = G.cloth(k, as(id)), f = kd.f == null ? null : G.formality(k, as(id));
         return '<button type="button" class="cloth' + (cur.id === id ? ' sel' : '') + '" data-cloth="' + id + '" aria-pressed="' + (cur.id === id) + '">' +
           '<span class="cl-name">' + esc(c.name.replace(/ \(shiny\)$/, '')) + '</span><span class="cl-tags">' +
           (f != null ? '<span>' + FWORD[Math.max(0, f)] + '</span>' : '') + '<span>' + (c.season === 'all' ? 'all year' : c.season) + '</span>' + (c.sheen === 2 ? '<span class="cl-shiny">shiny</span>' : '') + '</span></button>';
-      }).join('') + '</div>';
+      }).join('') + '</div>' + makeHtml(k, x);
+  }
+  /* How a knit is knitted, and whether a shoe is brogued (1.19): apart from the yarn and the leather,
+     because a chunky cable can be lambswool and a brogue can be an oxford (garments.js, KNITS, BROGUES). */
+  function makeHtml(k, x) {
+    const kd = kindOf(k);
+    if (kd.knit) {
+      const cur = G.knitBy[x.knit] ? x.knit : 'fine';
+      return '<h4>Knit</h4><div class="seg" role="radiogroup" aria-label="Knit">' + G.KNITS.map(function (n) { return '<button type="button" role="radio" data-knit="' + n.id + '" aria-checked="' + (n.id === cur) + '">' + esc(n.name) + '</button>'; }).join('') + '</div>' +
+        '<p class="ed-note">' + esc(G.knitBy[cur].note) + '</p>';
+    }
+    if (kd.brogue) {
+      const cur = x.brogue === 'brogue' ? 'brogue' : 'plain';
+      return '<h4>Toe</h4><div class="seg" role="radiogroup" aria-label="Broguing">' + G.BROGUES.map(function (n) { return '<button type="button" role="radio" data-brogue="' + n.id + '" aria-checked="' + (n.id === cur) + '">' + esc(n.name) + '</button>'; }).join('') + '</div>' +
+        '<p class="ed-note">Broguing (punched holes, a wing tip) is decoration on an oxford or a derby, and makes it a step less formal than the same shoe plain (Flusser, Dressing the Man, p. 198).</p>';
+    }
+    return '';
   }
   /* A brimmed hat's band colour and brim width. */
   function hatHtml(k, x) {
@@ -862,8 +885,46 @@
   }
   function wireCloth(body, k) {
     $$('.cloth', body).forEach(function (b) {
-      b.addEventListener('click', function () { snapshot(); piece(k).cloth = b.dataset.cloth; commit(kindOf(k).name + ' in ' + G.CLOTHS[b.dataset.cloth].name.toLowerCase() + '.'); });
+      b.addEventListener('click', function () { snapshot(); piece(k).cloth = b.dataset.cloth; commit(kindOf(k).name + ' in ' + G.cloth(k, piece(k)).name.toLowerCase() + '.'); });
     });
+    $$('[data-knit]', body).forEach(function (b) { b.addEventListener('click', function () { snapshot(); if (b.dataset.knit === 'fine') delete piece(k).knit; else piece(k).knit = b.dataset.knit; commit(kindOf(k).name + ': ' + G.knitBy[b.dataset.knit].name.toLowerCase() + '.'); }); });
+    $$('[data-brogue]', body).forEach(function (b) { b.addEventListener('click', function () { snapshot(); if (b.dataset.brogue === 'plain') delete piece(k).brogue; else piece(k).brogue = 'brogue'; commit(kindOf(k).name + (b.dataset.brogue === 'brogue' ? ', brogued.' : ', plain.')); }); });
+  }
+  /* A pattern's second colour (1.19.1). Before, a row of unnamed squares and the system colour
+     picker: the names were only in hover titles, which a phone never shows, and the library and My
+     colours were out of reach. Now each colour is named, with its tier, like the Colour tab; the
+     colours already in the outfit come first, and "More colours" holds the rest. */
+  // patterns usually made in more than two colours: the editor says how to choose the second (How it works, Tartan)
+  const MULTI_PATS = ['tartan', 'glen', 'tattersall', 'repp', 'paisley', 'foulard'];
+  function secSwatch(hex, name, hex2, a) {
+    const tier = E.scoreColour(hex, a).tier;
+    return '<button type="button" class="swatch sec-pick t' + tier + (hex.toLowerCase() === hex2.toLowerCase() ? ' sel' : '') + '" data-hex="' + hex + '" aria-pressed="' + (hex.toLowerCase() === hex2.toLowerCase()) + '" title="' + esc(name) + ': tier ' + tier + '">' +
+      '<span class="chip" style="background:' + hex + '">' + tt(tier) + '</span><span class="sname">' + esc(name) + '</span></button>';
+  }
+  function secLibHtml(x, hex2, a) {
+    const lib = D.colours.filter(function (c) {
+      if (c.hex.toLowerCase() === x.hex.toLowerCase()) return false;       // the ground itself makes no pattern
+      if (secFilter.fam !== 'all' && c.family !== secFilter.fam) return false;
+      return !secFilter.q || c.name.toLowerCase().indexOf(secFilter.q.toLowerCase()) >= 0;
+    });
+    return lib.length ? lib.map(function (c) { return secSwatch(c.hex, c.name, hex2, a); }).join('') : '<p class="empty-tier">Nothing matches.</p>';
+  }
+  function secondHtml(x, hex2, quick, a) {
+    const mine = (S().myColours || []).filter(function (c) { return c.hex.toLowerCase() !== x.hex.toLowerCase(); }).slice(0, MINE_SHOWN);
+    return '<h4>Second colour: <span class="sec-now">' + esc(api.nameOf(hex2)) + '</span></h4>' +
+      '<p class="ed-note">Colours already in the outfit come first, then neutrals: patterns that share a colour hold together.</p>' +
+      // patterns usually woven or printed in more than two colours (How it works, Tartan)
+      (MULTI_PATS.indexOf(VP.norm(x.pat).type) >= 0 ? '<p class="ed-note sec-multi">If yours has more colours, choose the one that shows most against the ground. If two show about equally, try each: when the verdict holds both ways, either will do; when it changes, the outfit depends on that colour, and the message that changes says why. Black, grey and white count as neutrals, so a tartan\'s black rarely changes anything.</p>' : '') +
+      '<div class="swatches sec-quick">' + quick.map(function (h) { return secSwatch(h, api.nameOf(h), hex2, a); }).join('') + '</div>' +
+      '<details class="sec-more"' + (secMore ? ' open' : '') + '><summary>More colours</summary>' +
+        (mine.length ? '<p class="sec-sub">My colours</p><div class="swatches sec-mine">' + mine.map(function (c) { return secSwatch(c.hex, c.name, hex2, a); }).join('') + '</div>' : '') +
+        '<p class="sec-sub">All colours</p>' +
+        '<div class="lib-bar"><input type="search" class="sec-q" placeholder="Search: navy, claret, anthracite…" value="' + esc(secFilter.q) + '" aria-label="Search second colours">' +
+        '<div class="fam-chips">' + FAMILIES.map(function (f) { return '<button type="button" data-secfam="' + f[0] + '" aria-pressed="' + (secFilter.fam === f[0]) + '">' + f[1] + '</button>'; }).join('') + '</div></div>' +
+        '<div class="swatches lib sec-lib">' + secLibHtml(x, hex2, a) + '</div>' +
+        '<div class="sec-other"><label class="sec-any">Any colour <input type="color" class="acc-any" value="' + hex2 + '" aria-label="Any second colour"></label>' +
+        '<button type="button" class="btn small ghost sec-photo">From a photo…</button></div>' +
+      '</details>';
   }
   function clothEditor(body, k, x, a) {
     if (kindOf(k).pats.length <= 1) { body.innerHTML = (clothHtml(k, x) || '<p class="ed-note">Worn plain.</p>') + hatHtml(k, x); wireCloth(body, k); wireHat(body, k); return; }
@@ -898,10 +959,7 @@
         '<span class="ends"><span>' + (VP.byId[pat.type].min || 0.15) + ' cm</span><span>' + (VP.byId[pat.type].max || 20) + ' cm</span></span></label>' +
         '<p class="ed-note">' + VP.byId[pat.type].name + ' is made from ' + (VP.byId[pat.type].min || 0.15) + ' to ' + (VP.byId[pat.type].max || 20) + ' cm a repeat.</p>' +
         '<p class="scale-read"><strong class="sc-cm">' + pat.scale + ' cm</strong> <span class="tierpill sc-cls">' + cls.label + '</span> <span class="sc-hand">' + cls.hand + '</span></p>' +
-        '<h4>Second colour</h4><p class="ed-note">Colours already in the outfit come first: patterns that share a colour hold together.</p>' +
-        '<div class="acc-row">' + uniq.map(function (h) {
-          return '<button type="button" class="acc' + (h.toLowerCase() === hex2.toLowerCase() ? ' sel' : '') + '" data-hex="' + h + '" title="' + esc(api.nameOf(h)) + '" style="background:' + h + '"></button>';
-        }).join('') + '<input type="color" class="acc-any" value="' + hex2 + '" aria-label="Any second colour" title="Any colour"></div>' +
+        secondHtml(x, hex2, uniq, a) +
         '<h4>How much of the cloth is the second colour</h4><p class="ed-note">Decides the colour the pattern adds up to from a distance. A dense foulard or a bold grid shows more of it than the drawing.</p>' +
         '<div class="seg cover-seg" role="radiogroup" aria-label="Share of the second colour">' + COVER_STEPS.map(function (c) {
           const on = c.v == null ? pat.cover == null : pat.cover != null && Math.abs(pat.cover - c.v) < 0.005;
@@ -938,10 +996,26 @@
       drawDistance(body, x.hex, { type: pat.type, scale: cm, hex2: hex2 });
     });
     sc.addEventListener('change', function () { api.preview(null); apply(keepCover({ type: pat.type, scale: toCm(+sc.value), hex2: hex2 })); });
-    $$('.acc', body).forEach(function (b) {
-      previewOn(b, k, function () { return { hex: x.hex, pat: { type: pat.type, scale: pat.scale, hex2: b.dataset.hex } }; });
-      b.addEventListener('click', function () { api.preview(null); apply(keepCover({ type: pat.type, scale: pat.scale, hex2: b.dataset.hex })); });
+    // the second colour: named picks, and More colours (My colours, the library, a photo, any colour)
+    const wireSec = function (root) {
+      $$('.sec-pick', root).forEach(function (b) {
+        previewOn(b, k, function () { return { hex: x.hex, pat: { type: pat.type, scale: pat.scale, hex2: b.dataset.hex } }; });
+        b.addEventListener('click', function () { api.preview(null); apply(keepCover({ type: pat.type, scale: pat.scale, hex2: b.dataset.hex })); });
+      });
+    };
+    wireSec(body);
+    const more = $('.sec-more', body);
+    more.addEventListener('toggle', function () { secMore = more.open; });
+    const paintLib = function () { const box = $('.sec-lib', body); box.innerHTML = secLibHtml(x, hex2, a); wireSec(box); };
+    $('.sec-q', body).addEventListener('input', function (e) { secFilter.q = e.target.value; paintLib(); });
+    $$('[data-secfam]', body).forEach(function (b) {
+      b.addEventListener('click', function () {
+        secFilter.fam = b.dataset.secfam;
+        $$('[data-secfam]', body).forEach(function (o) { o.setAttribute('aria-pressed', String(o === b)); });
+        paintLib();
+      });
     });
+    $('.sec-photo', body).addEventListener('click', function () { openPhotos(k); });
     const any = $('.acc-any', body);
     any.addEventListener('input', function () { const np = { type: pat.type, scale: pat.scale, hex2: any.value }; api.preview(k, { hex: x.hex, pat: np }); drawLife(body, x.hex, np); drawDistance(body, x.hex, np); });
     any.addEventListener('change', function () { api.preview(null); apply(keepCover({ type: pat.type, scale: pat.scale, hex2: any.value })); });
@@ -1139,13 +1213,20 @@
     if (locks[k]) return [{ label: 'Locked: unlock to get a fix', disabled: true }];
     const kd = kindOf(k), cur = G.cloth(k, piece(k)), occ = G.OCCASIONS.find(function (x) { return x.id === (S().outfit.occasion || 'smart'); });
     const season = a && a.season === 'summer' ? 'summer' : 'winter';
-    const setCloth = function (id) { return { label: kindOf(k).name + ' in ' + G.CLOTHS[id].name.toLowerCase().replace(/ \(shiny\)$/, '') + ' instead', run: function () { snapshot(); piece(k).cloth = id; commit(kindOf(k).name + ' in ' + G.CLOTHS[id].name.toLowerCase() + '.'); } }; };
+    // a cloth as this piece would be in it: its knit and broguing kept (G.cloth, G.formality)
+    const as = function (id) { return Object.assign({}, piece(k), { cloth: id }); };
+    const setCloth = function (id) { const nm = G.cloth(k, as(id)).name.toLowerCase().replace(/ \(shiny\)$/, ''); return { label: kindOf(k).name + ' in ' + nm + ' instead', run: function () { snapshot(); piece(k).cloth = id; commit(kindOf(k).name + ' in ' + nm + '.'); } }; };
+    // a chunky knit is casual and winter whatever its yarn: the fix is a finer knit of the same yarn
+    const fineKnit = { label: 'A fine-gauge ' + kindOf(k).name.toLowerCase() + ' instead', run: function () { snapshot(); delete piece(k).knit; commit(kindOf(k).name + ': fine or medium gauge.'); } };
+    const chunky = kd.knit && piece(k).knit === 'chunky';
     const setKind = function (id) { const t = G.byKey[k].kinds.find(function (q) { return q.id === id; }); return { label: 'Wear ' + t.name.toLowerCase() + (/s$/.test(t.name) ? '' : 's') + ' instead', run: function () { snapshot(); piece(k).kind = id; if (piece(k).cloth && t.cloths.indexOf(piece(k).cloth) < 0) piece(k).cloth = t.cloths[0]; commit(t.name + ' instead.'); } }; };
-    const fOf = function (id) { return kd.f == null ? null : Math.min(kd.f, G.CLOTHS[id].f); };
-    const okCloth = function (id) { const cl = G.CLOTHS[id]; return cl.sheen < 2 && cl.season !== (season === 'summer' ? 'winter' : 'summer'); };
+    const fOf = function (id) { return kd.f == null ? null : G.formality(k, as(id)); };
+    const okCloth = function (id) { const cl = G.cloth(k, as(id)); return cl.sheen < 2 && cl.season !== (season === 'summer' ? 'winter' : 'summer'); };
     const inRange = function (f) { return f != null && f >= occ.range[0] && f <= occ.range[1]; };
     if (c.id === 'sheen') { const id = (kd.cloths || []).find(function (q) { return G.CLOTHS[q].sheen < 2 && okCloth(q); }); if (id) out.push(setCloth(id)); }
+    else if (c.id === 'season' && chunky && season === 'summer') out.push(fineKnit);
     else if (c.id === 'season') { const id = (kd.cloths || []).find(function (q) { return q !== cur.id && okCloth(q) && Math.abs((fOf(q) || 0) - (fOf(cur.id) || 0)) <= 1; }) || (kd.cloths || []).find(function (q) { return q !== cur.id && okCloth(q); }); if (id) out.push(setCloth(id)); }
+    else if ((c.id === 'occasion' || c.id === 'formal') && chunky && inRange(G.formality(k, Object.assign({}, piece(k), { knit: undefined })))) out.push(fineKnit);
     else if (c.id === 'occasion' || c.id === 'formal') {
       const id = (kd.cloths || []).find(function (q) { return q !== cur.id && okCloth(q) && inRange(fOf(q)); });
       if (id) out.push(setCloth(id));
@@ -1191,7 +1272,8 @@
   }
   function init(theApi) {
     api = theApi;
-    window.VCLOSETUI.init({ api: api, chipStyle: chipStyle, wearGarment: wearGarment, wearOutfit: wearOutfit, markOf: markOf, mark: setMark, note: note });
+    window.VCLOSETUI.init({ api: api, chipStyle: chipStyle, wearGarment: wearGarment, wearOutfit: wearOutfit, markOf: markOf, mark: setMark, note: note,
+      showGarments: function () { setView('garments'); } });
     $$('.dr-views [data-view]').forEach(function (b) { b.addEventListener('click', function () { setView(b.dataset.view); }); });
     $('#ovComplete').addEventListener('click', completeOutfit);
     $('#ovUndo').addEventListener('click', function () {

@@ -57,10 +57,11 @@
     return { id: newId(), name: String(name || '').trim().slice(0, 80) || 'Untitled', slot: slot, own: own !== false,
       added: new Date().toISOString().slice(0, 10), piece: cleanPiece(slot, piece) };
   }
-  /* A name for a garment saved without one: its colour and type ("Navy blazer"). */
+  /* A name for a garment saved without one: its colour, its pattern if it has one, and its type
+     ("Navy blazer", "Navy tartan jacket"), so two pieces of one colour are told apart in the lists. */
   function autoName(slot, piece, nameOf) {
-    const k = G.kind(slot, piece), n = nameOf(piece.hex);
-    return n.charAt(0).toUpperCase() + n.slice(1) + ' ' + k.name.toLowerCase();
+    const k = G.kind(slot, piece), n = nameOf(piece.hex), p = window.VPAT.norm(piece.pat);
+    return n.charAt(0).toUpperCase() + n.slice(1) + ' ' + (p.type !== 'solid' ? window.VPAT.byId[p.type].name.toLowerCase() + ' ' : '') + k.name.toLowerCase();
   }
   /* Its type, cloth and pattern in words, for the list. */
   function describe(g) {
@@ -68,7 +69,7 @@
     // a shirt's collar when it is not the default semi-spread self collar
     const cs = k.collars ? G.collarOf(g.piece) : null, ch = k.collars ? G.contrastCollar(g.slot, g.piece) : null;
     const collar = cs && (cs.id !== 'semispread' || ch || g.piece.collarBand === 'tall') ? (ch ? 'contrast ' : '') + (g.piece.collarBand === 'tall' ? 'tall ' : '') + cs.name.toLowerCase() + ' collar' : '';
-    return [k.name, c ? O.clothWord(c) : '', p.type !== 'solid' ? window.VPAT.byId[p.type].name.toLowerCase() : '', collar].filter(Boolean).join(', ');
+    return [k.name, k.brogue && g.piece.brogue === 'brogue' ? 'brogued' : '', c ? O.clothWord(c) : '', p.type !== 'solid' ? window.VPAT.byId[p.type].name.toLowerCase() : '', collar].filter(Boolean).join(', ');
   }
   /* Merging an imported list: a garment already there (same slot, name and piece) is skipped; a
      different one that carries an id already in use gets a new id. incoming: made safe. */

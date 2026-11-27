@@ -30,7 +30,12 @@
     { id: 'repp', name: 'Repp stripe', family: 'Stripe', scale: 2.2, min: 0.8, max: 4, cover: 0.3455, use: 'ties' },
     { id: 'breton', name: 'Breton stripe', family: 'Stripe', scale: 2.4, min: 1, max: 4, cover: 0.3485, use: 'knits, tees' },
     { id: 'paisley', name: 'Paisley', family: 'Figure', scale: 2.5, min: 1, max: 10, cover: 0.126, use: 'ties, scarves, squares' },
-    { id: 'foulard', name: 'Foulard', family: 'Figure', scale: 1.2, min: 0.6, max: 2.5, cover: 0.1122, use: 'ties, bow ties, squares' }
+    { id: 'foulard', name: 'Foulard', family: 'Figure', scale: 1.2, min: 0.6, max: 2.5, cover: 0.1122, use: 'ties, bow ties, squares' },
+    // 1.19: bands of several widths crossing, blended where ground and colour cross, as in a twill
+    // tartan. A real tartan has three colours or more; Valet draws the two that stand out most
+    // (How it works, Tartan). The repeat (the sett) runs from a small tie sett through a reduced
+    // jacket sett to a full sett for coats and scarves.
+    { id: 'tartan', name: 'Tartan', family: 'Check', scale: 8, min: 2, max: 18, cover: 0.235, use: 'jackets, trousers, coats, scarves' }
   ];
 
   /* The drawings' Fourier spectra, measured once in a browser from a 128-pixel tile of each
@@ -54,6 +59,8 @@
     repp: [[1.414,0.5631],[2.828,0.2626],[4.243,0.0243],[5.657,0.1482],[7.071,0.0959],[8.485,0.0241],[9.899,0.0877],[11.314,0.0535],[12.728,0.0237],[14.142,0.0626],[15.556,0.0336],[16.971,0.0232],[18.385,0.0483],[19.799,0.022],[21.213,0.0226],[22.627,0.0389],[25.456,0.0218],[26.87,0.032],[29.698,0.021],[31.113,0.0266],[33.941,0.02],[35.355,0.0223],[38.184,0.0191],[39.598,0.0187]],
     breton: [[1,0.5659],[2,0.2592],[3,0.0303],[4,0.1503],[5,0.092],[6,0.0299],[7,0.0891],[8,0.049],[9,0.0294],[10,0.0633],[11,0.0287],[12,0.0286],[13,0.0484],[15,0.0277],[16,0.0382],[18,0.0265],[19,0.0306],[21,0.0252],[22,0.0244],[24,0.0237],[25,0.0194],[27,0.022],[30,0.0203],[33,0.0184]],
     paisley: [[1,0.1282],[1.414,0.1693],[2,0.0511],[2.236,0.0995],[2.828,0.0785],[3,0.0409],[3.162,0.048],[3.606,0.067],[4,0.0311],[4.123,0.0396],[4.243,0.044],[4.472,0.0478],[5,0.047],[5.099,0.0513],[5.831,0.0263],[6,0.0311],[6.083,0.0399],[7.81,0.0257],[8.544,0.0413],[9.22,0.033],[9.849,0.0253],[10,0.0284],[10.296,0.0285],[11.18,0.0283]],
+    // measured in 1.19 the same way (tools: the method reproduces the gingham, glen and paisley rows exactly)
+    tartan: [[1,0.1458],[1.414,0.034],[2,0.1584],[2.236,0.0366],[2.828,0.0397],[3,0.0587],[4,0.0636],[6,0.0543],[7,0.027],[8,0.0742],[8.246,0.0185],[9,0.0343],[10,0.0693],[10.198,0.0174],[11,0.0298],[12,0.0243],[14,0.0291],[16,0.0309],[17,0.0206],[18,0.0371],[19,0.0425],[27,0.0216],[30,0.0184],[41,0.0216]],
     foulard: [[1,0.1291],[1.414,0.1489],[2,0.0986],[2.236,0.0187],[3,0.0206],[3.606,0.0744],[4.123,0.0508],[4.243,0.0501],[4.472,0.0335],[5,0.0649],[5.385,0.0403],[6.083,0.0152],[7.071,0.029],[7.211,0.0196],[7.28,0.0127],[7.81,0.0169],[8.485,0.0119],[9.899,0.0178],[10,0.0116],[10.63,0.0111],[12.728,0.0133],[13.454,0.0207],[13.601,0.0115],[16.279,0.0121]]
   };
   const byId = {};
@@ -248,6 +255,21 @@
         break;
       }
       case 'breton': rect(0, S * 0.65, S, S * 0.35); break;
+      case 'tartan': {
+        // one sett, mirrored about its middle as tartans are: a broad band (centred on the edge, so it
+        // wraps), a pair of tramlines and a fine overstripe between them. Each band runs both ways at
+        // half strength, as the coloured yarn is half the threads where it crosses the ground; where
+        // two bands cross the cloth is the colour itself.
+        const B = [[-0.14, 0.14], [0.37, 0.41], [0.59, 0.63], [0.49, 0.51]];
+        const span = function (b, f) { const lo = b[0] * S, hi = b[1] * S; if (lo < 0) { f(0, hi); f(S + lo, S); } else f(lo, hi); };
+        c.globalAlpha = 0.5;
+        B.forEach(function (b) { span(b, function (p0, p1) { rect(p0, 0, p1 - p0, S); rect(0, p0, S, p1 - p0); }); });
+        c.globalAlpha = 1; c.fillStyle = g;
+        B.forEach(function (bx) { B.forEach(function (by) { span(bx, function (x0, x1) { span(by, function (y0, y1) { rect(x0, y0, x1 - x0, y1 - y0); }); }); }); });
+        c.fillStyle = a;
+        B.forEach(function (bx) { B.forEach(function (by) { span(bx, function (x0, x1) { span(by, function (y0, y1) { rect(x0, y0, x1 - x0, y1 - y0); }); }); }); });
+        break;
+      }
       case 'pindot':
         [[0.25, 0.25], [0.75, 0.75]].forEach(function (p) { c.beginPath(); c.arc(p[0] * S, p[1] * S, S * 0.075, 0, Math.PI * 2); c.fill(); });
         break;

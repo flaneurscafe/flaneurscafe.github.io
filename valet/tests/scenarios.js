@@ -4,8 +4,8 @@
    Run with Node from the project folder: node tests/scenarios.js (VERBOSE=1 lists each). Exits 1 on failure.
    When a rule changes on purpose, change its scenario with it. */
 global.window={}; const path=require('path'); const ROOT=path.join(__dirname,'..');
-require('./load')(['colour','vision','patterns','data','garments', 'rules', 'engine', 'suggest','body','proportion','chart']);
-const E=window.VENGINE, G=window.VGARM, D=window.VDATA;
+require('./load')(['colour','vision','patterns','data','garments', 'rules', 'engine', 'suggest','body','proportion','chart','outfit']);
+const E=window.VENGINE, G=window.VGARM, D=window.VDATA, O=window.VOUTFIT;
 const aW=E.analyseProfile(Object.assign({},D.demo,{season:'winter'})), aS=E.analyseProfile(Object.assign({},D.demo,{season:'summer'}));
 const P=(hex,kind,cloth,extra)=>Object.assign({hex,name:hex,kind,cloth,pat:{type:'solid'}},extra||{});
 function base(over){
@@ -398,6 +398,42 @@ T('an impossible combination is its own verdict', base({jacket:P('#2d3b2a','waxe
   count++; if (!tallLong.some(c => c.id === 'phalves' && /tall frame/.test(c.text)) || tallLong.some(c => /Your height takes/.test(c.text))) { fails++; console.log('✗ tall with ordinary legs: the tick stays', tallLong); }
   const shortLegsOnly = ids(legs(10, 172));
   count++; if (shortLegsOnly.some(c => /Your height takes/.test(c.text))) { fails++; console.log('✗ not tall: no height clause', shortLegsOnly); }
+}
+// ---- 1.19: a knit's construction apart from its yarn; broguing apart from the shoe ----
+{
+  const ok = (name, cond) => { count++; if (!cond) { fails++; console.log('✗ ' + name); } };
+  const cg = (cloth, knit) => ({ kind: 'cardigan', hex: '#1d2a44', cloth, knit });
+  ok('a fine lambswool cardigan is relaxed and winter', G.formality('mid', cg('lambswool')) === 3 && G.cloth('mid', cg('lambswool')).season === 'winter');
+  ok('a chunky knit is casual whatever its yarn', G.formality('mid', cg('cashmere', 'chunky')) === 1 && G.formality('mid', cg('lambswool', 'chunky')) === 1);
+  ok('a chunky knit is named by its yarn', G.cloth('mid', cg('merino', 'chunky')).name === 'Chunky merino' && G.cloth('mid', cg('merino', 'chunky')).id === 'merino');
+  ok('a chunky cotton knit is all year, not summer', G.cloth('mid', { kind: 'crew', hex: '#1d2a44', cloth: 'cottonknit', knit: 'chunky' }).season === 'all');
+  ok('a chunky knit is no longer a yarn', G.byKey.mid.kinds.every(k => (k.cloths || []).indexOf('chunky') < 0) && !G.CLOTHS.chunky);
+  // an outfit saved before 1.19 with a "Chunky cable knit" cardigan: lambswool knitted chunky, judged the same, same identity
+  const was = O.normOutfit({ mid: { on: true, kind: 'cardigan', hex: '#1d2a44', cloth: 'chunky' } });
+  ok('old chunky cable knit becomes chunky lambswool', was.mid.cloth === 'lambswool' && was.mid.knit === 'chunky' && G.formality('mid', was.mid) === 1);
+  const sig = O.outfitSig(was);
+  ok('its identity is what it was, so its marks still match', sig.indexOf('"chunky"') >= 0 && sig.indexOf('knit:') < 0);
+  ok('a knit setting on a type that is not knitted is dropped', O.normOutfit({ shirt: { kind: 'oxfordshirt', hex: '#ffffff', knit: 'chunky' } }).shirt.knit === undefined);
+  // broguing: a step less formal (Flusser, p. 198)
+  const sh = (kind, brogue) => ({ kind, hex: '#3b2417', cloth: 'calf', brogue });
+  ok('a plain oxford is business, a brogued one smart', G.formality('shoes', sh('oxford')) === 5 && G.formality('shoes', sh('oxford', 'brogue')) === 4);
+  ok('a brogued derby is a step below a plain one', G.formality('shoes', sh('derby', 'brogue')) === G.formality('shoes', sh('derby')) - 1);
+  ok('a loafer is not brogued', O.normOutfit({ shoes: { kind: 'loafer', hex: '#3b2417', brogue: 'brogue' } }).shoes.brogue === undefined);
+  const t = E.checkOutfit(base({ occasion: 'business', shoes: P('#3b2417', 'derby', 'calf', { brogue: 'brogue' }) }), aW).filter(c => /brogue derby/.test(c.text));
+  ok('a brogued derby at business is named as a brogue', t.length > 0);
+}
+// ---- 1.19: tartan ----
+{
+  const ok = (name, cond) => { count++; if (!cond) { fails++; console.log('✗ ' + name); } };
+  const VP = window.VPAT;
+  ok('tartan is woven in wool, not in shirting or silk repp', G.patOK('flannel', 'tartan') && G.patOK('tweed', 'tartan') && G.patOK('lambswool', 'tartan') && !G.patOK('poplin', 'tartan') && !G.patOK('repsilk', 'tartan'));
+  ok('tartan goes on jackets, trousers, coats and scarves, not shirts', ['jacket', 'trousers', 'coat', 'scarf'].every(k => G.byKey[k].kinds.some(t => t.pats.indexOf('tartan') >= 0)) && !G.byKey.shirt.kinds.some(t => t.pats.indexOf('tartan') >= 0));
+  ok('a tartan has a measured spectrum and share', VP.SPECTRA.tartan && VP.SPECTRA.tartan.length === 24 && Math.abs(VP.byId.tartan.cover - 0.235) < 0.01);
+  // Black Watch as navy and green on a jacket: a medium pattern, read as a pattern at the jacket's distance
+  const bw = base({ jacket: P('#1d2a44', 'jacket', 'flannel', { pat: { type: 'tartan', scale: 7, hex2: '#24453a' } }) });
+  const ch = E.checkOutfit(bw, aW);
+  ok('Black Watch jacket: a visible medium pattern by the face, and its green is seen', ch.some(c => c.id === 'pcount' && /^1 visible pattern/.test(c.text)) && ch.some(c => c.id === 'pecho' && /jacket/.test(c.text)) && VP.scaleClass(7).id === 'medium');
+  ok('a jacket-scale tartan is not too large for a jacket', !ch.some(c => c.id === 'psize' && (c.slots || []).indexOf('jacket') >= 0));
 }
 console.log((fails ? fails + ' scenario(s) failed' : 'all scenarios pass') + ' (' + count + ' run)');
 if (fails) process.exit(1);
