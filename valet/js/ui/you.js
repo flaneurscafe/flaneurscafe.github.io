@@ -150,7 +150,8 @@
       const tone = n ? n.tone : near ? near.tone : summerTone().tone;
       h += '<div class="s-row"><span class="s-lab">Depth</span>' + chipsHtml(key, F.skin.depths, n && n.id, function (d) { return namedHex('skin', { id: d.id, tone: tone }); }) + '</div>' +
         segHtml('tone', 'Undertone', F.skin.tones, n ? n.tone : summerOn() && !raw ? summerTone().tone : null, 'undertone') +
-        (summerOn() ? summerSkinHtml(n) : '');
+        (summerOn() ? summerSkinHtml(n) : V.state.season === 'autumn' ? '<p class="small muted">Autumn uses the skin halfway between this winter skin and your summer skin (set it with the season switch on Summer). Spring uses this winter skin as it is: a tan has faded by late winter.</p>'
+          : V.state.season === 'spring' ? '<p class="small muted">Spring uses this winter skin: a tan has faded by late winter and builds again over the summer.</p>' : '');
     } else if (key === 'hair') {
       const tone = n ? n.tone || 'natural' : 'natural', base = n && byId(F.hair.bases, n.id);
       h += '<div class="s-row"><span class="s-lab">' + (bald ? 'Brow colour' : 'Colour') + '</span>' + chipsHtml(key, F.hair.bases, n && n.id, function (b) { return namedHex('hair', { id: b.id, tone: tone }); }) + '</div>';
@@ -170,8 +171,10 @@
       let s = s0.bald && V.state.hairStyle === 'none' ? Object.assign({}, s0, s0.bald) : s0;
       if (summerOn() && SEASON_LABEL[s.key]) s = Object.assign({}, s, SEASON_LABEL[s.key]);
       const st = store(s.key), raw = st.samples[s.key], act = V.activeSampler === s.key, n = st.named[s.key];
-      const derived = summerOn() && s.key === 'skin' && !raw ? E.seasonProfile(V.state).samples.skin : null;
-      let shown = raw && s.key !== 'white' ? E.corrected(E.seasonProfile(V.state), s.key) : raw || derived;
+      // spring and autumn show the winter samples, which they are worked out from (engine.js, SKIN_OF)
+      const base = E.seasonProfile(V.state, summerOn() ? 'summer' : 'winter');
+      const derived = summerOn() && s.key === 'skin' && !raw ? base.samples.skin : null;
+      let shown = raw && s.key !== 'white' ? E.corrected(base, s.key) : raw || derived;
       const pigment = shown;
       if (s.key === 'hair' && shown) shown = E.hairShown(shown, V.state.grey || 0);
       const src = derived ? (V.state.summer.mode === 'same' ? 'same as winter' : 'estimated: a light tan') : !raw ? 'not set' : n ? namedLabel(s.key, n) : st.manual[s.key] ? 'set by hand' : (s.key !== 'white' && pigment !== raw ? 'from the photo, corrected' : 'from the photo');
@@ -556,7 +559,7 @@
     }).join('');
     const ratios = E.bodyRatios(V.state.measurements);
     card.innerHTML =
-      '<h3>' + (V.state.name ? esc(V.state.name) : 'Your profile') + ' <span class="season-tag">' + (summerOn() ? 'summer' : 'winter') + '</span></h3>' +
+      '<h3>' + (V.state.name ? esc(V.state.name) : 'Your profile') + ' <span class="season-tag">' + V.state.season + '</span></h3>' +
       (V.state.note ? '<p class="note small">' + esc(V.state.note) + '</p>' : '') +
       '<div class="profile-swatches">' + sw + '</div>' +
       '<div class="dim"><div class="dim-head"><span>Contrast <span class="badge A">A</span> <span class="badge B">B</span></span><strong>' + a.contrastLevel + ' (' + Math.round(a.contrast) + ')</strong></div>' + ladder(a) + '</div>' +
@@ -570,7 +573,7 @@
         'Strongest step: ' + esc(a.contrastPair) + (a.contrastEdge && a.contrastEdge.assumed ? ' (assumed, not sampled)' : '') + ', as ' + a.hairLabel + '.' +
         (a.hairStyle === 'none' && a.hex.hair ? ' Brows are a thin line, not a frame, so their step counts at 80%.' : '') +
         (a.noGrey ? ' Without the grey your contrast would read ' + a.noGrey.contrastLevel + ' (' + Math.round(a.noGrey.contrast) + ').' : '') +
-        (a.tanFrom ? ' Summer skin ' + (a.tanFrom.estimate ? 'is estimated from winter' : 'is taken as the same as winter') + '.' : '') +
+        (a.tanFrom ? (a.tanFrom.half ? ' Autumn skin is halfway between winter and summer' + (V.state.summer.mode === 'own' ? ' (your summer skin)' : V.state.summer.mode === 'same' ? ', which are the same for you' : ' (an estimated light tan)') + '.' : ' Summer skin ' + (a.tanFrom.estimate ? 'is estimated from winter' : 'is taken as the same as winter') + '.') : '') +
         (a.confidence === 'low' ? ' Temperature is an estimate: the skin was set by hand or the photo has no white reference.' : '') + '</p>' +
       (ratios.length ? '<h3 style="margin-top:1rem">Body ratios <span class="badge B">B</span></h3><ul class="ratios">' +
         ratios.map(function (r) { return '<li><span>' + r.label + '</span><span>' + r.value + '<br><span class="n">' + r.note + '</span></span></li>'; }).join('') + '</ul>' : '') +

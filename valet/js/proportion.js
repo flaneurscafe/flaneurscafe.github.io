@@ -22,7 +22,11 @@
   const rr = function (x) { return Math.round(x * 2) / 2; };   // to the half centimetre
 
   /* Periods: proportions that were cut to work with each other. Only what differs is listed;
-     everything is a range. Sources in How it works (Proportion). */
+     everything is a range. Sources in How it works (Proportion, #p-period-sources), where each
+     figure is cited with its page. Trouser bottoms in the trade are measured around (twice the
+     flat width, US Commercial Standard CS166-50, 1950); a period's figure in inches around, for
+     a man of average size, is turned into openingFrac by halving it and dividing by an average
+     shoe of 29 cm (a 26 cm foot plus 3). Figures no source gives are marked unsourced. */
   const PERIODS = {
     classic: {
       name: "Today's classic",
@@ -40,25 +44,27 @@
     '1930s': {
       name: '1930s drape',
       note: 'The golden age: trousers high at the natural waist or above, worn with braces; a broad, draped chest and wide lapels; short knitwear, waistcoats and ties that end at that high waistband.',
-      jacketShift: [0, 1],
+      jacketShift: [0, 1],          // 29–29½ in on a size 40 (Schoeffler pp. 15–16; Progressive Tailor 1936–37): about today's length
       shoulderAdd: [2, 4],
       lapelFrac: [0.55, 0.65],
       waistband: [0, 3],
       buttonBelow: [0, 1.5],
-      openingFrac: [0.68, 0.8],
+      openingFrac: [0.76, 0.86],    // 17½–18½ in around for suits, 19–20 for slacks (Progressive Tailor 1930, 1936–37; Schoeffler pp. 14, 86)
+      openingSrc: '17½ to 18½ inches for suits, 19 to 20 for slacks: The Progressive Tailor 1930–37; Schoeffler and Gale, pp. 14, 86',
       knitOver: [0, 2.5],
       breakWord: 'a slight to full break over turn-ups; the full leg falls straight to the shoe',
       turnUp: function (h) { return h < 172 ? [4, 4.5] : [4.5, 5.5]; }
     },
     '1940s': {
       name: '1940s',
-      note: 'The 1930s line made broader: wide, padded shoulders, wide (often peaked) lapels, high full trousers; knit vests and sleeveless pullovers ending at the waistband. Wartime cloth rationing trimmed some details early in the decade.',
-      jacketShift: [0.5, 1.5],
+      note: 'The 1930s line made broader: wide, padded shoulders, wide (often peaked) lapels, full trousers at the natural waist; knit vests and sleeveless pullovers ending at the waistband. From 1942 the war orders capped jacket length and trouser width and banned turn-ups and pleats; the post-war bold look (1948) brought back broad shoulders and wide lapels.',
+      jacketShift: [0, 1.5],        // war orders: at most 29¾ in for a size 37 (Federal Register 1942); longer after the war is unsourced
       shoulderAdd: [2.5, 4.5],
       lapelFrac: [0.55, 0.68],
-      waistband: [0, 3],
+      waistband: [0, 1.5],          // L-224 (1942) banned "any type of high-rise": at the natural waist
       buttonBelow: [0, 1.5],
-      openingFrac: [0.7, 0.82],
+      openingFrac: [0.76, 0.82],    // at most 18½ in around at the bottom (Federal Register 1942; Schoeffler p. 29); post-war unsourced
+      openingSrc: 'at most 18½ inches: the War Production Board orders of 1942',
       knitOver: [0, 3],
       breakWord: 'a slight to full break over turn-ups',
       turnUp: function (h) { return h < 172 ? [4, 4.5] : [4.5, 5.5]; }
@@ -68,10 +74,11 @@
       note: 'The natural-shouldered sack suit: little padding, a straight body, narrower lapels and ties, trousers lower and slimmer than before; knitwear long enough to cover the waistband.',
       jacketShift: [0, 0.5],
       shoulderAdd: [0.5, 1.5],
-      lapelFrac: [0.4, 0.48],
-      waistband: [-4, -1],
+      lapelFrac: [0.4, 0.48],       // direction only: 1950's trim look took ¾ in off the lapels (Schoeffler pp. 31, 72)
+      waistband: [-4, -1],          // direction only: the Continental's low rise (Flusser p. 116; Schoeffler p. 96); the figure is unsourced
       buttonBelow: [1, 3],
-      openingFrac: [0.55, 0.65],
+      openingFrac: [0.7, 0.78],     // mid-1950s slacks "tapered sharply to 17½ inches" (Schoeffler p. 95; Flusser p. 116); 16 in by 1963
+      openingSrc: '17½ inches in the mid-1950s, 16 by 1963: Schoeffler and Gale, pp. 95, 97',
       knitOver: [3, 6],
       breakWord: 'a slight break or none',
       turnUp: function (h) { return h < 172 ? [3.5, 4] : [4, 4.5]; }
@@ -79,14 +86,15 @@
     '1960s': {
       name: '1960s slim',
       note: 'Short, slim jackets with narrow lapels and skinny ties; trousers lower and narrow, often without turn-ups and without a break; knitwear longer, over the lower waistband.',
-      jacketShift: [-2, -0.5],
+      jacketShift: [-2, -0.5],      // direction only: the shorter Continental jacket (Schoeffler p. 35); the figure is unsourced
       shoulderAdd: [0.5, 1.5],
-      lapelFrac: [0.3, 0.4],
-      waistband: [-6, -3],
+      lapelFrac: [0.3, 0.4],        // direction only: narrow lapels in 1964 (Schoeffler p. 38)
+      waistband: [-6, -3],          // direction only: low-rise, hip-riding slacks from 1963 (Schoeffler pp. 43, 97; Flusser p. 116)
       buttonBelow: [0.5, 2.5],
-      openingFrac: [0.5, 0.6],
+      openingFrac: [0.6, 0.72],     // 1963: 14 in (slimmest) to 15 and 16 in around (Men's Wear, quoted by Schoeffler p. 97)
+      openingSrc: '14 to 16 inches in 1963: Men\'s Wear, in Schoeffler and Gale, p. 97',
       knitOver: [4, 8],
-      breakWord: 'no break: the hem just meets the shoe',
+      breakWord: 'no break: the hem just meets the shoe',   // Esquire, April 1962 (Schoeffler p. 97)
       turnUp: function () { return null; }
     },
     '1970s': {
@@ -94,10 +102,10 @@
       note: 'Fitted jackets with wide lapels and wide ties; trousers fitted through the thigh and flared at the hem, with a full break; turn-ups rare.',
       jacketShift: [0, 1],
       shoulderAdd: [1.5, 3],
-      lapelFrac: [0.65, 0.8],
-      waistband: [-2, 1],
+      lapelFrac: [0.65, 0.8],       // wide lapels (Schoeffler p. 44); the figures are unsourced
+      waistband: [-2, 1],           // both: high rises and low ones in 1972 (Schoeffler p. 100)
       buttonBelow: [0, 2],
-      openingFrac: [0.85, 1.0],
+      openingFrac: [0.85, 1.0],     // flared (Schoeffler pp. 44, 80); the figures are unsourced
       knitOver: [3, 6],
       breakWord: 'a full break over the shoe',
       turnUp: function () { return null; }
@@ -249,7 +257,8 @@
       const lo = rr(shoe * P.openingFrac[0] + full), hi = rr(shoe * P.openingFrac[1] + full);
       add({ id: 'opening', group: 'Trousers', label: 'Leg opening, the hem laid flat', lo: lo, hi: hi,
         text: 'About ' + Math.round(P.openingFrac[0] * 100) + ' to ' + Math.round(P.openingFrac[1] * 100) + ' % of your shoe\'s length (a shoe is about ' + Math.round(shoe) + ' cm)' + (full ? ', a little wider for a fuller seat, so the leg does not taper too hard' : '') + '. Around: ' + Math.round(lo * 2) + ' to ' + Math.round(hi * 2) + ' cm.',
-        why: 'The bottom should cover about two thirds of the shoe and be wide enough to conceal the laces (Flusser, Dressing the Man, pp. 48, 61): too narrow and a large foot looks larger, too wide and a small one looks smaller.',
+        why: 'The bottom should cover about two thirds of the shoe and be wide enough to conceal the laces (Flusser, Dressing the Man, pp. 48, 61): too narrow and a large foot looks larger, too wide and a small one looks smaller.' +
+          (periodId && periodId !== 'classic' ? ' The period\'s width is its trade figure, inches around the bottom for a man of average size, scaled to your shoe' + (P.openingSrc ? ' (' + P.openingSrc + ')' : ' (no figure found: a tendency only)') + '.' : ''),
         uses: ['foot', 'seat'], est: [] });
     } else need('opening', 'Trousers', 'Leg opening', ['foot']);
 

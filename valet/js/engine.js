@@ -37,19 +37,26 @@
     return Math.max(rgb[0], rgb[1], rgb[2]) >= 252 || VC.labToLch(VC.hexToLab(hex))[0] < 55;
   }
 
-  /* Winter and summer. Skin is the one feature that changes with the time of year. Winter is the
+  /* The four seasons. Skin is the one feature that changes with the time of year. Winter is the
      base profile. Summer uses its own skin if one is set; otherwise it is estimated from winter:
      either the same (for people who hardly tan) or a light tan, the mean change measured on the
      face and neck after two weeks of outdoor sun in late summer (Jiang et al. 2022): L* -2.7,
-     a* +0.9, b* +0.3. A longer or deeper tan should be set by name. */
+     a* +0.9, b* +0.3. A longer or deeper tan should be set by name.
+     A tan peaks in August and has faded by late winter (Lock-Andersen and Wulf 1997; Olivarius et
+     al.; the Austrian farming families, 2025), so spring keeps the winter skin and autumn takes
+     the skin halfway between winter and summer. The half is a working value (B): no study gives
+     autumn's figure. SKIN_OF says which skin each season uses. */
   const TAN = [-2.7, 0.9, 0.3];
+  const SEASONS4 = window.VGARM.SEASONS4;   // garments.js: the one list of seasons
+  const SKIN_OF = { winter: 'winter', spring: 'winter', summer: 'summer', autumn: 'autumn' };
   function tanned(hex) { const l = VC.hexToLab(hex); return VC.labToHex([l[0] + TAN[0], l[1] + TAN[1], l[2] + TAN[2]]); }
+  function halfway(a, b) { const x = VC.hexToLab(a), y = VC.hexToLab(b); return VC.labToHex([(x[0] + y[0]) / 2, (x[1] + y[1]) / 2, (x[2] + y[2]) / 2]); }
   function seasonProfile(st, season) {
-    season = season || st.season || 'winter';
-    if (season !== 'summer') return st;
+    season = SEASONS4.indexOf(season) >= 0 ? season : SEASONS4.indexOf(st.season) >= 0 ? st.season : 'winter';
+    if (SKIN_OF[season] === 'winter') return st.season === season ? st : Object.assign({}, st, { season: season });
     const su = st.summer || {};
     const p = Object.assign({}, st, {
-      season: 'summer',
+      season: season,
       samples: Object.assign({}, st.samples), manual: Object.assign({}, st.manual), named: Object.assign({}, st.named || {})
     });
     if (su.mode === 'own' && su.samples && su.samples.skin) {
@@ -57,14 +64,21 @@
       p.manual.skin = !!(su.manual && su.manual.skin);
       p.skinWhite = su.samples.white || null;
       if (su.named && su.named.skin) p.named.skin = su.named.skin; else delete p.named.skin;
+      if (season === 'autumn') {
+        const w = corrected(st, 'skin'), s2 = corrected(p, 'skin');
+        if (w && s2) {
+          p.samples.skin = halfway(w, s2); p.manual.skin = true; delete p.named.skin; p.skinWhite = null;
+          p.tanFrom = { manual: !!(st.manual && st.manual.skin), white: st.samples.white, estimate: true, half: true };
+        }
+      }
     } else {
       const w = corrected(st, 'skin');
       if (!w) return p;
-      p.samples.skin = su.mode === 'same' ? w : tanned(w);
+      p.samples.skin = su.mode === 'same' ? w : season === 'autumn' ? halfway(w, tanned(w)) : tanned(w);
       p.manual.skin = true;          // already a true colour; nothing to correct
       delete p.named.skin;
       // Temperature confidence follows the winter reading it was derived from.
-      p.tanFrom = { manual: !!(st.manual && st.manual.skin), white: st.samples.white, estimate: su.mode !== 'same' };
+      p.tanFrom = { manual: !!(st.manual && st.manual.skin), white: st.samples.white, estimate: su.mode !== 'same', half: season === 'autumn' };
     }
     return p;
   }
@@ -692,6 +706,6 @@
     analyseProfile: analyseProfile, bodyRatios: bodyRatios, scoreColour: scoreColour,
     RULES: RULES, PARAMS: PARAMS, stepOver: stepOver, seenColours: seenColours, bestAtFace: bestAtFace, ruleOf: ruleOf, kindOf: kindOf, wardrobeNeutral: wardrobeNeutral, checkOutfit: checkOutfit, verdict: verdict, penalty: penalty, SECTIONS: SECTIONS, sectionOf: sectionOf, watchRange: watchRange, summary: summary, look: look, SLOTS: SLOTS, FACE: FACE, TIER_TEXT: TIER_TEXT, corrected: corrected, HAIR: HAIR,
     okc: okc, hueDist: hueDist, scoreCached: scoreCached, round: round, G: G,
-    echoes: echoes, hairShown: hairShown, frameWeight: frameWeight, frameTemp: frameTemp, framesOf: framesOf, skinClashes: skinClashes, skinReasons: skinReasons, seasonProfile: seasonProfile, TAN: TAN
+    echoes: echoes, hairShown: hairShown, frameWeight: frameWeight, frameTemp: frameTemp, framesOf: framesOf, skinClashes: skinClashes, skinReasons: skinReasons, seasonProfile: seasonProfile, TAN: TAN, SEASONS4: SEASONS4, SKIN_OF: SKIN_OF
   };
 })();

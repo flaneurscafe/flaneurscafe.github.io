@@ -51,6 +51,27 @@ const mix = base(); mix.jacket.cloth = 'tweed'; mix.trousers.cloth = 'linen'; ch
 const off = base(); off.jacket.cloth = 'tweed'; off.jacket.on = false; check('a piece not worn does not count', O.seasonOf(off) === 'all');
 check('every season has a heading', ['winter', 'summer', 'all', 'mixed'].every(s => O.SEASONS.some(x => x[0] === s)));
 
+/* ---------- the season switch (1.20): one list, its normalising, and what is out of season ---------- */
+check('four seasons, in the order of the year', G.SEASONS4.join() === 'winter,spring,summer,autumn' && E.SEASONS4 === G.SEASONS4);
+check('a stored season is kept: all four', G.SEASONS4.every(s => G.normSeason(s) === s));
+check('an old or broken season becomes winter', [undefined, null, '', 'Summer', 'fall', 3, {}].every(s => G.normSeason(s) === 'winter'));
+check('out of season: the other end in winter and summer, none in spring and autumn',
+  G.offSeason('winter') === 'summer' && G.offSeason('summer') === 'winter' && G.offSeason('spring') === null && G.offSeason('autumn') === null);
+const CL = G.CLOTHS;
+check('fixes in winter avoid summer cloth and in summer winter cloth', !G.inSeason(CL.linen, 'winter') && G.inSeason(CL.flannel, 'winter') && !G.inSeason(CL.flannel, 'summer') && G.inSeason(CL.linen, 'summer'));
+check('fixes in spring and autumn rule out neither', ['spring', 'autumn'].every(s => G.inSeason(CL.linen, s) && G.inSeason(CL.flannel, s) && G.inSeason(CL.tweed, s) && G.inSeason(CL.seersucker, s)));
+check('all-year cloth is in season all year', G.SEASONS4.every(s => G.inSeason(CL.worsted, s) && G.inSeason(CL.gabardine, s)));
+check('the season rule and the fixes agree on what is out of season', G.SEASONS4.every(se => Object.keys(CL).every(id => {
+  const o2 = base(); o2.trousers.cloth = id;
+  if (!G.byKey.trousers.kinds.some(t => t.id === o2.trousers.kind && (t.cloths || []).indexOf(id) >= 0)) return true;   // not a trouser cloth
+  const a = E.analyseProfile(E.seasonProfile(D.kp, se)), ch = E.checkOutfit(O.engineOutfit(o2, D.kp, nameOf), a).find(c => c.id === 'season');
+  return (ch.score < 0.85) === !G.inSeason(CL[id], se) || O.seasonOf(o2) === 'mixed';
+})));
+const ord = se => O.seasonOrder(se).map(x => x[0]).join();
+check('saved outfits: the season you are in comes first', ord('winter') === 'winter,summer,all,mixed' && ord('summer') === 'summer,winter,all,mixed', [ord('winter'), ord('summer')]);
+check('saved outfits: in spring and autumn, all year then mixed first', ord('spring') === 'all,mixed,winter,summer' && ord('autumn') === 'all,mixed,winter,summer', [ord('spring'), ord('autumn')]);
+check('saved outfits: an unknown season keeps the order', ord(undefined) === 'winter,summer,all,mixed');
+
 /* ---------- engineOutfit ---------- */
 const o = O.normOutfit(null), prof = { measurements: { height: 185, chest: 103, wrist: 17 }, shape: {}, hairStyle: 'none' };
 const eo = O.engineOutfit(o, prof, nameOf);

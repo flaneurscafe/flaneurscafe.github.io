@@ -80,9 +80,41 @@ check('every numeric target has lo ≤ hi', T.list.every(t => t.lo == null || t.
 const len = h => P.targets(Object.assign({}, M, { height: h }), {}, 'classic', {}).list.find(t => t.id === 'jacketLength');
 check('a taller man gets a longer jacket', len(195).lo > len(170).lo, [len(170).lo, len(195).lo]);
 check('every period gives targets', Object.keys(P.PERIODS).every(id => P.targets(M, {}, id, {}).list.length > 5));
+/* The period openings against their sources (How it works, #p-period-sources). Trade figures are
+   inches around the bottom; flat is half. A man of average size: foot 26 cm, so a shoe of 29. */
+const avg = { height: 173, shoulder: 45, neck: 39, foot: 26, chest: 98, waist: 84, seat: 96 };
+const openAt = id => P.targets(avg, {}, id, {}).list.find(t => t.id === 'opening');
+const flat = inches => inches * 2.54 / 2;
+const covers = (t, lo, hi) => t.lo <= flat(lo) + 0.5 && t.hi >= flat(hi) - 0.5;
+check('1930s opening covers 17½–18½ in around (Progressive Tailor 1930–37)', covers(openAt('1930s'), 17.5, 18.5), openAt('1930s'));
+check('1940s opening stays within the 1942 order, 18½ in around', openAt('1940s').hi <= flat(18.5) + 0.51, openAt('1940s'));
+check('1950s opening reaches 17½ in around (mid-1950s, Schoeffler p. 95)', openAt('1950s').hi >= flat(17.5) - 0.5, openAt('1950s'));
+check('1960s opening covers 15–16 in around (Men\'s Wear 1963)', covers(openAt('1960s'), 15, 16), openAt('1960s'));
+check('1960s opening no narrower than the 1963 super slims, 13 in around', openAt('1960s').lo >= flat(13), openAt('1960s'));
+const jk = id => P.targets(Object.assign({ backNeckFloor: 149 }, avg), {}, id, {}).list.find(t => t.id === 'jacketLength');
+check('1940s jacket can be as short as the 1942 cap allows (29¾ in for a size 37)', jk('1940s').lo <= 29.75 * 2.54, jk('1940s'));
+// the opening's Why names the period's source, or says there is none
+const whyOpen = id => P.targets(avg, {}, id, {}).list.find(t => t.id === 'opening').why;
+check('opening Why: today\'s classic cites Flusser only', /Flusser/.test(whyOpen('classic')) && !/trade figure/.test(whyOpen('classic')));
+check('opening Why: each sourced period names its source', ['1930s', '1940s', '1950s', '1960s'].every(id => /trade figure/.test(whyOpen(id)) && /\(.*(Tailor|War Production|Schoeffler|Men's Wear).*\)/.test(whyOpen(id))), ['1930s', '1940s', '1950s', '1960s'].map(whyOpen));
+check('opening Why: the 1970s says no figure was found', /no figure found/.test(whyOpen('1970s')), whyOpen('1970s'));
+check('every period but the 1970s carries its opening source', Object.keys(P.PERIODS).every(id => id === 'classic' || id === '1970s' ? !P.PERIODS[id].openingSrc : !!P.PERIODS[id].openingSrc));
 check('frame size: big, medium, small', P.frameSize({ height: 190 }) === 'big' && P.frameSize({ height: 178, shoulder: 45 }) === 'medium' && P.frameSize({ height: 165 }) === 'small' && P.frameSize({}) === null);
 
 /* ---------- fit.js (the logic, not the drawing) ---------- */
+// How it works (#f-periods): a 1930s-cut, high-rise pair of trousers checked under today's classic
+// reads as rising too high, and the line under it says it suits the 1930s and the 1940s
+{
+  const Mp = Object.assign({}, avg, { waistHeight: 104, inseam: 79, backNeckFloor: 149 });
+  const all = {}; Object.keys(P.PERIODS).forEach(id => { const pp = {}; P.targets(Mp, {}, id, {}).list.forEach(t => { pp[t.id] = t; }); all[id] = pp; });
+  const r30 = all['1930s'].rise, r40 = all['1940s'].rise, rc = all.classic.rise;
+  const high = Math.min(r30.hi, r40.hi);   // the top of the rise both periods share
+  const res = F.checkGarment('trousers', { rise: high }, {}, Mp, 'modern', { prop: all.classic, periods: all });   // as js/ui/fit.js passes it
+  const row = res.find(r => r && r.key === 'rise'), pf = F.periodFit('trousers', res, all);
+  check('a 1930s high rise is above today\'s classic range', high > rc.hi + 1, [high, rc]);
+  check('under today\'s classic it reads as a matter of period, not of size', row && row.style === true && /in the range for/.test(row.text), row);
+  check('the line under it: suits the 1930s and the 1940s, not today\'s classic', pf && pf.all.indexOf('1930s') >= 0 && pf.all.indexOf('1940s') >= 0 && pf.all.indexOf('classic') < 0, pf);
+}
 check('collar: neck 40 takes a 41 cm (16 in) collar', F.collar(40).cm === 41 && F.collar(40).in === 16, F.collar(40));
 check('collar never smaller than neck plus ease', [36, 38, 40, 42, 44].every(nk => F.collar(nk).cm >= nk + 1.25 - 0.4));
 check('jacket length letter by height', F.lengthLetter(170).id === 'S' && F.lengthLetter(180).id === 'R' && F.lengthLetter(188).id === 'L' && F.lengthLetter(195).id === 'XL');

@@ -106,13 +106,21 @@
           text: 'For ' + occ.name.toLowerCase() + ', ' + over.map(what).join(' and ') + (over.length > 1 ? ' are' : ' is') + ' dressier than the occasion. Fine if you mean it; the room will notice.' });
       } else add({ id: 'occasion', group: 'formality', score: 1, slots: [], text: 'Right for ' + occ.name.toLowerCase() + ': ' + occ.note + '.' });
     }
-    // Season: cloth weight against the season switch, and two seasons in one outfit.
-    const season = p.season === 'summer' ? 'summer' : 'winter', other = season === 'summer' ? 'winter' : 'summer';
+    // Season: cloth against the season switch, and two seasons in one outfit. Winter and summer are
+    // the ends: the other end's cloth is out of place, and both in one outfit look like a mistake.
+    // Spring and autumn are in between (7 to 21 °C, Gentleman's Gazette): neither end's cloth is
+    // wrong on its own, and a heavier piece with a lighter one is the transitional mix it recommends.
+    const season = G.normSeason(p.season), other = G.offSeason(season), mid = !other;
     // the pocket square is left out: a linen or silk square is worn all year, with tweed and flannel too
     const seasonal = Object.keys(L).filter(function (k) { return k !== 'square'; });
-    const wrong = seasonal.filter(function (k) { return C[k] && C[k].season === other; });
+    const wrong = seasonal.filter(function (k) { return other && C[k] && C[k].season === other; });
     const sum = seasonal.filter(function (k) { return C[k] && C[k].season === 'summer'; }), win = seasonal.filter(function (k) { return C[k] && C[k].season === 'winter'; });
-    if (sum.length && win.length) add({ id: 'season', group: 'season', score: 0.55, slots: [sum[0]],
+    if (mid) add({ id: 'season', group: 'season', score: 1, slots: [],
+      text: 'Season: ' + season + (sum.length && win.length ? ': ' + what(win[0]) + ' with ' + what(sum[0]) + ' is the in-between mix, a heavier piece with a lighter one; choose by the day\'s weather.'
+        : win.length ? ': winter cloth suits a cool ' + season + ' day; on a warm one, all-year or lighter cloth.'
+        : sum.length ? ': summer cloth suits a warm ' + season + ' day; on a cool one, all-year or heavier cloth.'
+        : ', and all of the cloths work year round.') });
+    else if (sum.length && win.length) add({ id: 'season', group: 'season', score: 0.55, slots: [sum[0]],
       text: what(sum[0]) + ' and ' + what(win[0]) + ' belong to different seasons: summer and winter cloth in one outfit look as if one of them was a mistake.' });
     else if (wrong.length) add({ id: 'season', group: 'season', score: 0.65, slots: wrong,
       text: wrong.map(what).join(' and ') + ': ' + (season === 'winter' ? 'summer cloth in winter looks cold and out of place; flannel, tweed, wool and heavier knits belong now.' : 'winter cloth in summer is too warm, and looks it; linen, fresco, cotton and lighter knits belong now.') + ' (The season switch at the top sets this.)' });

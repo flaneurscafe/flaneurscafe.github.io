@@ -404,7 +404,18 @@
   /* How far a scale class is above what is usual on the garment: 0 fine, 1 bold, 2 or more wrong. */
   function scaleOver(k, clsId) { return Math.max(0, SCALE_ORDER.indexOf(clsId) - SCALE_ORDER.indexOf(k.maxScale)); }
 
-  window.VGARM = { FRAMES: FRAMES, FRAME_COLOURS: FRAME_COLOURS, STRAPS: STRAPS, BUTTONS: BUTTONS, CLOTH_PATS: CLOTH_PATS, patOK: patOK, BRIMS: BRIMS, BANDS: BANDS, CLOTHS: CLOTHS, cloth: cloth, formality: formality, OCCASIONS: OCCASIONS, POSITIONS: POSITIONS, SLOTS: SLOTS, FACE: FACE, NEAR: NEAR, METALS: METALS, STONES: STONES, ACCESSORIES: ACCESSORIES, metalBy: metalBy, stoneBy: stoneBy, accBy: accBy, byKey: byKey, kind: kind, neckwearAllowed: neckwearAllowed, scaleOver: scaleOver,
+  /* The season switch (How it works, Season): winter and summer are the ends of the year, spring
+     and autumn lie between. normSeason: any value to one of the four (anything else is winter, as
+     an old or broken file may hold). offSeason: the cloth season that is out of place now, the
+     other end in winter and summer, none in spring and autumn. inSeason: a cloth is in season
+     unless it belongs to that other end. One place for all three, used by the season rule
+     (checks/whole.js), the Dresser's fixes and the profile loading. */
+  const SEASONS4 = ['winter', 'spring', 'summer', 'autumn'];
+  function normSeason(s) { return SEASONS4.indexOf(s) >= 0 ? s : 'winter'; }
+  function offSeason(s) { return s === 'summer' ? 'winter' : s === 'winter' ? 'summer' : null; }
+  function inSeason(cl, s) { return !cl || !offSeason(s) || cl.season !== offSeason(s); }
+
+  window.VGARM = { SEASONS4: SEASONS4, normSeason: normSeason, offSeason: offSeason, inSeason: inSeason, FRAMES: FRAMES, FRAME_COLOURS: FRAME_COLOURS, STRAPS: STRAPS, BUTTONS: BUTTONS, CLOTH_PATS: CLOTH_PATS, patOK: patOK, BRIMS: BRIMS, BANDS: BANDS, CLOTHS: CLOTHS, cloth: cloth, formality: formality, OCCASIONS: OCCASIONS, POSITIONS: POSITIONS, SLOTS: SLOTS, FACE: FACE, NEAR: NEAR, METALS: METALS, STONES: STONES, ACCESSORIES: ACCESSORIES, metalBy: metalBy, stoneBy: stoneBy, accBy: accBy, byKey: byKey, kind: kind, neckwearAllowed: neckwearAllowed, scaleOver: scaleOver,
     COLLARS: COLLARS, COLLAR_BANDS: COLLAR_BANDS, collarBy: collarBy, collarOf: collarOf, contrastCollar: contrastCollar,
     PIECE_FIELDS: PIECE_FIELDS, PIECE_KEYS: PIECE_KEYS, KNITS: KNITS, knitBy: knitBy, BROGUES: BROGUES };
 })();

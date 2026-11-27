@@ -137,8 +137,15 @@
 
   /* ---------- Saved outfits ---------- */
   /* Grouped first by season, read from the cloths (winter cloth only: winter; summer cloth only:
-     summer; neither: all year; both: mixed, which the season rule fails), then by the occasion. */
+     summer; neither: all year; both: mixed, which the season rule notes in winter and summer), then by the occasion. */
   const SEASONS = [['winter', 'Winter'], ['summer', 'Summer'], ['all', 'All year'], ['mixed', 'Winter and summer cloth mixed']];
+  /* The order of those groups: the season you are in first; in spring and autumn, all year and
+     mixed first, since both kinds of cloth are in season then. */
+  function seasonOrder(season) {
+    const first = season === 'spring' || season === 'autumn' ? ['all', 'mixed'] : [season];
+    const rank = function (id) { const i = first.indexOf(id); return i < 0 ? first.length : i; };
+    return SEASONS.slice().sort(function (x, y) { return rank(x[0]) - rank(y[0]); });
+  }
   function seasonOf(o) {
     let w = 0, su = 0;
     G.SLOTS.forEach(function (k) {
@@ -146,7 +153,7 @@
       const c = G.cloth(k, x), kd = G.kind(k, x), sea = (kd && kd.season) || (c && c.season);
       if (sea === 'winter') w++; else if (sea === 'summer') su++;
     });
-    // both winter and summer cloth: the season rule fails it, so it is not filed as all year
+    // both winter and summer cloth: noted in winter and summer, so it is not filed as all year
     return w && su ? 'mixed' : w ? 'winter' : su ? 'summer' : 'all';
   }
   /* A name for an outfit saved without one: its first two main pieces. nameOf: hex → colour name. */
@@ -240,6 +247,6 @@
     return notes.join(' ');
   }
 
-  window.VOUTFIT = { DEFAULT_OUTFIT: DEFAULT_OUTFIT, isHex: isHex, normOutfit: normOutfit, normWardrobe: normWardrobe, MARKS: MARKS, disagrees: disagrees, SEASONS: SEASONS, seasonOf: seasonOf,
+  window.VOUTFIT = { DEFAULT_OUTFIT: DEFAULT_OUTFIT, isHex: isHex, normOutfit: normOutfit, normWardrobe: normWardrobe, MARKS: MARKS, disagrees: disagrees, SEASONS: SEASONS, seasonOf: seasonOf, seasonOrder: seasonOrder,
     autoName: autoName, snapshotOutfit: snapshotOutfit, newId: newId, outfitSig: outfitSig, mergeWardrobe: mergeWardrobe, engineOutfit: engineOutfit, fitPatterns: fitPatterns, clothWord: clothWord };
 })();

@@ -6,7 +6,7 @@
 (function () {
   'use strict';
   const V = window.VAPP;
-  const { $, $$, D, E, VC, coreRows, esc, save, showTab, summerOn } = V;
+  const { $, $$, D, E, VC, coreRows, esc, save, showTab } = V;
   Object.assign(V, { fillSelects, nameOf, renderColour, study, tt, warmPairs });
 
   /* ---------- Palette tab ---------- */
@@ -102,7 +102,7 @@
         (items.length ? groups.map(function (g) { return (g[0] && groups.length > 1 ? '<p class="tier-sub">' + esc(g[0]) + '</p>' : '') + sw(g[1]); }).join('') : '<p class="empty-tier">None in the library.</p>') + '</div>';
     };
     const atFace = scored.filter(function (s) { return s.tier <= 2; }).length;
-    let html = '<p class="pal-sum">' + (summerOn() ? '<strong>Summer.</strong> ' : '') + atFace + ' of the ' + scored.length + ' named colours work at your face. ' + (scored.length - atFace) + ' belong below the belt or in small doses.</p>';
+    let html = '<p class="pal-sum">' + (V.state.season !== 'winter' ? '<strong>' + V.state.season.charAt(0).toUpperCase() + V.state.season.slice(1) + '.</strong> ' : '') + atFace + ' of the ' + scored.length + ' named colours work at your face. ' + (scored.length - atFace) + ' belong below the belt or in small doses.</p>';
     if (palView === 'tier') {
       html += [1, 2, 3, 4].map(function (t) {
         return block(tt(t) + ' ' + TIER_HEAD[t], E.TIER_TEXT[t].note, scored.filter(function (s) { return s.tier === t; }).sort(function (a, b) { return b.score - a.score; }), t);
@@ -367,8 +367,10 @@
      carries its name. ---- */
   function buildCard() {
     const a = V.analysis; if (!a) return '';
-    const other = E.analyseProfile(E.seasonProfile(V.state, summerOn() ? 'winter' : 'summer'));
-    const season = summerOn() ? 'summer' : 'winter', otherName = summerOn() ? 'winter' : 'summer';
+    // the card compares with the other end of the year: winter skin against summer skin
+    const skinNow = E.SKIN_OF[V.state.season] || 'winter', otherName = skinNow === 'winter' ? 'summer' : 'winter';
+    const other = E.analyseProfile(E.seasonProfile(V.state, otherName));
+    const season = V.state.season;
     const scored = D.colours.map(function (c) { return Object.assign({ name: c.name }, E.scoreColour(c.hex, a)); });
     const chip = function (hex, name) { return '<span class="pc-c"><i style="background:' + hex + '"></i>' + esc(name) + '</span>'; };
     const bald = a.hairStyle === 'none';
@@ -382,7 +384,7 @@
     const moves = D.colours.map(function (c) { return { name: c.name, hex: c.hex, a: E.scoreColour(c.hex, a).tier, b: other ? E.scoreColour(c.hex, other).tier : null }; })
       .filter(function (x) { return x.b && x.a !== x.b && Math.min(x.a, x.b) <= 2; });
     let h = '<h1>Palette card' + (V.state.name ? ': ' + esc(V.state.name) : '') + '</h1>' +
-      '<p class="pc-sub">Valet, ' + new Date().toLocaleDateString(undefined, { year: 'numeric', month: 'long', day: 'numeric' }) + '. For your ' + season + ' colouring (' + (season === 'summer' ? 'with a tan' : 'untanned') + '). Printed colours are approximate: go by the names, and check cloth in daylight.</p>' +
+      '<p class="pc-sub">Valet, ' + new Date().toLocaleDateString(undefined, { year: 'numeric', month: 'long', day: 'numeric' }) + '. For your ' + season + ' colouring (' + (skinNow === 'summer' ? 'with a tan' : skinNow === 'autumn' ? 'half the summer tan' : 'untanned') + '). Printed colours are approximate: go by the names, and check cloth in daylight.</p>' +
       '<h2>Your colouring</h2><div class="pc-feats">' +
       '<span class="pc-feat"><span class="pc-dot" style="background:' + a.hex.skin + '"></span>Skin</span>' +
       (a.hex.hair ? '<span class="pc-feat"><span class="pc-dot" style="background:' + a.hex.hair + '"></span>' + (bald ? 'Brows' : 'Hair') + '</span>' : '') +
@@ -464,7 +466,7 @@
     const combo = {}; combo[place] = hex; if (plan.other) combo[place === 'face' ? 'below' : 'face'] = plan.other; if (plan.accent) combo.accent = plan.accent;
     const cv = comboVerdict(combo);
     return '<div class="pc-theme"><h2>Built around ' + esc(name) + '</h2>' +
-      '<p class="pc-note">From the colour study on the Palette tab (Build around one colour), for ' + (summerOn() ? 'summer' : 'winter') + '.</p>' +
+      '<p class="pc-note">From the colour study on the Palette tab (Build around one colour), for ' + V.state.season + '.</p>' +
       '<p>' + chip(hex, name + ' T' + t.tier) + ' <strong>' + esc(t.where.title) + '.</strong> ' + esc(where) + (t.reason && t.tier > 1 ? ' Why: ' + esc(t.reason) : '') + '</p>' +
       (t.tier > 2 && t.versions.length ? '<p><strong>Its versions that suit you at the face:</strong> ' + names(t.versions) + '</p>' : '') +
       '<table class="pc-pairs"><thead><tr><th>Place</th><th>What goes there</th></tr></thead><tbody>' +
@@ -667,7 +669,7 @@
     renderStudy(); renderCombos(); markPalette(); renderTester(); renderStudySum(); V.syncChart();
   });
   function renderCore() {
-    $('#corePal').innerHTML = '<h3>Your core palette <span class="season-tag">' + (summerOn() ? 'summer' : 'winter') + '</span></h3>' +
+    $('#corePal').innerHTML = '<h3>Your core palette <span class="season-tag">' + V.state.season + '</span></h3>' +
       V.say('<p class="small muted">The best of each tier for your colouring this season, chosen so that no two look alike. It is built from your profile, so the study and the theme never change it. Click a colour to put it in the study, ', '<p class="small muted">The best of each tier for your colouring this season, chosen so that no two look alike. It is built from your profile, so the study and the theme never change it. Tap a colour to put it in the study, ') + '<span class="wearing">' + esc(activePlace().label.toLowerCase()) + '</span>.</p>' +
       coreRows(V.analysis, true) +
       // the third step of the welcome's path: from the palette to an outfit

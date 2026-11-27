@@ -238,7 +238,7 @@
     s.garments = window.VCLOSET.normGarments(s.garments);
     s.grey = Math.max(0, Math.min(100, +s.grey || 0)); s.named = s.named || {};
     s.fitMark = s.fitMark !== false;
-    s.season = s.season === 'summer' ? 'summer' : 'winter'; s.summer = newSummer(s.summer);
+    s.season = window.VGARM.normSeason(s.season); s.summer = newSummer(s.summer);
     V.state = Object.assign(V.state, s);
   }
   /* Profiles from older versions, stored or opened from a file. */
@@ -368,9 +368,9 @@
       use: 'Across a room (3 m) decides whether a cloth counts towards the two-pattern limit at the face. This is why a navy birdseye counts as plain cloth and a gingham of the same size does not. The checks judge at 3 m in room light; the 10 m square is a preview, not a rule. The science is in How it works, section 11.'
     },
     'season': {
-      title: 'Winter and summer', what: 'Skin is the one part of your colouring that changes with the time of year. A tan makes it darker and a little redder; hair and eyes stay as they are here.',
+      title: 'The seasons', what: 'Skin is the one part of your colouring that changes with the time of year. A tan makes it darker and a little redder; hair and eyes stay as they are here. A tan peaks in August and has faded by late winter, so spring uses your winter skin and autumn the skin halfway to summer. (The seasons of the year, not the colour seasons of seasonal analysis, which Valet does not use.)',
       how: 'Switch at the top of the page. Every tab follows: palette, outfit, chart. For summer skin, pick the depth you reach by late summer, sample a summer photo, or leave it on the estimate. The estimate is a light tan, the average change measured after two weeks of outdoor sun: lightness about 2.7 lower, slightly redder. Keep the undertone you have in winter.',
-      use: 'A darker skin changes the light-dark step to your hair and lets pale colours separate from your face. Light colours, white above all, often move up a tier in summer. Colours close to tanned skin, such as camel and some pinks, can move down. The profile card lists exactly which. The season also changes the light and the surroundings, which Valet does not model: grey, weak winter light makes colours look quieter and darker, strong summer sun makes them louder and contrasts harder. On the Dresser the switch also decides which cloths are in season.'
+      use: 'A darker skin changes the light-dark step to your hair and lets pale colours separate from your face. Light colours, white above all, often move up a tier in summer. Colours close to tanned skin, such as camel and some pinks, can move down. The profile card lists exactly which. The season also changes the light and the surroundings, which Valet does not model: grey, weak winter light makes colours look quieter and darker, strong summer sun makes them louder and contrasts harder. On the Dresser the switch also decides which cloths are in season: in winter, summer cloth is out of place and in summer, winter cloth; in spring and autumn either can be right, depending on the day.'
     },
     'echo': {
       title: 'Echo', what: 'Colours from the library that repeat the colour of your eyes or your hair.',

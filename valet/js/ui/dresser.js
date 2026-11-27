@@ -110,7 +110,8 @@
   /* ---------- The wardrobe: outfits you have composed, checked and kept ----------
      Saved in your profile (in this browser, and in the file when you save it). Grouped first by
      season, read from the cloths (winter cloth only: winter; summer cloth only: summer; neither: all
-     year; both: mixed, which the season rule fails), then by the occasion. Each verdict is worked out again when the wardrobe is
+     year; both: mixed, which the season rule notes in winter and summer and accepts in spring and autumn),
+     then by the occasion. Each verdict is worked out again when the wardrobe is
      shown, so it follows your colouring if that changes. */
   let view = 'outfit', removed = null, wNote = '', onlyDisagree = false;
   const SEASONS = O.SEASONS, seasonOf = O.seasonOf, clothWord = O.clothWord;
@@ -202,7 +203,7 @@
         (against.length ? '<label class="dr-only"><input type="checkbox" id="drOnly"' + (onlyDisagree ? ' checked' : '') + '> Show only where we disagree</label>' : '') + '</div>' : '');
     if (!list.length) { box.innerHTML = undoBar + '<p class="dr-empty">Nothing saved yet. Put an outfit together under <strong>Outfit</strong>, check it, and press <strong>Save outfit</strong>. Saved outfits are grouped here by season and occasion.</p>'; wireUndo(box); return; }
     const occName = {}; G.OCCASIONS.forEach(function (x) { occName[x.id] = x.name; });
-    const order = SEASONS.slice().sort(function (x, y) { return Number(y[0] === a.season) - Number(x[0] === a.season); });
+    const order = O.seasonOrder(a && a.season);
     box.innerHTML = undoBar + order.map(function (se) {
       const inSeason = shown.filter(function (w) { return w.season === se[0]; }); if (!inSeason.length) return '';
       return '<section class="dr-season"><h3>' + se[1] + ' <span class="dr-n">' + inSeason.length + '</span></h3><div class="dr-occs">' + G.OCCASIONS.map(function (oc) {
@@ -1212,7 +1213,7 @@
     if (!k || !piece(k) || !worn(k)) return out;
     if (locks[k]) return [{ label: 'Locked: unlock to get a fix', disabled: true }];
     const kd = kindOf(k), cur = G.cloth(k, piece(k)), occ = G.OCCASIONS.find(function (x) { return x.id === (S().outfit.occasion || 'smart'); });
-    const season = a && a.season === 'summer' ? 'summer' : 'winter';
+    const season = G.normSeason(a && a.season);
     // a cloth as this piece would be in it: its knit and broguing kept (G.cloth, G.formality)
     const as = function (id) { return Object.assign({}, piece(k), { cloth: id }); };
     const setCloth = function (id) { const nm = G.cloth(k, as(id)).name.toLowerCase().replace(/ \(shiny\)$/, ''); return { label: kindOf(k).name + ' in ' + nm + ' instead', run: function () { snapshot(); piece(k).cloth = id; commit(kindOf(k).name + ' in ' + nm + '.'); } }; };
@@ -1221,7 +1222,7 @@
     const chunky = kd.knit && piece(k).knit === 'chunky';
     const setKind = function (id) { const t = G.byKey[k].kinds.find(function (q) { return q.id === id; }); return { label: 'Wear ' + t.name.toLowerCase() + (/s$/.test(t.name) ? '' : 's') + ' instead', run: function () { snapshot(); piece(k).kind = id; if (piece(k).cloth && t.cloths.indexOf(piece(k).cloth) < 0) piece(k).cloth = t.cloths[0]; commit(t.name + ' instead.'); } }; };
     const fOf = function (id) { return kd.f == null ? null : G.formality(k, as(id)); };
-    const okCloth = function (id) { const cl = G.cloth(k, as(id)); return cl.sheen < 2 && cl.season !== (season === 'summer' ? 'winter' : 'summer'); };
+    const okCloth = function (id) { const cl = G.cloth(k, as(id)); return cl.sheen < 2 && G.inSeason(cl, season); };   // spring and autumn rule out neither end (garments.js)
     const inRange = function (f) { return f != null && f >= occ.range[0] && f <= occ.range[1]; };
     if (c.id === 'sheen') { const id = (kd.cloths || []).find(function (q) { return G.CLOTHS[q].sheen < 2 && okCloth(q); }); if (id) out.push(setCloth(id)); }
     else if (c.id === 'season' && chunky && season === 'summer') out.push(fineKnit);
@@ -1327,7 +1328,7 @@
     }).join('');
     const chart = $('#chartOutfit svg.chart-svg');
     return '<h1>' + esc(name || 'Outfit card') + '</h1>' +
-      '<p class="pc-sub">' + esc(occ ? occ.name : '') + ', ' + (api.season() === 'summer' ? 'summer' : 'winter') + '. ' + (S().name ? 'For ' + esc(S().name) + '. ' : '') + 'Valet, ' + date + '.</p>' +
+      '<p class="pc-sub">' + esc(occ ? occ.name : '') + ', ' + api.season() + '. ' + (S().name ? 'For ' + esc(S().name) + '. ' : '') + 'Valet, ' + date + '.</p>' +
       '<div class="oc-verdict ' + hd.level + '"><strong>' + esc(hd.title) + '.</strong> ' + esc(hd.text.replace(/ Fix the first one below; the others often follow\.| Apply its fix and this is a good outfit\./, '')) +
         ' <span class="oc-count">' + v.fails + ' fail' + (v.fails === 1 ? '' : 's') + ', ' + v.warns + ' to note</span></div>' +
       '<div class="oc-grid"><div>' +
@@ -1344,7 +1345,7 @@
     const a = api.analysis(), list = wardrobe(); if (!a || !list.length) return '';
     const date = new Date().toLocaleDateString(undefined, { year: 'numeric', month: 'long', day: 'numeric' });
     list.forEach(function (w) { w.season = seasonOf(w.outfit); });   // from the cloths as the rules now read them, not as saved
-    const order = SEASONS.slice().sort(function (x, y) { return Number(y[0] === a.season) - Number(x[0] === a.season); });
+    const order = O.seasonOrder(a && a.season);
     const block = function (w) {
       const aw = analysisFor(w, a), o = engineOutfit(w.outfit), checks = E.checkOutfit(o, aw), v = E.verdict(checks), hd = headline(v, E.skinClashes(o, aw));
       const rows = PIECES.filter(function (p) { return o[p.key]; }).map(function (p) {
@@ -1375,7 +1376,7 @@
       }).join('');
     }).join('');
     const counts = order.map(function (se) { const n = list.filter(function (w) { return w.season === se[0]; }).length; return n ? se[1] + ' ' + n : ''; }).filter(Boolean).join(', ');
-    return '<h1>Saved outfits</h1><p class="pc-sub">' + (S().name ? 'For ' + esc(S().name) + '. ' : '') + list.length + ' outfit' + (list.length === 1 ? '' : 's') + ' (' + esc(counts) + '), grouped by season and occasion. Summer outfits are judged with your summer colouring, winter ones with your winter colouring, all-year ones with the ' + (api.season() === 'summer' ? 'summer' : 'winter') + ' colouring in use now. Valet, ' + date + '.</p>' + body;
+    return '<h1>Saved outfits</h1><p class="pc-sub">' + (S().name ? 'For ' + esc(S().name) + '. ' : '') + list.length + ' outfit' + (list.length === 1 ? '' : 's') + ' (' + esc(counts) + '), grouped by season and occasion. Summer outfits are judged with your summer colouring, winter ones with your winter colouring, all-year ones with the ' + api.season() + ' colouring in use now. Valet, ' + date + '.</p>' + body;
   }
   function printWardrobe() {
     const card = $('#printCard'); if (!card) return;

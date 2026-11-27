@@ -10,8 +10,8 @@ let seed=1; const rnd=()=>{seed=(seed*16807)%2147483647; return seed/2147483647;
 const hexes=D.colours.map(c=>c.hex).concat(['#f2efe6','#161616','#3b2417']);
 const profiles={demo:D.demo, low:{samples:{skin:'#f0d6c8',hair:'#c9a978',eyes:'#8fa6b8'},manual:{skin:true,hair:true,eyes:true},named:{},hairStyle:'short'},
   deep:{samples:{skin:'#5b3a29',hair:'#1c1614',eyes:'#2a1c14'},manual:{skin:true,hair:true,eyes:true},named:{},hairStyle:'none'}};
-const A={}; for (const [k,p] of Object.entries(profiles)) for (const se of ['winter','summer']) for (const gl of ['none','gold','silver','acetate','clear'])
-  A[k+se+gl]=E.analyseProfile(Object.assign({},p,{season:se,glasses:gl,glassesHex:'#5b3a24'}));
+const A={}; for (const [k,p] of Object.entries(profiles)) for (const se of ['winter','spring','summer','autumn']) for (const gl of ['none','gold','silver','acetate','clear'])
+  A[k+se+gl]=E.analyseProfile(E.seasonProfile(Object.assign({},p,{glasses:gl,glassesHex:'#5b3a24'}),se));   // the season's own skin (spring winter's, autumn halfway)
 const aList=Object.values(A).filter(Boolean);
 function randomOutfit(){
   const o={};

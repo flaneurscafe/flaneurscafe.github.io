@@ -515,7 +515,8 @@ svg.ma { width: 100%; height: auto; max-height: 360px; overflow: visible; }
 /* ---- winter and summer ---- */
 .masthead { position: relative; }
 .season-bar { position: absolute; right: 1.5rem; top: 1.6rem; display: flex; align-items: center; gap: 0.5rem; font: 0.82rem var(--sans); color: var(--muted); }
-@media (max-width: 640px) { .season-bar { position: static; margin: -0.4rem 0 0.8rem; } }
+@media (max-width: 640px) { .season-bar { position: static; margin: -0.4rem 0 0.8rem; } #season { flex-wrap: nowrap; } #season button { padding: 0.38rem 0.55rem; } }
+@media (max-width: 400px) { #seasonLabel { display: none; } }   /* four seasons need the room; the group keeps its name for screen readers */
 .season-tag { font: 500 0.72rem var(--sans); color: var(--muted); border: 1px solid var(--rule); border-radius: 99px; padding: 0.05rem 0.5rem; vertical-align: 0.2em; }
 body.is-summer .season-tag { color: var(--gold); border-color: var(--gold); }
 .gl-c .arr { margin: 0 0.2rem; color: var(--muted); }

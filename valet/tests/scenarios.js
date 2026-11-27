@@ -435,5 +435,27 @@ T('an impossible combination is its own verdict', base({jacket:P('#2d3b2a','waxe
   ok('Black Watch jacket: a visible medium pattern by the face, and its green is seen', ch.some(c => c.id === 'pcount' && /^1 visible pattern/.test(c.text)) && ch.some(c => c.id === 'pecho' && /jacket/.test(c.text)) && VP.scaleClass(7).id === 'medium');
   ok('a jacket-scale tartan is not too large for a jacket', !ch.some(c => c.id === 'psize' && (c.slots || []).indexOf('jacket') >= 0));
 }
+// ---- 1.20: four seasons (How it works, #h-season-mid and Season) ----
+{
+  const ok = (name, cond, info) => { count++; if (!cond) { fails++; console.log('✗ ' + name, info !== undefined ? JSON.stringify(info) : ''); } };
+  const at = se => E.analyseProfile(E.seasonProfile(Object.assign({}, D.demo, { summer: { mode: 'estimate' } }), se));
+  const aSp = at('spring'), aAu = at('autumn'), aWi = at('winter'), aSu = at('summer');
+  ok('spring uses the winter skin', aSp.hex.skin === aWi.hex.skin && aSp.season === 'spring', [aSp.hex.skin, aWi.hex.skin]);
+  ok('autumn skin lies halfway between winter and summer', Math.abs(aAu.lab.skin[0] - (aWi.lab.skin[0] + aSu.lab.skin[0]) / 2) < 0.3 && aAu.lab.skin[0] < aWi.lab.skin[0] && aAu.lab.skin[0] > aSu.lab.skin[0], [aWi.lab.skin[0], aAu.lab.skin[0], aSu.lab.skin[0]]);
+  const same = se => E.analyseProfile(E.seasonProfile(Object.assign({}, D.demo, { summer: { mode: 'same' } }), se));
+  ok('with "same as winter", autumn is the winter skin too', same('autumn').hex.skin === same('winter').hex.skin);
+  const mix = base({ jacket: P('#6b4f36', 'jacket', 'tweed'), trousers: P('#d8cfbd', 'trousers', 'linen') });
+  const tweedSuit = base({ jacket: P('#6b4f36', 'jacket', 'tweed'), trousers: P('#6b4f36', 'trousers', 'tweed') });
+  const linen = base({ jacket: P('#d8cfbd', 'jacket', 'linen'), trousers: P('#8e9196', 'trousers', 'cotton') });
+  T('spring: a tweed jacket with linen trousers is the in-between mix, no note', mix, [[/^season:/, false]], aSp);
+  T('autumn: the same mix, no note', mix, [[/^season:/, false]], aAu);
+  T('winter: the same mix is still noted', mix, [[/^season:/, true]], aWi);
+  T('summer: the same mix is still noted', mix, [[/^season:/, true]], aSu);
+  T('autumn: a tweed suit is in season', tweedSuit, [[/^season:/, false]], aAu);
+  T('spring: a linen jacket is in season', linen, [[/^season:/, false]], aSp);
+  T('summer: a tweed suit is still noted', tweedSuit, [[/^season:/, true]], aSu);
+  const txt = E.checkOutfit(mix, aAu).find(c => c.id === 'season').text;
+  ok('the autumn mix says why', /in-between mix/.test(txt), txt);
+}
 console.log((fails ? fails + ' scenario(s) failed' : 'all scenarios pass') + ' (' + count + ' run)');
 if (fails) process.exit(1);
