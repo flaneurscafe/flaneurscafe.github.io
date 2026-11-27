@@ -51,7 +51,11 @@
       add({ id: 'shoe', group: 'formality', score: 0.4, slots: ['shoes'], text: 'A ' + K.tie.name.toLowerCase() + ' with trainers: the tie says business, the shoes say weekend. Wear leather shoes, or lose the tie.' });
     } else if (suitWorn(o, L, K, C) && shoeF != null && shoeF <= 1) {
       handled.shoes = true;
-      add({ id: 'shoe', group: 'formality', score: 0.65, slots: ['shoes'], text: 'A suit with trainers is a fashion look rather than a classic one; loafers or derbies keep the suit\'s register.' });
+      // Gentleman's Gazette: never sneakers with a full suit (tests/canon.js). A fail since 1.19.1, at KP's
+      // decision; before, a note calling it a fashion look.
+      add({ id: 'shoe', group: 'formality', score: 0.45, slots: ['shoes'],
+        fixes: [{ label: 'Loafers instead', slot: 'shoes', kind: 'loafer' }, { label: 'Derbies instead', slot: 'shoes', kind: 'derby' }],
+        text: 'Trainers with a full suit: Gentleman\'s Gazette says never. A suit is one cloth and one colour from collar to hem, the most formal thing a man wears by day, and its trousers lead the eye straight to the shoes, so trainers there read as a mistake rather than a choice. Loafers or derbies keep the suit\'s register; to wear the trainers, break the suit up instead: the jacket with chinos or flannels.' });
     }
     // Neckwear with jeans (Gentleman's Gazette): a tie, bow tie or cravat formalises; jeans do not take it.
     if (tie && L.trousers && C.trousers && C.trousers.id === 'denim')
