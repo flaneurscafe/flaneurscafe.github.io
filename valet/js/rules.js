@@ -86,6 +86,7 @@
     dose: { name: 'one colour head to toe', weight: 1, reason: 'keeps the colour to one piece', section: 'colour', kind: 'convention', how: 'r-dose' },
     face: { name: 'a colour at the face', weight: 1.6, reason: 'suits your face', section: 'skin', kind: 'perceptual', how: 'r-face' },
     formal: { name: 'pieces of different formality', weight: 1, reason: null, section: 'formality', kind: 'convention', how: 'r-formality' },
+    tiebare: { name: 'a shirt and tie with nothing over them', weight: 0.6, reason: null, section: 'formality', kind: 'convention', how: 'r-formality' },
     frame: { name: 'nothing frames the face', weight: 0.8, reason: 'frames the face', section: 'frame', kind: 'convention', how: 'r-frame' },
     glasses: { name: 'a second warm or cool note beside the frames', weight: 1, reason: 'agrees with the frames', section: 'temperature', kind: 'convention', how: 'r-frames-temp' },
     gloves: { name: 'gloves for the occasion', weight: 1, reason: null, kind: 'convention', how: 'r-outer' },

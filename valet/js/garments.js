@@ -57,7 +57,7 @@
       { id: 'crew', name: 'Crew-neck knit', frame: null, knit: true, f: 3, cloths: ['merino', 'lambswool', 'cashmere', 'cottonknit'], pats: ['solid', 'breton'], maxScale: 'small' },
       { id: 'vneck', name: 'V-neck knit', frame: null, needsCollarUnder: true, knit: true, f: 4, cloths: ['merino', 'lambswool', 'cashmere', 'cottonknit'], pats: SOLID_ONLY, maxScale: 'small' },
       { id: 'cardigan', name: 'Cardigan', frame: null, knit: true, f: 3, cloths: ['merino', 'lambswool', 'cashmere'], pats: SOLID_ONLY, maxScale: 'small' },
-      { id: 'shawl', name: 'Shawl-collar cardigan', frame: 'shawl', knit: true, f: 2, cloths: ['lambswool', 'cashmere', 'merino'], pats: SOLID_ONLY, maxScale: 'small' },
+      { id: 'shawl', name: 'Shawl-collar cardigan', frame: 'shawl', knit: true, heavy: true, f: 2, cloths: ['lambswool', 'cashmere', 'merino'], pats: SOLID_ONLY, maxScale: 'small' },
       // A waistcoat: tailored, open in a V like a V-neck, so it wants a collar under it; worn with
       // the suit as the third piece or on its own as an odd waistcoat. Its points cover the waistband.
       { id: 'waistcoat', name: 'Waistcoat', frame: null, needsCollarUnder: true, vest: true, f: 4, cloths: ['worsted', 'flannel', 'tweed', 'linen', 'cotton', 'corduroy', 'moleskin', 'merino'], pats: ['solid', 'nailhead', 'birdseye', 'herringbone', 'pinstripe', 'chalkstripe', 'houndstooth', 'glen', 'windowpane', 'tattersall', 'tartan'], maxScale: 'medium' }
@@ -229,9 +229,12 @@
     const id = piece && piece.cloth && k.cloths.indexOf(piece.cloth) >= 0 ? piece.cloth : k.cloths[0];
     // a chunky knit: the same yarn (same id, so patterns and rules about the yarn still apply), knitted
     // thick, which makes it casual and warm (KNITS)
+    // A type that is a heavy knit by nature (heavy: the shawl cardigan) already counts it in its own
+    // formality: Drake's and William Lockie's shawls are heavy rib, worn over a shirt and tie as a
+    // stand-in for a jacket (How it works, Formality). Knitted chunky, it is no more casual than its type.
     if (k.knit && piece && piece.knit === 'chunky') {
       const c = CLOTHS[id];
-      return Object.assign({}, c, { name: 'Chunky ' + c.name.replace(/^Fine /, '').toLowerCase(), f: Math.min(c.f, knitBy.chunky.f), season: id === 'cottonknit' ? 'all' : 'winter' });
+      return Object.assign({}, c, { name: 'Chunky ' + c.name.replace(/^Fine /, '').toLowerCase(), f: Math.min(c.f, k.heavy ? k.f : knitBy.chunky.f), season: id === 'cottonknit' ? 'all' : 'winter' });
     }
     return CLOTHS[id];
   }
@@ -281,7 +284,7 @@
      which is not summer cloth any more but not wool either (all year). */
   const KNITS = [
     { id: 'fine', name: 'Fine or medium gauge', note: 'A smooth, flat knit: it reads as its yarn, merino or cashmere dressier than lambswool.' },
-    { id: 'chunky', name: 'Chunky, cable or heavy rib', f: 1, note: 'Thick yarn on a coarse gauge: casual and warm whatever the yarn, so it counts as casual and as winter wear.' }
+    { id: 'chunky', name: 'Chunky, cable or heavy rib', f: 1, note: 'Thick yarn on a coarse gauge: warm whatever the yarn, so it counts as winter wear, and as casual, except a shawl cardigan, which is heavy by nature and as dressy chunky as its type.' }
   ];
   const knitBy = {}; KNITS.forEach(function (k) { knitBy[k.id] = k; });
   /* Broguing (1.19): decoration on an oxford or a derby. Flusser, Dressing the Man, p. 198: the

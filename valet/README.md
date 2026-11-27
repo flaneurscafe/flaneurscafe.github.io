@@ -47,6 +47,7 @@ Every outfit rule has one entry in the `RULES` table in `js/rules.js`: its name 
 - unit tests of the colour science, the pattern visibility model, the body survey, the proportion targets and the size logic (`tests/units.js`), and of the outfit as data: making a file safe, its season, merging imports (`tests/outfit.js`);
 - My garments: the list made safe, the outfits found around a garment (each judged exactly as the Dresser judges it), the colour-to-buy comparison, your marks and the marks report (`tests/closet.js`);
 - every rule has a complete entry (`tests/rules.js`), and every named threshold is wired to its rule and compares in the right direction (`tests/boundaries.js`);
+- combinations from the literature (`tests/canon.js`): outfits Flusser and Gentleman's Gazette endorse or call mistakes, each with its source and page, which Valet must judge as the source does;
 - the rule scenarios (`tests/scenarios.js`), a stress test of thousands of random outfits (`tests/stress.js`), and a regression test that compares 800 fixed outfits with a stored record (`tests/regression.js`).
 - taste (`tests/taste.js`): how often Valet agrees with a well-dressed eye, on outfits Gentleman's Gazette's presenters wear in published photos (colours only; no photos or names are kept). A number to watch, not a test to pass: it never fails the run, and it lists the looks whose verdict moved since it was recorded (`--update` to record).
 

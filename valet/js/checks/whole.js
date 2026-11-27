@@ -65,14 +65,32 @@
     const W = ['', 'casual', 'relaxed', 'smart casual', 'smart', 'business'];
     const word = function (f) { return f <= 0 ? 'sportswear' : W[f]; };
     if (reg.length) {
-      const lo = reg.reduce(function (a, k) { return F[k] < F[a] ? k : a; }), hi = reg.reduce(function (a, k) { return F[k] > F[a] ? k : a; });
+      // Layers are not compared as pieces worn side by side (How it works, Formality; tests/canon.js).
+      // A knit worn as the outermost layer over a shirt and tie stands in for the jacket: Drake's, Simon
+      // Crompton and Gentleman's Gazette all wear a cardigan over a shirt and tie. The shirt and tie are
+      // then what is under it, so they are judged against the occasion below, not against the knit.
+      const knitOver = !!(L.mid && !L.jacket && tie && K.mid.knit);
+      const sp = reg.filter(function (k) { return !(knitOver && (k === 'shirt' || k === 'tie')); });
+      const lo = sp.reduce(function (a, k) { return F[k] < F[a] ? k : a; }), hi = sp.reduce(function (a, k) { return F[k] > F[a] ? k : a; });
       const spread = F[hi] - F[lo];
-      if (spread >= PARAMS.formalMistake) add({ id: 'formal', group: 'formality', score: 0.4, slots: [lo],
+      // What is worn under a suit jacket without a tie dresses the suit down: Flusser's charcoal suit takes
+      // a white shirt and dark tie uptown, a black turtleneck or T-shirt downtown (p. 93). A deliberate
+      // contrast, so a note, not a mistake.
+      if (spread >= PARAMS.formalMistake && lo === 'shirt' && L.jacket && !tie) add({ id: 'formal', group: 'formality', score: 0.65, slots: [lo],
+        text: what(lo) + ' under ' + what(hi) + ': a dressed-down suit. Flusser wears a charcoal suit with a black T-shirt or turtleneck downtown (Dressing the Man, p. 93); it works as a deliberate contrast, not as business dress.' });
+      else if (spread >= PARAMS.formalMistake) add({ id: 'formal', group: 'formality', score: 0.4, slots: [lo],
         text: what(hi) + ' (' + word(F[hi]) + ') and ' + what(lo) + ' (' + word(F[lo]) + ') are too far apart in formality: one of them looks like a mistake.' });
       else if (spread === PARAMS.formalWide) add({ id: 'formal', group: 'formality', score: 0.65, slots: [lo],
         text: what(hi) + ' (' + word(F[hi]) + ') with ' + what(lo) + ' (' + word(F[lo]) + '): a wide mix. It can work as a deliberate contrast; usually one step closer looks surer.' });
       else add({ id: 'formal', group: 'formality', score: 1, slots: [],
-        text: 'Formality: the pieces sit within ' + (spread ? 'two steps' : 'one register') + ' of each other, from ' + word(F[lo]) + ' to ' + word(F[hi]) + '.' });
+        text: 'Formality: the pieces sit within ' + (spread ? 'two steps' : 'one register') + ' of each other, from ' + word(F[lo]) + ' to ' + word(F[hi]) + '.' +
+          (knitOver ? ' The ' + K.mid.name.toLowerCase() + ' stands in for a jacket over the shirt and tie, as Drake\'s and Gentleman\'s Gazette wear it.' : '') });
+      // A shirt and tie with nothing over them: Gentleman's Gazette does not recommend it for most men;
+      // it looks unfinished, though some professions have made it their dress code. A note (B). A tie or
+      // bow tie: the article is about neckties, and a cravat is worn in an open collar.
+      if (tie && K.tie.id !== 'cravat' && L.shirt && !L.jacket && !L.mid) add({ id: 'tiebare', group: 'formality', score: 0.75, slots: ['tie'],
+        fixes: [{ label: 'A V-neck over the shirt and tie', slot: 'mid', kind: 'vneck', set: { on: true } }, { label: 'Take off the ' + K.tie.name.toLowerCase(), slot: 'tie', on: false }],
+        text: 'A ' + K.tie.name.toLowerCase() + ' and shirt with nothing over them look unfinished: Gentleman\'s Gazette does not recommend it for most men, though some professions wear it as their dress code. A jacket or a knit over them, or an open collar, looks surer.' });
       // against the occasion
       const r = occ.range, under = reg.filter(function (k) { return F[k] < r[0]; }), over = reg.filter(function (k) { return F[k] > r[1]; });
       if (under.length) {
