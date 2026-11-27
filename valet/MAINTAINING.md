@@ -169,7 +169,12 @@ The Node tests cover the logic, not the page. After any change to `index.html`, 
 - Proportion & fit: each garment button in Fit, and a **Sources** button;
 - How it works: the contents list jumps to each section.
 
-If you have Python, `tools/smoke.py` does the clicking for you and reports console errors (see its header).
+If you have Python, two tools do the clicking for you (each explains itself in its header):
+
+- `tools/smoke.py` presses every visible button on every tab and reports console errors. It finds crashes, not wrong behaviour.
+- `tools/flows.py` is the Dresser's regression test. It walks the routes a person takes through the Dresser (a piece's colour, cloth, pattern and second colour, its type and collar, a knit and a shoe, the fixes and Undo, the accessories, saving an outfit, My garments from both ends, Saved outfits), on a wide window and on a phone-sized one, and after every step records what the page shows: the outfit as stored, the saved garments and outfits, and each line of text visible in the Dresser. It compares that with `tests/flows.json`. Run it before and after any change to `js/ui/` or `css/`. A change meant to alter nothing visible, such as moving code between files, must pass unchanged; a change made on purpose shows as differences, step by step, and once you have read each one, `python tools/flows.py --update` records the new behaviour, to commit with the change. It takes about a minute. When you add a control to the Dresser, add a step for it (`python tools/flows.py --list` shows the steps), or the record cannot see it.
+
+The record holds what the page showed, so a step whose control was renamed or moved is reported as a missing control, not skipped. Text is compared line by line; a long line is kept as its first words and a fingerprint, so a change inside it shows as a changed line without its full text.
 
 ## 7. Releasing
 
