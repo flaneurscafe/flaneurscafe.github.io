@@ -113,4 +113,5 @@ async def main():
     print('no errors' if not errs else f'{len(errs)} errors')
     sys.exit(1 if errs else 0)
 
-asyncio.run(main())
+if __name__ == '__main__':   # tools/cssusage.py imports run() from here
+    asyncio.run(main())

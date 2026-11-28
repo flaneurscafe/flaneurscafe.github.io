@@ -21,17 +21,18 @@ Valet is one page, `index.html`, plus plain JavaScript files that it loads in or
 | The order the checks run in, and what they share | `js/engine.js`, `ORDER` and `checkOutfit` | `VENGINE` |
 | How your colouring is read, the tiers, the palette | `js/engine.js`, top half | `VENGINE` |
 | Suggestions, Choose the best colours, Keep this | `js/suggest.js` | `VENGINE` |
+| The fixes under a check; Keep this, fix the rest and Choose the best colours (copying the engine's answer into the outfit); a change of garment type and what it takes off; what can be put on | `js/dress.js` (tested by `tests/fixes.js` against the page's record, `tests/fixes.json`) | `VDRESS` |
 | Garments, cloths, occasions, what each piece is | `js/garments.js` | `VGARM` |
 | The named colours, the demo profile | `js/data.js` | `VDATA` |
 | What a pattern looks like from a distance | `js/patterns.js`, `js/vision.js` | `VPAT` |
 | Colour maths (CIELAB, CIEDE2000, OKLCH) | `js/colour.js` | `VC` |
 | Body survey, proportion targets, sizes | `js/body.js`, `js/proportion.js`, `js/fit.js` | `VBODY`, `VPROP`, `VFIT` |
 | The explanation and its sources | `index.html`, `<article id="howArticle">` | |
-| What a tab shows | `js/ui/you.js`, `palette.js`, `shape.js` (Proportion), `fit.js`, `dresser.js` | `VAPP` |
+| What a tab shows | `js/ui/you.js`, `palette.js`, `shape.js` (Proportion), `fit.js`, and the Dresser in five files: `dresser.js` (helpers, verdict, rows, types, checks, whole-outfit actions), `dresser-saved.js` (Saved outfits), `dresser-editor.js` (a piece's colour, cloth, pattern, distance), `dresser-acc.js` (accessories), `dresser-card.js` (printed card, `VWARD`) | `VAPP`; the Dresser's files share `VDRCORE` (written `DR.x`) |
 | The "Why" and "Sources" bubbles | `js/ui/why.js` | |
-| Reading colour from a photo; Colours from photos and My colours | `js/ui/photos.js` (the window, kept photos); the strip in `dresser.js` | `VPHOTOS` |
+| Reading colour from a photo; Colours from photos and My colours | `js/ui/photos.js` (the window, kept photos); the strip in `dresser-editor.js` | `VPHOTOS` |
 | My garments: what goes with a garment, which colour to buy | `js/closet.js` (finding and counting outfits); `js/ui/closet.js` (the view) | `VCLOSET`, `VCLOSETUI` |
-| Your marks (good, so-so, bad) on saved outfits | `js/outfit.js` (`outfitSig`, `disagrees`, kept by `normWardrobe`); `dresser.js` (Saved outfits) | `VOUTFIT` |
+| Your marks (good, so-so, bad) on saved outfits | `js/outfit.js` (`outfitSig`, `disagrees`, kept by `normWardrobe`); `dresser-saved.js` (Saved outfits) | `VOUTFIT` |
 | Start-up, the welcome window, How it works' contents list | `js/ui/main.js` | |
 | The phone layout | `js/ui/mobile.js`, and `@media` blocks in `css/valet.css` | |
 
@@ -171,7 +172,9 @@ The Node tests cover the logic, not the page. After any change to `index.html`, 
 
 If you have Python, two tools do the clicking for you (each explains itself in its header):
 
-- `tools/smoke.py` presses every visible button on every tab and reports console errors. It finds crashes, not wrong behaviour.
+- `tools/smoke.py` presses every visible button on every tab and reports console errors. It finds crashes, not wrong behaviour; it also switches through the four seasons and checks a season note and its fix.
+- `tools/cssusage.py` reports the rules of `css/valet.css` that matched nothing during the smoke and flows walks. A candidate list, not a verdict: in 1.21 its 208 rules were all states no walk reaches (the printed cards, Colours from photos, a warning, a marked outfit), and every class it names is still written somewhere in the code, often built from parts (`'st-' + state`). Check a rule by hand before deleting it.
+- `tools/fixes.py` records every fix button the Dresser offers for 60 seeded outfits in winter, summer and autumn, presses each, and writes the outfit and note it leaves into `tests/fixes.json`; since 1.22 it also presses Choose the best colours, and Keep this, fix the rest for each piece worn (969 presses). `node tests/fixes.js` (part of `tests/run.js`) replays that record through `js/dress.js`, so the fixes and both buttons stay tested without a browser. Each press of the two buttons costs the engine about a second, so the usual run presses a sample, the first two of every kind of answer and of every kind of change to a piece (18 presses); `node tests/fixes.js --all` presses all of them (about 15 minutes) and is worth running after a change to `E.rescue`, `E.complete` or the copying in `js/dress.js`. After changing a fix on purpose, record the page again with `python tools/fixes.py --update` (about 45 minutes) and commit the record with the change.
 - `tools/flows.py` is the Dresser's regression test. It walks the routes a person takes through the Dresser (a piece's colour, cloth, pattern and second colour, its type and collar, a knit and a shoe, the fixes and Undo, the accessories, saving an outfit, My garments from both ends, Saved outfits), on a wide window and on a phone-sized one, and after every step records what the page shows: the outfit as stored, the saved garments and outfits, and each line of text visible in the Dresser. It compares that with `tests/flows.json`. Run it before and after any change to `js/ui/` or `css/`. A change meant to alter nothing visible, such as moving code between files, must pass unchanged; a change made on purpose shows as differences, step by step, and once you have read each one, `python tools/flows.py --update` records the new behaviour, to commit with the change. It takes about a minute. When you add a control to the Dresser, add a step for it (`python tools/flows.py --list` shows the steps), or the record cannot see it.
 
 The record holds what the page showed, so a step whose control was renamed or moved is reported as a missing control, not skipped. Text is compared line by line; a long line is kept as its first words and a fingerprint, so a change inside it shows as a changed line without its full text.

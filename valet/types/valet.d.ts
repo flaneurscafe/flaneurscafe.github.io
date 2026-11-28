@@ -120,4 +120,8 @@ interface ValetApp {
 interface Window { VAPP: ValetApp; [global: string]: any }
 /** Globals some page files name without window. (the page's globals are window's properties). */
 declare var VWARD: any;
+/** The Dresser's helpers and shared state, set up by js/ui/dresser.js for its other files (dresser-*.js). */
+declare var VDRCORE: any;
+/** Dressing decisions (js/dress.js): garment types, what can be put on, the fixes. */
+declare var VDRESS: any;
 declare var VPHOTOS: any;

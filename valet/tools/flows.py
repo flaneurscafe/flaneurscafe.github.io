@@ -48,7 +48,9 @@ window.__t = {
 # What the page shows, made comparable: no ids, dates or timings.
 SNAP = r"""() => {
   const fp = t => { let h = 0x811c9dc5; for (let i = 0; i < t.length; i++) { h ^= t.charCodeAt(i); h = Math.imul(h, 0x01000193) >>> 0; } return h.toString(36); };
-  const line = t => t.length > 90 ? t.slice(0, 70) + '… #' + fp(t) : t;
+  // today's date is written as "today", so a record made yesterday still compares (a saved outfit shows the day it was saved)
+  const today = new Date().toISOString().slice(0, 10);
+  const line = t0 => { const t = t0.split(today).join('today'); return t.length > 90 ? t.slice(0, 70) + '… #' + fp(t) : t; };
   const sorted = x => Array.isArray(x) ? x.map(sorted) : x && typeof x === 'object' ? Object.keys(x).sort().reduce((o, k) => (o[k] = sorted(x[k]), o), {}) : x;
   const st = window.VAPP.state;
   const o = JSON.parse(JSON.stringify(st.outfit)); delete o.savedId;
@@ -252,4 +254,5 @@ async def main():
     else: print(f'flows: the Dresser behaves exactly as recorded ({n} steps, {len(VIEWS)} windows)')
     return 1 if diffs or errs else 0
 
-sys.exit(asyncio.run(main()))
+if __name__ == '__main__':   # tools/cssusage.py imports walk() and STEPS from here
+    sys.exit(asyncio.run(main()))
